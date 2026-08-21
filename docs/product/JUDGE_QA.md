@@ -194,7 +194,12 @@ community stakeholders.
 No. Eight hours is a prepared demo-policy guard, not a learned, optimal, or
 ethically sufficient threshold. The app exposes 0-, 4-, and 8-hour sensitivity
 so continuity is an explicit policy choice. It does not claim equal outcomes,
-equal need, or that geography substitutes for protected-group analysis.
+equal need, or that geography substitutes for protected-group analysis. The
+data that analysis needs does exist at CoC scale—HDIS publishes annual counts
+of people served by age, race, gender, veteran status, and disability status
+for the San Diego CoC on California Open Data—but joining it to block-level
+visual observations would require person-level inference this product refuses,
+so it stays out of the demo deliberately, not for lack of a source.
 
 ### What if the floor is infeasible?
 

@@ -23,8 +23,17 @@ Realistic: 10/12 without EyePop live, 11–12/12 with it.
 Known snag (2026-08-21): self-serve signup demanded the $200/mo Production
 plan despite the DSA2026 code. Do not enter payment — get credentials from
 the EyePop rep at the venue or andy@eyepop.ai, or borrow a teammate's key.
-If no key materializes, the honest presentation line is: "the integration is
-built, tested, and fail-closed; sponsor signup was pay-walled on the day."
+
+The audit no longer waits on the key: the module has a swappable OCR engine,
+and `--engine local` (Apple Vision handwriting recognition, fully offline)
+already ran against the pinned report — the committed card is
+`data/monitoring/digitization_audit.json`, including the recovered City
+Center field-sheet totals whose multiplier lineage reconciles to the
+published 177 (152 + 14 × 1.75 = 176.5). EyePop is a drop-in:
+`--engine eyepop` on the same command, same card shape, engine recorded in
+the output. The presentation line without a key: "we built the ability and
+ran it locally; EyePop is one flag away — same interface, hosted engine."
+With a key, run both engines and show the cards side by side.
 
 1. Sign up at dashboard.eyepop.ai (event code **DSA2026**; questions:
    andy@eyepop.ai). Hamburger menu → API Keys → Create API Key.

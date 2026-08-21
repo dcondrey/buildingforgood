@@ -145,9 +145,12 @@ projects record client-level activity (contacts, date of engagement,
 current-living-situation assessments, project entries and exits); CoC Annual
 Performance Reports and System Performance Measures summarize that activity;
 and California's Homeless Data Integration System (HDIS, which aggregates the
-state's 44 CoC HMIS datasets and is published through California Open Data)
-breaks out people served by street outreach. All of these measure encounters
-or people served—not worker schedules. Downtown business improvement
+state's 44 CoC HMIS datasets) feeds the Cal ICH System Performance Measures
+published on California Open Data, statewide and by CoC. The street outreach
+measure there is an outcome count: for the San Diego CoC (CA-601), successful
+placements from street outreach projects (measure M6) rose from 2,929 in 2020
+to 6,014 in 2025. All of these measure encounters, people served, or
+outcomes—not worker schedules. Downtown business improvement
 districts also publish outreach summaries; the Downtown San Diego Partnership,
 whose Clean & Safe program produced the counts this project analyzes, fields
 its own outreach team.

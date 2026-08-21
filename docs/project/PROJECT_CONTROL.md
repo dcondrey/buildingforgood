@@ -39,9 +39,9 @@ for transferring accepted work into the branch.
 | Workstream | State | Current issue | Next checkpoint |
 |---|---|---|---|
 | Project coordination | In progress | [D-01 / #26](https://github.com/dcondrey/buildingforgood/issues/26) | Assign all four track owners |
-| Prepared scenario | Next | [D-02 / #19](https://github.com/dcondrey/buildingforgood/issues/19) | Scenario card reviewed and handed to D-03/C-03 |
-| Decision contract | Waiting on scenario | [D-03 / #2](https://github.com/dcondrey/buildingforgood/issues/2) | Versioned configuration consumable by analytics and UI |
-| App bootstrap | Ready after decision contract | [B-02 / #3](https://github.com/dcondrey/buildingforgood/issues/3) | Static app and verification command |
+| Prepared scenario | Provisional; cross-track review required | [D-02 / #19](https://github.com/dcondrey/buildingforgood/issues/19) | Track A confirms period/geography; Track C confirms planner assumptions |
+| Decision contract | Provisional configuration committed | [D-03 / #2](https://github.com/dcondrey/buildingforgood/issues/2) | D-04 adds runtime schemas and validates fixed/provisional/unresolved fields |
+| App bootstrap | Ready | [B-02 / #3](https://github.com/dcondrey/buildingforgood/issues/3) | Static app and verification command consume the decision contract |
 | Data and forecasting | Research can start | [A-00 / #28](https://github.com/dcondrey/buildingforgood/issues/28) | Source review and safe aggregate sample |
 | Planning and safeguards | Review can start | [C-00 / #30](https://github.com/dcondrey/buildingforgood/issues/30) | Claims red-team and privacy rules |
 | Release | Not started | [D-07 / #17](https://github.com/dcondrey/buildingforgood/issues/17) | All upstream quality gates pass |
@@ -55,6 +55,8 @@ for transferring accepted work into the branch.
 | DEC-003 | 2026-08-20 | Keep generative AI out of classification, forecasting, and allocation. | Consequential results must remain deterministic, testable, and inspectable. | #8–#10, #14, #16 | Accepted |
 | DEC-004 | 2026-08-20 | Use complaint data only as a disagreement/bias diagnostic. | Reporting volume is not a count of people or a defensible demand target. | #5, #8, #14, #16 | Accepted |
 | DEC-005 | 2026-08-20 | Prefer the seasonal-naive forecast unless a candidate wins on held-out evaluation. | Prevents unnecessary model complexity and optimistic in-sample selection. | #9, #10 | Accepted |
+| DEC-006 | 2026-08-20 | Prepare an editable 80-hour plan for a shift within seven days, informed by a one-month aggregate forecast. | Separates the operational decision horizon from the observation/forecast cadence while keeping both visible. | #2, #14, #19 | Provisional pending cross-track review |
+| DEC-007 | 2026-08-20 | Treat the exact demonstration month, area list, and adjacency as unresolved release blockers. | The source and boundary audit must determine them; the integration track will not invent comparability. | #2, #6, #11, #18, #34 | Accepted |
 
 Use the next sequential decision ID. A decision entry must include the rationale
 and affected issue links. Superseded decisions remain in the table with a

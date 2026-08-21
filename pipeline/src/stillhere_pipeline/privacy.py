@@ -157,6 +157,12 @@ CELL_NUMERIC_ALLOWLIST: frozenset[str] = frozenset(
         "timeincrement",
         "increment",
         "minimumsustainedperiods",
+        # Structural fields that legitimately sit inside a cell.
+        "revision",
+        "sortindex",
+        "order",
+        "sequence",
+        "priority",
         # Unambiguously temporal. A schema encoding month as 3 is naming a
         # period, not counting three people.
         "month",
@@ -301,23 +307,6 @@ def is_cell_context(node: dict[str, Any]) -> bool:
     return any(normalize_key(k) in CELL_CONTEXT_KEYS for k in node)
 
 
-def is_numeric_breakdown(node: dict[str, Any]) -> bool:
-    """True when this object is a pure value breakdown, like ``by_type``.
-
-    Cell scope descends only into these. Propagating it into *every*
-    descendant meant an unrelated config sub-object nested inside a cell
-    produced false blocks on its revision numbers and sort indices. A
-    breakdown holds only numbers, so it is the shape that actually carries
-    published cell values; a mixed-type object is something else.
-    """
-    if not node:
-        return False
-    return all(
-        value is None or (isinstance(value, (int, float)) and not isinstance(value, bool))
-        for value in node.values()
-    )
-
-
 #: Values that count as an affirmative suppression declaration. Anything
 #: else — False, None, 0, "no" — means the cell is published.
 SUPPRESSION_TRUE_VALUES: frozenset[str] = frozenset({"true", "yes", "1", "suppressed", "redacted"})
@@ -399,17 +388,21 @@ def _scan_json(
                     child,
                     f"field name {key!r} is on the deny-list",
                 )
-            # Cell scope descends into breakdowns and lists, not into
-            # arbitrary nested objects.
-            descend_cell = cell_scope and (
-                not isinstance(value, dict) or is_numeric_breakdown(value)
-            )
+            # Cell scope propagates to EVERY descendant, unconditionally.
+            # An earlier version gated this on the child being a pure numeric
+            # breakdown, to stop false blocks on a config object nested in a
+            # cell. That silently exempted a breakdown containing a further
+            # breakdown -- by_type: {individual: 2, by_severity: {...}} -- so
+            # real small counts were never scanned at any depth below it.
+            # Over-blocking is the acceptable error direction here; a silent
+            # miss is not. Noise is reduced by naming structural keys in
+            # CELL_NUMERIC_ALLOWLIST, never by narrowing what gets scanned.
             yield from _scan_json(
                 value,
                 child,
                 min_cell,
                 in_geometry=in_geometry,
-                in_cell=descend_cell,
+                in_cell=cell_scope,
                 suppressed=cell_suppressed,
             )
         return

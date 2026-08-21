@@ -43,7 +43,17 @@ The numeric allow-list is **deliberately narrow**. Unambiguously temporal or str
 
 ### The limit of this rule, and the durable fix
 
-The small-cell rule infers whether an integer is a person count from the *shape* of the document, because nothing in the artifact declares it. That inference went through five rounds of review, and every round found a real hole: name-based detection missed 306 real cells; exempting every context key to fix a false positive reopened the same false negative; suppression by key presence let `suppressed: false` through; scope propagation over-blocked on nested config. Each fix was correct and each one moved the error to a new place, because deciding "is this integer a person" from structure alone is not decidable.
+The small-cell rule infers whether an integer is a person count from the *shape* of the document, because nothing in the artifact declares it. That inference went through six rounds of review, and every round found a real hole:
+
+1. Name-based detection (`count`, `observed`) missed 306 real cells in the A-07 artifact, which names them `total`, `individual`, `structure`, `vehicle`.
+2. Exempting every cell-context key, to fix a false positive on `{"area": 3}`, reopened the same false negative for `{"observations": 3}`.
+3. Treating a `suppressed` key as suppression regardless of value let `{"suppressed": false}` bypass the rule, and because suppression propagates, it exempted the whole subtree.
+4. Rejecting integer-encoded booleans blocked correctly-redacted data from pandas- and SQL-derived JSON.
+5. Gating scope propagation on "is this child a pure numeric breakdown", to silence a false positive on a nested config object, silently exempted a breakdown containing a further breakdown — so real small counts were never scanned at any depth below it.
+
+Round 5 is the one worth naming. **It traded a fail-closed property for a cosmetic fix**, converting a noisy-but-safe gate into a quiet one with a silent miss, in a file whose own docstring says it fails closed. Over-blocking is the acceptable error direction here. Noise gets handled by naming structural keys in the allow-list, never by narrowing what gets scanned.
+
+Each fix was correct and each one moved the error somewhere new, because deciding "is this integer a person" from structure alone is not decidable.
 
 **The durable fix belongs in the artifact contract, not in this scanner.** If `#4` declares which fields are counts — a `count_fields` list, or a per-field type in the schema — the rule becomes a lookup instead of an inference, and this entire class of bug disappears. Handed to Track D. Until then the scan stays as a structural backstop that fails closed, which is the right posture for a privacy gate but not a substitute for a declared schema.
 

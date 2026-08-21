@@ -236,23 +236,43 @@ def test_integer_encoded_suppression_is_accepted() -> None:
     assert _blocking(scan_json_document(published, min_cell=5))
 
 
-def test_cell_scope_descends_into_breakdowns_not_arbitrary_objects() -> None:
-    """Caught in review: cell scope propagated to every descendant.
+def test_cell_scope_reaches_arbitrarily_nested_breakdowns() -> None:
+    """The regression that ended the whack-a-mole.
 
-    An unrelated config sub-object nested inside a cell produced false blocks
-    on its revision numbers and sort indices. Scope now descends only into
-    pure numeric breakdowns, which is the shape that carries published cell
-    values.
+    An earlier fix gated propagation on the child being a pure numeric
+    breakdown, to silence false blocks on a config object nested in a cell.
+    That silently exempted a breakdown containing a further breakdown, so
+    real small counts were never scanned at any depth below it. Over-blocking
+    is the acceptable error direction for a privacy gate; a silent miss is
+    not. Scope now propagates unconditionally, and noise is handled by naming
+    structural keys in the allow-list.
     """
     cell = {
         "neighborhood": "barrio_logan",
         "month": "2021-09",
-        "total": 91,
-        "by_type": {"individual": 2, "structure": 1, "vehicle": 0},
-        "render_config": {"revision": 3, "sort_index": 1, "enabled": True},
+        "by_type": {
+            "individual": 2,
+            "structure": 1,
+            "by_severity": {"high": 1, "low": 1},
+        },
     }
     flagged = {f.where.rsplit(".", 1)[-1] for f in _blocking(scan_json_document(cell, min_cell=5))}
-    assert flagged == {"individual", "structure"}
+    assert flagged == {"individual", "structure", "high", "low"}
+
+
+def test_small_counts_inside_a_list_under_a_cell_are_scanned() -> None:
+    doc = {"neighborhood": "a", "periods": [{"month": "2021-09", "total": 2}]}
+    assert _blocking(scan_json_document(doc, min_cell=5))
+
+
+def test_structural_fields_inside_a_cell_are_quiet() -> None:
+    cell = {
+        "neighborhood": "barrio_logan",
+        "month": "2021-09",
+        "total": 91,
+        "render_config": {"revision": 3, "sort_index": 1, "enabled": True},
+    }
+    assert _blocking(scan_json_document(cell, min_cell=5)) == []
 
 
 def test_is_redacted_is_recognised_like_is_suppressed() -> None:

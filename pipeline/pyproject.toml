@@ -7,13 +7,16 @@ name = "stillhere-pipeline"
 version = "0.0.1"
 description = "Still Here SD ingestion, validation, analysis, and export pipeline"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "pyyaml>=6",
+]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8",
     "ruff>=0.6",
     "mypy>=1.10",
+    "types-PyYAML>=6",
 ]
 
 [tool.setuptools.packages.find]

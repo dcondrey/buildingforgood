@@ -4,6 +4,7 @@ import { EMBEDDED_DEMO, loadDemoData, type DemoData, type HistoryPoint } from ".
 import { allocateHours, type PlanResult } from "./lib/planner";
 
 const DEFAULT_COVERAGE_FLOOR = 8;
+const MAX_BUDGET_HOURS = 400;
 
 const GUIDE_STEPS = [
   "The headline estimate fell, but that hides what changed: outreach workers saw more people, on more blocks. What dropped was tents.",
@@ -341,7 +342,7 @@ function EvidenceChain({ data }: { data: DemoData }) {
   const steps = [
     {
       label: "Verified source",
-      detail: data.source.artifact,
+      detail: data.source.artifact.split("/").pop() ?? data.source.artifact,
       tone: "teal",
     },
     {
@@ -429,6 +430,9 @@ function App() {
         setData(loaded);
         setBudget(loaded.scenario.defaultBudget);
       })
+      .catch(() => {
+        // Aborted fetches (e.g. unmount) fall back to the embedded snapshot already set.
+      })
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, []);
@@ -465,7 +469,7 @@ function App() {
 
   const planTotal = plan?.allocations.reduce((sum, row) => sum + row.hours, 0) ?? 0;
   const maxHours = Math.max(1, ...Array.from(allocationById.values()));
-  const budgetValid = Number.isInteger(budget) && budget >= 0;
+  const budgetValid = Number.isInteger(budget) && budget >= 0 && budget <= MAX_BUDGET_HOURS;
   const planReady = Boolean(
     plan?.feasible && !planDirty && guardEnabled && budgetValid && planTotal === budget,
   );
@@ -626,7 +630,7 @@ function App() {
     signal.classification === "wider_footprint"
       ? individualSpatial
         ? "People were seen in more places, not fewer"
-        : "Street activity spread across more blocks"
+        : "Field activity spread across more blocks"
       : titleCase(signal.classification);
 
   return (
@@ -660,7 +664,7 @@ function App() {
                 aria-describedby="budget-help"
                 id="budget-hours"
                 inputMode="numeric"
-                max="400"
+                max={MAX_BUDGET_HOURS}
                 min="0"
                 step="1"
                 onChange={(event) => {
@@ -784,7 +788,7 @@ function App() {
               aria-label="Observed composition and active-block footprint comparison"
             >
               <div>
-                <span>People seen on the street</span>
+                <span>People seen in the field</span>
                 <strong>+{formatNumber(signal.components.individuals.changePct, 1)}%</strong>
                 <small>
                   {signal.components.individuals.from} → {signal.components.individuals.to}
@@ -858,7 +862,7 @@ function App() {
             <p className="eyebrow">What actually changed</p>
             <h2 id="drop-title">Test the drop</h2>
             <p>
-              The falling estimate is built from three things counted on the street: people, tents,
+              The falling estimate is built from three things counted in the field: people, tents,
               and vehicles. Compare each one on the same {signal.panelSize} blocks, one January to
               the next, and see which of them actually dropped.
             </p>
@@ -866,7 +870,7 @@ function App() {
 
           <div className="metric-grid composition-metrics">
             <Metric
-              label="People seen on the street"
+              label="People seen in the field"
               value={`${signal.components.individuals.from} → ${signal.components.individuals.to}`}
               detail={`+${formatNumber(signal.components.individuals.changePct, 1)}%`}
               tone="teal"
@@ -940,8 +944,8 @@ function App() {
                   <p>
                     {individualSpatial
                       ? "People were seen on more blocks than last year, spread about as evenly as before. Tents disappeared from many blocks and bunched up in fewer."
-                      : "Street activity reached more blocks while becoming more concentrated where it remained."}{" "}
-                    These are street observations: they cannot say who moved where, or why.
+                      : "Field activity reached more blocks while becoming more concentrated where it remained."}{" "}
+                    These are on-site observations: they cannot say who moved where, or why.
                   </p>
                 </div>
                 <span className="confidence-chip">Human review required</span>
@@ -1178,7 +1182,7 @@ function App() {
                     </div>
                     <AreaMap
                       areas={data.areas}
-                      ariaLabel="Schematic map of the six downtown neighborhoods showing the change in raw street observations"
+                      ariaLabel="Schematic map of the six downtown neighborhoods showing the change in raw field observations"
                       valueFor={(area) => ({
                         text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
                         tone: area.delta > 0 ? "up" : "down",
@@ -1193,7 +1197,7 @@ function App() {
                       </span>
                     </div>
                     <p className="map-caption">
-                      Change in raw street observations by neighborhood · schematic, not to scale ·
+                      Change in raw field observations by neighborhood · schematic, not to scale ·
                       not a count of people
                     </p>
                   </div>
@@ -1746,11 +1750,17 @@ function App() {
               </div>
               <button
                 className="button button-primary button-large"
+                disabled={!budgetValid}
                 onClick={() => runPlan()}
                 type="button"
               >
                 <SparkIcon /> Generate coverage scenario
               </button>
+              {!budgetValid && (
+                <p className="budget-invalid" role="status">
+                  Enter a whole number of hours between 0 and {MAX_BUDGET_HOURS} to generate a plan.
+                </p>
+              )}
             </div>
           ) : !plan.feasible ? (
             <div className="infeasible" role="alert">
@@ -1919,7 +1929,12 @@ function App() {
                   </strong>
                 </div>
                 {planDirty && (
-                  <button className="button button-primary" onClick={() => runPlan()} type="button">
+                  <button
+                    className="button button-primary"
+                    disabled={!budgetValid}
+                    onClick={() => runPlan()}
+                    type="button"
+                  >
                     Recompute unlocked hours
                   </button>
                 )}
@@ -2072,7 +2087,6 @@ function App() {
           className="guide-panel"
           role="dialog"
           aria-labelledby="guide-title"
-          aria-modal="true"
           aria-live="polite"
           ref={guidePanel}
           tabIndex={-1}

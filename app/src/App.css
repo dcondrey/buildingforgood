@@ -53,9 +53,9 @@
   background: rgba(7, 10, 13, 0.88);
   border-bottom: 1px solid var(--line);
   display: flex;
-  gap: 2rem;
+  gap: 1.25rem;
   justify-content: space-between;
-  min-height: 5rem;
+  min-height: 4.75rem;
   padding: 0.65rem clamp(1rem, 3vw, 3rem);
   position: sticky;
   top: 0;
@@ -126,15 +126,17 @@
 .decision-controls {
   align-items: center;
   display: flex;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: flex-end;
 }
 
 .header-context {
   border-right: 1px solid var(--line);
   display: grid;
   margin-right: 0.5rem;
-  min-width: 14rem;
-  padding-right: 1.5rem;
+  min-width: 12rem;
+  padding-right: 1.15rem;
 }
 .header-context strong {
   color: var(--ink-soft);
@@ -177,8 +179,8 @@
   gap: 0.45rem;
   justify-content: center;
   letter-spacing: 0.01em;
-  min-height: 2.6rem;
-  padding: 0.55rem 1rem;
+  min-height: 2.45rem;
+  padding: 0.5rem 0.9rem;
   transition:
     background 160ms ease,
     border-color 160ms ease,
@@ -289,10 +291,10 @@ main {
 .hero {
   align-items: center;
   display: grid;
-  gap: clamp(2rem, 7vw, 7rem);
+  gap: clamp(2.5rem, 6vw, 5.5rem);
   grid-template-columns: minmax(0, 1.1fr) minmax(20rem, 0.75fr);
   min-height: min(46rem, calc(100vh - 5rem));
-  padding: 5.5rem 0 4.5rem;
+  padding: 6.25rem 0 5rem;
   position: relative;
 }
 .hero::after {
@@ -337,7 +339,7 @@ main {
   font-size: clamp(3.7rem, 7.2vw, 7.1rem);
   font-weight: 500;
   letter-spacing: -0.065em;
-  line-height: 0.88;
+  line-height: 0.94;
   margin: 0;
   max-width: 11ch;
 }
@@ -349,8 +351,8 @@ main {
   color: var(--ink-soft);
   font-family: var(--serif);
   font-size: clamp(1.2rem, 2vw, 1.55rem);
-  line-height: 1.45;
-  margin: 1.6rem 0 0;
+  line-height: 1.55;
+  margin: 1.8rem 0 0;
   max-width: 34rem;
 }
 .composition-lead {
@@ -553,7 +555,7 @@ main {
 .decision-section {
   border-bottom: 1px solid var(--line);
   min-height: 42rem;
-  padding: clamp(5rem, 9vw, 8rem) 0;
+  padding: clamp(6rem, 10vw, 9rem) 0;
   position: relative;
   scroll-margin-top: 8.5rem;
 }
@@ -568,7 +570,7 @@ main {
   top: 5rem;
 }
 .section-intro {
-  margin-bottom: 2.4rem;
+  margin-bottom: 3rem;
   padding-left: clamp(0rem, 7vw, 6.5rem);
   position: relative;
 }
@@ -578,13 +580,14 @@ main {
   font-size: clamp(2.4rem, 5vw, 4.5rem);
   font-weight: 450;
   letter-spacing: -0.045em;
-  line-height: 1;
+  line-height: 1.06;
   margin: 0.3rem 0 0.8rem;
 }
 .section-intro > p:last-child,
 .section-intro > div > p:last-child {
   color: var(--muted);
-  font-size: 0.98rem;
+  font-size: 1.02rem;
+  line-height: 1.62;
   margin: 0;
   max-width: 45rem;
 }
@@ -601,7 +604,20 @@ main {
   grid-template-columns: repeat(3, 1fr);
 }
 .composition-metrics {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1.15fr 0.95fr 0.95fr;
+  grid-template-rows: repeat(2, minmax(8.5rem, auto));
+}
+.composition-metrics .metric:first-child {
+  grid-row: 1 / span 2;
+}
+.composition-metrics .metric:nth-child(2) {
+  grid-column: 2;
+}
+.composition-metrics .metric:nth-child(3) {
+  grid-column: 3;
+}
+.composition-metrics .metric:nth-child(4) {
+  grid-column: 2 / span 2;
 }
 .mixed-index-note {
   background: rgba(242, 237, 226, 0.035);
@@ -632,22 +648,72 @@ main {
   flex: none;
   margin-top: 0.05rem;
 }
+.context-details,
+.evidence-details {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+.context-details > summary,
+.evidence-details > summary {
+  align-items: center;
+  color: var(--ink-soft);
+  cursor: pointer;
+  display: flex;
+  gap: 0.8rem;
+  justify-content: space-between;
+  list-style-position: inside;
+  min-height: 3.25rem;
+  padding: 0.8rem 1rem;
+}
+.context-details > summary span,
+.evidence-details > summary span {
+  font-family: var(--serif);
+  font-size: 1rem;
+}
+.context-details > summary small,
+.evidence-details > summary small {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.context-details[open] > summary,
+.evidence-details[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+.context-details > p {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+.evidence-details > .distribution-proof,
+.evidence-details > .evidence-grid,
+.evidence-details > .evidence-balance,
+.evidence-details > .challenge-card {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+.evidence-details > .distribution-proof:first-of-type {
+  margin-top: 1rem;
+}
 .metric {
   background: var(--panel-soft);
   border: 1px solid var(--line);
   border-radius: 12px;
   display: grid;
-  min-height: 9rem;
-  padding: 1.3rem;
+  min-height: 10rem;
+  padding: 1.5rem;
   position: relative;
 }
 .metric::before {
   background: var(--line-strong);
   content: "";
   height: 2px;
-  left: 1.3rem;
+  left: 1.5rem;
   position: absolute;
-  right: 1.3rem;
+  right: 1.5rem;
   top: 0;
 }
 .metric-amber::before {
@@ -2410,6 +2476,14 @@ main {
   }
   .composition-metrics {
     grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: none;
+  }
+  .composition-metrics .metric:first-child,
+  .composition-metrics .metric:nth-child(2),
+  .composition-metrics .metric:nth-child(3),
+  .composition-metrics .metric:nth-child(4) {
+    grid-column: auto;
+    grid-row: auto;
   }
   .section-number {
     font-size: 7rem;
@@ -2607,8 +2681,27 @@ main {
   .decision-section {
     padding: 5rem 0;
   }
+  .section-number {
+    display: none;
+  }
   .section-intro {
-    padding-left: 2.5rem;
+    padding-left: 0;
+  }
+  .section-intro h2 {
+    font-size: clamp(2.15rem, 10vw, 3.2rem);
+    line-height: 1.08;
+  }
+  .section-intro > p:last-child,
+  .section-intro > div > p:last-child {
+    font-size: 0.98rem;
+    line-height: 1.62;
+  }
+  .result-header {
+    gap: 1.1rem;
+    padding: 1.35rem;
+  }
+  .result-header h3 {
+    line-height: 1.12;
   }
   .metric-grid {
     grid-template-columns: 1fr;

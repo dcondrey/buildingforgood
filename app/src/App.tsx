@@ -800,21 +800,27 @@ function App() {
               tone="teal"
             />
           </div>
-          <p className="mixed-index-note">
-            <strong>Secondary mixed-component context:</strong> all active blocks{" "}
-            {signal.activeFrom}
-            {" → "}
-            {signal.activeTo} (+{formatNumber(signal.activeChangePct, 1)}%); mixed-unit index{" "}
-            {signal.fromValue} → {signal.toValue} ({formatNumber(signal.changePct, 1)}%). The index
-            arithmetically sums unlike observation units—individuals, structures, and vehicles—and
-            is not a count of unique people or an estimated person total. Panel fixed at{" "}
-            {signal.panelSize} blocks.
-          </p>
-          <p className="comparison-defense">
-            <CheckIcon /> This is the latest available same-month year-over-year pair in the
-            supplied panel: January 2025 is its final date, both months use the POST2020 method, and
-            the exact same {signal.panelSize} blocks are compared.
-          </p>
+          <details className="context-details">
+            <summary>
+              <span>How to read this comparison</span>
+              <small>Panel, units, and date checks</small>
+            </summary>
+            <p className="mixed-index-note">
+              <strong>Secondary mixed-component context:</strong> all active blocks{" "}
+              {signal.activeFrom}
+              {" → "}
+              {signal.activeTo} (+{formatNumber(signal.activeChangePct, 1)}%); mixed-unit index{" "}
+              {signal.fromValue} → {signal.toValue} ({formatNumber(signal.changePct, 1)}%). The
+              index arithmetically sums unlike observation units—individuals, structures, and
+              vehicles—and is not a count of unique people or an estimated person total. Panel fixed
+              at {signal.panelSize} blocks.
+            </p>
+            <p className="comparison-defense">
+              <CheckIcon /> This is the latest available same-month year-over-year pair in the
+              supplied panel: January 2025 is its final date, both months use the POST2020 method,
+              and the exact same {signal.panelSize} blocks are compared.
+            </p>
+          </details>
 
           {!dropRevealed ? (
             <div className="reveal-action">
@@ -966,182 +972,193 @@ function App() {
                   </div>
                 )}
 
-              {signal.distributionSensitivity && (
-                <div
-                  className="distribution-proof distribution-secondary"
-                  aria-label="Secondary mixed-unit active-block threshold and concentration sensitivity"
-                >
-                  <div className="distribution-heading">
-                    <div>
-                      <span className="eyebrow">Secondary mixed-unit sensitivity</span>
-                      <strong>Mixed threshold dependence and composition-driven HHI</strong>
+              <details className="evidence-details">
+                <summary>
+                  <span>Explore supporting evidence</span>
+                  <small>Thresholds, geography, limits, and review triggers</small>
+                </summary>
+
+                {signal.distributionSensitivity && (
+                  <div
+                    className="distribution-proof distribution-secondary"
+                    aria-label="Secondary mixed-unit active-block threshold and concentration sensitivity"
+                  >
+                    <div className="distribution-heading">
+                      <div>
+                        <span className="eyebrow">Secondary mixed-unit sensitivity</span>
+                        <strong>Mixed threshold dependence and composition-driven HHI</strong>
+                      </div>
+                      <span>Not a person count</span>
                     </div>
-                    <span>Not a person count</span>
-                  </div>
-                  <div className="threshold-row">
-                    {signal.distributionSensitivity.thresholds.map((threshold) => (
-                      <div key={threshold.minimumUnits}>
-                        <small>
-                          Active blocks ≥{threshold.minimumUnits} unit
-                          {threshold.minimumUnits > 1 ? "s" : ""}
-                        </small>
+                    <div className="threshold-row">
+                      {signal.distributionSensitivity.thresholds.map((threshold) => (
+                        <div key={threshold.minimumUnits}>
+                          <small>
+                            Active blocks ≥{threshold.minimumUnits} unit
+                            {threshold.minimumUnits > 1 ? "s" : ""}
+                          </small>
+                          <strong>
+                            {threshold.fromBlocks} → {threshold.toBlocks}
+                          </strong>
+                          <span className={threshold.change > 0 ? "delta-up" : "threshold-flat"}>
+                            {threshold.change > 0 ? "+" : ""}
+                            {threshold.change} · {threshold.entered} entered / {threshold.exited}{" "}
+                            exited
+                          </span>
+                        </div>
+                      ))}
+                      <div className="concentration-result">
+                        <small>Intensity concentration</small>
                         <strong>
-                          {threshold.fromBlocks} → {threshold.toBlocks}
+                          HHI +{formatNumber(signal.distributionSensitivity.hhiChangePct, 1)}%
                         </strong>
-                        <span className={threshold.change > 0 ? "delta-up" : "threshold-flat"}>
-                          {threshold.change > 0 ? "+" : ""}
-                          {threshold.change} · {threshold.entered} entered / {threshold.exited}{" "}
-                          exited
+                        <span>
+                          effective blocks{" "}
+                          {formatNumber(signal.distributionSensitivity.effectiveBlocksFrom, 1)} →{" "}
+                          {formatNumber(signal.distributionSensitivity.effectiveBlocksTo, 1)}
                         </span>
                       </div>
-                    ))}
-                    <div className="concentration-result">
-                      <small>Intensity concentration</small>
-                      <strong>
-                        HHI +{formatNumber(signal.distributionSensitivity.hhiChangePct, 1)}%
-                      </strong>
-                      <span>
-                        effective blocks{" "}
-                        {formatNumber(signal.distributionSensitivity.effectiveBlocksFrom, 1)} →{" "}
-                        {formatNumber(signal.distributionSensitivity.effectiveBlocksTo, 1)}
+                    </div>
+                    <p>
+                      Single-unit blocks grew {signal.distributionSensitivity.singleUnitFrom} →{" "}
+                      {signal.distributionSensitivity.singleUnitTo} (+
+                      {signal.distributionSensitivity.singleUnitChange}), but do not alone explain
+                      the +{signal.activeChange} at ≥1 because ≥2 still rises. HHI{" "}
+                      {signal.distributionSensitivity.hhiFrom.toFixed(6)} →{" "}
+                      {signal.distributionSensitivity.hhiTo.toFixed(6)} is composition-driven; this
+                      secondary mixed index does not establish uniform spread or track movement.
+                    </p>
+                  </div>
+                )}
+
+                <div className="evidence-grid">
+                  <div className="churn-card">
+                    <div className="card-heading">
+                      <div>
+                        <span className="eyebrow">Secondary mixed-unit index</span>
+                        <h4>Index churn inside the stable panel</h4>
+                      </div>
+                      <span className="formula">
+                        +{signal.grossIncreases} − {signal.grossDecreases} = {signal.change}
                       </span>
                     </div>
-                  </div>
-                  <p>
-                    Single-unit blocks grew {signal.distributionSensitivity.singleUnitFrom} →{" "}
-                    {signal.distributionSensitivity.singleUnitTo} (+
-                    {signal.distributionSensitivity.singleUnitChange}), but do not alone explain the
-                    +{signal.activeChange} at ≥1 because ≥2 still rises. HHI{" "}
-                    {signal.distributionSensitivity.hhiFrom.toFixed(6)} →{" "}
-                    {signal.distributionSensitivity.hhiTo.toFixed(6)} is composition-driven; this
-                    secondary mixed index does not establish uniform spread or track movement.
-                  </p>
-                </div>
-              )}
-
-              <div className="evidence-grid">
-                <div className="churn-card">
-                  <div className="card-heading">
-                    <div>
-                      <span className="eyebrow">Secondary mixed-unit index</span>
-                      <h4>Index churn inside the stable panel</h4>
-                    </div>
-                    <span className="formula">
-                      +{signal.grossIncreases} − {signal.grossDecreases} = {signal.change}
-                    </span>
-                  </div>
-                  <div
-                    className="churn-visual"
-                    aria-label={`${signal.grossIncreases} increases, ${signal.grossDecreases} decreases, net ${signal.change}`}
-                    role="img"
-                  >
                     <div
-                      className="churn-up"
-                      style={
-                        {
-                          "--bar": `${(signal.grossIncreases / Math.max(signal.grossIncreases, signal.grossDecreases)) * 100}%`,
-                        } as CSSProperties
-                      }
+                      className="churn-visual"
+                      aria-label={`${signal.grossIncreases} increases, ${signal.grossDecreases} decreases, net ${signal.change}`}
+                      role="img"
                     >
-                      <span>Gross increases</span>
-                      <strong>+{signal.grossIncreases}</strong>
-                    </div>
-                    <div
-                      className="churn-down"
-                      style={
-                        {
-                          "--bar": `${(signal.grossDecreases / Math.max(signal.grossIncreases, signal.grossDecreases)) * 100}%`,
-                        } as CSSProperties
-                      }
-                    >
-                      <span>Gross decreases</span>
-                      <strong>−{signal.grossDecreases}</strong>
-                    </div>
-                  </div>
-                  <p className="method-note">
-                    <CheckIcon /> Individuals, tents/structures, and vehicles each count as one raw
-                    unit here. This is not a person estimate; the footprint is fixed at{" "}
-                    {signal.panelSize} blocks.
-                  </p>
-                </div>
-
-                <div className="area-view-card">
-                  <div className="card-heading">
-                    <div>
-                      <span className="eyebrow">Aggregate context</span>
-                      <h4>Where the signal changed</h4>
-                    </div>
-                    <span className="formula positive">Active blocks +{signal.activeChange}</span>
-                  </div>
-                  <div
-                    className="area-map"
-                    aria-label="Relative area view, not to scale"
-                    role="img"
-                  >
-                    {data.areas.map((area) => (
-                      <div className={`area-cell area-${area.id}`} key={area.id}>
-                        <span>{area.name}</span>
-                        <strong className={area.delta > 0 ? "delta-up" : "delta-down"}>
-                          {area.delta > 0 ? "+" : ""}
-                          {area.delta}
-                        </strong>
+                      <div
+                        className="churn-up"
+                        style={
+                          {
+                            "--bar": `${(signal.grossIncreases / Math.max(signal.grossIncreases, signal.grossDecreases)) * 100}%`,
+                          } as CSSProperties
+                        }
+                      >
+                        <span>Gross increases</span>
+                        <strong>+{signal.grossIncreases}</strong>
                       </div>
-                    ))}
+                      <div
+                        className="churn-down"
+                        style={
+                          {
+                            "--bar": `${(signal.grossDecreases / Math.max(signal.grossIncreases, signal.grossDecreases)) * 100}%`,
+                          } as CSSProperties
+                        }
+                      >
+                        <span>Gross decreases</span>
+                        <strong>−{signal.grossDecreases}</strong>
+                      </div>
+                    </div>
+                    <p className="method-note">
+                      <CheckIcon /> Individuals, tents/structures, and vehicles each count as one
+                      raw unit here. This is not a person estimate; the footprint is fixed at{" "}
+                      {signal.panelSize} blocks.
+                    </p>
                   </div>
-                  <p className="map-caption">
-                    Mixed-unit raw-index change · not a person map · not to scale
-                  </p>
-                </div>
-              </div>
 
-              <div className="evidence-balance">
-                <div>
-                  <span className="evidence-icon evidence-for">+</span>
-                  <p>
-                    <strong>Evidence for</strong>Observed individuals increased while structures
-                    fell; individual observations reached more fixed-panel blocks at both tested
-                    thresholds.
-                  </p>
+                  <div className="area-view-card">
+                    <div className="card-heading">
+                      <div>
+                        <span className="eyebrow">Aggregate context</span>
+                        <h4>Where the signal changed</h4>
+                      </div>
+                      <span className="formula positive">Active blocks +{signal.activeChange}</span>
+                    </div>
+                    <div
+                      className="area-map"
+                      aria-label="Relative area view, not to scale"
+                      role="img"
+                    >
+                      {data.areas.map((area) => (
+                        <div className={`area-cell area-${area.id}`} key={area.id}>
+                          <span>{area.name}</span>
+                          <strong className={area.delta > 0 ? "delta-up" : "delta-down"}>
+                            {area.delta > 0 ? "+" : ""}
+                            {area.delta}
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="map-caption">
+                      Mixed-unit raw-index change · not a person map · not to scale
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <span className="evidence-icon evidence-against">!</span>
-                  <p>
-                    <strong>Evidence boundary</strong>No identities, movement paths, or causal
-                    explanation are observed.
-                  </p>
-                </div>
-                <div>
-                  <span className="evidence-icon evidence-check">✓</span>
-                  <p>
-                    <strong>Validity check</strong>Stable panel, explicit missingness, source-era
-                    labels kept separate.
-                  </p>
-                </div>
-              </div>
 
-              <aside aria-labelledby="challenge-title" className="challenge-card">
-                <div className="challenge-heading">
+                <div className="evidence-balance">
                   <div>
-                    <span className="eyebrow">Adversarial checkpoint</span>
-                    <h4 id="challenge-title">What would change our mind?</h4>
+                    <span className="evidence-icon evidence-for">+</span>
+                    <p>
+                      <strong>Evidence for</strong>Observed individuals increased while structures
+                      fell; individual observations reached more fixed-panel blocks at both tested
+                      thresholds.
+                    </p>
                   </div>
-                  <span className="challenge-badge">Open to revision</span>
+                  <div>
+                    <span className="evidence-icon evidence-against">!</span>
+                    <p>
+                      <strong>Evidence boundary</strong>No identities, movement paths, or causal
+                      explanation are observed.
+                    </p>
+                  </div>
+                  <div>
+                    <span className="evidence-icon evidence-check">✓</span>
+                    <p>
+                      <strong>Validity check</strong>Stable panel, explicit missingness, source-era
+                      labels kept separate.
+                    </p>
+                  </div>
                 </div>
-                <p>
-                  This result is useful because its failure conditions are explicit. Any one of
-                  these findings would downgrade the conclusion or trigger a new review.
-                </p>
-                <ul>
-                  <li>
-                    One of the matched months is later found to be incomplete or misclassified.
-                  </li>
-                  <li>
-                    A boundary or method change makes the 261-block comparison non-comparable.
-                  </li>
-                  <li>Source review explains the 2023–2024 discontinuity as collection change.</li>
-                  <li>New held-out data materially weakens forecast error or interval coverage.</li>
-                </ul>
-              </aside>
+
+                <aside aria-labelledby="challenge-title" className="challenge-card">
+                  <div className="challenge-heading">
+                    <div>
+                      <span className="eyebrow">Adversarial checkpoint</span>
+                      <h4 id="challenge-title">What would change our mind?</h4>
+                    </div>
+                    <span className="challenge-badge">Open to revision</span>
+                  </div>
+                  <p>
+                    This result is useful because its failure conditions are explicit. Any one of
+                    these findings would downgrade the conclusion or trigger a new review.
+                  </p>
+                  <ul>
+                    <li>
+                      One of the matched months is later found to be incomplete or misclassified.
+                    </li>
+                    <li>
+                      A boundary or method change makes the 261-block comparison non-comparable.
+                    </li>
+                    <li>
+                      Source review explains the 2023–2024 discontinuity as collection change.
+                    </li>
+                    <li>
+                      New held-out data materially weakens forecast error or interval coverage.
+                    </li>
+                  </ul>
+                </aside>
+              </details>
 
               {data.reportingBias ? (
                 <details className="bias-diagnostic">

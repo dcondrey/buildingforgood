@@ -1,0 +1,169 @@
+# Still Here SD source ledger (issue #5, A-02).
+# Machine-readable provenance for every raw input. Raw files live in data/raw/
+# (never committed, never deployed); checksums are pinned in
+# data/cards/checksums.sha256 and verified by scripts/fetch_raw.sh.
+version: 1
+retrieved_at: "2026-08-21T01:06:45Z"
+retrieved_by: scripts/fetch_raw.sh
+
+sources:
+  - id: sdrdl_source
+    name: SDRDL Downtown Homeless source package 7.2.3
+    role: primary
+    analytical_question: >-
+      What is the monthly, neighborhood-grain history of downtown unsheltered
+      observations (2014-2022) that the drop test and forecast run on?
+    publisher: >-
+      San Diego Regional Data Library; underlying counts collected by the
+      Downtown San Diego Partnership (DSP) Clean & Safe program.
+    package_page: https://data.sandiegodata.org/dataset/sandiegodata-org-downtown-homeless-source/
+    files:
+      - raw_path: data/raw/sdrdl_source/metadata.csv
+        url: https://library.metatab.org/sandiegodata.org-downtown_homeless-source-7.2.3.csv
+      - raw_path: data/raw/sdrdl_source/counts.csv
+        url: https://library.metatab.org/sandiegodata.org-downtown_homeless-source-7.2.3/data/counts.csv
+      - raw_path: data/raw/sdrdl_source/files.csv
+        url: https://library.metatab.org/sandiegodata.org-downtown_homeless-source-7.2.3/data/files.csv
+    retrieval_method: >-
+      curl via scripts/fetch_raw.sh; alternatively the metapack Python client:
+      mp.open_package("https://library.metatab.org/sandiegodata.org-downtown_homeless-source-7.2.3.csv")
+    update_cadence: Static archival package (last issued 2024-11-26).
+    license_terms: >-
+      No explicit data license in the metapack metadata. The project repo
+      (github.com/sandiegodata-projects/downtown-partnership) is MIT; the
+      underlying counts belong to DSP. Attribute both SDRDL and DSP; confirm
+      reuse beyond a hackathon demo with SDRDL (eric@sandiegodata.org).
+    collection_method: >-
+      DSP Clean & Safe enumerators hand-mark paper maps monthly; SDRDL
+      volunteers georeferenced and digitized the scans (VGG VIA annotation).
+    intended_use: >-
+      Primary observation series. Aggregated to neighborhood/month by the
+      pipeline before anything ships; point coordinates never deploy.
+    time_grain: Monthly (day-of-month values are unreliable; trust year+month only).
+    geo_grain: >-
+      Point locations in EPSG:2230 state-plane x/y. PRIVACY: x/y are precise
+      locations and sit on the deployment deny-list (issue #7); only aggregates
+      may leave the pipeline.
+    coverage: 2014-01 through 2022-12; 25,891 count records; ~11 neighborhood labels.
+    known_limitations:
+      - >-
+        Counts are UNMULTIPLIED and therefore diverge from official DSP totals
+        after March 2017: DSP applied occupancy multipliers from 2017-04-27
+        (RTFH factors 1.75 per tent/structure, 1.66 per vehicle; vehicle updated
+        to 2.03 on 2018-05-31; before April 2017 DSP used 2 and 2). SDRDL
+        deliberately omits the multipliers, which keeps this series internally
+        comparable across the break. Never mix these counts with official
+        published totals across March/April 2017 without one uniform policy.
+      - Missing months 2014-08, 2014-09, 2015-06.
+      - Neighborhood label drift across years (casing and naming).
+      - Manual digitization QA issues; hand-summed per-map totals contain
+        arithmetic errors.
+
+  - id: sdrdl_analysis
+    name: SDRDL Downtown Homeless analysis package 2.1.1
+    role: comparison
+    analytical_question: >-
+      What did DSP officially publish as monthly downtown totals (2012 onward),
+      as the comparison line against the unmultiplied series?
+    publisher: San Diego Regional Data Library / DSP.
+    package_page: https://data.sandiegodata.org/dataset/sandiegodata-org-dowtown-homeless/
+    files:
+      - raw_path: data/raw/sdrdl_analysis/monthly_totals.csv
+        url: https://library.metatab.org/sandiegodata.org-dowtown_homeless-2.1.1/data/monthly_totals.csv
+      - raw_path: data/raw/sdrdl_analysis/neighborhood_totals.csv
+        url: https://library.metatab.org/sandiegodata.org-dowtown_homeless-2.1.1/data/neighborhood_totals.csv
+    retrieval_method: curl via scripts/fetch_raw.sh
+    update_cadence: Static archival package (last modified 2022-04-20).
+    license_terms: Same posture as sdrdl_source (no explicit data license; attribute SDRDL + DSP).
+    collection_method: Official DSP published totals compiled by SDRDL.
+    intended_use: >-
+      Source-agreement evidence for the drop test (official totals vs
+      unmultiplied series), and the pre-2014 context line.
+    time_grain: Monthly.
+    geo_grain: Downtown total (monthly_totals); six neighborhoods (neighborhood_totals).
+    coverage: monthly_totals 2012-01 onward; neighborhood_totals 2018-2019 only.
+    known_limitations:
+      - Published totals include DSP's multiplier policy changes (see
+        sdrdl_source), so the series has a methodology break at 2017-04.
+      - neighborhood_totals covers 2018-2019 only.
+      - Package page notes suspect low East Village values after 2018-03 in
+        this lineage; the 7.x source package is the corrected continuation.
+
+  - id: sd311
+    name: San Diego 311 Get It Done service requests (closed, 2025)
+    role: bias_diagnostic
+    analytical_question: >-
+      Where does complaint volume DISAGREE with observed counts? 311 measures
+      reporting propensity, never demand; the development plan requires
+      automated tests proving 311 volume cannot enter the planning-load
+      objective.
+    publisher: City of San Diego open data portal.
+    package_page: https://data.sandiego.gov/datasets/get-it-done-311/
+    files:
+      - raw_path: data/raw/sd311/get_it_done_requests_closed_2025.csv
+        url: https://seshat.datasd.org/get_it_done_reports/get_it_done_requests_closed_2025_datasd.csv
+    retrieval_method: curl via scripts/fetch_raw.sh
+    update_cadence: >-
+      Updated DAILY upstream. The pinned checksum matches the 2026-08-21
+      retrieval only; later re-fetches are expected to differ (re-pin when
+      re-retrieving). Per-year closed files 2016-2026 exist at the same stem.
+    license_terms: Open Data Commons PDDL (linked from the dataset page). No restrictions.
+    collection_method: >-
+      Resident-initiated reports via the Get It Done app/site; city closure
+      workflow timestamps.
+    intended_use: >-
+      Disagreement/bias diagnostic only. Filter service_name = "Encampment"
+      (41,222 of 378,669 rows in 2025) and comm_plan_name = "CENTRE CITY" for
+      downtown. Never a demand or planning input.
+    time_grain: Individual report timestamps (May 2016 onward).
+    geo_grain: >-
+      Report-level lat/lng, street address, zipcode, council district,
+      community plan name. PRIVACY: precise locations and free-text sit on the
+      deployment deny-list (issue #7); only aggregates may leave the pipeline.
+    coverage: 2025 closed requests; 378,669 rows.
+    known_limitations:
+      - Reporter-initiated, so it reflects who reports and app adoption, not
+        the number or needs of unhoused people.
+      - Duplicate reports (parent/child request ids) require de-duplication.
+      - Category taxonomy changed over the years (Encampment split out ~2020).
+      - Closure status does not mean resolution.
+
+  - id: rtfh_pitc
+    name: RTFH Point-in-Time Count, unsheltered by census tract (2025)
+    role: annual_agreement
+    analytical_question: >-
+      Does an independent annual count (different collector, different method)
+      agree with the direction of the monthly series?
+    publisher: Regional Task Force on Homelessness (CoC CA-601).
+    package_page: https://www.rtfhsd.org/reports-data/
+    files:
+      - raw_path: data/raw/rtfh_pitc/unsheltered_census_tract_2025.xlsx
+        url: https://www.rtfhsd.org/wp-content/uploads/2025/08/Unsheltered-Clients-Census-Tract-Count-2025-PITC.xlsx
+    retrieval_method: curl via scripts/fetch_raw.sh
+    update_cadence: Annual (one January morning per year).
+    license_terms: >-
+      No stated license (public agency report, HUD-mandated). Attribution
+      expected; avoid redistributing raw files.
+    collection_method: HUD-mandated annual point-in-time street count by RTFH.
+    intended_use: Annual agreement check for the drop test evidence panel.
+    time_grain: Annual single-night snapshot.
+    geo_grain: >-
+      2020 census tract. Tracts do not map 1:1 to DSP downtown neighborhoods;
+      an explicit tract-to-neighborhood crosswalk (versioned with the geography
+      definition from issue #2) is required before use.
+    coverage: 2025 count; earlier years available as separate files on the same page.
+    known_limitations:
+      - Single-night snapshot; undercount by design.
+      - RTFH's own multiplier methodology changed over the years (its 1.75 and
+        1.66 to 2.03 factors are exactly what DSP adopted in 2017-2018).
+      - The HUD national mirror (huduser.gov) is bot-challenged for curl; use
+        RTFH files directly.
+
+excluded:
+  - id: sdheart
+    name: SDHEART (San Diego Homeless and health EquAlity Research Team, SDSU)
+    decision: >-
+      Evaluated as the preferred source per issue #5 and EXCLUDED as a data
+      source: it is an NSF-funded research consortium with visualization
+      surfaces only (no downloadable datasets, no API, no license). Fallback to
+      the SDRDL packages adopted. Full evaluation: data/cards/sdheart-evaluation.md

@@ -3,6 +3,18 @@
 > **The estimate fell. Direct observations rose.** One headline can hide a
 > measurement-composition shift.
 
+**[Open the live demo →](https://dcondrey.github.io/buildingforgood/)** ·
+works offline once loaded ·
+[3-minute script](docs/product/DEMO_SCRIPT.md) ·
+[judge Q&A](docs/product/JUDGE_QA.md)
+
+![Planned staff-hours on the six-neighborhood map, with East Village selected and its allocation detail open](docs/img/plan-map.png)
+
+The map draws the real downtown neighborhood boundaries, dissolved from the
+organizer block grid to area level; every area is keyboard-selectable and opens
+a per-area evidence and allocation dossier. Aggregate outlines only; no
+block-level geometry or observation location ships.
+
 Still Here SD is a measurement-aware forecasting and outreach-planning tool
 built for the 2026 Building for Good Hackathon in San Diego. It helps a human
 coordinator answer a deceptively difficult question:

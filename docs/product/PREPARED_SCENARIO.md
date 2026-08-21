@@ -23,17 +23,17 @@ the decline proves improvement or abandoning adjacent lower-visibility areas.
 
 ## Who decides what, when, and where
 
-| Element | Prepared scenario |
-|---|---|
-| Decision owner | A human outreach or community-services coordinator |
-| Decision | Allocate a fixed pool of outreach staff-hours across aggregate downtown planning areas |
-| Available capacity | 80 staff-hours, entered and visibly editable in the interface |
-| Decision horizon | The next scheduled outreach shift, no more than seven days after the planning review |
-| Forecast horizon | The next monthly aggregate observation period |
-| Observation grain | Monthly aggregate observations by published downtown area |
-| Candidate focus area | East Village; source-era naming and split-area records remain distinct until the boundary audit is complete |
-| Comparison area | Versioned adjacent downtown areas supported by the final source geography |
-| Output | A next-shift decision brief with evidence classification, forecast range, suggested hours, uncovered planning load, assumptions, and review triggers |
+| Element              | Prepared scenario                                                                                                                                    |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Decision owner       | A human outreach or community-services coordinator                                                                                                   |
+| Decision             | Allocate a fixed pool of outreach staff-hours across aggregate downtown planning areas                                                               |
+| Available capacity   | 80 staff-hours, entered and visibly editable in the interface                                                                                        |
+| Decision horizon     | The next scheduled outreach shift, no more than seven days after the planning review                                                                 |
+| Forecast horizon     | The next monthly aggregate observation period                                                                                                        |
+| Observation grain    | Monthly aggregate observations by published downtown area                                                                                            |
+| Candidate focus area | East Village; source-era naming and split-area records remain distinct until the boundary audit is complete                                          |
+| Comparison area      | Versioned adjacent downtown areas supported by the final source geography                                                                            |
+| Output               | A next-shift decision brief with evidence classification, forecast range, suggested hours, uncovered planning load, assumptions, and review triggers |
 
 The monthly forecast supplies a relative continuity signal for the next shift.
 It is not a prediction of who will be present during that shift, a service-demand
@@ -96,18 +96,18 @@ must show which evidence is missing or incompatible.
 
 ## Operational assumptions
 
-| Assumption | Status | Owner | Resolution path |
-|---|---|---|---|
-| The prepared budget is 80 staff-hours. | Fixed for the demo; editable by the user | Track D | Encode in D-03 configuration; planner must accept other nonnegative budgets |
-| A planning shift occurs within seven days of review. | Fixed for the demo | Track D | Encode as decision-horizon metadata, not as a forecast claim |
-| Forecasts use the next monthly observation period. | Fixed unless A-05 finds the history cannot support it | Track A | Confirm in the forecast evaluation scorecard and backtest |
-| East Village is the candidate focus area. | Provisional | Track A | Confirm source coverage, naming, and a defensible apparent-decline period in A-01 through A-03 |
-| Split East Village labels can be combined. | Not assumed | Track A | Combine only with documented boundary equivalence; otherwise retain separate areas |
-| Adjacent areas are known. | Unresolved | Track A / Track D | Publish a versioned adjacency file after the source and boundary audit |
-| Eight hours is an appropriate neighborhood floor. | Provisional planner scenario | Track C | Test feasibility and document the final floor in C-03; never weaken it silently |
-| Outreach time can be allocated in whole hours. | Fixed for the MVP | Track C | Preserve the budget after deterministic rounding |
-| Travel burden can be approximated without live routing. | Provisional | Track C | Use documented aggregate travel bands or equal burden if defensible inputs are unavailable |
-| Complaint volume is not a demand input. | Fixed | All tracks | Tests must prove 311 values cannot change planning load or allocation |
+| Assumption                                              | Status                                                | Owner             | Resolution path                                                                                                                                                                                                            |
+| ------------------------------------------------------- | ----------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The prepared budget is 80 staff-hours.                  | Fixed for the demo; editable by the user              | Track D           | Encode in D-03 configuration; planner must accept other nonnegative budgets. A real deployment replaces it with provider scheduling records; HMIS street outreach data and CoC APRs/SPMs track encounters, not staff-hours |
+| A planning shift occurs within seven days of review.    | Fixed for the demo                                    | Track D           | Encode as decision-horizon metadata, not as a forecast claim                                                                                                                                                               |
+| Forecasts use the next monthly observation period.      | Fixed unless A-05 finds the history cannot support it | Track A           | Confirm in the forecast evaluation scorecard and backtest                                                                                                                                                                  |
+| East Village is the candidate focus area.               | Provisional                                           | Track A           | Confirm source coverage, naming, and a defensible apparent-decline period in A-01 through A-03                                                                                                                             |
+| Split East Village labels can be combined.              | Not assumed                                           | Track A           | Combine only with documented boundary equivalence; otherwise retain separate areas                                                                                                                                         |
+| Adjacent areas are known.                               | Unresolved                                            | Track A / Track D | Publish a versioned adjacency file after the source and boundary audit                                                                                                                                                     |
+| Eight hours is an appropriate neighborhood floor.       | Provisional planner scenario                          | Track C           | Test feasibility and document the final floor in C-03; never weaken it silently                                                                                                                                            |
+| Outreach time can be allocated in whole hours.          | Fixed for the MVP                                     | Track C           | Preserve the budget after deterministic rounding                                                                                                                                                                           |
+| Travel burden can be approximated without live routing. | Provisional                                           | Track C           | Use documented aggregate travel bands or equal burden if defensible inputs are unavailable                                                                                                                                 |
+| Complaint volume is not a demand input.                 | Fixed                                                 | All tracks        | Tests must prove 311 values cannot change planning load or allocation                                                                                                                                                      |
 
 ## Review triggers
 

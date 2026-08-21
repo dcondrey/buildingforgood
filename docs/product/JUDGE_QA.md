@@ -136,6 +136,26 @@ It starts with each area's historical upper bound, applies a visible user-set
 budget proportionally, and uses deterministic largest-remainder rounding to
 conserve whole hours exactly. The result is illustrative and human-review-only.
 
+### Where does the 80-hour budget come from?
+
+It is a stated demo assumption, editable in the header—not staffing data.
+Staff-hour capacity is not published in any dataset we used, and it is not in
+the obvious administrative sources either: HUD-mandated HMIS street outreach
+projects record client-level activity (contacts, date of engagement,
+current-living-situation assessments, project entries and exits); CoC Annual
+Performance Reports and System Performance Measures summarize that activity;
+and California's Homeless Data Integration System (HDIS, which aggregates the
+state's 44 CoC HMIS datasets and is published through California Open Data)
+breaks out people served by street outreach. All of these measure encounters
+or people served—not worker schedules. Downtown business improvement
+districts also publish outreach summaries; the Downtown San Diego Partnership,
+whose Clean & Safe program produced the counts this project analyzes, fields
+its own outreach team. A real deployment would take capacity from that
+provider's scheduling records (or the Regional Task Force on Homelessness, the
+region's CoC lead) and could cross-check planned coverage against HMIS or HDIS
+encounter volumes. The planner accepts any whole-hour budget, so replacing 80
+with a real number changes no code.
+
 ### Why an 8-hour minimum?
 
 It is a transparent, configurable continuity policy for the demo—not a

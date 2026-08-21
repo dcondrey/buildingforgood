@@ -22,7 +22,7 @@ silently imputed, deleted, or used to manufacture a more favorable result.
 | Balanced-panel area/source-label drift           |                   0 / 0 | Require stable membership                                                  |
 | Common spatial support                           |   261 blocks × 12 dates | Components lead every spatial claim                                        |
 | Crosswalk duplicate or unmapped labels           |                   0 / 0 | No inferred fuzzy joins                                                    |
-| Artifact rebuild                                 |          Byte-identical | SHA-256 `a3fc236140c832fcac0b4ee2e2b1bf19d9801f4e72ef62267659b85f78edeb78` |
+| Artifact rebuild                                 |          Byte-identical | SHA-256 `1da6777ae7ca06a1358719e4828b619cd5da20076dc87c15ade205062903fe27` |
 
 ## Material anomaly ledger
 

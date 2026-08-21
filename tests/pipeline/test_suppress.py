@@ -61,7 +61,9 @@ class TestCellSuppression:
         assert result["by_type_suppressed"] == ["individual", "vehicle"]
 
 
-def attacker_assignments(k: int, remainder: int) -> list[tuple[int, ...]]:
+def attacker_assignments(
+    k: int, remainder: int, min_published_nonzero: int | None
+) -> list[tuple[int, ...]]:
     """Independent oracle: every assignment an attacker must consider.
 
     Deliberately re-derived here rather than imported, so the test is an
@@ -78,8 +80,14 @@ def attacker_assignments(k: int, remainder: int) -> list[tuple[int, ...]]:
     if k == 2:
         for small in range(1, 5):
             partner = remainder - small
-            if partner >= 5:
-                assignments += [(small, partner), (partner, small)]
+            if partner < 5:
+                continue
+            # The policy picks the NEXT-SMALLEST nonzero cell as partner, so
+            # a story whose partner exceeds a published nonzero value is
+            # inconsistent with the row the attacker is looking at.
+            if min_published_nonzero is not None and partner > min_published_nonzero:
+                continue
+            assignments += [(small, partner), (partner, small)]
     return assignments
 
 
@@ -121,7 +129,9 @@ class TestNonRecoverability:
                     if not nulls:
                         continue
                     remainder = result["total"] - sum(published)
-                    assignments = attacker_assignments(len(nulls), remainder)
+                    nonzero_published = [v for v in published if v > 0]
+                    min_pub = min(nonzero_published) if nonzero_published else None
+                    assignments = attacker_assignments(len(nulls), remainder, min_pub)
                     assert assignments, (individual, structure, vehicle)
                     for position in range(len(nulls)):
                         feasible = {a[position] for a in assignments}

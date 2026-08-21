@@ -30,14 +30,19 @@ from typing import Any
 SMALL_CELL_THRESHOLD = 5
 
 
-def _feasible_assignments(k: int, remainder: int) -> list[tuple[int, ...]]:
+def _feasible_assignments(
+    k: int, remainder: int, min_published_nonzero: int | None
+) -> list[tuple[int, ...]]:
     """Every value assignment an attacker must consider for k suppressed cells.
 
     Policy-consistent families, both public knowledge:
     - all suppressed cells were small (each in 1..threshold-1), any k >= 2;
-    - exactly one small cell plus its complementary partner (partner is
-      nonzero and at least the threshold, else it would itself be small),
-      which the policy produces only for k == 2, in either position.
+    - exactly one small cell plus its complementary partner, which the policy
+      produces only for k == 2, in either position. The partner is the
+      NEXT-SMALLEST nonzero cell, so a consistent partner value must be at
+      least the threshold AND no larger than the smallest published nonzero
+      cell in the row (else the policy would have chosen that published cell
+      instead). Stories violating that bound are not real ambiguity.
     """
     upper = SMALL_CELL_THRESHOLD - 1
     assignments: set[tuple[int, ...]] = set()
@@ -48,13 +53,18 @@ def _feasible_assignments(k: int, remainder: int) -> list[tuple[int, ...]]:
     if k == 2:
         for small in range(1, upper + 1):
             partner = remainder - small
-            if partner >= SMALL_CELL_THRESHOLD:
-                assignments.add((small, partner))
-                assignments.add((partner, small))
+            if partner < SMALL_CELL_THRESHOLD:
+                continue
+            if min_published_nonzero is not None and partner > min_published_nonzero:
+                continue
+            assignments.add((small, partner))
+            assignments.add((partner, small))
     return sorted(assignments)
 
 
-def _row_is_recoverable(suppressed_count: int, remainder: int) -> bool:
+def _row_is_recoverable(
+    suppressed_count: int, remainder: int, min_published_nonzero: int | None
+) -> bool:
     """True when the published row would pin a suppressed value.
 
     Pinned means: across the feasible set, some position always holds the
@@ -62,7 +72,7 @@ def _row_is_recoverable(suppressed_count: int, remainder: int) -> bool:
     multiset (the attacker learns every suppressed value, only not which
     type holds which).
     """
-    assignments = _feasible_assignments(suppressed_count, remainder)
+    assignments = _feasible_assignments(suppressed_count, remainder, min_published_nonzero)
     if not assignments:
         # No consistent story exists; publishing would itself be anomalous.
         return True
@@ -105,7 +115,11 @@ def suppress_observation_row(observation: dict[str, Any]) -> dict[str, Any]:
             return {"month": month, "total": None, "suppressed": True}
 
     remainder = sum(value for name, value in by_type.items() if name in suppressed)
-    if _row_is_recoverable(len(suppressed), remainder):
+    published_nonzero = [
+        value for name, value in by_type.items() if name not in suppressed and value > 0
+    ]
+    min_published_nonzero = min(published_nonzero) if published_nonzero else None
+    if _row_is_recoverable(len(suppressed), remainder, min_published_nonzero):
         return {"month": month, "total": None, "suppressed": True}
 
     published = {name: (None if name in suppressed else value) for name, value in by_type.items()}

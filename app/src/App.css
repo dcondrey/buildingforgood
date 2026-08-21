@@ -1268,6 +1268,27 @@ main {
 .map-legend-down {
   background: var(--amber);
 }
+.map-legend-missing {
+  background: transparent;
+  border: 1px dashed var(--faint);
+}
+.map-missing rect {
+  fill: transparent;
+  stroke: var(--faint);
+  stroke-dasharray: 3 2;
+}
+.map-missing .map-value {
+  fill: var(--faint);
+  font-style: italic;
+  font-weight: 400;
+}
+.delta-missing {
+  color: var(--faint);
+  font-style: italic;
+}
+.map-table-disclosure {
+  margin-top: 0.65rem;
+}
 .area-cell {
   background: linear-gradient(135deg, rgba(110, 195, 202, 0.11), rgba(110, 195, 202, 0.03));
   border: 1px solid rgba(110, 195, 202, 0.22);

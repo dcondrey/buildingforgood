@@ -89,7 +89,7 @@ function AreaMap({
   ariaLabel: string;
   valueFor: (area: DemoData["areas"][number]) => {
     text: string;
-    tone: "up" | "down" | "neutral";
+    tone: "up" | "down" | "neutral" | "missing";
   };
 }) {
   if (!areas.every((area) => AREA_MAP_LAYOUT[area.id])) {
@@ -102,7 +102,13 @@ function AreaMap({
               <span>{area.name}</span>
               <strong
                 className={
-                  value.tone === "up" ? "delta-up" : value.tone === "down" ? "delta-down" : ""
+                  value.tone === "up"
+                    ? "delta-up"
+                    : value.tone === "down"
+                      ? "delta-down"
+                      : value.tone === "missing"
+                        ? "delta-missing"
+                        : ""
                 }
               >
                 {value.text}
@@ -146,6 +152,44 @@ function AreaMap({
         San Diego Bay
       </text>
     </svg>
+  );
+}
+
+// Keyboard- and screen-reader-accessible equivalent for each schematic map.
+// The SVG is exposed as a single labelled image, so per-area values need a
+// real table; state words carry the meaning without relying on color.
+function MapValueTable({
+  caption,
+  rows,
+}: {
+  caption: string;
+  rows: Array<{ name: string; value: string; state: string }>;
+}) {
+  return (
+    <details className="data-table-disclosure map-table-disclosure">
+      <summary>View map values as a table</summary>
+      <div className="table-scroll">
+        <table>
+          <caption>{caption}</caption>
+          <thead>
+            <tr>
+              <th>Neighborhood</th>
+              <th>Value</th>
+              <th>State</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.name}>
+                <th>{row.name}</th>
+                <td>{row.value}</td>
+                <td>{row.state}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
   );
 }
 
@@ -469,6 +513,29 @@ function App() {
 
   const planTotal = plan?.allocations.reduce((sum, row) => sum + row.hours, 0) ?? 0;
   const maxHours = Math.max(1, ...Array.from(allocationById.values()));
+  // Unmet planning load: hours the forecast-proportional split would have
+  // assigned an area but the guaranteed minimums moved elsewhere. Mirrors the
+  // domain planner's unmet_hours definition (app/src/domain/planner/planner.ts).
+  const unmetByArea = useMemo(() => {
+    if (!plan?.feasible) return new Map<string, number>();
+    // Locks are read from the computed plan so the unmet figure always
+    // describes the plan on screen, not a lock edit awaiting recompute.
+    const locks = new Map(
+      Array.from(lockedIds).map((id) => [
+        id,
+        plan.allocations.find((row) => row.areaId === id)?.hours ?? 0,
+      ]),
+    );
+    const reference = allocateHours(data.areas, budget, 0, false, locks);
+    if (!reference.feasible) return new Map<string, number>();
+    return new Map(
+      reference.allocations.map((row) => {
+        const allocated = plan.allocations.find((item) => item.areaId === row.areaId)?.hours ?? 0;
+        return [row.areaId, Math.max(0, row.hours - allocated)] as const;
+      }),
+    );
+  }, [plan, data.areas, budget, lockedIds]);
+  const unmetTotal = Array.from(unmetByArea.values()).reduce((sum, value) => sum + value, 0);
   const budgetValid = Number.isInteger(budget) && budget >= 0 && budget <= MAX_BUDGET_HOURS;
   const planReady = Boolean(
     plan?.feasible && !planDirty && guardEnabled && budgetValid && planTotal === budget,
@@ -1187,10 +1254,14 @@ function App() {
                     <AreaMap
                       areas={data.areas}
                       ariaLabel="Schematic map of the six downtown neighborhoods showing the change in raw field observations"
-                      valueFor={(area) => ({
-                        text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
-                        tone: area.delta > 0 ? "up" : "down",
-                      })}
+                      valueFor={(area) =>
+                        area.latest === null
+                          ? { text: "no data", tone: "missing" }
+                          : {
+                              text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                              tone: area.delta > 0 ? "up" : "down",
+                            }
+                      }
                     />
                     <div className="map-legend" aria-label="Map legend">
                       <span>
@@ -1199,11 +1270,32 @@ function App() {
                       <span>
                         <i className="map-legend-down" /> Fewer observed units
                       </span>
+                      {data.areas.some((area) => area.latest === null) && (
+                        <span>
+                          <i className="map-legend-missing" /> No recent observation
+                        </span>
+                      )}
                     </div>
                     <p className="map-caption">
                       Change in raw field observations by neighborhood · schematic, not to scale ·
                       not a count of people
                     </p>
+                    <MapValueTable
+                      caption="Change in raw field observations by neighborhood"
+                      rows={data.areas.map((area) => ({
+                        name: area.name,
+                        value:
+                          area.latest === null
+                            ? "no data"
+                            : `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                        state:
+                          area.latest === null
+                            ? "No recent observation"
+                            : area.delta > 0
+                              ? "More observed units"
+                              : "Fewer observed units",
+                      }))}
+                    />
                   </div>
                 </div>
 
@@ -1845,8 +1937,15 @@ function App() {
                       <div className="area-name">
                         <strong>{area.name}</strong>
                         <span>
-                          Planning for up to {formatNumber(area.planningLoad, 1)} observations ·
-                          minimum hours plus a share of the rest
+                          Planning for up to {formatNumber(area.planningLoad, 1)} observations ·{" "}
+                          {locked
+                            ? `human lock at ${hours}h`
+                            : guardEnabled
+                              ? `${Math.min(hours, coverageFloor)}h minimum + ${Math.max(0, hours - coverageFloor)}h forecast share`
+                              : `${hours}h forecast share, no minimum`}
+                          {(unmetByArea.get(area.id) ?? 0) > 0
+                            ? ` · ${unmetByArea.get(area.id)}h moved away by the floor`
+                            : ""}
                         </span>
                       </div>
                       <div aria-hidden="true" className="allocation-bar-track">
@@ -1906,15 +2005,34 @@ function App() {
                   ariaLabel="Schematic map of the six downtown neighborhoods showing planned staff-hours"
                   valueFor={(area) => {
                     const hours = allocationById.get(area.id) ?? 0;
+                    const belowFloor = guardEnabled && hours < coverageFloor;
                     return {
-                      text: `${hours}h`,
-                      tone: guardEnabled && hours < coverageFloor ? "down" : "neutral",
+                      text: `${hours}h${belowFloor ? " !" : ""}`,
+                      tone: belowFloor ? "down" : "neutral",
                     };
                   }}
                 />
                 <p className="map-caption">
                   Planned staff-hours by neighborhood · schematic, not to scale
+                  {guardEnabled ? " · ! marks hours below the minimum" : ""}
                 </p>
+                <MapValueTable
+                  caption="Planned staff-hours by neighborhood"
+                  rows={data.areas.map((area) => {
+                    const hours = allocationById.get(area.id) ?? 0;
+                    return {
+                      name: area.name,
+                      value: `${hours}h`,
+                      state: lockedIds.has(area.id)
+                        ? "Human lock"
+                        : !guardEnabled
+                          ? "No minimum"
+                          : hours < coverageFloor
+                            ? "Below minimum"
+                            : "Minimum met",
+                    };
+                  })}
+                />
               </div>
 
               <div className="plan-footer">
@@ -1922,6 +2040,14 @@ function App() {
                   <span className="eyebrow">Constraint check</span>
                   <strong>
                     {planTotal === budget ? "Budget conserved exactly" : "Budget mismatch"}
+                  </strong>
+                </div>
+                <div>
+                  <span className="eyebrow">Unmet planning load</span>
+                  <strong>
+                    {unmetTotal > 0
+                      ? `${unmetTotal}h moved to minimums and locks`
+                      : "0h · hours follow the forecast"}
                   </strong>
                 </div>
                 <div>

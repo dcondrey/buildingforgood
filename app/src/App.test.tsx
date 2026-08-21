@@ -227,6 +227,24 @@ describe("guided onboarding", () => {
     expect(await screen.findByText(/ON · 8h per area/)).toBeDefined();
   });
 
+  it("advertises itself until first use, then remembers", async () => {
+    // This jsdom environment ships no localStorage; the shell treats that as
+    // "never used" via try/catch. Stub one to check both cue states.
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => void store.set(key, value),
+      removeItem: (key: string) => void store.delete(key),
+    });
+    const user = userEvent.setup();
+    await renderOffline();
+    const button = screen.getByRole("button", { name: /Guide demo/ });
+    expect(button.className).toContain("guide-button-new");
+    await user.click(button);
+    expect(button.className).not.toContain("guide-button-new");
+    expect(store.get("stillhere-guide-used")).toBe("1");
+  });
+
   it("has no axe violations with the guide panel open", async () => {
     const user = userEvent.setup();
     await beginGuide(user);

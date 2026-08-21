@@ -703,6 +703,15 @@ function App() {
   const [copyStatus, setCopyStatus] = useState("");
   const [guideIndex, setGuideIndex] = useState<number | null>(null);
   const [guideAuto, setGuideAuto] = useState(false);
+  // First-visit cue on the Guide button: with no presenter in the room, the
+  // tour has to advertise itself. Storage failures err toward showing it.
+  const [guideUsed, setGuideUsed] = useState(() => {
+    try {
+      return localStorage.getItem("stillhere-guide-used") === "1";
+    } catch {
+      return false;
+    }
+  });
   const [projectorMode, setProjectorMode] = useState(false);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const resultHeading = useRef<HTMLHeadingElement>(null);
@@ -1015,6 +1024,13 @@ function App() {
   }
 
   function beginGuide() {
+    setGuideUsed(true);
+    try {
+      localStorage.setItem("stillhere-guide-used", "1");
+    } catch {
+      // Private windows without storage still get the tour; only the
+      // first-visit cue repeats.
+    }
     goToStep(0);
   }
 
@@ -1148,7 +1164,11 @@ function App() {
               capacity data.
             </span>
           </label>
-          <button className="button button-quiet guide-button" onClick={beginGuide} type="button">
+          <button
+            className={`button button-quiet guide-button ${guideUsed ? "" : "guide-button-new"}`}
+            onClick={beginGuide}
+            type="button"
+          >
             <SparkIcon /> Guide demo
           </button>
           <button

@@ -259,9 +259,14 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
             </p>
           )}
           <ul>
-            {plan.constraint_notes.map((note) => (
-              <li key={note}>{note}</li>
-            ))}
+            {plan.constraint_notes
+              // The coordinator-set count is already stated above as its own
+              // disclosure line; repeating it here printed the same sentence
+              // twice on screen.
+              .filter((note) => !/assignments were set by the coordinator/i.test(note))
+              .map((note) => (
+                <li key={note}>{note}</li>
+              ))}
           </ul>
         </>
       )}

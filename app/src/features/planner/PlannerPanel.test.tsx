@@ -26,9 +26,30 @@ const POLICY: PlannerPolicy = {
 };
 
 const AREAS: AreaPlanningInput[] = [
-  { area_id: "cortez_hill", label: "Cortez Hill", forecast_upper: 18, forecast_lower: 12, drop_test: "likely_improvement", included: true },
-  { area_id: "east_village", label: "East Village", forecast_upper: 150, forecast_lower: 110, drop_test: "possible_displacement", included: true },
-  { area_id: "gaslamp", label: "Gaslamp", forecast_upper: 60, forecast_lower: 44, drop_test: "likely_improvement", included: true },
+  {
+    area_id: "cortez_hill",
+    label: "Cortez Hill",
+    forecast_upper: 18,
+    forecast_lower: 12,
+    drop_test: "likely_improvement",
+    included: true,
+  },
+  {
+    area_id: "east_village",
+    label: "East Village",
+    forecast_upper: 150,
+    forecast_lower: 110,
+    drop_test: "possible_displacement",
+    included: true,
+  },
+  {
+    area_id: "gaslamp",
+    label: "Gaslamp",
+    forecast_upper: 60,
+    forecast_lower: 44,
+    drop_test: "likely_improvement",
+    included: true,
+  },
 ];
 
 function renderPanel() {
@@ -52,7 +73,8 @@ describe("the plan is readable without the historical chart", () => {
     const user = userEvent.setup();
     renderPanel();
     await user.click(screen.getByRole("button", { name: /Compare without the coverage guard/i }));
-    expect(screen.getByText(/audit view/i)).toBeDefined();
+    // "audit view" appears in the column header and in the note below it.
+    expect(screen.getAllByText(/audit view/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/comparison only/i)).toBeDefined();
   });
 });
@@ -97,7 +119,8 @@ describe("locks and overrides", () => {
     renderPanel();
     const row = screen.getByRole("rowheader", { name: "Gaslamp" }).closest("tr")!;
     await user.click(within(row).getByRole("checkbox"));
-    expect(screen.getByText(/1 of 3 assignments were set by the coordinator/i)).toBeDefined();
+    // Stated exactly once: the disclosure line, not also in the notes list.
+    expect(screen.getAllByText(/1 of 3 assignments were set by the coordinator/i)).toHaveLength(1);
   });
 });
 

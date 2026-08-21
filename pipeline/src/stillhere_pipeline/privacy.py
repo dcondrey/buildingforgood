@@ -490,15 +490,24 @@ def _scan_json(
 
 
 def declares_aggregate_geography(document: Any) -> bool:
-    """True when the document names the approved geography it publishes."""
-    if not isinstance(document, dict):
-        return False
-    for key, value in document.items():
-        if normalize_key(key) in GEOGRAPHY_DECLARATION_KEYS and value:
-            return True
-    properties = document.get("properties")
-    if isinstance(properties, dict):
-        return declares_aggregate_geography(properties)
+    """True when the document names the approved geography it publishes.
+
+    Recurses the whole structure, because GeoJSON convention puts a
+    declaration in each feature's ``properties`` rather than at the document
+    root. Checking only the root and one hop would have blocked legitimate,
+    already-dissolved planning-area data, which is fail-closed but still a
+    broken build for the emitter.
+
+    ``_count_geometries`` already recurses fully, so the two must match or
+    the pair disagrees about the same file.
+    """
+    if isinstance(document, dict):
+        for key, value in document.items():
+            if normalize_key(key) in GEOGRAPHY_DECLARATION_KEYS and value:
+                return True
+        return any(declares_aggregate_geography(value) for value in document.values())
+    if isinstance(document, list):
+        return any(declares_aggregate_geography(item) for item in document)
     return False
 
 

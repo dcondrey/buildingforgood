@@ -416,3 +416,42 @@ def test_block_identifiers_and_bounding_streets_are_denied() -> None:
         "bounding_streets",
     ):
         assert _blocking(scan_json_document({field: "x"})), field
+
+
+def test_per_feature_geography_declaration_is_recognised() -> None:
+    """Caught in review: only the root and one hop were checked.
+
+    GeoJSON convention puts the declaration in each feature's `properties`.
+    Checking only the root blocked legitimate, already-dissolved
+    planning-area data. `_count_geometries` recurses fully, so the
+    declaration check has to as well or the pair disagrees about one file.
+    """
+    per_feature = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {
+                    "area_id": "east_village",
+                    "geography_version": "planning-areas/2026-08",
+                },
+                "geometry": {"type": "Polygon", "coordinates": [[[-117.152, 32.710]]]},
+            }
+        ],
+    }
+    assert _blocking(scan_json_document(per_feature)) == []
+
+
+def test_undeclared_feature_collection_still_blocks() -> None:
+    undeclared = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {"area_id": "east_village"},
+                "geometry": {"type": "Polygon", "coordinates": [[[-117.152, 32.710]]]},
+            }
+        ],
+    }
+    rules = {f.rule for f in _blocking(scan_json_document(undeclared))}
+    assert "geography.undeclared_grain" in rules

@@ -92,16 +92,13 @@
   height: 2.5rem;
   justify-content: center;
   letter-spacing: -0.05em;
-  width: 2.5rem;
-}
-
-.brand-mark {
   box-shadow:
     0 0 0 1px rgba(255, 210, 135, 0.2),
     0 0 28px rgba(240, 173, 78, 0.25);
   transition:
     box-shadow 220ms ease,
     transform 220ms ease;
+  width: 2.5rem;
 }
 .brand-lockup:hover .brand-mark {
   box-shadow:
@@ -298,11 +295,6 @@ main {
   padding: 5.5rem 0 4.5rem;
   position: relative;
 }
-@supports not (height: 100svh) {
-  .hero {
-    min-height: min(46rem, calc(100vh - 5rem));
-  }
-}
 .hero::after {
   background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
   bottom: 0;
@@ -407,12 +399,10 @@ main {
   border: 1px solid var(--line-strong);
   border-radius: 18px;
   box-shadow: var(--shadow);
-  padding: clamp(1.5rem, 3vw, 2.4rem);
-  position: relative;
-}
-.hero-decision {
   isolation: isolate;
   overflow: hidden;
+  padding: clamp(1.5rem, 3vw, 2.4rem);
+  position: relative;
 }
 .hero-decision::after {
   background: radial-gradient(circle, rgba(110, 195, 202, 0.16), transparent 66%);

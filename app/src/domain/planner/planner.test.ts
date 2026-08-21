@@ -295,3 +295,23 @@ describe("determinism and input validation", () => {
     expect(plan.allocations[0]?.allocated_hours).toBe(40);
   });
 });
+
+describe("infeasible plans still carry a full allocation list", () => {
+  it("populates allocations so a UI can render rows without a crash", () => {
+    // Flagged in review as a possible TypeError in PlannerPanel: the panel
+    // filters plan.allocations before branching on status. It does not
+    // crash, because an infeasible plan still lists every area at zero
+    // hours. Asserting that here so the contract cannot quietly change.
+    const plan = buildPlan(SIX_AREAS, { ...POLICY, budget_hours: 12 });
+    expect(plan.status).toBe("infeasible");
+    expect(Array.isArray(plan.allocations)).toBe(true);
+    expect(plan.allocations).toHaveLength(SIX_AREAS.length);
+    for (const a of plan.allocations) expect(a.allocated_hours).toBe(0);
+  });
+
+  it("carries an allocation list when locks alone exceed the budget", () => {
+    const plan = buildPlan(SIX_AREAS, POLICY, [{ area_id: "east_village", hours: 500 }]);
+    expect(plan.status).toBe("infeasible");
+    expect(plan.allocations).toHaveLength(SIX_AREAS.length);
+  });
+});

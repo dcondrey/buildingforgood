@@ -41,6 +41,7 @@ function formatHours(hours: number): string {
 
 export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: PlannerPanelProps) {
   const [budget, setBudget] = useState(policy.budget_hours);
+  const [budgetError, setBudgetError] = useState<string | null>(null);
   const [locks, setLocks] = useState<AreaLock[]>([]);
   const [showUnguarded, setShowUnguarded] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -90,7 +91,10 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
     );
   }
 
-  const included = plan.allocations.filter((a) => a.included);
+  // An infeasible plan still lists every area at zero hours (asserted in
+  // domain/planner/planner.test.ts), but defaulting here keeps the panel
+  // rendering rather than blanking if that contract ever changes.
+  const included = (plan.allocations ?? []).filter((a) => a.included);
   const guaranteed = included.reduce(
     (sum, a) => sum + a.floor_hours + a.continuity_reserve_hours,
     0,
@@ -110,8 +114,31 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
           min={0}
           step={policy.time_increment_hours}
           value={budget}
-          onChange={(e) => setBudget(Number(e.target.value))}
+          aria-invalid={budgetError !== null}
+          aria-describedby={budgetError ? "planner-budget-error" : undefined}
+          onChange={(e) => {
+            // A blank or non-numeric field yields NaN, which would otherwise
+            // flow into the plan and the discretionary-share division and
+            // produce NaN hours on screen. A coordinator allocating real
+            // staff time gets told the input is invalid instead.
+            const next = Number(e.target.value);
+            if (e.target.value.trim() === "" || !Number.isFinite(next)) {
+              setBudgetError("Enter the number of staff-hours available.");
+              return;
+            }
+            if (next < 0) {
+              setBudgetError("Available hours cannot be negative.");
+              return;
+            }
+            setBudgetError(null);
+            setBudget(next);
+          }}
         />
+        {budgetError && (
+          <p id="planner-budget-error" role="alert">
+            <strong>✕ {budgetError}</strong> The plan below still reflects {formatHours(budget)}.
+          </p>
+        )}
         <p>
           Coverage guard: ON · Minimum {formatHours(policy.minimum_coverage_floor_hours)} per
           included area · {included.length} areas included

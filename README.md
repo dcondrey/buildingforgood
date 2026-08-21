@@ -226,6 +226,16 @@ housing exits, movement, new arrivals, or measurement error.
   documents the public digitization and update lineage behind these count
   files. It supports provenance, not independent validation of the same maps.
 
+| Conventional dashboard | Still Here SD |
+|---|---|
+| Reports where counts rose or fell | Tests whether an apparent decline is supported, coincides with nearby aggregate increases, or is unresolved |
+| Shows a trend line | Backtests the forecast and displays uncertainty |
+| Treats all observations as comparable | Surfaces missing months and methodology breaks |
+| Ranks areas by a single score | Explains multiple evidence signals and disagreements |
+| Stops at description | Connects evidence to a constrained planning decision |
+| Mentions fairness in documentation | Makes fairness a visible, testable allocation constraint |
+| Encourages trust in the interface | Gives users reasons to question and override the result |
+
 ## Responsible-use boundary
 
 Still Here SD analyzes **observations of aggregate places, never profiles of
@@ -307,3 +317,11 @@ files are deterministic for the same versioned inputs.
 >
 > **The estimate fell. Direct observations rose. Which ruler should govern a
 > coverage policy?**
+
+This repository exists for the Building for Good Hackathon; before the hacking
+window it held only empty infrastructure and planning documentation, and no
+code, assets, data, or schemas are reused from On Record. Research and
+planning were assisted by OpenAI Codex; AI used during implementation is
+disclosed by product, purpose, and workflow, and its suggestions remain
+subject to human review, testing, and responsibility. No LLM output determines
+a drop classification, forecast, or outreach allocation.

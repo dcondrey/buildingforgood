@@ -354,6 +354,7 @@ function App() {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (event.key === "Escape") {
         setGuideIndex(null);
         return;
@@ -492,6 +493,12 @@ function App() {
 
   function beginGuide() {
     setGuideIndex(0);
+    if (budget !== data.scenario.defaultBudget) {
+      setBudget(data.scenario.defaultBudget);
+      setPlan(null);
+      setPlanDirty(false);
+      setCopyStatus("");
+    }
     revealDrop(false);
     window.setTimeout(() => {
       scrollTo("evidence-result");
@@ -506,6 +513,8 @@ function App() {
       scrollTo("forecast");
     } else if (guideIndex === 1) {
       setCoverageFloor(DEFAULT_COVERAGE_FLOOR);
+      setLockedIds(new Set());
+      setLockValues({});
       runPlan(true, new Map(), DEFAULT_COVERAGE_FLOOR);
       setGuardEnabled(true);
       scrollTo("planner");

@@ -124,6 +124,7 @@ class TestRunBuild:
         doc = json.loads((tmp_path / "out" / "observations.v0.json").read_text())
         assert set(doc) == {
             "schema",
+            "contract",
             "source",
             "months_observed",
             "missing_months_global",

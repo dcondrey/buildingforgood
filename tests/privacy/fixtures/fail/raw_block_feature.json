@@ -1,0 +1,40 @@
+{
+  "note": "One raw block polygon from the source bundle. Legitimate source geography, below planning-area grain, identifying once joined to the block-keyed count table.",
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "block_id": "0412-3",
+        "st_north": "Island Ave",
+        "st_east": "14th St",
+        "st_south": "J St",
+        "st_west": "13th St",
+        "source_neighborhood": "East Village"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -117.152,
+              32.71
+            ],
+            [
+              -117.151,
+              32.71
+            ],
+            [
+              -117.151,
+              32.711
+            ],
+            [
+              -117.152,
+              32.71
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

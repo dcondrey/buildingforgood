@@ -9,7 +9,10 @@ deny-list before it may be written.
 from __future__ import annotations
 
 import re
-from typing import Any, cast
+from typing import Any, cast, get_args
+
+from stillhere_pipeline.normalize import SleeperType
+from stillhere_pipeline.suppress import SMALL_CELL_THRESHOLD
 
 # Field names that must never appear in deployment-safe artifacts (issue #7
 # hardens this further; the build refuses to emit them from day one).
@@ -34,6 +37,10 @@ DEMO_RAW_FIELD_DENY_LIST = frozenset(
         "zipcode",
     }
 )
+
+OBSERVATION_TYPE_FIELDS: tuple[str, ...] = get_args(SleeperType)
+OBSERVATION_COUNT_FIELDS = ("total", *(f"by_type.{name}" for name in OBSERVATION_TYPE_FIELDS))
+OBSERVATION_SUPPRESSION_FIELD = "suppressed"
 
 
 class ContractViolation(ValueError):
@@ -312,11 +319,38 @@ def validate_demo_v1(doc: dict[str, Any]) -> None:
     limitations = _require(doc, "limitations", list)
     if not limitations or not all(isinstance(item, str) and item for item in limitations):
         raise ContractViolation("limitations must be a non-empty list of strings")
+def _validate_contract_block(doc: dict[str, Any]) -> None:
+    contract = _require(doc, "contract", dict)
+    count_fields = _require(contract, "count_fields", list)
+    if any(not isinstance(field, str) for field in count_fields):
+        raise ContractViolation("contract count_fields must contain only strings")
+    if sorted(count_fields) != sorted(OBSERVATION_COUNT_FIELDS):
+        raise ContractViolation(
+            "contract count_fields must declare exactly the count-bearing paths: "
+            f"expected {sorted(OBSERVATION_COUNT_FIELDS)}, got {sorted(count_fields)}"
+        )
+    threshold = _require(contract, "small_cell_threshold", int)
+    if threshold != SMALL_CELL_THRESHOLD:
+        raise ContractViolation(
+            f"contract small_cell_threshold {threshold} does not match the policy "
+            f"threshold {SMALL_CELL_THRESHOLD}"
+        )
+    marker = _require(contract, "suppression_marker", dict)
+    marker_field = _require(marker, "field", str)
+    if marker_field != OBSERVATION_SUPPRESSION_FIELD:
+        raise ContractViolation(
+            f"suppression_marker field must be {OBSERVATION_SUPPRESSION_FIELD!r}, "
+            f"got {marker_field!r}"
+        )
+    affirmative = marker.get("affirmative")
+    if not isinstance(affirmative, list) or len(affirmative) != 1 or affirmative[0] is not True:
+        raise ContractViolation("suppression_marker affirmative encoding must be exactly [true]")
 
 
 def validate_observations_v0(doc: dict[str, Any]) -> None:
     if _require(doc, "schema", str) != "observations.v0":
         raise ContractViolation("schema must be observations.v0")
+    _validate_contract_block(doc)
     source = _require(doc, "source", dict)
     _require(source, "source_id", str)
     _require(source, "retrieved_at", str)
@@ -345,6 +379,11 @@ def validate_observations_v0(doc: dict[str, Any]) -> None:
                 continue
             _require(observation, "total", int)
             by_type = _require(observation, "by_type", dict)
+            if set(by_type) != set(OBSERVATION_TYPE_FIELDS):
+                raise ContractViolation(
+                    "by_type fields must match the declared count paths exactly: "
+                    f"expected {sorted(OBSERVATION_TYPE_FIELDS)}, got {sorted(by_type)}"
+                )
             for type_name, value in by_type.items():
                 if value is not None and (isinstance(value, bool) or not isinstance(value, int)):
                     raise ContractViolation(f"by_type value for {type_name} must be an int or null")

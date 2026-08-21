@@ -1,0 +1,40 @@
+{
+  "geography_version": "downtown-planning-areas/2026-08",
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "area_id": "east_village",
+        "label": "East Village"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -117.152,
+              32.71
+            ],
+            [
+              -117.144,
+              32.71
+            ],
+            [
+              -117.144,
+              32.716
+            ],
+            [
+              -117.152,
+              32.716
+            ],
+            [
+              -117.152,
+              32.71
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

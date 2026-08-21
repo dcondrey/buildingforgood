@@ -1,0 +1,244 @@
+{
+  "geography_version": "downtown-planning-areas/2026-08",
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "area_id": "east_village",
+        "label": "East Village"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -117.16,
+              32.7
+            ],
+            [
+              -117.149,
+              32.7
+            ],
+            [
+              -117.149,
+              32.705
+            ],
+            [
+              -117.16,
+              32.705
+            ],
+            [
+              -117.16,
+              32.7
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "area_id": "east_village_south",
+        "label": "East Village South"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -117.148,
+              32.706
+            ],
+            [
+              -117.137,
+              32.706
+            ],
+            [
+              -117.137,
+              32.711
+            ],
+            [
+              -117.148,
+              32.711
+            ],
+            [
+              -117.148,
+              32.706
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "area_id": "gaslamp",
+        "label": "Gaslamp"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -117.136,
+              32.712
+            ],
+            [
+              -117.125,
+              32.712
+            ],
+            [
+              -117.125,
+              32.717
+            ],
+            [
+              -117.136,
+              32.717
+            ],
+            [
+              -117.136,
+              32.712
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "area_id": "sherman_heights",
+        "label": "Sherman Heights"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -117.124,
+              32.718
+            ],
+            [
+              -117.113,
+              32.718
+            ],
+            [
+              -117.113,
+              32.723
+            ],
+            [
+              -117.124,
+              32.723
+            ],
+            [
+              -117.124,
+              32.718
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "area_id": "barrio_logan",
+        "label": "Barrio Logan"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -117.112,
+              32.724
+            ],
+            [
+              -117.101,
+              32.724
+            ],
+            [
+              -117.101,
+              32.729
+            ],
+            [
+              -117.112,
+              32.729
+            ],
+            [
+              -117.112,
+              32.724
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "area_id": "golden_hill",
+        "label": "Golden Hill"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -117.1,
+              32.73
+            ],
+            [
+              -117.089,
+              32.73
+            ],
+            [
+              -117.089,
+              32.735
+            ],
+            [
+              -117.1,
+              32.735
+            ],
+            [
+              -117.1,
+              32.73
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "area_id": "cortez_hill",
+        "label": "Cortez Hill"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -117.088,
+              32.736
+            ],
+            [
+              -117.077,
+              32.736
+            ],
+            [
+              -117.077,
+              32.741
+            ],
+            [
+              -117.088,
+              32.741
+            ],
+            [
+              -117.088,
+              32.736
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "note": "Real A-07 artifact shape. The count fields are named total/individual/structure/vehicle, so a name-based small-cell rule misses them entirely. Context (an object carrying neighborhood + month) is what makes these cells.",
+  "neighborhoods": [
+    {
+      "neighborhood": "barrio_logan",
+      "observations": [
+        { "month": "2021-09", "total": 3, "by_type": { "individual": 2, "structure": 1, "vehicle": 0 } },
+        { "month": "2021-10", "total": 44, "by_type": { "individual": 40, "structure": 2, "vehicle": 2 } }
+      ]
+    }
+  ]
+}

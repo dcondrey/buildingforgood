@@ -20,6 +20,11 @@ enumeration is exact, not sampled.
 The threshold must match the privacy scanner's ``min_cell`` (PR #44,
 ``stillhere_pipeline/privacy.py``); consolidate into one shared constant when
 both are merged.
+
+POLICY AUTHORITY: docs/policy/small-cell-suppression.md pins the branch list
+this module may take. The attacker model here and the scanner's
+``analyze_recoverability`` both derive from that written list; change the
+document and both enforcement points together, never one alone.
 """
 
 from __future__ import annotations

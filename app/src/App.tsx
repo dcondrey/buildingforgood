@@ -312,6 +312,7 @@ function App() {
   const [planDirty, setPlanDirty] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
   const [guideIndex, setGuideIndex] = useState<number | null>(null);
+  const [projectorMode, setProjectorMode] = useState(false);
   const resultHeading = useRef<HTMLHeadingElement>(null);
   const guidePanel = useRef<HTMLDivElement>(null);
   const signal = data.signal;
@@ -353,6 +354,10 @@ function App() {
       }
       const target = event.target as HTMLElement;
       const isControl = ["BUTTON", "INPUT", "SUMMARY"].includes(target.tagName);
+      if (!isControl && event.key.toLowerCase() === "p") {
+        setProjectorMode((mode) => !mode);
+        return;
+      }
       if (
         guideIndex !== null &&
         !isControl &&
@@ -523,7 +528,7 @@ function App() {
       : titleCase(signal.classification);
 
   return (
-    <>
+    <div className={`app-shell ${projectorMode ? "projector-mode" : ""}`}>
       <a className="skip-link" href="#drop-test">
         Skip to decision
       </a>
@@ -574,6 +579,14 @@ function App() {
           </label>
           <button className="button button-quiet guide-button" onClick={beginGuide} type="button">
             <SparkIcon /> Guide demo
+          </button>
+          <button
+            aria-pressed={projectorMode}
+            className={`button button-quiet projector-toggle ${projectorMode ? "is-active" : ""}`}
+            onClick={() => setProjectorMode((mode) => !mode)}
+            type="button"
+          >
+            {projectorMode ? "Exit projector" : "Projector mode"}
           </button>
           <button
             aria-expanded={disclosuresOpen}
@@ -1094,6 +1107,30 @@ function App() {
                 </div>
               </div>
 
+              <aside aria-labelledby="challenge-title" className="challenge-card">
+                <div className="challenge-heading">
+                  <div>
+                    <span className="eyebrow">Adversarial checkpoint</span>
+                    <h4 id="challenge-title">What would change our mind?</h4>
+                  </div>
+                  <span className="challenge-badge">Open to revision</span>
+                </div>
+                <p>
+                  This result is useful because its failure conditions are explicit. Any one of
+                  these findings would downgrade the conclusion or trigger a new review.
+                </p>
+                <ul>
+                  <li>
+                    One of the matched months is later found to be incomplete or misclassified.
+                  </li>
+                  <li>
+                    A boundary or method change makes the 261-block comparison non-comparable.
+                  </li>
+                  <li>Source review explains the 2023–2024 discontinuity as collection change.</li>
+                  <li>New held-out data materially weakens forecast error or interval coverage.</li>
+                </ul>
+              </aside>
+
               {data.reportingBias ? (
                 <details className="bias-diagnostic">
                   <summary>
@@ -1560,6 +1597,12 @@ function App() {
               ))}
             </div>
           </div>
+          <p aria-live="polite" className="policy-lens">
+            <strong>Policy lens:</strong>{" "}
+            {coverageFloor === 0
+              ? "audit mode removes the continuity floor; allocations are not a recommendation."
+              : `${data.areas.length * coverageFloor} of ${budget} hours are reserved for continuity before forecast weighting.`}
+          </p>
 
           {!plan ? (
             <div className="planner-start">
@@ -1909,7 +1952,7 @@ function App() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

@@ -1151,6 +1151,64 @@ main {
   display: block;
   margin-bottom: 0.25rem;
 }
+.challenge-card {
+  background:
+    linear-gradient(135deg, rgba(255, 123, 108, 0.08), transparent 62%), var(--panel-soft);
+  border: 1px solid rgba(255, 123, 108, 0.24);
+  border-radius: 12px;
+  margin-top: 1rem;
+  padding: 1rem 1.15rem;
+}
+.challenge-heading {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+.challenge-heading h4 {
+  font-family: var(--display);
+  font-size: 1.3rem;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  margin: 0.18rem 0 0;
+}
+.challenge-badge {
+  border: 1px solid rgba(255, 123, 108, 0.35);
+  border-radius: 999px;
+  color: var(--red);
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  padding: 0.35rem 0.5rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.challenge-card p,
+.challenge-card li {
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+.challenge-card p {
+  margin: 0.8rem 0 0.45rem;
+}
+.challenge-card ul {
+  display: grid;
+  gap: 0.3rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.challenge-card li {
+  padding-left: 1rem;
+  position: relative;
+}
+.challenge-card li::before {
+  color: var(--red);
+  content: "↳";
+  font-family: var(--mono);
+  left: 0;
+  position: absolute;
+}
 .evidence-icon {
   align-items: center;
   border: 1px solid currentColor;
@@ -1743,6 +1801,19 @@ main {
   margin-bottom: 1rem;
   padding: 0.75rem 0.9rem;
 }
+.policy-lens {
+  background: var(--amber-dim);
+  border-left: 2px solid var(--amber);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  line-height: 1.45;
+  margin: 0.7rem 0 0;
+  padding: 0.55rem 0.7rem;
+}
+.policy-lens strong {
+  color: var(--amber-bright);
+}
 .coverage-policy > div:first-child {
   display: grid;
 }
@@ -2311,6 +2382,9 @@ main {
     justify-content: center;
     padding: 0.5rem;
   }
+  .projector-toggle {
+    display: none;
+  }
   .step-nav a span {
     font-size: 0.72rem;
   }
@@ -2470,6 +2544,26 @@ main {
   .limitations-row details {
     margin-top: 0;
   }
+}
+
+.projector-mode {
+  --line: rgba(242, 237, 226, 0.18);
+  --line-strong: rgba(242, 237, 226, 0.32);
+}
+.projector-mode .topbar {
+  background: rgba(7, 10, 13, 0.96);
+}
+.projector-mode .hero h1 {
+  font-size: clamp(4.2rem, 8vw, 8rem);
+}
+.projector-mode .eyebrow,
+.projector-mode .status-line,
+.projector-mode .kicker {
+  letter-spacing: 0.16em;
+}
+.projector-mode .projector-toggle {
+  border-color: var(--amber);
+  color: var(--amber-bright);
 }
 
 @media (max-width: 560px) {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ContractViolation,
+  SMALL_CELL_THRESHOLD,
   assertNoPreciseFields,
   parseObservationsV0,
   parseQualityReportV0,
@@ -8,8 +9,6 @@ import {
 
 // Mirrors tests/pipeline/test_contracts.py case-for-case so the two
 // validators are exercised against the same fixtures in both languages.
-
-const SMALL_CELL_THRESHOLD = 5;
 
 function validContractBlock() {
   return {

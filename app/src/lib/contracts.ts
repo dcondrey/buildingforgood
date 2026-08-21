@@ -150,13 +150,26 @@ export interface ObservationsV0 {
 }
 
 /**
+ * The small-cell threshold, pinned to the written policy
+ * (docs/policy/small-cell-suppression.md) exactly as
+ * `stillhere_pipeline.suppress.SMALL_CELL_THRESHOLD` pins it on the Python
+ * side. Exported as the default so callers need not supply it; a caller who
+ * passes a value must NOT feed the artifact's own declared threshold back in
+ * (parseObservationsV0(doc, doc.contract.small_cell_threshold) validates the
+ * document against itself and always passes).
+ */
+export const SMALL_CELL_THRESHOLD = 5;
+
+/**
  * Validate an observations.v0 artifact. Mirrors
  * `validate_observations_v0` in the Python contract exactly, including the
- * small-cell suppression threshold, which the caller must supply (it lives
- * in `stillhere_pipeline.suppress.SMALL_CELL_THRESHOLD` on the Python side;
- * pass the same value here rather than hardcoding it twice).
+ * small-cell suppression threshold, which defaults to the policy constant
+ * above.
  */
-export function parseObservationsV0(input: unknown, smallCellThreshold: number): ObservationsV0 {
+export function parseObservationsV0(
+  input: unknown,
+  smallCellThreshold: number = SMALL_CELL_THRESHOLD,
+): ObservationsV0 {
   if (!isPlainObject(input)) {
     throw new ContractViolation("field $ has wrong type: expected object");
   }

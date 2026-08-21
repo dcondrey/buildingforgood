@@ -1,12 +1,16 @@
 {
-  "geography_version": "downtown-planning-areas/2026-08",
+  "note": "One raw block polygon from the source bundle. Legitimate source geography, below planning-area grain, identifying once joined to the block-keyed count table.",
   "type": "FeatureCollection",
   "features": [
     {
       "type": "Feature",
       "properties": {
-        "area_id": "east_village",
-        "label": "East Village"
+        "block_id": "0412-3",
+        "st_north": "Island Ave",
+        "st_east": "14th St",
+        "st_south": "J St",
+        "st_west": "13th St",
+        "source_neighborhood": "East Village"
       },
       "geometry": {
         "type": "Polygon",
@@ -17,16 +21,12 @@
               32.71
             ],
             [
-              -117.144,
+              -117.151,
               32.71
             ],
             [
-              -117.144,
-              32.716
-            ],
-            [
-              -117.152,
-              32.716
+              -117.151,
+              32.711
             ],
             [
               -117.152,

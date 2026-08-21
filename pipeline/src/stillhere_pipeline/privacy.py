@@ -109,6 +109,19 @@ FORBIDDEN_KEYS: frozenset[str] = frozenset(
         "phonenumber",
         "email",
         "emailaddress",
+        # source-grain identifiers and bounding-street labels. From the real
+        # hackathon bundle: block-level records carry a block id and the four
+        # streets that bound the block, which together locate a block as
+        # precisely as a coordinate would.
+        "blockid",
+        "blocknumber",
+        "stnorth",
+        "steast",
+        "stsouth",
+        "stwest",
+        "boundingstreets",
+        "crossstreets",
+        "sourceneighborhood",
         # site-level identifiers
         "pointid",
         "siteid",
@@ -189,6 +202,20 @@ SUPPRESSION_MARKERS: frozenset[str] = frozenset(
 
 #: Geometry types the product is allowed to publish. Aggregate areas only.
 ALLOWED_GEOMETRY_TYPES: frozenset[str] = frozenset({"Polygon", "MultiPolygon"})
+
+#: Keys by which a document declares the aggregate geography it publishes.
+#: Polygon type alone is NOT proof of aggregation: the real source bundle
+#: ships 382 block polygons, which are legitimate raw geography but sit far
+#: below the planning-area grain and become identifying once joined to the
+#: block-keyed count table. A file carrying geometry must therefore name the
+#: approved, versioned geography it was dissolved to.
+GEOGRAPHY_DECLARATION_KEYS: frozenset[str] = frozenset(
+    {"geographyversion", "approvedgeography", "planningareaversion"}
+)
+
+#: Above this many polygon features in one document, the file is source-grain
+#: geography rather than a planning-area set, whatever it declares.
+MAX_AGGREGATE_FEATURES = 60
 
 #: San Diego bounding box. A decimal number inside the longitude span is very
 #: nearly unambiguous; the latitude span overlaps plausible counts and metrics,
@@ -462,9 +489,70 @@ def _scan_json(
             )
 
 
+def declares_aggregate_geography(document: Any) -> bool:
+    """True when the document names the approved geography it publishes."""
+    if not isinstance(document, dict):
+        return False
+    for key, value in document.items():
+        if normalize_key(key) in GEOGRAPHY_DECLARATION_KEYS and value:
+            return True
+    properties = document.get("properties")
+    if isinstance(properties, dict):
+        return declares_aggregate_geography(properties)
+    return False
+
+
+def _count_geometries(node: Any) -> int:
+    if isinstance(node, dict):
+        here = 1 if ("coordinates" in node and "type" in node) else 0
+        return here + sum(_count_geometries(v) for v in node.values())
+    if isinstance(node, list):
+        return sum(_count_geometries(item) for item in node)
+    return 0
+
+
+def scan_geography_grain(document: Any, where: str = "$") -> list[Finding]:
+    """Refuse geometry that is not declared, versioned, aggregate geography.
+
+    Polygon type alone is not proof of aggregation. The real source bundle
+    ships 382 block polygons: legitimate raw geography, far below the
+    planning-area publication grain, and identifying once joined to the
+    block-keyed count table. Requested by Track D on #7.
+    """
+    geometry_count = _count_geometries(document)
+    if geometry_count == 0:
+        return []
+
+    findings: list[Finding] = []
+    if not declares_aggregate_geography(document):
+        findings.append(
+            Finding(
+                "BLOCK",
+                "geography.undeclared_grain",
+                where,
+                f"{geometry_count} geometry object(s) published without naming an approved "
+                "aggregate geography; declare geography_version and dissolve source blocks "
+                "to canonical planning areas before publication",
+            )
+        )
+    if geometry_count > MAX_AGGREGATE_FEATURES:
+        findings.append(
+            Finding(
+                "BLOCK",
+                "geography.source_grain_feature_count",
+                where,
+                f"{geometry_count} geometry features exceed the aggregate ceiling of "
+                f"{MAX_AGGREGATE_FEATURES}; this is source-grain geography, not planning areas",
+            )
+        )
+    return findings
+
+
 def scan_json_document(document: Any, where: str = "$", min_cell: int = 5) -> list[Finding]:
     """Scan one parsed JSON document and return every finding."""
-    return list(_scan_json(document, where, min_cell))
+    findings = scan_geography_grain(document, where)
+    findings.extend(_scan_json(document, where, min_cell))
+    return findings
 
 
 # --- File and directory scans ---------------------------------------------

@@ -150,11 +150,20 @@ breaks out people served by street outreach. All of these measure encounters
 or people served—not worker schedules. Downtown business improvement
 districts also publish outreach summaries; the Downtown San Diego Partnership,
 whose Clean & Safe program produced the counts this project analyzes, fields
-its own outreach team. A real deployment would take capacity from that
-provider's scheduling records (or the Regional Task Force on Homelessness, the
-region's CoC lead) and could cross-check planned coverage against HMIS or HDIS
-encounter volumes. The planner accepts any whole-hour budget, so replacing 80
-with a real number changes no code.
+its own outreach team.
+
+Capacity modeling from such data is an established practice, not our
+invention: Community Solutions' Built for Zero program uses by-name data
+across 100+ communities to model real-time caseloads and the system capacity
+and staffing needed to reach functional zero, and the Homelessness Policy
+Research Institute at USC publishes studies built on administrative street
+outreach data comparing contact frequency, caseload ratios, and retention. A
+real deployment would take its budget from the provider's scheduling records
+(the outreach provider or the Regional Task Force on Homelessness, the
+region's CoC lead), or from a caseload-based capacity model of that kind, and
+cross-check planned coverage against HMIS or HDIS encounter volumes. The
+planner accepts any whole-hour budget, so replacing 80 with a real number
+changes no code.
 
 ### Why an 8-hour minimum?
 

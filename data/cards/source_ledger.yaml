@@ -406,6 +406,19 @@ sources:
         The dashboard labels 1,092 as Q1 2026, but the PDF places 1,092 in
         April and provides no January-March observation. It cannot validate
         the demo's January 2026 historical forecast scenario.
+      - >-
+        Personal communication (J. Nations, SDRDL, 2026-08-21; partial and
+        from memory by her own description): DSDP shifted from monthly to
+        quarterly counting in late 2025 on an irregular schedule; the
+        November 2025 count may not have occurred; 2026 counts were possibly
+        conducted in March and June (vs the published PDF's April label);
+        counts were run dually on paper and a piloted application, and at
+        least one 2026 count was redone with differing results; methodology
+        discussions are ongoing and SDRDL does not feel at liberty to release
+        application-entered 2026 values. Treat every 2026 timing label as
+        contested until DSDP or SDRDL publishes a reconciliation; the pinned
+        PDF remains authoritative only for what DSDP published, not for when
+        counts occurred.
       - Reporting cadence is irregular and missing months remain missing.
       - >-
         The live archive and Unhoused Care HTML contained unrelated injected
@@ -464,6 +477,59 @@ sources:
       - HMIS activity measures service engagement, not street population.
       - Direction agreement is context, not independent validation of any
         specific downtown figure.
+
+  - id: city_pra_capacity_records
+    name: City of San Diego public-records releases (shelter capacity, staffing, funding)
+    role: local_capacity_context
+    analytical_question: >-
+      What contracted staffing ratios, per-site funding, and program costs do
+      City public-records releases document for downtown homelessness services?
+    publisher: >-
+      City of San Diego via sandiego.nextrequest.com (prior PRA releases;
+      original requesters unknown). Documents authored by Alpha Project, SDHC,
+      the Housing Authority, and City departments.
+    package_page: https://sandiego.nextrequest.com/documents
+    retrieved_at: "2026-08-21"
+    files:
+      - raw_path: data/raw/pra_sandiego/Proposal_Alpha Project.pdf
+        note: >-
+          Alpha Project response to City RFQ 10089948-23-V (~2023), shelter
+          services. Contracted case-management ratios stated verbatim: 1:12.5
+          for families (4.0 FTE case managers, up to 200 beds) and 1:15 for
+          single adults (16.0 FTE, up to 250 beds); cost-per-bed schedule.
+      - raw_path: data/raw/pra_sandiego/1859_Temp-Bridge-Shelters_HAR20-019.pdf
+        note: >-
+          Housing Authority Resolution HA-1859 (2020-06-16): FY2021
+          bridge-shelter funding by site, total $15,917,573.02.
+      - raw_path: data/raw/pra_sandiego/Payments to Alpha Project for the Homeless PRA 21-5187.xlsx
+        note: City payments to Alpha Project 2009-2021, per-check grain, $17.12M total.
+      - raw_path: data/raw/pra_sandiego/Payments to Alpha Project for the Homeless PRA 21-5187 March 2007 to June 2009.xlsx
+        note: City payments 2007-2009, 273 checks, $3.28M.
+    retrieval_method: >-
+      Manual authenticated download from the NextRequest portal; pinned by
+      SHA-256 in checksums.sha256. Reviewed for client-level content before
+      pinning: none found in extracted text.
+    update_cadence: Static releases; further candidates tracked in issue #85.
+    license_terms: >-
+      California Public Records Act releases; public documents. Attribute the
+      City portal and the authoring organization.
+    collection_method: Administrative contracts, resolutions, and finance ledgers.
+    intended_use: >-
+      Citable local grounding for the capacity-context card and annual
+      system-context figures. Never a forecast feature, allocation weight, or
+      claim about street-outreach staffing.
+    time_grain: Document-specific (proposal ~2023; resolution FY2021; payments 2007-2021).
+    geo_grain: Facility/program level, downtown San Diego and citywide.
+    known_limitations:
+      - The 1:12.5 and 1:15 ratios are SHELTER case management from a proposal
+        (proposed contracted staffing), not street outreach and not observed
+        practice; any rendered use must carry that label.
+      - Original PRA requesters and any withheld attachments are unknown; the
+        releases are complete only as published.
+      - Two large companion invoice PDFs from the same portal were reviewed
+        but deliberately NOT pinned; their scanned pages could not be fully
+        cleared for personal information.
+      - Payments are cash-accounting checks, not program-year costs.
 
   - id: sdhc_city_program_dashboard
     name: SDHC and City of San Diego Homeless Services Programs Overview

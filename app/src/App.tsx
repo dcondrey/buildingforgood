@@ -1792,6 +1792,12 @@ function App() {
             ratios as planning help, not binding rules.
           </p>
           <p>
+            Locally: a City of San Diego public-records release includes a 2023-era Alpha Project
+            shelter proposal that contracts case management at one worker per 15 single adults and
+            one per 12.5 families. Those are proposed shelter staffing ratios, not street outreach
+            and not observed practice (City PRA release, pinned in the source ledger).
+          </p>
+          <p>
             These benchmarks are context for a capacity conversation only. No benchmark number
             enters the allocation, and nothing here estimates any person&apos;s service need,
             eligibility, or availability.

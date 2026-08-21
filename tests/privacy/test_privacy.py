@@ -345,3 +345,18 @@ def test_geometry_approval_covers_only_its_own_coordinates() -> None:
 def test_a_clean_polygon_still_passes() -> None:
     polygon = {"type": "Polygon", "coordinates": [[[-117.152, 32.710], [-117.144, 32.716]]]}
     assert _blocking(scan_json_document(polygon)) == []
+
+
+def test_generic_word_names_are_not_exempt() -> None:
+    """The allow-list is an exemption, so it stays narrow.
+
+    `order`, `sequence` and `priority` were briefly allow-listed to silence
+    config noise. Each is a plausible name for a real count — `priority: 2`
+    could mean two flagged individuals — and an allow-list collision is the
+    same false-negative class that rounds 1 and 2 produced. Anything
+    genuinely structural can be renamed or suppressed; a missed person
+    cannot be recovered.
+    """
+    for generic in ("order", "sequence", "priority", "level", "tier"):
+        cell = {"neighborhood": "a", "month": "2021-09", generic: 2}
+        assert _blocking(scan_json_document(cell, min_cell=5)), generic

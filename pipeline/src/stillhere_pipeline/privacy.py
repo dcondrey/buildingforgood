@@ -157,12 +157,13 @@ CELL_NUMERIC_ALLOWLIST: frozenset[str] = frozenset(
         "timeincrement",
         "increment",
         "minimumsustainedperiods",
-        # Structural fields that legitimately sit inside a cell.
+        # Structural fields that legitimately sit inside a cell. Kept
+        # deliberately narrow: `order`, `sequence` and `priority` were here
+        # and have been removed, because each is a plausible name for a real
+        # count ({"priority": 2} meaning two flagged individuals), and an
+        # allow-list entry is an exemption. Narrow exemptions, not scanning.
         "revision",
         "sortindex",
-        "order",
-        "sequence",
-        "priority",
         # Unambiguously temporal. A schema encoding month as 3 is naming a
         # period, not counting three people.
         "month",

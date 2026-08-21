@@ -157,14 +157,12 @@ CELL_NUMERIC_ALLOWLIST: frozenset[str] = frozenset(
         "timeincrement",
         "increment",
         "minimumsustainedperiods",
-        # A cell is identified BY these keys, so their own values are labels,
-        # not observations. A schema encoding month as 3 must not read as a
-        # count of three people.
-        "month",
-        "period",
-        "date",
-        "yearmonth",
     }
+    # Every cell-identifying key is a label, never an observation: a schema
+    # encoding month as 3, or area as 3, must not read as three people.
+    # Unioned rather than hand-listed so adding a context key cannot
+    # reintroduce this false positive.
+    | CELL_CONTEXT_KEYS
 )
 
 #: Sibling markers that make a small count legitimate, because it is already
@@ -292,9 +290,28 @@ def is_cell_context(node: dict[str, Any]) -> bool:
     return any(normalize_key(k) in CELL_CONTEXT_KEYS for k in node)
 
 
+#: Values that count as an affirmative suppression declaration. Anything
+#: else — False, None, 0, "no" — means the cell is published.
+SUPPRESSION_TRUE_VALUES: frozenset[str] = frozenset({"true", "yes", "suppressed", "redacted"})
+
+
 def is_suppressed(node: dict[str, Any]) -> bool:
-    """True when this object declares itself suppressed rather than published."""
-    return any(normalize_key(k) in SUPPRESSION_MARKERS for k in node)
+    """True when this object affirmatively declares itself suppressed.
+
+    Presence of the key is not enough. ``{"suppressed": false}`` is a common
+    explicit encoding for *published*, and treating it as suppressed would
+    exempt the cell — and, since suppression propagates, every breakdown
+    under it — from the rule this module exists to enforce. A privacy gate
+    fails closed: only an affirmative value suppresses.
+    """
+    for key, value in node.items():
+        if normalize_key(key) not in SUPPRESSION_MARKERS:
+            continue
+        if value is True:
+            return True
+        if isinstance(value, str) and value.strip().lower() in SUPPRESSION_TRUE_VALUES:
+            return True
+    return False
 
 
 def _scan_counts(node: dict[str, Any], where: str, min_cell: int) -> Iterator[Finding]:

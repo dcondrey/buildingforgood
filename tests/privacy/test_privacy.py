@@ -12,6 +12,8 @@ from pathlib import Path
 import pytest
 
 from stillhere_pipeline.privacy import (
+    CELL_CONTEXT_KEYS,
+    CELL_NUMERIC_ALLOWLIST,
     Finding,
     normalize_key,
     scan_bundle_dir,
@@ -178,3 +180,39 @@ def test_suppression_does_not_leak_to_a_sibling_cell() -> None:
         ]
     }
     assert len(_blocking(scan_json_document(doc, min_cell=5))) == 1
+
+
+def test_suppressed_false_does_not_exempt_a_cell() -> None:
+    """Caught in review: presence of the key was treated as suppression.
+
+    `{"suppressed": false}` is a common explicit encoding for *published*.
+    Treating it as suppressed exempted the cell and, because suppression
+    propagates, every breakdown under it.
+    """
+    for falsy in (False, None, 0, "no", "false", ""):
+        cell = {
+            "neighborhood": "barrio_logan",
+            "month": "2021-09",
+            "total": 3,
+            "suppressed": falsy,
+            "by_type": {"individual": 2, "structure": 1},
+        }
+        assert _blocking(scan_json_document(cell, min_cell=5)), f"suppressed={falsy!r}"
+
+
+def test_affirmative_suppression_values_are_accepted() -> None:
+    for truthy in (True, "true", "yes", "Suppressed", "REDACTED"):
+        cell = {"neighborhood": "a", "month": "2021-09", "total": 3, "suppressed": truthy}
+        assert _blocking(scan_json_document(cell, min_cell=5)) == [], f"suppressed={truthy!r}"
+
+
+def test_every_cell_identifying_key_is_exempt_from_the_count_rule() -> None:
+    """Caught in review: `month` was allow-listed but `area` was not.
+
+    A key that identifies a cell is a label, so its own value can never be an
+    observation. Asserting the set relation stops a newly-added context key
+    from reintroducing the false positive.
+    """
+    assert CELL_CONTEXT_KEYS <= CELL_NUMERIC_ALLOWLIST
+    cell = {"area": 3, "areaid": 2, "month": 3, "total": 91}
+    assert _blocking(scan_json_document(cell, min_cell=5)) == []

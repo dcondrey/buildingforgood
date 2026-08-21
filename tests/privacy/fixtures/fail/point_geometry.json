@@ -1,0 +1,7 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "area_id": "east_village" },
+      "geometry": { "type": "Point", "coordinates": [-117.14832, 32.71234] } }
+  ]
+}

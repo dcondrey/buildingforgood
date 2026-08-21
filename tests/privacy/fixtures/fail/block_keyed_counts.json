@@ -1,0 +1,19 @@
+{
+  "note": "Block-keyed counts with no geometry. Splitting geometry and counts across files does not de-identify them; the join key does the work.",
+  "records": [
+    {
+      "block_id": "0412-3",
+      "report_month": "2021-09",
+      "individuals": 2,
+      "tents_structures": 1,
+      "vehicles": 0
+    },
+    {
+      "block_id": "0412-4",
+      "report_month": "2021-09",
+      "individuals": 41,
+      "tents_structures": 12,
+      "vehicles": 3
+    }
+  ]
+}

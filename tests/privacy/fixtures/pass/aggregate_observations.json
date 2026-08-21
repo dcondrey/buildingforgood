@@ -1,0 +1,9 @@
+{
+  "schema_version": "observations/v1",
+  "geography_version": "downtown-demo/2026-08",
+  "areas": [
+    { "area_id": "east_village", "label": "East Village", "observed_count": 142, "period": "2026-05" },
+    { "area_id": "gaslamp", "label": "Gaslamp", "observed_count": 38, "period": "2026-05" },
+    { "area_id": "cortez_hill", "label": "Cortez Hill", "observed_count": null, "suppressed": true, "period": "2026-05" }
+  ]
+}

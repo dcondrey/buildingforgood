@@ -60,9 +60,18 @@ either headline conclusion:
   exceeded Sep by 27%) is not covered, which is one reason recovering the
   actual publications remains worthwhile (see `data/monitoring/`).
 
-The digitized source package was last issued 2024-11-26, so the 2025 gaps are
-plausibly digitization lag rather than uncollected counts; recovery via
-DSDP's own pinned report PDFs is tracked in the monitoring lane.
+Provenance of the gaps (verified 2026-08-21): they are publisher gaps, not
+digitization lag. DSDP's cumulative Monthly Unsheltered Count master table,
+printed on page 1 of its monthly report PDFs, leaves exactly Jul/Aug/Oct/Nov
+2025 blank (December 2025 report, published Jan 2026) and Jan/Feb/Mar/May
+2026 blank (June 2026 report, published 2026-08-11) while backfilling Sep and
+Dec 2025 in the same table; every year 2013–2024 has all twelve cells filled.
+A WordPress media-library API enumeration of downtownsandiego.org found no
+report upload for any blank month. No published total exists to recover;
+whether counts were conducted but never tabulated is an open question for the
+publisher. The table's headline totals are seven-area (including Outside
+Perimeter) and sit consistently above this project's six-area core series, and
+its Apr/Jun 2026 values reconcile with `data/monitoring/`.
 
 ## Annual-comparison selection
 

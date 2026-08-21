@@ -232,6 +232,14 @@
   width: min(92vw, 44rem);
   z-index: 45;
 }
+@supports not (backdrop-filter: blur(1px)) {
+  .topbar,
+  .step-nav,
+  .disclosure-drawer,
+  .guide-panel {
+    background: var(--panel-solid);
+  }
+}
 .disclosure-drawer h2 {
   font-family: var(--serif);
   font-size: 1.7rem;
@@ -279,6 +287,7 @@ main {
   margin: 0 auto;
   max-width: 86rem;
   padding: 0 clamp(1rem, 4vw, 4rem);
+  width: 100%;
 }
 .hero {
   align-items: center;
@@ -288,6 +297,11 @@ main {
   min-height: min(46rem, calc(100vh - 5rem));
   padding: 5.5rem 0 4.5rem;
   position: relative;
+}
+@supports not (height: 100svh) {
+  .hero {
+    min-height: min(46rem, calc(100vh - 5rem));
+  }
 }
 .hero::after {
   background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
@@ -1566,6 +1580,7 @@ main {
 .forecast-chart {
   display: block;
   height: auto;
+  max-width: 100%;
   overflow: visible;
   width: 100%;
 }

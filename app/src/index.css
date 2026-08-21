@@ -81,6 +81,13 @@
   box-sizing: border-box;
 }
 
+img,
+svg,
+video {
+  display: block;
+  max-inline-size: 100%;
+}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 9rem;
@@ -96,6 +103,8 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
 }
 
 h1,
@@ -110,7 +119,10 @@ p {
 }
 
 button,
-input {
+input,
+select,
+textarea,
+summary {
   color: inherit;
   font: inherit;
 }
@@ -141,5 +153,22 @@ a {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    forced-color-adjust: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid Highlight;
+  }
+
+  button,
+  input,
+  summary,
+  a {
+    forced-color-adjust: auto;
   }
 }

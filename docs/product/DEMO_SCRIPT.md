@@ -1,7 +1,13 @@
-# Three-Minute Demo Script
+# Five-Minute Demo Script
 
 One prepared, reproducible scenario. The goal is not to tour every feature; it
 is to make one defensible decision from a misleadingly simple headline.
+
+Official slot format: a 10-minute window — 1 minute setup, **5 minutes
+presentation**, 3 minutes Q&A ([`JUDGE_QA.md`](JUDGE_QA.md)), 1 minute
+teardown. The script below fills the five presentation minutes; the
+three-minute core it grew from survives intact as the cut-down path in
+**If time slips**.
 
 ## Before the clock starts
 
@@ -23,7 +29,7 @@ Then:
 
 ## Timed script
 
-### 0:00–0:25 — Challenge the apparent success
+### 0:00–0:30 — Challenge the apparent success
 
 **Do:** Begin at the decision header, then click **Test the drop**.
 
@@ -38,11 +44,10 @@ Then:
 **Land:** The decision is clear before the method: distribute limited outreach
 hours without pretending a lower total explains why it changed.
 
-### 0:25–1:05 — Decompose the ruler
+### 0:30–1:20 — Decompose the ruler
 
 **Do:** Point to the three component cards, then the multiplier decomposition
-and like-for-like block thresholds. Open **Optional attention-bias check** only
-if the room is following comfortably.
+and like-for-like block thresholds. Open **Optional attention-bias check**.
 
 **Say:**
 
@@ -54,7 +59,7 @@ if the room is following comfortably.
 > separately digitized from the same maps, not unique people or independent
 > validation, so this cannot prove movement or policy impact."
 
-**Optional add-on:**
+**Then:**
 
 > "In a matched-calendar reporting check, all downtown Get It Done rows rose
 > 40.9%, but Encampment rows rose 88.1% and top-level requests 96%. That is a
@@ -63,7 +68,7 @@ if the room is following comfortably.
 
 **Land:** A lower total is an observation, not an outcome claim.
 
-### 1:05–1:40 — Replay a forecast without model theater
+### 1:20–2:00 — Replay a forecast without model theater
 
 **Do:** Move to the forecast. Trace the historical line, point forecast, and
 explicit interval; then point to the selected model and held-out error.
@@ -80,7 +85,7 @@ explicit interval; then point to the selected model and held-out error.
 **Land:** The simplest defensible model wins; there is no random time-series
 split, future-error leakage, or LLM forecast.
 
-### 1:40–2:05 — Walk into the coverage-continuity scenario
+### 2:00–2:35 — Walk into the coverage-continuity scenario
 
 **Do:** Scroll to **Plan the shift** — the 80-hour plan is already computed and
 its state rides the sticky header (80/80 allocated, 8h floor). Point to the
@@ -97,8 +102,8 @@ prepared demo** controls.
 
 **Land:** The policy choice is explicit, adjustable, and testable.
 
-**Optional add-on (if the room is engaged):** drag the **What-if** budget
-slider a few steps and let the map and bars reflow live.
+**Then:** drag the **What-if** budget slider a few steps and let the map and
+bars reflow live.
 
 > "Every recompute is the same deterministic rule. Drag it low enough and the
 > floors become infeasible—the tool says so instead of quietly repairing the
@@ -106,7 +111,7 @@ slider a few steps and let the map and bars reflow live.
 
 Return the slider to 80 before moving on.
 
-### 2:05–2:28 — Make the tradeoff visible
+### 2:35–3:00 — Make the tradeoff visible
 
 **Do:** Click **Audit without coverage guard**. Point to the areas that lose
 continuity, then click **Restore 8h demo guard**.
@@ -119,7 +124,7 @@ continuity, then click **Restore 8h demo guard**.
 
 **Land:** Never leave the unguarded view on screen as the final plan.
 
-### 2:28–2:48 — Demonstrate human control
+### 3:00–3:25 — Demonstrate human control
 
 **Do:** Select **Lock** for one area, edit its hours, and click **Recompute
 unlocked hours**. Point to the preserved lock and the rebalanced unlocked hours.
@@ -132,7 +137,7 @@ unlocked hours**. Point to the preserved lock and the rebalanced unlocked hours.
 
 **Land:** Human oversight changes the result and remains disclosed.
 
-### Optional power beat — stress-test a sweep (30s, cut first if tight)
+### 3:25–4:00 — Stress-test a sweep
 
 **Do:** Select East Village on the plan map, leave the displaced-share slider
 at 100%, and press **Explore this assumption**. Point to the banner, the
@@ -150,10 +155,30 @@ neighbors' hours rising, and the reallocated staff time.
 **Land:** The tool audits interventions honestly instead of endorsing them.
 Clear the assumption before moving on.
 
-### 2:48–3:00 — Close with accountability
+### 4:00–4:35 — Show the operations view
 
-**Do:** Click **Copy decision brief** and point to the source, method, privacy,
-and AI disclosures.
+**Do:** Click **Map workspace** in the header. Flip the map layer from
+**Planned hours** to **Unmet load** to **Observed change**, then click one
+neighborhood so its **Area dossier** opens beside the map.
+
+**Say:**
+
+> "Everything so far was the argument. This is the same artifact as an
+> operations view: one layered map and an inspector. Planned hours, observed
+> change, and unmet load are the same numbers you just audited, drawn on the
+> real neighborhood boundaries. Click a neighborhood and its dossier carries
+> the observation, the change, the hours, and the same caveats. The scenario
+> workbench one tab over saves and compares whole plans. Nothing here recomputes
+> anything new; it restates the audited plan for the person who has to run
+> the shift."
+
+**Land:** The audit story and the daily tool are the same numbers; there is no
+separate "real" system behind the demo.
+
+### 4:35–5:00 — Close with accountability
+
+**Do:** Open the workspace **Brief** tab, click **Copy decision brief**, and
+point to the source, method, privacy, and AI disclosures.
 
 **Say:**
 
@@ -169,9 +194,16 @@ Stop. Let the judge ask the first question.
 Keep the hook, **Test the drop**, the already-live plan walk-through, and the
 closing. Cut in this order:
 
-1. the manual lock/recompute;
-2. detailed forecast metric narration; then
-3. the unguarded comparison, replacing it with one sentence.
+1. the operations-view beat (close from the story view's brief instead);
+2. the attention-bias check;
+3. the sweep stress-test;
+4. the what-if slider drag;
+5. the manual lock/recompute;
+6. detailed forecast metric narration; then
+7. the unguarded comparison, replacing it with one sentence.
+
+Cutting 1–4 restores the original three-minute core, which was rehearsed and
+recorded on its own; the fallback capture follows that core.
 
 Do not cut the causal/privacy boundary or imply the decline proves progress.
 
@@ -201,8 +233,8 @@ Complete this on the presentation device before leaving for the venue.
 - [ ] Keep `app/dist/`, the repository, Node, Python, `.venv`, and
       `app/node_modules` on the presentation device—do not depend on package
       installation at the venue.
-- [ ] Record one clean, under-three-minute screen capture and export it to a
-      local, browser-playable format.
+- [ ] Record one clean screen capture of at least the three-minute core (under
+      five minutes total) and export it to a local, browser-playable format.
 - [ ] Capture static images of the drop result, forecast, guarded plan, and
       decision brief as a final no-code fallback.
 - [ ] Put the local preview URL, screen recording, and four images in one folder

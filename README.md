@@ -5,7 +5,7 @@
 
 **[Open the live demo →](https://dcondrey.github.io/buildingforgood/)** ·
 works offline once loaded ·
-[3-minute script](docs/product/DEMO_SCRIPT.md) ·
+[5-minute script](docs/product/DEMO_SCRIPT.md) ·
 [judge Q&A](docs/product/JUDGE_QA.md)
 
 ![The map workspace: planned staff-hours across the six downtown neighborhoods, with East Village's dossier and the assumption explorer open in the inspector](docs/img/workspace.png)
@@ -19,7 +19,7 @@ on a real map of the six downtown neighborhoods.
 
 **No login. No live API. No person-level data. No LLM in the decision path.**
 
-## The three-minute story
+## The story in three beats
 
 1. **Challenge the headline.** Run **Test the drop**: observed individuals
    rose while structures and the derived estimate fell.
@@ -89,7 +89,7 @@ exclusion can be audited.
   hostile ones
 - [Data quality audit](docs/project/DATA_QUALITY_AUDIT.md) — cleaning gates,
   retained anomalies, gap provenance, reproducibility hashes
-- [Demo script](docs/product/DEMO_SCRIPT.md) — the timed three-minute
+- [Demo script](docs/product/DEMO_SCRIPT.md) — the timed five-minute
   walkthrough and offline fallback plan
 - [Small-cell suppression policy](docs/policy/small-cell-suppression.md) —
   the privacy attacker model

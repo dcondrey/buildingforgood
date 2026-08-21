@@ -47,7 +47,7 @@
 - [ ] One person other than the presenter completes the current usability task
       script while an observer records hesitation and errors.
 - [ ] Complete the entire flow keyboard-only at the presentation resolution.
-- [ ] Rehearse the spoken script under three minutes twice.
+- [ ] Rehearse the spoken script under five minutes twice.
 - [ ] Repeat the network-disabled run on the presentation device itself.
 - [x] Capture a browser-playable fallback and four static result images.
       (Captured 2026-08-21 into `docs/testing/media/`; copy them onto the

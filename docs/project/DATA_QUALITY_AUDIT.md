@@ -43,6 +43,36 @@ maximum of 1.01 units. Published totals are integers while tent/vehicle
 components use decimal multipliers, so these are expected rounding, distinct
 from the 25 source-flagged material mismatches.
 
+## Gap-sensitivity check (added 2026-08-21)
+
+The four missing core-total months (Jul, Aug, Oct, Nov 2025) cannot overturn
+either headline conclusion:
+
+- The Jan 2024 → Jan 2025 like-for-like comparison touches no gap month by
+  construction.
+- Forecast bracketing: assume each missing month, had it existed, lay anywhere
+  between its adjacent observed months (Jul/Aug within Jun 653–Sep 722;
+  Oct/Nov within Sep 722–Dec 918). A recent-3-observed window recomputed over
+  the recovered months then yields a January 2026 point anywhere in
+  [787.3, 918.0], which sits entirely inside the shipped 769.0–996.1
+  residual interval. The stated assumption is monotone bounding between
+  neighbors; an unobserved excursion outside its neighbors (Dec 2025 itself
+  exceeded Sep by 27%) is not covered, which is one reason recovering the
+  actual publications remains worthwhile (see `data/monitoring/`).
+
+Provenance of the gaps (verified 2026-08-21): they are publisher gaps, not
+digitization lag. DSDP's cumulative Monthly Unsheltered Count master table,
+printed on page 1 of its monthly report PDFs, leaves exactly Jul/Aug/Oct/Nov
+2025 blank (December 2025 report, published Jan 2026) and Jan/Feb/Mar/May
+2026 blank (June 2026 report, published 2026-08-11) while backfilling Sep and
+Dec 2025 in the same table; every year 2013–2024 has all twelve cells filled.
+A WordPress media-library API enumeration of downtownsandiego.org found no
+report upload for any blank month. No published total exists to recover;
+whether counts were conducted but never tabulated is an open question for the
+publisher. The table's headline totals are seven-area (including Outside
+Perimeter) and sit consistently above this project's six-area core series, and
+its Apr/Jun 2026 values reconcile with `data/monitoring/`.
+
 ## Annual-comparison selection
 
 The artifact enumerates every nominal same-month year-over-year pair for the

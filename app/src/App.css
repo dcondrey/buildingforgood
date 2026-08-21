@@ -2790,6 +2790,155 @@ summary {
   border-radius: 6px;
 }
 
+/* Intervention assumption explorer */
+.intervention-banner {
+  align-items: center;
+  background: var(--amber-dim);
+  border-bottom: 1px solid rgba(240, 173, 78, 0.22);
+  color: var(--ink-soft);
+  display: flex;
+  font-size: 0.745rem;
+  gap: 1rem;
+  justify-content: space-between;
+  line-height: 1.55;
+  padding: 0.7rem 1.2rem;
+}
+.intervention-banner .button {
+  flex: none;
+}
+.intervention-control {
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin: 1rem 1.2rem;
+  padding: 0.85rem 1rem;
+}
+.intervention-control p {
+  color: var(--muted);
+  font-size: 0.745rem;
+  line-height: 1.55;
+  margin: 0.3rem 0 0.6rem;
+}
+.intervention-control > label {
+  color: var(--muted);
+  display: block;
+  font-size: 0.705rem;
+  margin-bottom: 0.35rem;
+}
+.intervention-row {
+  align-items: center;
+  display: flex;
+  gap: 0.9rem;
+}
+.intervention-row input[type="range"] {
+  accent-color: var(--amber);
+  flex: 1;
+  min-height: 1.5rem;
+}
+.intervention-row output {
+  color: var(--amber-bright);
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  min-width: 4ch;
+  text-align: right;
+}
+
+/* Scenario workbench */
+.scenario-bench {
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+}
+.scenario-bench-head {
+  align-items: center;
+  display: flex;
+  gap: 0.8rem;
+  justify-content: space-between;
+}
+.scenario-empty {
+  color: var(--muted);
+  font-size: 0.735rem;
+  margin: 0.5rem 0 0;
+}
+.scenario-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0.7rem 0 0;
+  padding: 0;
+}
+.scenario-list li {
+  align-items: stretch;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  display: inline-flex;
+  overflow: hidden;
+}
+.scenario-list li.is-compare {
+  border-color: var(--amber);
+}
+.scenario-list li button {
+  background: transparent;
+  border: 0;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.45rem 0.65rem;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.scenario-list li button:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.scenario-list .scenario-compare {
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+}
+.scenario-list .is-compare .scenario-compare {
+  color: var(--amber-bright);
+}
+.scenario-list .scenario-delete {
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+}
+.scenario-compare-note {
+  color: var(--muted);
+  font-size: 0.735rem;
+  margin: 0.7rem 0 0;
+}
+.allocation-list.with-compare .allocation-row {
+  grid-template-columns: minmax(11.5rem, 1.4fr) minmax(7rem, 2fr) 4.5rem 5rem 6.4rem 6rem;
+}
+/* Below ~1050px the row subtitle wraps instead of hard-truncating, and rows
+   get breathing room from the container edge (985px finding). */
+@media (max-width: 1050px) {
+  .area-name span {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+  .allocation-row {
+    padding-right: 0.5rem;
+  }
+}
+.compare-delta {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.665rem;
+  white-space: nowrap;
+}
+.compare-delta.delta-up {
+  color: var(--teal-bright);
+}
+.compare-delta.delta-down {
+  color: var(--amber-bright);
+}
+
 @keyframes reveal-up {
   from {
     opacity: 0;

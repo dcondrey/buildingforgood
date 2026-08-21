@@ -84,6 +84,21 @@ npm --prefix app run preview
 - [ ] The spotlight outline follows the narrated section and remains visible
       with the OS display in greyscale.
 
+### 5d. Scenario workbench and assumption explorer (added 2026-08-21)
+
+- [ ] After generating a plan, **Save scenario** is reachable and announces its
+      disabled state until the plan is ready.
+- [ ] A saved scenario chip's three controls (load, Compare, Delete) are
+      separate tab stops with distinct announced names.
+- [ ] With Compare active, each allocation row announces its "vs saved"
+      difference as text, and it is distinguishable in greyscale.
+- [ ] Selecting a neighborhood on the plan map exposes the assumption
+      explorer; the displaced-share slider adjusts with arrow keys and the
+      output tracks it.
+- [ ] Applying the assumption announces the banner (a live status region)
+      including "assumed, not observed"; **Clear assumption** restores the
+      observed-load plan.
+
 ### 6. Colour and motion
 
 - [ ] Set the OS display to greyscale. Every state is still distinguishable: infeasible, floor-dominant, locked, suppressed.

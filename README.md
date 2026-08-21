@@ -82,12 +82,25 @@ The three-minute walkthrough is in
 and ethics answers are in
 [`docs/product/JUDGE_QA.md`](docs/product/JUDGE_QA.md).
 
-Use **Guide demo** for a hands-on, self-narrating tour: eight steps ask you to
+Use **Guide demo** for a hands-on, self-narrating tour: nine steps ask you to
 work the real controls and notice when you have, with **Do it for me** on every
 task, **Play** for hands-free playback on an unattended screen, and arrow-key
 navigation. Stopping it never leaves the guard-off comparison view on screen.
 The guide never changes the underlying analysis; it stages the same local
 artifact.
+
+Two working surfaces make it a tool rather than a walkthrough. The **scenario
+workbench** saves any generated plan's policy settings in the browser (never
+the derived numbers), reloads them deterministically, and pins one as a
+baseline so every area shows the hour difference between two policies. The
+**assumption explorer** stress-tests the most reached-for action: select a
+neighborhood, state what share of its planning load an encampment clearance
+would shift to adjacent areas rather than resolve, and watch the plan react.
+The counts cannot show who moves where or why (the April 2026 City Auditor
+report says exactly that), so the explorer never predicts displacement — it
+makes the assumption explicit and shows that no setting shrinks the need
+without saying so out loud. Any active assumption travels, labeled, in the
+decision brief.
 
 ## The three-minute story
 

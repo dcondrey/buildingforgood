@@ -174,7 +174,7 @@ describe("guided onboarding", () => {
   it("asks for the real control, detects completion, and advances on its own", async () => {
     const user = userEvent.setup();
     const panel = await beginGuide(user);
-    expect(within(panel).getByText(/Step 1 of 8/)).toBeDefined();
+    expect(within(panel).getByText(/Step 1 of 9/)).toBeDefined();
     expect(panel.textContent).toContain("Your turn:");
     expect(panel.textContent).toContain("Test the drop");
     await user.click(screen.getByRole("button", { name: /Test the drop/ }));
@@ -193,20 +193,20 @@ describe("guided onboarding", () => {
     expect(screen.getByRole("dialog").textContent).toContain("Read what actually moved");
     await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Back" }));
     const revisited = screen.getByRole("dialog");
-    expect(revisited.textContent).toContain("Step 1 of 8");
+    expect(revisited.textContent).toContain("Step 1 of 9");
     expect(revisited.textContent).toContain("Done — press Next to continue.");
     // The completed task must wait for an explicit Next instead of auto-advancing.
     await new Promise((resolve) => setTimeout(resolve, 1100));
-    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 8");
+    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 9");
   });
 
   it("advances with the arrow keys", async () => {
     const user = userEvent.setup();
     await beginGuide(user);
     fireEvent.keyDown(document.body, { key: "ArrowRight" });
-    expect(screen.getByRole("dialog").textContent).toContain("Step 2 of 8");
+    expect(screen.getByRole("dialog").textContent).toContain("Step 2 of 9");
     fireEvent.keyDown(document.body, { key: "ArrowLeft" });
-    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 8");
+    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 9");
   });
 
   it("never strands the guard-off comparison view when stopped", async () => {
@@ -250,6 +250,94 @@ describe("guided onboarding", () => {
     await beginGuide(user);
     expect(await violationsFor(document.body)).toEqual([]);
   }, 30000);
+});
+
+describe("scenario workbench", () => {
+  function stubStorage() {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => void store.set(key, value),
+      removeItem: (key: string) => void store.delete(key),
+    });
+    return store;
+  }
+
+  async function generateAndSave(user: ReturnType<typeof userEvent.setup>) {
+    await renderOffline();
+    await user.click(screen.getByRole("button", { name: /Generate coverage scenario/ }));
+    await screen.findByText(/80\/80 hours allocated\./);
+    await user.click(screen.getByRole("button", { name: "Save scenario" }));
+    return screen.getByRole("button", { name: "80h · 8h floor" });
+  }
+
+  it("saves settings only, loads them back, and survives a reload", async () => {
+    const store = stubStorage();
+    const user = userEvent.setup();
+    await generateAndSave(user);
+    expect(store.get("stillhere-scenarios-v1")).toContain("80h · 8h floor");
+    expect(store.get("stillhere-scenarios-v1")).not.toContain("allocations");
+    // Change the policy, then load the saved scenario back.
+    const floorGroup = screen.getByLabelText("Coverage-continuity floor sensitivity");
+    await user.click(within(floorGroup).getAllByRole("button")[1]); // 0h, 4h, 8h
+    await screen.findByText(/24 of 80 hours are set aside/);
+    await user.click(screen.getByRole("button", { name: "80h · 8h floor" }));
+    expect(await screen.findByText(/48 of 80 hours are set aside/)).toBeDefined();
+    // A fresh mount reads the same store.
+    cleanup();
+    render(<App />);
+    await screen.findByText("Offline demo snapshot");
+    expect(screen.getByRole("button", { name: "80h · 8h floor" })).toBeDefined();
+  });
+
+  it("shows per-area hour differences against a pinned saved scenario", async () => {
+    stubStorage();
+    const user = userEvent.setup();
+    await generateAndSave(user);
+    const floorGroup = screen.getByLabelText("Coverage-continuity floor sensitivity");
+    await user.click(within(floorGroup).getAllByRole("button")[0]); // 0h, 4h, 8h
+    await screen.findByText("OFF · COMPARISON ONLY");
+    await user.click(screen.getByRole("button", { name: "Compare" }));
+    expect(screen.getByText(/Comparing with/).textContent).toContain("80h · 8h floor");
+    const deltas = screen.getAllByText(/vs saved|same as saved/);
+    expect(deltas.length).toBe(6);
+    expect(screen.getAllByText(/[+-]\d+h vs saved/).length).toBeGreaterThan(0);
+  });
+
+  it("deletes a saved scenario", async () => {
+    stubStorage();
+    const user = userEvent.setup();
+    await generateAndSave(user);
+    await user.click(screen.getByRole("button", { name: "Delete scenario 80h · 8h floor" }));
+    expect(screen.queryByRole("button", { name: "80h · 8h floor" })).toBeNull();
+    expect(screen.getByText(/Save this plan, change the policy/)).toBeDefined();
+  });
+});
+
+describe("intervention assumption explorer", () => {
+  it("explores a clearance assumption, reallocates hours, discloses it, and clears cleanly", async () => {
+    const user = userEvent.setup();
+    await renderOffline();
+    await user.click(screen.getByRole("button", { name: /Generate coverage scenario/ }));
+    await screen.findByText(/80\/80 hours allocated\./);
+    expect(screen.getByLabelText("Hours for East Village").getAttribute("value")).toBe("27");
+    await user.click(screen.getAllByRole("button", { name: /East Village:/ })[0]);
+    expect(screen.getByText(/What if East Village were cleared\?/)).toBeDefined();
+    // Apply at the default 100% displaced share: need moves, it does not shrink.
+    await user.click(screen.getByRole("button", { name: "Explore this assumption" }));
+    const banner = await screen.findByText(/Assumption explorer:/);
+    expect(banner.parentElement?.textContent).toContain("assumed, not observed");
+    expect(banner.parentElement?.textContent).toContain("not a prediction");
+    // With its load moved off, East Village keeps only the guaranteed minimum.
+    expect(screen.getByLabelText("Hours for East Village").getAttribute("value")).toBe("8");
+    // The brief carries the assumption disclosure.
+    await user.click(screen.getByRole("button", { name: "Copy decision brief" }));
+    expect(await screen.findByText(/Stress-test assumption active: East Village/)).toBeDefined();
+    // Clearing the assumption restores the observed-load plan.
+    await user.click(screen.getAllByRole("button", { name: "Clear assumption" })[0]);
+    expect(screen.queryByText(/Assumption explorer:/)).toBeNull();
+    expect(screen.getByLabelText("Hours for East Village").getAttribute("value")).toBe("27");
+  });
 });
 
 describe("keyboard access (#12, #16)", () => {

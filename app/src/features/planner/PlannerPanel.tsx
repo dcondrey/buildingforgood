@@ -148,8 +148,8 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
       {plan.status === "infeasible" ? (
         <div role="alert">
           <p>
-            <strong>✕ No plan was produced.</strong> The budget cannot satisfy the coverage floor,
-            and the planner does not weaken it silently.
+            <strong>✕ No plan was produced.</strong> The coverage floor was not lowered to fit the
+            budget.
           </p>
           <ul>
             {plan.infeasible_reasons.map((reason) => (
@@ -277,7 +277,7 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
       {showUnguarded && (
         <p>
           The unguarded column is an audit view showing what a purely proportional split would give.
-          It is shown for comparison and is not the recommended plan.
+          It is shown for comparison only.
         </p>
       )}
     </section>

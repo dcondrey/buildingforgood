@@ -581,3 +581,45 @@ def test_recoverability_only_examines_actual_breakdowns() -> None:
     }
     findings = _blocking(scan_json_document(row, min_cell=5))
     assert [f for f in findings if f.rule.startswith("recovery.")] == []
+
+
+def test_the_attacker_model_follows_the_written_policy_not_raw_arithmetic() -> None:
+    """A wider feasible set is a WEAKER attacker model, not a safer one.
+
+    The first version enumerated every positive composition of the remainder
+    and called that conservative. It is the opposite: the attacker knows the
+    suppression policy, so assignments the policy could never have produced
+    must not count as ambiguity. Here the policy pins the withheld pair at
+    {4, 6} while the unconstrained set offers five multisets and reports
+    nothing. That is a false negative in a privacy gate.
+    """
+    row = {
+        "neighborhood": "x",
+        "month": "2021-09",
+        "total": 16,
+        "by_type": {"individual": 6, "structure": None, "vehicle": None},
+    }
+    rules = {f.rule for f in _blocking(scan_json_document(row, min_cell=5))}
+    assert "recovery.unique_multiset" in rules
+
+
+def test_a_row_no_policy_branch_could_produce_fails_closed() -> None:
+    """If nothing the policy permits explains the row, say so rather than pass."""
+    row = {
+        "neighborhood": "x",
+        "month": "2021-09",
+        "total": 40,
+        "by_type": {"individual": 5, "structure": None, "vehicle": None},
+    }
+    rules = {f.rule for f in _blocking(scan_json_document(row, min_cell=5))}
+    assert "recovery.policy_inconsistent" in rules
+
+
+def test_genuine_ambiguity_still_passes() -> None:
+    row = {
+        "neighborhood": "x",
+        "month": "2021-10",
+        "total": 44,
+        "by_type": {"individual": 38, "structure": None, "vehicle": None},
+    }
+    assert _blocking(scan_json_document(row, min_cell=5)) == []

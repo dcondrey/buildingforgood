@@ -584,24 +584,60 @@ MAX_FEASIBLE_ASSIGNMENTS = 200_000
 MAX_SUPPRESSED_CELLS = 8
 
 
-def _feasible_assignments(remainder: int, count: int) -> list[tuple[int, ...]]:
-    """Every way the withheld cells could sum to the published remainder.
-
-    Suppressed cells are always strictly positive under the emitter policy: a
-    cell is withheld either because it is small, or because it was pulled in
-    as a complementary partner, and both branches require a nonzero value.
-    """
+def _compositions(remainder: int, count: int) -> list[tuple[int, ...]]:
+    """Every way to split ``remainder`` into ``count`` strictly positive parts."""
     if count == 1:
         return [(remainder,)] if remainder >= 1 else []
     results: list[tuple[int, ...]] = []
     for first in range(1, remainder - count + 2):
-        for rest in _feasible_assignments(remainder - first, count - 1):
+        for rest in _compositions(remainder - first, count - 1):
             results.append((first, *rest))
     return results
 
 
+def _feasible_assignments(
+    remainder: int, count: int, min_cell: int, smallest_published: int | None
+) -> list[tuple[int, ...]]:
+    """Assignments the emitter policy could actually have produced.
+
+    This must mirror `docs/policy/small-cell-suppression.md`, and the
+    direction of any error matters. An attacker knows the policy, so a
+    feasible set WIDER than the policy models a weaker attacker and under-
+    reports leaks. An earlier version enumerated every positive composition
+    and called that conservative. It was the opposite: for a remainder of 10
+    across two withheld cells with a smallest published cell of 6, the policy
+    pins the answer at {4, 6} while the unconstrained set offers five
+    multisets and reports nothing.
+
+    Policy branches, in the emitter's terms:
+
+    - Every withheld value is small (branch 2), or
+    - for exactly two withheld cells, one is small and the other is the
+      complementary partner (branch 3), which is at least the threshold and
+      no larger than the smallest published nonzero cell, since the partner
+      is chosen as the next-smallest nonzero value.
+    """
+    candidates = _compositions(remainder, count)
+    all_small = [c for c in candidates if all(0 < v < min_cell for v in c)]
+    if count != 2:
+        return all_small
+
+    upper = smallest_published if smallest_published is not None else remainder
+    partner_family = [
+        c
+        for c in candidates
+        if sum(1 for v in c if 0 < v < min_cell) == 1 and any(min_cell <= v <= upper for v in c)
+    ]
+    merged = {c: None for c in all_small + partner_family}
+    return list(merged)
+
+
 def analyze_recoverability(
-    total: int, published: list[int], suppressed_count: int, where: str
+    total: int,
+    published: list[int],
+    suppressed_count: int,
+    where: str,
+    min_cell: int = 5,
 ) -> list[Finding]:
     """Flag withheld cells that arithmetic can still recover.
 
@@ -632,9 +668,25 @@ def analyze_recoverability(
             )
         ]
 
-    feasible = _feasible_assignments(remainder, suppressed_count)
+    nonzero_published = [v for v in published if v > 0]
+    feasible = _feasible_assignments(
+        remainder,
+        suppressed_count,
+        min_cell,
+        min(nonzero_published) if nonzero_published else None,
+    )
     if not feasible:
-        return []
+        # No assignment this policy could have produced explains the row, so
+        # the row does not match the policy at all. Fail closed and say so.
+        return [
+            Finding(
+                "BLOCK",
+                "recovery.policy_inconsistent",
+                where,
+                f"no suppression the policy permits produces a remainder of {remainder} across "
+                f"{suppressed_count} withheld cells; the row does not match the written policy",
+            )
+        ]
     if len(feasible) == 1:
         return [
             Finding(
@@ -695,7 +747,9 @@ def _scan_recoverability(node: Any, where: str, min_cell: int) -> Iterator[Findi
                 ]
                 withheld = sum(1 for v in value.values() if v is None)
                 if withheld:
-                    yield from analyze_recoverability(total, numbers, withheld, f"{where}.{key}")
+                    yield from analyze_recoverability(
+                        total, numbers, withheld, f"{where}.{key}", min_cell
+                    )
         for key, value in node.items():
             yield from _scan_recoverability(value, f"{where}.{key}", min_cell)
         return

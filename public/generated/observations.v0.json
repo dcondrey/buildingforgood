@@ -2551,17 +2551,9 @@
           "total": 34
         },
         {
-          "by_type": {
-            "individual": 21,
-            "structure": null,
-            "vehicle": null
-          },
-          "by_type_suppressed": [
-            "structure",
-            "vehicle"
-          ],
           "month": "2017-04",
-          "total": 24
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -2665,17 +2657,9 @@
           "total": 58
         },
         {
-          "by_type": {
-            "individual": 50,
-            "structure": null,
-            "vehicle": null
-          },
-          "by_type_suppressed": [
-            "structure",
-            "vehicle"
-          ],
           "month": "2018-02",
-          "total": 52
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -2691,17 +2675,9 @@
           "total": 63
         },
         {
-          "by_type": {
-            "individual": 39,
-            "structure": null,
-            "vehicle": null
-          },
-          "by_type_suppressed": [
-            "structure",
-            "vehicle"
-          ],
           "month": "2018-04",
-          "total": 42
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -3124,17 +3100,9 @@
           "total": 26
         },
         {
-          "by_type": {
-            "individual": 38,
-            "structure": null,
-            "vehicle": null
-          },
-          "by_type_suppressed": [
-            "structure",
-            "vehicle"
-          ],
           "month": "2021-07",
-          "total": 41
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -5564,17 +5532,9 @@
           "total": 51
         },
         {
-          "by_type": {
-            "individual": 62,
-            "structure": null,
-            "vehicle": null
-          },
-          "by_type_suppressed": [
-            "structure",
-            "vehicle"
-          ],
           "month": "2018-05",
-          "total": 65
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -6071,17 +6031,9 @@
           "total": 62
         },
         {
-          "by_type": {
-            "individual": 103,
-            "structure": null,
-            "vehicle": null
-          },
-          "by_type_suppressed": [
-            "structure",
-            "vehicle"
-          ],
           "month": "2022-03",
-          "total": 106
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -6815,17 +6767,9 @@
           "total": 44
         },
         {
-          "by_type": {
-            "individual": 26,
-            "structure": null,
-            "vehicle": null
-          },
-          "by_type_suppressed": [
-            "structure",
-            "vehicle"
-          ],
           "month": "2018-01",
-          "total": 29
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -7073,17 +7017,9 @@
           "total": 31
         },
         {
-          "by_type": {
-            "individual": 23,
-            "structure": null,
-            "vehicle": null
-          },
-          "by_type_suppressed": [
-            "structure",
-            "vehicle"
-          ],
           "month": "2020-02",
-          "total": 25
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -7274,17 +7210,9 @@
           "total": 18
         },
         {
-          "by_type": {
-            "individual": 21,
-            "structure": null,
-            "vehicle": null
-          },
-          "by_type_suppressed": [
-            "structure",
-            "vehicle"
-          ],
           "month": "2021-07",
-          "total": 23
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -7340,17 +7268,9 @@
           "total": 40
         },
         {
-          "by_type": {
-            "individual": 30,
-            "structure": null,
-            "vehicle": null
-          },
-          "by_type_suppressed": [
-            "structure",
-            "vehicle"
-          ],
           "month": "2022-01",
-          "total": 33
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {

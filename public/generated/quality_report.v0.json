@@ -577,9 +577,9 @@
   },
   "schema": "quality_report.v0",
   "small_cell_suppression": {
-    "cells_suppressed": 534,
+    "cells_suppressed": 514,
     "policy": "complementary; zeros publishable; small totals suppress the row",
-    "rows_suppressed": 5,
+    "rows_suppressed": 15,
     "threshold": 5
   },
   "source": {

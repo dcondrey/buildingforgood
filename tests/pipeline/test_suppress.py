@@ -61,10 +61,52 @@ class TestCellSuppression:
         assert result["by_type_suppressed"] == ["individual", "vehicle"]
 
 
+def attacker_assignments(k: int, remainder: int) -> list[tuple[int, ...]]:
+    """Independent oracle: every assignment an attacker must consider.
+
+    Deliberately re-derived here rather than imported, so the test is an
+    independent check on the production logic, not a mirror of it. The public
+    policy admits two stories for k suppressed cells summing to `remainder`:
+    all cells small (1..4 each), or, only when k == 2, one small cell plus a
+    complementary partner that must be >= 5.
+    """
+    from itertools import product as iproduct
+
+    assignments = []
+    if k >= 2:
+        assignments += [c for c in iproduct(range(1, 5), repeat=k) if sum(c) == remainder]
+    if k == 2:
+        for small in range(1, 5):
+            partner = remainder - small
+            if partner >= 5:
+                assignments += [(small, partner), (partner, small)]
+    return assignments
+
+
 class TestNonRecoverability:
-    def test_no_row_leaves_exactly_one_suppressed_nonzero_cell(self) -> None:
-        # Property over a broad sweep: after suppression, a published row
-        # never lets subtraction recover a suppressed cell exactly.
+    def test_reviewer_found_leak_is_closed(self) -> None:
+        # cortez 2018-02 in the real artifact: {52, ind 50, str 1, veh 1}.
+        # Remainder 2 across two suppressed cells pins both at exactly 1;
+        # the row must escalate to whole-row suppression.
+        result = suppress_observation_row(row(52, individual=50, structure=1, vehicle=1))
+        assert result == {"month": "2021-09", "total": None, "suppressed": True}
+
+    def test_unique_multiset_also_escalates(self) -> None:
+        # Remainder 3 forces the multiset {1, 2}: the attacker learns every
+        # suppressed value, only not which type holds which. Escalate.
+        result = suppress_observation_row(row(33, individual=30, structure=1, vehicle=2))
+        assert result.get("suppressed") is True
+
+    def test_ambiguous_remainder_stays_published(self) -> None:
+        # Remainder 6 admits {2,4}, {3,3}, and {1,5}: nothing is pinned.
+        result = suppress_observation_row(row(36, individual=30, structure=3, vehicle=3))
+        assert result["total"] == 36
+        assert result["by_type_suppressed"] == ["structure", "vehicle"]
+
+    def test_property_sweep_against_independent_attacker(self) -> None:
+        # Exhaustive sweep: for every published row, the independent attacker
+        # oracle must not pin any suppressed cell to a single value, and no
+        # published cell may be a small int.
         for individual in range(0, 12):
             for structure in range(0, 12):
                 for vehicle in range(0, 12):
@@ -73,14 +115,19 @@ class TestNonRecoverability:
                     if result.get("suppressed"):
                         continue
                     by_type = result["by_type"]
-                    nulls = [k for k, v in by_type.items() if v is None]
                     published = [v for v in by_type.values() if isinstance(v, int)]
-                    # invariant 1: no published small cell
                     assert all(v == 0 or v >= SMALL_CELL_THRESHOLD for v in published), by_type
-                    if result["total"] is not None and nulls:
-                        # invariant 2: at least two suppressed cells, so the
-                        # remainder never pins a single cell
-                        assert len(nulls) >= 2, (individual, structure, vehicle, by_type)
+                    nulls = [k for k, v in by_type.items() if v is None]
+                    if not nulls:
+                        continue
+                    remainder = result["total"] - sum(published)
+                    assignments = attacker_assignments(len(nulls), remainder)
+                    assert assignments, (individual, structure, vehicle)
+                    for position in range(len(nulls)):
+                        feasible = {a[position] for a in assignments}
+                        assert len(feasible) > 1, (individual, structure, vehicle, assignments)
+                    multisets = {tuple(sorted(a)) for a in assignments}
+                    assert len(multisets) > 1, (individual, structure, vehicle, multisets)
 
     def test_total_minus_published_equals_suppressed_mass(self) -> None:
         # vehicle=4 is small; individual=40 joins as its complementary

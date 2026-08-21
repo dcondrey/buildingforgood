@@ -8,7 +8,10 @@ until then every artifact the build emits must pass here.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, get_args
+
+from stillhere_pipeline.normalize import SleeperType
+from stillhere_pipeline.suppress import SMALL_CELL_THRESHOLD
 
 # Field names that must never appear in deployment-safe artifacts (issue #7
 # hardens this further; the build refuses to emit them from day one).
@@ -52,18 +55,16 @@ def assert_no_precise_fields(node: Any, path: str = "$") -> None:
             assert_no_precise_fields(item, f"{path}[{index}]")
 
 
-# The count-bearing paths in an observation row. The artifact DECLARES these
-# (issue #4 slice) so the privacy scanner's small-cell rule is a lookup, not
-# shape-inference; this constant is the single source the emitter writes and
-# the validator checks against.
-OBSERVATION_TYPE_FIELDS = ("individual", "structure", "vehicle")
+# The count-bearing paths in an observation row, derived from the one type
+# roster (normalize.SleeperType) so a type rename cannot make the declaration
+# silently lie. The artifact DECLARES these (issue #4 slice) so the privacy
+# scanner's small-cell rule is a lookup, not shape-inference.
+OBSERVATION_TYPE_FIELDS: tuple[str, ...] = get_args(SleeperType)
 OBSERVATION_COUNT_FIELDS = ("total", *(f"by_type.{name}" for name in OBSERVATION_TYPE_FIELDS))
 OBSERVATION_SUPPRESSION_FIELD = "suppressed"
 
 
 def _validate_contract_block(doc: dict[str, Any]) -> None:
-    from stillhere_pipeline.suppress import SMALL_CELL_THRESHOLD
-
     contract = _require(doc, "contract", dict)
     count_fields = _require(contract, "count_fields", list)
     if any(not isinstance(field, str) for field in count_fields):

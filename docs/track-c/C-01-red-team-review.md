@@ -154,26 +154,26 @@ Severity is the harm if the scenario succeeds: **S1** catastrophic/irreversible 
 
 ## 3. Summary of findings
 
-| ID | Finding | Severity | Handoff | Resolved? |
-|---|---|---|---|---|
-| R-01 | MITIGATION NEEDED | S1 | #8, #16 | Open |
-| R-02 | NON-GOAL / partial | S1 | #16, #7, #14 | Open |
-| R-03 | PROTECTED, needs test | S2 | #14, #16 | Open |
-| R-04 | MITIGATION NEEDED | S3→S2 | #8, #16 | Open |
-| R-05 | NON-GOAL / PROTECTED | S1 | #7 | Spec'd in C-02 |
-| R-06 | **MITIGATION NEEDED — new gap** | S1 | #7, #16 | Spec'd in C-02 |
-| R-07 | MITIGATION NEEDED | S3 | #14, #15 | Spec'd in C-03 |
-| R-08 | MITIGATION NEEDED | S2 | #15, #16 | Open |
-| R-09 | NON-GOAL / PROTECTED | S2 | #16 | Open |
-| R-10 | MITIGATION NEEDED | S3 | #16, #11 | Open |
-| R-11 | MITIGATION NEEDED | S2 | #13, #16 | Open |
-| R-12 | MITIGATION NEEDED | S2 | #8, #16 | Open |
+**Status as of 2026-08-21, after the second pass and the #45 merge.** Re-checked by running the evidence rather than by re-reading the row. Four rows had gone stale, all in the direction of showing resolved work as open, which makes a tracker something people stop reading.
 
-**Unresolved high-severity (S1) findings blocking release:** R-01, R-02, R-06. R-05 is spec'd and implemented in `scripts/privacy_scan.py`; it closes when the scan runs in CI against real generated artifacts.
+| ID | Finding | Sev | Handoff | Status | Evidence |
+|---|---|---|---|---|---|
+| R-01 | MITIGATION NEEDED | S1 | #8, #16 | **Partly resolved** | Both README instances fixed in the second pass, including the working pitch. The classification-label disclaimer needs real interface copy from #12 |
+| R-02 | NON-GOAL / partial | S1 | #16, #7, #14 | **Partly resolved** | Non-goal text drafted in the C-05 allocation card; panel has no priority-rank column and orders by area name, under test. Card is not rendered until #13 |
+| R-03 | PROTECTED, needs test | S2 | #14, #16 | **Resolved** | Complaint volume unrepresentable in the planner input type; guard recurses objects and arrays; 5 tests |
+| R-04 | MITIGATION NEEDED | S3→S2 | #8, #16 | Open | Needs the evidence panel from #12 |
+| R-05 | NON-GOAL / PROTECTED | S1 | #7 | **Resolved** | Deny-list, geometry-type rule, and grain rule implemented; 7 declared planning areas scan clean, 382 source blocks raise 1529 findings |
+| R-06 | MITIGATION NEEDED (new gap) | S1 | #7, #6, #16 | **Resolved** | Suppression in the emitter (#45) plus small-cell and recoverability rules in the scan; 0 exact recoveries, 0 pinned cells, 0 unique multisets on the real artifact |
+| R-07 | MITIGATION NEEDED | S3 | #14, #15 | **Resolved** | 1-hour increment fixed in the contract; unmet load on every allocation and rendered in the panel |
+| R-08 | MITIGATION NEEDED | S2 | #15, #16 | **Partly resolved** | Locks survive recomputation and the coordinator-set count is disclosed, both under test. AI-disclosure card awaits #13 |
+| R-09 | NON-GOAL / PROTECTED | S2 | #16 | **Partly resolved** | Limitations card drafted; not rendered until #13 |
+| R-10 | MITIGATION NEEDED | S2 | #14, #15, #16 | **Partly resolved** | `floor_dominance_warning_threshold` fixed at 0.25 and the panel warns; the word "fairness" still needs auditing in rendered copy |
+| R-11 | MITIGATION NEEDED | S2 | #13, #16 | Open | Entirely dependent on the spatial view in #13 |
+| R-12 | MITIGATION NEEDED | S2 | #8, #16 | Open | Comparability guard is contract-level; needs the classification path from #8 |
 
-**New gap this review surfaced:** R-06 small-cell re-identification. The development plan's privacy control was field-based only. Aggregation alone does not anonymize a count of one. This has been added to the C-02 boundary spec as a blocking rule.
+**Genuinely unresolved S1 before release:** R-01 and R-02, both partly mitigated and both waiting on interface copy that does not exist yet. **R-06 is closed**, which matters because it was the gap this review added to the plan rather than inherited from it.
 
----
+**Still open at lower severity:** R-04, R-11 and R-12, all blocked on #8, #12 or #13.
 
 ## 4. Launch-blocking claim checklist
 

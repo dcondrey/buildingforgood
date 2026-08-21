@@ -1,0 +1,19 @@
+report_month,series,geography,value,unit,value_status,model_eligible,source_id
+2026-04-01,area_total,East Village,571,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-04-01,area_total,City Center,209,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-04-01,area_total,Columbia,38,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-04-01,area_total,Marina,17,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-04-01,area_total,Cortez,77,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-04-01,area_total,Gaslamp,47,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-04-01,area_total,Outside Perimeter,133,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-04-01,six_area_core_total,Six-area downtown core,959,estimated_person_equivalents,project_derived,false,dsdp_public_monthly_reports
+2026-04-01,seven_area_total,DSDP published total,1092,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-06-01,area_total,East Village,514,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-06-01,area_total,City Center,177,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-06-01,area_total,Columbia,19,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-06-01,area_total,Marina,8,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-06-01,area_total,Cortez,75,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-06-01,area_total,Gaslamp,48,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-06-01,area_total,Outside Perimeter,114,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports
+2026-06-01,six_area_core_total,Six-area downtown core,841,estimated_person_equivalents,project_derived,false,dsdp_public_monthly_reports
+2026-06-01,seven_area_total,DSDP published total,955,estimated_person_equivalents,publisher_reported,false,dsdp_public_monthly_reports

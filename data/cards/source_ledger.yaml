@@ -30,6 +30,18 @@ artifact_lineages:
       - sdrdl_analysis
       - sd311
       - rtfh_pitc
+  public_monitoring:
+    artifact: data/monitoring/dsdp_public_checkpoints.csv
+    required_source_ids:
+      - dsdp_public_monthly_reports
+    excluded_from:
+      - demo_v1_training
+      - demo_v1_forecast_selection
+      - demo_v1_planner
+    deployment_boundary: >-
+      Publisher-reported neighborhood totals and explicitly labeled derived
+      aggregates only. The source PDF remains raw-only; no maps, block-level
+      observations, routes, or precise locations are copied into the table.
 
 sources:
   - id: sdrdl_source
@@ -322,6 +334,155 @@ sources:
       - One airport station may not represent block-level downtown conditions.
       - Same-day weather does not capture prior weather or other environmental conditions.
       - Similar weather does not make the year-over-year comparison causal.
+
+  - id: dsdp_public_monthly_reports
+    name: Downtown San Diego Partnership public Unsheltered Sleep Count reports
+    role: post_freeze_monitoring
+    analytical_question: >-
+      What publisher-reported area totals are available after the organizer
+      bundle's 2025-12 analytical freeze, on the same six-area core geography?
+    publisher: Downtown San Diego Partnership Clean & Safe.
+    package_page: https://downtownsandiego.org/clean-and-safe/unhoused-care/
+    archive_page: https://downtownsandiego.org/clean-and-safe/archive/
+    dashboard_page: https://downtownsandiego.org/dashboard/
+    retrieved_at: "2026-08-21"
+    files:
+      - raw_path: data/raw/dsdp_public_reports/June-2026-Unsheltered-Sleep-Count.pdf
+        url: https://downtownsandiego.org/wp-content/uploads/2026/08/June-2026-Unsheltered-Sleep-Count.1.pdf
+    derived_files:
+      - path: data/monitoring/dsdp_public_checkpoints.csv
+        derivation: >-
+          Manual transcription of the PDF's April and June 2026 published
+          neighborhood totals. Six-area core totals are deterministic sums
+          excluding Outside Perimeter and are tested against the seven-area
+          publisher totals.
+    retrieval_method: >-
+      ./scripts/fetch_raw.sh monitoring downloads the allowlisted PDF and
+      verifies its pinned SHA-256 digest. HTML archive pages are discovery
+      surfaces only and are never ingested wholesale.
+    update_cadence: >-
+      Irregular in 2025-2026. The dashboard says collection shifted to the
+      final month of each quarter, while the June 2026 PDF exposes April and
+      June observations only.
+    license_terms: >-
+      No explicit data license is stated. Attribute DSDP; retain the source
+      PDF as an ignored audit snapshot and publish only aggregate transcribed
+      values with a direct citation.
+    collection_method: >-
+      Clean & Safe visual street sweep. Published totals retain DSDP's
+      post-2020 practice of applying 1.75 per visible tent/structure and 2.03
+      per vehicle showing signs of habitation, although RTFH stopped applying
+      those multipliers in 2020.
+    intended_use: >-
+      Public post-freeze monitoring and provenance checkpoint only. These
+      values are excluded from the frozen demo.v1 training, model selection,
+      January 2026 historical forecast replay, and outreach-hour planner.
+    time_grain: >-
+      Report month only. No exact count date is asserted from the summary table.
+    geo_grain: >-
+      Six named downtown core areas plus Outside Perimeter. The monitoring
+      table includes both the published seven-area total and a clearly labeled
+      project-derived six-area core total.
+    coverage: April and June 2026 in the pinned June 2026 report.
+    known_limitations:
+      - Visual observations with occupancy multipliers are not unique people or service need.
+      - Same publisher and collection lineage as the organizer bundle; not independent validation.
+      - >-
+        The dashboard labels 1,092 as Q1 2026, but the PDF places 1,092 in
+        April and provides no January-March observation. It cannot validate
+        the demo's January 2026 historical forecast scenario.
+      - Reporting cadence is irregular and missing months remain missing.
+      - >-
+        The live archive and Unhoused Care HTML contained unrelated injected
+        content when reviewed on 2026-08-21. Only allowlisted publisher PDFs
+        may be ingested, and every fetched file must match a reviewed hash.
+
+  - id: sdhc_city_program_dashboard
+    name: SDHC and City of San Diego Homeless Services Programs Overview
+    role: local_system_context
+    analytical_question: >-
+      What households and program outcomes are recorded in HMIS for
+      City/SDHC-funded homelessness programs?
+    publisher: San Diego Housing Commission and City of San Diego.
+    package_page: https://sdhc.org/homelessness-solutions/city-homeless-shelters-services/dashboard/
+    discovery_page: https://www.sandiego.gov/homelessness-strategies-and-solutions/data-reports
+    retrieval_method: Reference-only public Tableau dashboard; not a demo input.
+    update_cadence: Periodic dashboard refresh; reviewed data were current through 2026-06-30.
+    license_terms: No explicit bulk-data reuse license located; cite the dashboard.
+    collection_method: >-
+      HMIS records reported by participating providers for programs funded by
+      the City of San Diego and/or SDHC.
+    intended_use: >-
+      A separately labeled City-program outcomes card and future outcomes
+      lane. Never use as a downtown observation, forecast feature, allocation
+      weight, or statement of live service availability.
+    time_grain: Fiscal-year and dashboard reporting periods.
+    geo_grain: City-funded program system; not the six-area downtown core.
+    known_limitations:
+      - Program service rows can overlap; dashboard totals and intervention categories may have different deduplication rules.
+      - HMIS coverage depends on provider participation and data quality.
+      - Program enrollment is not a count of everyone experiencing homelessness.
+      - Bed or program inventory is not live capacity, eligibility, or availability.
+
+  - id: hud_spm_guidance
+    name: HUD Continuum of Care System Performance Measures guidance
+    role: measurement_definitions
+    analytical_question: >-
+      Which definitions and data-quality rules distinguish HMIS system
+      outcomes from PIT, HIC, and local visual observation counts?
+    publisher: U.S. Department of Housing and Urban Development.
+    package_page: https://files.hudexchange.info/resources/documents/System-Performance-Measures-Introductory-Guide.pdf
+    programming_specifications: https://files.hudexchange.info/resources/documents/System-Performance-Measures-HMIS-Programming-Specifications-September-2023.pdf
+    retrieval_method: Reference-only official guidance; not a dataset or demo input.
+    update_cadence: Irregular federal guidance revisions.
+    license_terms: U.S. federal public document; cite HUD.
+    collection_method: >-
+      Defines measures calculated from deduplicated client-level HMIS records
+      across participating projects and PIT values submitted through HDX.
+    intended_use: >-
+      Glossary, measurement crosswalk, and responsible-data guardrails only.
+    time_grain: Federal fiscal year (October 1 through September 30), except defined PIT inputs.
+    geo_grain: Continuum of Care system.
+    known_limitations:
+      - Guidance contains definitions, not San Diego observations.
+      - HMIS system outcomes cannot fill monthly DSDP gaps or validate a downtown forecast.
+
+  - id: hud_ca601_system_reports
+    name: HUD CA-601 CoC Performance Profile, HIC, PIT, and System Performance data
+    role: annual_coc_context
+    analytical_question: >-
+      What official annual system outcomes and inventory does HUD report for
+      the San Diego City and County Continuum of Care?
+    publisher: U.S. Department of Housing and Urban Development.
+    package_page: https://www.huduser.gov/portal/datasets/ahar.html
+    reference_urls:
+      - https://files.hudexchange.info/reports/published/CoC_Perf_CoC_CA-601-2024_CA_2024.pdf
+      - https://files.hudexchange.info/reports/published/CoC_HIC_CoC_CA-601-2024_CA_2024.pdf
+      - https://www.huduser.gov/portal/datasets/ahar/2024-ahar-part-1-pit-estimates-of-homelessness-in-the-us.html
+    retrieval_method: >-
+      Reference-only official reports and bulk-data discovery hub. Pin a
+      direct file and document its release year before adding any extracted
+      measure.
+    update_cadence: Annual, with revisions and differing release dates by product.
+    license_terms: U.S. federal public data; cite HUD, report year, and CoC CA-601.
+    collection_method: >-
+      CoC-submitted HMIS System Performance, annual PIT, and point-in-time HIC
+      inventory summarized by HUD.
+    intended_use: >-
+      Annual countywide system context, official definitions, and
+      triangulation with Cal ICH. Excluded from the downtown forecast and
+      planner.
+    time_grain: Annual PIT/HIC snapshot or federal fiscal year, depending on measure.
+    geo_grain: CA-601 San Diego City and County Continuum of Care.
+    known_limitations:
+      - Countywide CoC measures are not downtown-area observations.
+      - HIC inventory is not live bed availability or individual eligibility.
+      - PIT, HIC, and HMIS measures have different universes and clocks.
+      - HUD notes that submitted values receive limited review and are not independently verified.
+      - >-
+        The former HUD Exchange grantee-report and homelessness-data catalog
+        URLs returned 404 when reviewed on 2026-08-21; use pinned direct
+        reports and the HUD USER AHAR hub rather than those stale routes.
 
 excluded:
   - id: sdheart

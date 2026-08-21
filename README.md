@@ -231,6 +231,13 @@ housing exits, movement, new arrivals, or measurement error.
 - The [sandiegodata-projects DSDP repository](https://github.com/sandiegodata-projects/downtown-partnership)
   documents the public digitization and update lineage behind these count
   files. It supports provenance, not independent validation of the same maps.
+- DSDP's pinned [June 2026 Unsheltered Sleep Count report](https://downtownsandiego.org/wp-content/uploads/2026/08/June-2026-Unsheltered-Sleep-Count.1.pdf)
+  supplies post-freeze public checkpoints (six-area core totals of 959 in
+  April and 841 in June 2026), transcribed in
+  [`data/monitoring/dsdp_public_checkpoints.csv`](data/monitoring/dsdp_public_checkpoints.csv).
+  Same publisher as the organizer bundle, monitoring lane only—never a model
+  input—and with no January–March 2026 observation it cannot validate the
+  January 2026 forecast replay.
 
 | Conventional dashboard                | Still Here SD                                                                                               |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------- |

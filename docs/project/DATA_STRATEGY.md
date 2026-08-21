@@ -20,14 +20,46 @@ and the Regional Task Force on Homelessness.
 | Candidate source | Intended use | Guardrail |
 |---|---|---|
 | Downtown monthly survey observations | Historical neighborhood aggregation, drop testing, forecasting | Remove exact coordinates from every published artifact |
+| DSDP public monthly reports | Post-freeze public monitoring and publisher checkpoints | Keep separate from frozen training; never call same-publisher agreement independent validation |
 | PIT Count density | Annual context and source comparison | Do not interpolate an annual snapshot into invented monthly precision |
+| HUD CA-601 performance, PIT, and HIC reports | Annual CoC system context and official measurement definitions | Never blend countywide annual outcomes or inventory into downtown monthly observations |
 | 311 encampment reports | Reporting-bias and disagreement diagnostic | Never treat complaints as people, need, or an allocation target |
+| SDHC City-program dashboard | HMIS-based program-outcome context | Never imply downtown coverage, live capacity, eligibility, or availability |
 | Shelter locations | Geographic context and travel estimates | Never imply live capacity, eligibility, or availability |
 | Neighborhood ACS indicators | Aggregate context and fairness audit | Never infer an individual's identity, condition, or service need |
 | San Diego/SANDAG geography | Neighborhood boundaries and travel approximation | Publish only the geography the interface requires |
 
 A source is not added merely because it is available. Its collection method,
 time scale, limitations, and permitted use must be explainable.
+
+## Monitoring and system-context lanes
+
+Post-freeze DSDP observations live in
+[`data/monitoring/dsdp_public_checkpoints.csv`](../../data/monitoring/dsdp_public_checkpoints.csv),
+not in the organizer bundle or generated demo artifact. The pinned June 2026
+publisher report supplies April and June values. The six-area core totals are
+derived only by excluding Outside Perimeter, and automated checks reconcile
+both the six-area and published seven-area totals. Every monitoring row is
+explicitly ineligible for modeling.
+
+The DSDP dashboard's “Q1 2026” value of 1,092 conflicts with the PDF's April
+placement of the same value. Because the PDF includes no January-March
+observation, neither surface validates the demo's January 2026 historical
+forecast replay. Missing months remain missing.
+
+SDHC and HUD sources occupy a separate system-context lane. SDHC reports HMIS
+outcomes for City/SDHC-funded programs. HUD reports annual CA-601 CoC system
+performance, PIT, and HIC measures and publishes their governing definitions.
+Those measures may support responsible-data cards and annual context, but they
+cannot enter the downtown observation series, forecast, or planner. HIC beds
+and program inventory never imply live availability or eligibility.
+
+Source discovery pages are not analytical inputs. The former HUD Exchange
+grantee-report and homelessness-data routes returned 404 on 2026-08-21, so the
+ledger records current HUD USER discovery pages and direct official reports.
+The live DSDP archive and Unhoused Care pages also contained unrelated injected
+content on that review date. Acquisition is therefore restricted to allowlisted
+publisher documents with reviewed hashes; whole-page HTML is never ingested.
 
 ## Known limitations that must remain visible
 
@@ -64,7 +96,9 @@ snapshot without making a network request, run:
 exports. Because those City/NOAA endpoints are mutable, it deliberately fails
 when retrieved bytes no longer match the pinned snapshot. Audit the source
 change before explicitly re-pinning and regenerating; never silently combine
-snapshots. There is no recorded public substitute for the organizer bundle.
+snapshots. Public DSDP reports provide aggregate publisher checkpoints, but no
+recorded public source substitutes for the organizer bundle's full block-level
+fixed panel and supporting crosswalk/method files.
 
 The generator invokes the authoritative `demo.v1` contract and precise-field
 privacy gate before creating or replacing the deployment artifact. Raw-dependent

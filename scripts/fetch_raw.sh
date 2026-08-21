@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Retrieve or verify raw inputs for the shipped demo.v1 and retained legacy v0
-# lineages. Raw request-, meter-, block-, and coordinate-level files are ignored
-# by git and must never be copied into public/ or app/.
+# Retrieve or verify raw inputs for the shipped demo.v1, retained legacy v0,
+# and public post-freeze monitoring lineages. Raw request-, meter-, block-,
+# coordinate-, and publisher-document files are ignored by git and must never
+# be copied into public/ or app/.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 MODE=${1:-all}
 case "$MODE" in
-  all|demo|legacy|verify-demo) ;;
+  all|demo|legacy|monitoring|verify-demo|verify-monitoring) ;;
   *)
-    echo "usage: $0 [all|demo|legacy|verify-demo]" >&2
+    echo "usage: $0 [all|demo|legacy|monitoring|verify-demo|verify-monitoring]" >&2
     exit 2
     ;;
 esac
@@ -17,6 +18,7 @@ esac
 SDRDL_SOURCE=https://library.metatab.org/sandiegodata.org-downtown_homeless-source-7.2.3
 SDRDL_ANALYSIS=https://library.metatab.org/sandiegodata.org-dowtown_homeless-2.1.1
 NCEI_DAILY='https://www.ncei.noaa.gov/access/services/data/v1?dataset=daily-summaries&stations=USW00023188&startDate=2017-01-01&endDate=2025-12-31&format=csv&units=standard&includeAttributes=false'
+DSDP_JUNE_2026='https://downtownsandiego.org/wp-content/uploads/2026/08/June-2026-Unsheltered-Sleep-Count.1.pdf'
 
 DEMO_ORGANIZER_FILES=(
   data/raw/hackathon_provided/Area_Crosswalk.csv
@@ -43,6 +45,9 @@ LEGACY_STABLE_FILES=(
   data/raw/sdrdl_analysis/neighborhood_totals.csv
   data/raw/rtfh_pitc/unsheltered_census_tract_2025.xlsx
 )
+MONITORING_FILES=(
+  data/raw/dsdp_public_reports/June-2026-Unsheltered-Sleep-Count.pdf
+)
 
 fetch() {
   local out=$1 url=$2
@@ -60,7 +65,7 @@ require_organizer_bundle() {
     fi
   done
   if ((missing)); then
-    echo "Place the participant bundle in data/raw/hackathon_provided/; no public substitute is recorded." >&2
+    echo "Place the participant bundle in data/raw/hackathon_provided/; public reports do not substitute for its block-level panel." >&2
     exit 1
   fi
 }
@@ -108,6 +113,16 @@ fetch_demo_public() {
   fetch data/raw/weather/san_diego_airport_daily_2017_2025.csv "$NCEI_DAILY"
 }
 
+verify_monitoring() {
+  echo "verifying public monitoring source snapshots"
+  verify_paths "${MONITORING_FILES[@]}"
+}
+
+fetch_monitoring() {
+  fetch "${MONITORING_FILES[0]}" "$DSDP_JUNE_2026"
+  verify_monitoring
+}
+
 verify_demo() {
   require_organizer_bundle
   echo "verifying the exact demo.v1 input snapshot"
@@ -127,6 +142,11 @@ if [[ "$MODE" == demo || "$MODE" == all ]]; then
   verify_demo
 elif [[ "$MODE" == verify-demo ]]; then
   verify_demo
+fi
+if [[ "$MODE" == monitoring || "$MODE" == all ]]; then
+  fetch_monitoring
+elif [[ "$MODE" == verify-monitoring ]]; then
+  verify_monitoring
 fi
 
 echo "RAW INPUT $MODE COMPLETE"

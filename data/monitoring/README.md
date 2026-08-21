@@ -49,6 +49,24 @@ tract-to-neighborhood crosswalk gate. RTFH's monthly countywide HMIS data
 reports (July 2026 pinned) are cadence references only; HMIS activity measures
 service engagement, not street population.
 
+## Digitization audit (experimental)
+
+`digitization_audit.json` is produced by `stillhere_pipeline.eyepop_audit`
+from the pinned June 2026 report: OCR over the scanned, hand-annotated field
+sheets, reporting per page only integer-token counts and values at or above
+an area-total threshold (sub-threshold values are counted but withheld, so no
+block-scale digit can enter this file). The module has a swappable engine —
+`--engine local` is Apple Vision handwriting recognition, fully offline;
+`--engine eyepop` is the EyePop.ai drop-in, fail-closed without a key.
+
+One recovered example of the lineage reconciling: the City Center field sheet
+shows handwritten totals of 152 individuals and 14 tents, and
+152 + 14 × 1.75 = 176.5 ≈ 177, the published City Center June total. OCR of
+the handwritten "152" is unstable across raster resolutions (the committed
+card reads 157 at 200 dpi), which is exactly the kind of uncertainty the
+audit exists to surface; treat recovered values as candidates for human
+verification, never as counts.
+
 ## Update protocol
 
 1. Use `./scripts/fetch_raw.sh monitoring` to fetch the allowlisted publisher

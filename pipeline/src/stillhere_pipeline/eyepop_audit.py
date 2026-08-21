@@ -1,25 +1,30 @@
-"""EyePop digitization audit: computer vision pointed at the ruler, not people.
+"""Digitization audit for the published DSDP count documents.
 
-The DSDP monthly counts ship as published PDF map documents whose symbols are
-digitized by hand into counts. This module uses EyePop.ai's zero-shot
-``eyepop.localize-objects`` ability to detect those printed map symbols on
-rasterized pages of the pinned public report and compares symbol totals with
-the transcribed monitoring values — an independent check of the digitization
-step itself.
+The monthly counts ship as scanned, hand-annotated field sheets whose
+handwritten totals are digitized by hand into the published tables. This
+module audits that digitization step by recovering text from the pinned
+public PDF's pages and reporting, per page, the recovered area-scale totals —
+then a human compares them with the transcribed monitoring values.
 
-Boundary: input is an already-published aggregate map document. No camera
-imagery, no people, no block-level output — the audit reports page-level
-symbol totals only, and its result is a reference card, never a model input.
+It is built around a swappable OCR engine so a sponsor API is a drop-in:
 
-Requires ``EYEPOP_API_KEY`` (and optionally ``EYEPOP_POP_ID``) plus the
-``eyepop`` package (``uv pip install eyepop``) and poppler's ``pdftoppm`` for
-rasterization. Without credentials the CLI exits with instructions instead of
-guessing.
+- ``--engine local`` (default): Apple Vision handwriting recognition, fully
+  offline, macOS only.
+- ``--engine eyepop``: EyePop.ai's hosted abilities via the ``eyepop`` SDK;
+  fail-closed without ``EYEPOP_API_KEY``.
+
+Both engines emit the same text-observation shape (``text``/``confidence``),
+so the audit card is engine-independent and records which engine produced it.
+
+Privacy boundary (C-02): the input is an already-published aggregate
+document, and the card carries page-level results only — a count of integer
+tokens and the recovered values at or above an area-total threshold. No block
+identifiers, no geometry, and no sub-threshold values are written.
 
 Usage:
     .venv/bin/python -m stillhere_pipeline.eyepop_audit \
         --pdf data/raw/dsdp_public_reports/June-2026-Unsheltered-Sleep-Count.pdf \
-        --out data/monitoring/eyepop_digitization_audit.json
+        --out data/monitoring/digitization_audit.json [--engine local|eyepop]
 """
 
 from __future__ import annotations
@@ -31,59 +36,60 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass, field
+from collections.abc import Callable
 from pathlib import Path
 
-DEFAULT_PROMPTS = (
-    "small tent symbol printed on a map",
-    "small dot marker printed on a map",
-)
-MIN_CONFIDENCE = 0.35
+MIN_CONFIDENCE = 0.3
+VALUE_THRESHOLD = 12  # below this, a bare integer could be a block-level mark
+
+TextObservation = dict[str, object]
+Engine = Callable[[Path], list[TextObservation]]
 
 
-@dataclass
-class PageAudit:
-    page: int
-    detections: dict[str, int] = field(default_factory=dict)
-
-    @property
-    def total(self) -> int:
-        return sum(self.detections.values())
-
-
-def summarize_detections(
-    raw_objects: list[dict[str, object]], min_confidence: float = MIN_CONFIDENCE
-) -> dict[str, int]:
-    """Count detections per class label above the confidence floor.
-
-    Pure function over the SDK's ``objects`` payload shape
-    (``classLabel``/``confidence``); unit-tested offline.
-    """
-    counts: dict[str, int] = {}
-    for obj in raw_objects:
-        label = str(obj.get("classLabel", "unknown"))
-        confidence = obj.get("confidence")
+def integer_values(
+    observations: list[TextObservation], min_confidence: float = MIN_CONFIDENCE
+) -> list[int]:
+    """Standalone integer tokens above the confidence floor. Pure; tested."""
+    values: list[int] = []
+    for obs in observations:
+        confidence = obs.get("confidence")
         if not isinstance(confidence, (int, float)) or confidence < min_confidence:
             continue
-        counts[label] = counts.get(label, 0) + 1
-    return counts
+        text = str(obs.get("text", "")).strip()
+        if text.isdigit():
+            values.append(int(text))
+    return values
 
 
-def audit_card(pages: list[PageAudit], pdf: str, prompts: tuple[str, ...]) -> dict[str, object]:
-    """Assemble the reference card. Pure; unit-tested offline."""
+def page_summary(page: int, observations: list[TextObservation]) -> dict[str, object]:
+    """Privacy-filtered per-page summary. Pure; tested.
+
+    Sub-threshold integers are counted but never written, so a stray
+    block-level digit cannot leak into the committed card.
+    """
+    values = integer_values(observations)
     return {
-        "kind": "eyepop_digitization_audit",
+        "page": page,
+        "integer_tokens": len(values),
+        "values": sorted(v for v in values if v >= VALUE_THRESHOLD),
+        "withheld_below_threshold": sum(1 for v in values if v < VALUE_THRESHOLD),
+    }
+
+
+def audit_card(pages: list[dict[str, object]], pdf: str, engine: str) -> dict[str, object]:
+    return {
+        "kind": "digitization_audit",
         "status": "experimental",
+        "engine": engine,
         "source_pdf": pdf,
-        "prompts": list(prompts),
-        "min_confidence": MIN_CONFIDENCE,
-        "pages": [{"page": p.page, "detections": p.detections, "total": p.total} for p in pages],
-        "symbol_total": sum(p.total for p in pages),
+        "value_threshold": VALUE_THRESHOLD,
+        "pages": pages,
         "boundary": (
-            "Zero-shot detections of printed symbols on an already-published "
-            "aggregate map document. Reference card for auditing the "
-            "digitization lineage; page-level totals only; never a model "
-            "input, never camera imagery, never person-level."
+            "Text recovered from an already-published aggregate count "
+            "document. Page-level results only: integer-token counts and "
+            "values at or above the area-total threshold. No block "
+            "identifiers, no geometry, no sub-threshold values; a reference "
+            "card for auditing the digitization lineage, never a model input."
         ),
     }
 
@@ -98,45 +104,64 @@ def rasterize(pdf: Path, out_dir: Path, dpi: int = 200) -> list[Path]:
     return sorted(out_dir.glob("page-*.png"))
 
 
-def run_audit(
-    pdf: Path, out_path: Path, prompts: tuple[str, ...] = DEFAULT_PROMPTS
-) -> dict[str, object]:
+def local_engine(image: Path) -> list[TextObservation]:
+    """Apple Vision handwriting OCR; offline, macOS only."""
+    if sys.platform != "darwin":  # pragma: no cover - platform-specific
+        raise SystemExit("--engine local uses Apple Vision and requires macOS.")
+    try:  # pragma: no cover - environment-specific
+        import Quartz  # type: ignore[import-untyped,import-not-found,unused-ignore]
+        import Vision  # type: ignore[import-untyped,import-not-found,unused-ignore]
+        from Foundation import NSURL  # type: ignore[import-untyped,import-not-found,unused-ignore]
+    except ImportError as error:  # pragma: no cover
+        raise SystemExit(
+            "Apple Vision bindings missing: uv pip install pyobjc-framework-Vision"
+        ) from error
+
+    url = NSURL.fileURLWithPath_(str(image))
+    source = Quartz.CGImageSourceCreateWithURL(url, None)
+    cg_image = Quartz.CGImageSourceCreateImageAtIndex(source, 0, None)
+    request = Vision.VNRecognizeTextRequest.alloc().init()
+    request.setRecognitionLevel_(Vision.VNRequestTextRecognitionLevelAccurate)
+    handler = Vision.VNImageRequestHandler.alloc().initWithCGImage_options_(cg_image, None)
+    handler.performRequests_error_([request], None)
+    return [
+        {"text": str(obs.text()), "confidence": float(obs.confidence())}
+        for obs in (request.results() or [])
+    ]
+
+
+def eyepop_engine(image: Path) -> list[TextObservation]:
+    """EyePop.ai text recognition; drop-in replacement for the local engine."""
     if not os.environ.get("EYEPOP_API_KEY"):
         raise SystemExit(
-            "EYEPOP_API_KEY is not set. Create a key at dashboard.eyepop.ai "
-            "(hamburger menu > API Keys), export it, and re-run."
+            "EYEPOP_API_KEY is not set. Get credentials from the EyePop rep "
+            "or andy@eyepop.ai (code DSA2026), export the key, and re-run."
         )
-    try:
+    try:  # pragma: no cover - environment-specific
         from eyepop import EyePopSdk  # type: ignore[import-not-found]
-    except ImportError as error:  # pragma: no cover - environment-specific
+    except ImportError as error:  # pragma: no cover
         raise SystemExit("The eyepop package is missing: uv pip install eyepop") from error
 
-    pages: list[PageAudit] = []
-    with tempfile.TemporaryDirectory() as scratch:
-        images = rasterize(pdf, Path(scratch))
-        with EyePopSdk.workerEndpoint() as endpoint:  # pragma: no cover - network
-            try:
-                endpoint.set_pop(
-                    {
-                        "components": [
-                            {
-                                "type": "inference",
-                                "ability": "eyepop.localize-objects:latest",
-                                "params": {"prompts": [{"prompt": p} for p in prompts]},
-                            }
-                        ]
-                    }
-                )
-            except Exception:
-                # Older SDKs configure the pop in the dashboard instead; the
-                # worker then runs whatever the pop id points at.
-                pass
-            for index, image in enumerate(images, start=1):
-                result = endpoint.upload(str(image)).predict()
-                objects = result.get("objects", []) if isinstance(result, dict) else []
-                pages.append(PageAudit(page=index, detections=summarize_detections(objects)))
+    with EyePopSdk.workerEndpoint() as endpoint:  # pragma: no cover - network
+        result = endpoint.upload(str(image)).predict()
+    texts = result.get("texts", []) if isinstance(result, dict) else []
+    return [
+        {"text": str(t.get("text", "")), "confidence": t.get("confidence", 1.0)}
+        for t in texts
+        if isinstance(t, dict)
+    ]
 
-    card = audit_card(pages, str(pdf), prompts)
+
+ENGINES: dict[str, Engine] = {"local": local_engine, "eyepop": eyepop_engine}
+
+
+def run_audit(pdf: Path, out_path: Path, engine_name: str = "local") -> dict[str, object]:
+    engine = ENGINES[engine_name]
+    pages: list[dict[str, object]] = []
+    with tempfile.TemporaryDirectory() as scratch:
+        for index, image in enumerate(rasterize(pdf, Path(scratch)), start=1):
+            pages.append(page_summary(index, engine(image)))
+    card = audit_card(pages, str(pdf), engine_name)
     out_path.write_text(json.dumps(card, indent=2, sort_keys=True) + "\n")
     return card
 
@@ -145,11 +170,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pdf", required=True, type=Path)
     parser.add_argument("--out", required=True, type=Path)
+    parser.add_argument("--engine", choices=sorted(ENGINES), default="local")
     args = parser.parse_args(argv)
-    card = run_audit(args.pdf, args.out)
+    card = run_audit(args.pdf, args.out, args.engine)
     pages = card["pages"]
     page_count = len(pages) if isinstance(pages, list) else 0
-    print(f"wrote {args.out} · {card['symbol_total']} symbols across {page_count} pages")
+    print(f"wrote {args.out} · engine={args.engine} · {page_count} pages")
     return 0
 
 

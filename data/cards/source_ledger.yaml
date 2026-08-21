@@ -359,6 +359,12 @@ sources:
       - raw_path: data/raw/dsdp_public_reports/June-2026-Unsheltered-Sleep-Count.pdf
         url: https://downtownsandiego.org/wp-content/uploads/2026/08/June-2026-Unsheltered-Sleep-Count.1.pdf
     derived_files:
+      - path: data/monitoring/digitization_audit.json
+        derivation: >-
+          OCR digitization audit of the pinned report's scanned field sheets
+          (stillhere_pipeline.eyepop_audit; local Apple Vision engine, EyePop
+          drop-in). Page-level integer-token counts and area-scale values
+          only; sub-threshold values are withheld by construction.
       - path: data/monitoring/dsdp_public_checkpoints.csv
         derivation: >-
           Manual transcription of the PDF's April and June 2026 published

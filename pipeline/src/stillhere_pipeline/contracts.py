@@ -319,6 +319,8 @@ def validate_demo_v1(doc: dict[str, Any]) -> None:
     limitations = _require(doc, "limitations", list)
     if not limitations or not all(isinstance(item, str) and item for item in limitations):
         raise ContractViolation("limitations must be a non-empty list of strings")
+
+
 def _validate_contract_block(doc: dict[str, Any]) -> None:
     contract = _require(doc, "contract", dict)
     count_fields = _require(contract, "count_fields", list)

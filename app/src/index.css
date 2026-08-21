@@ -1,35 +1,159 @@
-:root {
-  color-scheme: light dark;
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-  line-height: 1.5;
-
-  --panel: #ffffff;
-  --border: #d5d9e0;
-  --muted: #5a6472;
-  --error: #b3261e;
-  --warn-bg: #fff3cd;
-  background-color: #f5f6f8;
-  color: #1b1f26;
+@font-face {
+  font-display: swap;
+  font-family: "Source Serif 4";
+  font-style: normal;
+  font-weight: 200 900;
+  src: url("./assets/fonts/source-serif-4-variable.woff2") format("woff2");
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --panel: #1e242c;
-    --border: #3a4350;
-    --muted: #9aa4b1;
-    --error: #ff8a80;
-    --warn-bg: #4a3f1d;
-    background-color: #141920;
-    color: #e6e9ed;
-  }
+@font-face {
+  font-display: swap;
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 450 600;
+  src: url("./assets/fonts/Fraunces-Var.woff2") format("woff2");
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 800;
+  src: url("./assets/fonts/jetbrains-mono-regular.woff2") format("woff2");
+}
+
+:root {
+  color-scheme: dark;
+  font-family:
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+
+  --bg: #070a0d;
+  --bg-raised: #0d1216;
+  --panel: rgba(19, 24, 28, 0.94);
+  --panel-solid: #13181c;
+  --panel-soft: #171e22;
+  --line: rgba(242, 237, 226, 0.11);
+  --line-strong: rgba(242, 237, 226, 0.2);
+  --ink: #f2ede2;
+  --ink-soft: #d1c9bc;
+  --muted: #a29a8e;
+  --faint: #837d73;
+  --amber: #f0ad4e;
+  --amber-bright: #ffd287;
+  --amber-dim: rgba(240, 173, 78, 0.14);
+  --teal: #6ec3ca;
+  --teal-bright: #9ee2e3;
+  --teal-dim: rgba(110, 195, 202, 0.13);
+  --green: #72d3a0;
+  --green-dim: rgba(114, 211, 160, 0.12);
+  --red: #ff7b6c;
+  --red-dim: rgba(255, 123, 108, 0.12);
+  --display: "Fraunces", "Source Serif 4", Georgia, serif;
+  --serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Keep compact utility labels on the platform's native UI metrics. */
+  --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --shadow: 0 28px 80px -38px rgba(0, 0, 0, 0.95);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-inline-size: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 9rem;
+  text-size-adjust: 100%;
 }
 
 body {
+  background:
+    radial-gradient(circle at 78% 6%, rgba(46, 107, 111, 0.14), transparent 28rem),
+    radial-gradient(circle at 12% 32%, rgba(161, 104, 31, 0.08), transparent 32rem), var(--bg);
+  color: var(--ink);
   margin: 0;
   min-height: 100vh;
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+button,
+input,
+select,
+textarea,
+summary {
+  color: inherit;
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid var(--amber-bright);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--amber);
+  color: #17110a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    forced-color-adjust: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid Highlight;
+  }
+
+  button,
+  input,
+  summary,
+  a {
+    forced-color-adjust: auto;
+  }
 }

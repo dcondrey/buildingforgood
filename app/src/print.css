@@ -1,0 +1,236 @@
+/* Print is a deliberate evidence handoff, not a screenshot of the dark UI. */
+@page {
+  size: A4;
+  margin: 15mm 14mm 17mm;
+}
+
+@media print {
+  :root {
+    color-scheme: light;
+    --bg: #fff;
+    --bg-raised: #f5f6f7;
+    --panel: #fff;
+    --panel-solid: #fff;
+    --panel-soft: #f5f6f7;
+    --line: #c8cdd1;
+    --line-strong: #89929a;
+    --ink: #111820;
+    --ink-soft: #26323d;
+    --muted: #4b5863;
+    --faint: #66737e;
+    --amber: #8b5100;
+    --amber-bright: #6f4100;
+    --amber-dim: #fff3df;
+    --teal: #006d72;
+    --teal-bright: #005b60;
+    --teal-dim: #e5f5f5;
+    --green: #146b43;
+    --red: #9b2c22;
+    --shadow: none;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: var(--ink) !important;
+    font-size: 10pt;
+    height: auto !important;
+    line-height: 1.45;
+    overflow: visible !important;
+  }
+
+  body::after {
+    border-top: 0.5pt solid var(--line);
+    color: var(--muted);
+    content: "Still Here SD · Aggregate evidence · Human review required";
+    display: block;
+    font-family: var(--mono);
+    font-size: 7.5pt;
+    margin-top: 12mm;
+    padding-top: 3mm;
+  }
+
+  .topbar,
+  .step-nav,
+  .skip-link,
+  .guide-panel,
+  .disclosure-drawer,
+  .button,
+  .projector-toggle,
+  .reveal-action,
+  .section-number,
+  .status-dot,
+  .chart-legend,
+  .allocation-bar-track,
+  .drawer-close {
+    display: none !important;
+  }
+
+  main {
+    max-width: none;
+    padding: 0;
+  }
+
+  .hero {
+    display: block;
+    min-height: auto !important;
+    padding: 0 0 12mm;
+  }
+
+  .hero::after {
+    background: var(--line-strong);
+  }
+
+  .hero-copy {
+    max-width: 150mm;
+  }
+
+  .hero h1 {
+    color: var(--ink);
+    font-size: 38pt;
+    line-height: 0.95;
+    max-width: 12ch;
+  }
+
+  .hero h1 em,
+  .hero-decision > p strong {
+    color: var(--teal);
+  }
+
+  .hero-lede,
+  .hero-decision > p {
+    color: var(--ink-soft);
+    font-size: 14pt;
+    max-width: 150mm;
+  }
+
+  .hero-decision {
+    border: 1pt solid var(--line-strong);
+    box-shadow: none;
+    margin-top: 8mm;
+    max-width: none;
+    padding: 6mm;
+  }
+
+  .hero-decision::before,
+  .hero-decision::after {
+    display: none;
+  }
+
+  .evidence-chain {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .decision-section {
+    border-bottom: 0;
+    min-height: auto;
+    padding: 10mm 0 0;
+  }
+
+  #forecast,
+  #planner,
+  #review {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .section-intro h2 {
+    color: var(--ink);
+    font-size: 24pt;
+  }
+
+  .metric,
+  .churn-card,
+  .area-view-card,
+  .chart-card,
+  .model-card,
+  .evidence-result,
+  .plan-result,
+  .brief-grid,
+  .challenge-card,
+  .robustness-card,
+  .bias-diagnostic,
+  .data-table-disclosure,
+  .limitations-row details {
+    background: #fff !important;
+    border: 0.75pt solid var(--line-strong);
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .chart-card,
+  .model-card,
+  .churn-card,
+  .area-view-card,
+  .evidence-result,
+  .plan-result,
+  .brief-grid {
+    margin-top: 4mm;
+    padding: 4mm;
+  }
+
+  .forecast-layout,
+  .evidence-grid,
+  .brief-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .forecast-chart {
+    max-height: 75mm;
+    min-width: 0 !important;
+    width: 100%;
+  }
+
+  .data-table-disclosure > :not(summary),
+  .limitations-row details > :not(summary),
+  .brief-preview > :not(summary) {
+    display: block !important;
+  }
+
+  .data-table-disclosure summary,
+  .limitations-row summary,
+  .brief-preview summary {
+    color: var(--ink);
+    font-family: var(--display);
+    font-size: 13pt;
+    font-weight: 600;
+  }
+
+  table {
+    border-collapse: collapse;
+    font-size: 8.5pt;
+    width: 100%;
+  }
+
+  th,
+  td {
+    border-bottom: 0.5pt solid var(--line);
+    color: var(--ink) !important;
+    padding: 2mm 1.5mm;
+    text-align: left;
+  }
+
+  pre {
+    background: var(--bg-raised) !important;
+    border: 0.5pt solid var(--line);
+    color: var(--ink) !important;
+    font-size: 7.5pt;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+
+  a[href^="http"]::after {
+    color: var(--muted);
+    content: " (" attr(href) ")";
+    font-family: var(--mono);
+    font-size: 7pt;
+    overflow-wrap: anywhere;
+  }
+
+  .footer {
+    border-top: 0.5pt solid var(--line);
+    margin-top: 10mm;
+    padding: 4mm 0 0;
+  }
+}

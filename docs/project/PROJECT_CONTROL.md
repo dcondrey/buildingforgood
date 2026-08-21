@@ -1,6 +1,6 @@
 # Still Here SD Project Control
 
-Last updated: 2026-08-20
+Last updated: 2026-08-21
 
 This document is the working control surface for ownership, decisions, risks,
 scope, and release readiness. GitHub issue
@@ -22,32 +22,38 @@ not use it as a substitute for closing or updating the owning issue.
 
 ## Ownership and handoffs
 
-| Track | Owner | Tracker | Branch | Primary handoff |
-|---|---|---|---|---|
-| A — Data & Forecasting | agent-a (managed) | [#28](https://github.com/dcondrey/buildingforgood/issues/28) | `track/a-data-forecasting` | Privacy-safe decision artifact to B, C, and D |
-| B — Product Experience | agent-b (managed) | [#29](https://github.com/dcondrey/buildingforgood/issues/29) | `track/b-product-experience` | App shell and evidence/forecast experience to C and D |
-| C — Planning & Safeguards | agent-c (managed) | [#30](https://github.com/dcondrey/buildingforgood/issues/30) | `track/c-planning-safeguards` | Privacy gate, planner, and safeguard evidence to D |
-| D — Integration & Release | agent-d (managed) | [#31](https://github.com/dcondrey/buildingforgood/issues/31) | `track/d-integration-release` | Shared contracts, integration, and final release to `main` |
-| E — Quality & Accessibility | agent-e (managed) | Tracker pending GitHub re-auth | `track/e-quality-verification` | Accessibility, copy-boundary, and quality evidence to D |
+Issue [#1](https://github.com/dcondrey/buildingforgood/issues/1) (the master
+tracker, authored by the repository owner) is the canonical naming and
+ownership system: **four** tracks, one prefix letter each. An earlier version
+of this document described a five-owner "managed agent" model with a Track E;
+that did not match #1 and has been removed (see DEC-009).
 
-All five owners are managed agents coordinated from one review session; the
-session owner reviews every pull branch before it merges. GitHub API access is
-currently unavailable (invalid `gh` token), so review happens on pushed `pr/*`
-branches merged locally and pushed; issue-tracker sync resumes after
-`gh auth login`. A person may contribute research or review without Git, but
-the implementation owner for that track remains responsible for transferring
-accepted work into the branch.
+| Track | Tracker | Branch | Primary handoff | Observed activity |
+|---|---|---|---|---|
+| A — Data & Forecasting | [#28](https://github.com/dcondrey/buildingforgood/issues/28) | `track/a-data-forecasting` | Privacy-safe decision artifact to B, C, and D | PRs #38, #39, #41, #45 merged (OrionArchitekton) |
+| B — Product Experience | [#29](https://github.com/dcondrey/buildingforgood/issues/29) | `track/b-product-experience` | App shell and evidence/forecast experience to D | PRs #38, #43 merged (OrionArchitekton) |
+| C — Planning & Safeguards | [#30](https://github.com/dcondrey/buildingforgood/issues/30) | `track/c-planning-safeguards` | Privacy gate, planner, and safeguard evidence to D | PR #44 merged (Lucface) |
+| D — Integration & Release | [#31](https://github.com/dcondrey/buildingforgood/issues/31) | `track/d-integration-release` | Shared contracts, integration, and final release to `main` | No dedicated owner had picked up D-01–D-07 as of this update; starting with D-01 (this document) |
+
+GitHub API access is restored (`gh` authenticated). Contributors are pushing
+`pr/*` branches and opening PRs directly against `dcondrey/buildingforgood`;
+review and merge happens there. A contributor without direct push access can
+fork the repository and open a PR from the fork instead — GitHub review works
+the same way regardless of which side the branch lives on.
 
 ## Current status
 
 | Workstream | State | Current issue | Next checkpoint |
 |---|---|---|---|
-| Project coordination | In progress | [D-01 / #26](https://github.com/dcondrey/buildingforgood/issues/26) | Owners assigned; sync GitHub trackers after re-auth |
+| Project coordination | In progress | [D-01 / #26](https://github.com/dcondrey/buildingforgood/issues/26) | This refresh; keep pace with the current merge rate |
 | Prepared scenario | Provisional; cross-track review required | [D-02 / #19](https://github.com/dcondrey/buildingforgood/issues/19) | Track A confirms period/geography; Track C confirms planner assumptions |
-| Decision contract | Provisional configuration committed | [D-03 / #2](https://github.com/dcondrey/buildingforgood/issues/2) | D-04 adds runtime schemas and validates fixed/provisional/unresolved fields |
-| App bootstrap | Ready | [B-02 / #3](https://github.com/dcondrey/buildingforgood/issues/3) | Static app and verification command consume the decision contract |
-| Data and forecasting | Research can start | [A-00 / #28](https://github.com/dcondrey/buildingforgood/issues/28) | Source review and safe aggregate sample |
-| Planning and safeguards | Review can start | [C-00 / #30](https://github.com/dcondrey/buildingforgood/issues/30) | Claims red-team and privacy rules |
+| Decision contract | Provisional; geography/period still unresolved | [D-03 / #2](https://github.com/dcondrey/buildingforgood/issues/2) | Track A confirmation of canonical area set (see DEC-010) before D-03 commits it |
+| Artifact contracts | In progress | [D-04 / #4](https://github.com/dcondrey/buildingforgood/issues/4) | Count-field/suppression-marker slice merged (#46); planner-input and TS-side contract pieces remain |
+| App bootstrap | Merged | [B-02 / #3](https://github.com/dcondrey/buildingforgood/issues/3) | Done via #38 |
+| Data and forecasting | Active | [A-00 / #28](https://github.com/dcondrey/buildingforgood/issues/28) | Validation/normalization/aggregation merged (#41); suppression merged (#45) |
+| Planning and safeguards | Active | [C-00 / #30](https://github.com/dcondrey/buildingforgood/issues/30) | Red-team, privacy boundary, and planner merged together (#44) |
+| Demo narrative | Not started | [D-05 / #24](https://github.com/dcondrey/buildingforgood/issues/24) | Blocked on #19 settling |
+| Usability rehearsal | Not started | [D-06 / #25](https://github.com/dcondrey/buildingforgood/issues/25) | Blocked on #12, #13, #15 |
 | Release | Not started | [D-07 / #17](https://github.com/dcondrey/buildingforgood/issues/17) | All upstream quality gates pass |
 
 ## Decision log
@@ -61,7 +67,9 @@ accepted work into the branch.
 | DEC-005 | 2026-08-20 | Prefer the seasonal-naive forecast unless a candidate wins on held-out evaluation. | Prevents unnecessary model complexity and optimistic in-sample selection. | #9, #10 | Accepted |
 | DEC-006 | 2026-08-20 | Prepare an editable 80-hour plan for a shift within seven days, informed by a one-month aggregate forecast. | Separates the operational decision horizon from the observation/forecast cadence while keeping both visible. | #2, #14, #19 | Provisional pending cross-track review |
 | DEC-007 | 2026-08-20 | Treat the exact demonstration month, area list, and adjacency as unresolved release blockers. | The source and boundary audit must determine them; the integration track will not invent comparability. | #2, #6, #11, #18, #34 | Accepted |
-| DEC-008 | 2026-08-20 | Assign five managed agent owners and add Track E (quality and accessibility) alongside the four DEC-001 tracks. | Enables parallel per-track ownership with a dedicated quality pass; the DEC-001 integration path through Track D is unchanged. | #28–#31 | Accepted |
+| DEC-008 | 2026-08-20 | Assign five managed agent owners and add Track E (quality and accessibility) alongside the four DEC-001 tracks. | Enables parallel per-track ownership with a dedicated quality pass; the DEC-001 integration path through Track D is unchanged. | #28–#31 | Superseded by DEC-009 |
+| DEC-009 | 2026-08-21 | Revert to the four-track ownership model (A/B/C/D) defined in the master tracker #1; drop the Track E / five-managed-agent model from DEC-008. | Issue #1, authored by the repository owner, is the canonical naming and work-order system and defines only four track prefixes; no Track E tracker or work items exist in the repository. Keeping DEC-008's model in this document caused it to diverge from the actual tracker. | #1, #26 | Accepted |
+| DEC-010 | 2026-08-21 | Do not commit a planning-area set or exact observation period to `config/decision.v1.json` yet. | A detailed candidate area list and adjacency approach were proposed in the #2 discussion (canonical monthly areas: East Village, City Center, Columbia, Cortez, Gaslamp, Marina, Outside Perimeter from April 2021), but the comment itself asks for Track A confirmation before D-03 locks it, and the 2023→2024 discontinuity is still unreviewed. Locking it prematurely risks an ungrounded release blocker. | #2, #6, #11 | Proposed pending Track A confirmation |
 
 Use the next sequential decision ID. A decision entry must include the rationale
 and affected issue links. Superseded decisions remain in the table with a
@@ -79,6 +87,7 @@ status explaining what replaced them.
 | RISK-006 | High | A polished historical dashboard could obscure the actual next-shift decision. | Track B owner | Lead with the decision, horizon, budget, and recommendation in the storyboard. | Before B-05 | Open |
 | RISK-007 | High | The demo may overstate displacement, causality, or operational impact. | Track C owner | Complete claims red-team and language audit; treat high-severity findings as release blockers. | Before C-05 | Open |
 | RISK-008 | Medium | Optional visual features could displace verification and rehearsal time. | Track D owner | Enforce the scope ledger and feature-freeze criteria below. | Before final integration | Open |
+| RISK-009 | Medium | A complaint-volume guard on planner input only checked an area object's top-level keys, so a nested field (e.g. `diagnostics.complaint_count`) could have reached the allocation objective undetected, contradicting DEC-004. | Track C owner | Guard now recurses through objects and arrays and names the offending path on rejection; found and fixed during the #4 contract review. | N/A | Resolved |
 
 ## Scope ledger
 

@@ -1,0 +1,8 @@
+{
+  "build_time": "2026-08-21T01:06:45Z",
+  "inputs": {
+    "data/raw/sdrdl_source/counts.csv": "83cec3079d7001c0b0cf48536fcc9b75a2a3b5abcf5e0a521ae44d75049de9e2",
+    "data/raw/sdrdl_source/files.csv": "fa9fb0d668b50e9230a3f50d8521246931507f161bcf4d343b2872d99ee60c7c"
+  },
+  "schema_version": "v0"
+}

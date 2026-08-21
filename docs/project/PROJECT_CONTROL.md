@@ -24,21 +24,25 @@ not use it as a substitute for closing or updating the owning issue.
 
 | Track | Owner | Tracker | Branch | Primary handoff |
 |---|---|---|---|---|
-| A — Data & Forecasting | Unassigned | [#28](https://github.com/dcondrey/buildingforgood/issues/28) | `track/a-data-forecasting` | Privacy-safe decision artifact to B, C, and D |
-| B — Product Experience | Unassigned | [#29](https://github.com/dcondrey/buildingforgood/issues/29) | `track/b-product-experience` | App shell and evidence/forecast experience to C and D |
-| C — Planning & Safeguards | Unassigned | [#30](https://github.com/dcondrey/buildingforgood/issues/30) | `track/c-planning-safeguards` | Privacy gate, planner, and safeguard evidence to D |
-| D — Integration & Release | Unassigned | [#31](https://github.com/dcondrey/buildingforgood/issues/31) | `track/d-integration-release` | Shared contracts, integration, and final release to `main` |
+| A — Data & Forecasting | agent-a (managed) | [#28](https://github.com/dcondrey/buildingforgood/issues/28) | `track/a-data-forecasting` | Privacy-safe decision artifact to B, C, and D |
+| B — Product Experience | agent-b (managed) | [#29](https://github.com/dcondrey/buildingforgood/issues/29) | `track/b-product-experience` | App shell and evidence/forecast experience to C and D |
+| C — Planning & Safeguards | agent-c (managed) | [#30](https://github.com/dcondrey/buildingforgood/issues/30) | `track/c-planning-safeguards` | Privacy gate, planner, and safeguard evidence to D |
+| D — Integration & Release | agent-d (managed) | [#31](https://github.com/dcondrey/buildingforgood/issues/31) | `track/d-integration-release` | Shared contracts, integration, and final release to `main` |
+| E — Quality & Accessibility | agent-e (managed) | Tracker pending GitHub re-auth | `track/e-quality-verification` | Accessibility, copy-boundary, and quality evidence to D |
 
-The first coordination action is to replace every `Unassigned` entry with a
-GitHub username or teammate name. A person may contribute research or review
-without Git, but the implementation owner for that track remains responsible
-for transferring accepted work into the branch.
+All five owners are managed agents coordinated from one review session; the
+session owner reviews every pull branch before it merges. GitHub API access is
+currently unavailable (invalid `gh` token), so review happens on pushed `pr/*`
+branches merged locally and pushed; issue-tracker sync resumes after
+`gh auth login`. A person may contribute research or review without Git, but
+the implementation owner for that track remains responsible for transferring
+accepted work into the branch.
 
 ## Current status
 
 | Workstream | State | Current issue | Next checkpoint |
 |---|---|---|---|
-| Project coordination | In progress | [D-01 / #26](https://github.com/dcondrey/buildingforgood/issues/26) | Assign all four track owners |
+| Project coordination | In progress | [D-01 / #26](https://github.com/dcondrey/buildingforgood/issues/26) | Owners assigned; sync GitHub trackers after re-auth |
 | Prepared scenario | Provisional; cross-track review required | [D-02 / #19](https://github.com/dcondrey/buildingforgood/issues/19) | Track A confirms period/geography; Track C confirms planner assumptions |
 | Decision contract | Provisional configuration committed | [D-03 / #2](https://github.com/dcondrey/buildingforgood/issues/2) | D-04 adds runtime schemas and validates fixed/provisional/unresolved fields |
 | App bootstrap | Ready | [B-02 / #3](https://github.com/dcondrey/buildingforgood/issues/3) | Static app and verification command consume the decision contract |
@@ -57,6 +61,7 @@ for transferring accepted work into the branch.
 | DEC-005 | 2026-08-20 | Prefer the seasonal-naive forecast unless a candidate wins on held-out evaluation. | Prevents unnecessary model complexity and optimistic in-sample selection. | #9, #10 | Accepted |
 | DEC-006 | 2026-08-20 | Prepare an editable 80-hour plan for a shift within seven days, informed by a one-month aggregate forecast. | Separates the operational decision horizon from the observation/forecast cadence while keeping both visible. | #2, #14, #19 | Provisional pending cross-track review |
 | DEC-007 | 2026-08-20 | Treat the exact demonstration month, area list, and adjacency as unresolved release blockers. | The source and boundary audit must determine them; the integration track will not invent comparability. | #2, #6, #11, #18, #34 | Accepted |
+| DEC-008 | 2026-08-20 | Assign five managed agent owners and add Track E (quality and accessibility) alongside the four DEC-001 tracks. | Enables parallel per-track ownership with a dedicated quality pass; the DEC-001 integration path through Track D is unchanged. | #28–#31 | Accepted |
 
 Use the next sequential decision ID. A decision entry must include the rationale
 and affected issue links. Superseded decisions remain in the table with a

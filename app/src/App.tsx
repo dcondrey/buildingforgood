@@ -118,6 +118,7 @@ function AreaMap({
   valueFor: (area: DemoData["areas"][number]) => {
     text: string;
     tone: "up" | "down" | "neutral" | "missing";
+    intensity?: number;
   };
   selectedId?: string | null;
   onSelect?: (areaId: string) => void;
@@ -182,7 +183,14 @@ function AreaMap({
             role={interactive ? "button" : undefined}
             tabIndex={interactive ? 0 : undefined}
           >
-            <path d={cell.outline} />
+            <path
+              d={cell.outline}
+              style={
+                value.intensity === undefined || value.tone === "missing"
+                  ? undefined
+                  : { fillOpacity: 0.08 + Math.min(1, Math.max(0, value.intensity)) * 0.34 }
+              }
+            />
             <text className="map-name" textAnchor="middle" x={cell.label.x} y={cell.label.y}>
               {area.name}
             </text>
@@ -1352,14 +1360,18 @@ function App() {
                           ariaLabel="Map of the six downtown neighborhoods showing the change in raw field observations; select a neighborhood for detail"
                           onSelect={toggleAreaSelection}
                           selectedId={selectedAreaId}
-                          valueFor={(area) =>
-                            area.latest === null
-                              ? { text: "no data", tone: "missing" }
-                              : {
-                                  text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
-                                  tone: area.delta > 0 ? "up" : "down",
-                                }
-                          }
+                          valueFor={(area) => {
+                            if (area.latest === null) return { text: "no data", tone: "missing" };
+                            const maxDelta = Math.max(
+                              1,
+                              ...data.areas.map((row) => Math.abs(row.delta)),
+                            );
+                            return {
+                              text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                              tone: area.delta > 0 ? "up" : "down",
+                              intensity: Math.abs(area.delta) / maxDelta,
+                            };
+                          }}
                         />
                         <div className="map-legend" aria-label="Map legend">
                           <span>
@@ -2156,6 +2168,7 @@ function App() {
                         return {
                           text: `${hours}h${belowFloor ? " !" : ""}`,
                           tone: belowFloor ? "down" : "neutral",
+                          intensity: hours / maxHours,
                         };
                       }}
                     />

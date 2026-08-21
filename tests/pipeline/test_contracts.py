@@ -42,7 +42,13 @@ def valid_observations() -> dict:
                 "coverage_start": "2018-01",
                 "coverage_end": "2018-01",
                 "observed_gap_months": [],
-                "observations": [{"month": "2018-01", "total": 5, "by_type": {"individual": 5}}],
+                "observations": [
+                    {
+                        "month": "2018-01",
+                        "total": 5,
+                        "by_type": {"individual": 5, "structure": 0, "vehicle": 0},
+                    }
+                ],
             }
         ],
         "comparability_events": [],
@@ -113,7 +119,7 @@ class TestObservationsValidatorRejects:
 
     def test_string_by_type_value_rejected(self) -> None:
         doc = valid_observations()
-        doc["neighborhoods"][0]["observations"][0]["by_type"] = {"individual": "many"}
+        doc["neighborhoods"][0]["observations"][0]["by_type"]["individual"] = "many"
         with pytest.raises(ContractViolation, match="by_type value"):
             validate_observations_v0(doc)
 
@@ -144,6 +150,38 @@ class TestContractDeclaration:
         doc = valid_observations()
         doc["contract"]["suppression_marker"] = {"field": "suppressed"}
         with pytest.raises(ContractViolation, match="affirmative"):
+            validate_observations_v0(doc)
+
+    @pytest.mark.parametrize(
+        "marker",
+        [
+            {"field": "anything", "affirmative": [True]},
+            {"field": "suppressed", "affirmative": [False]},
+            {"field": "suppressed", "affirmative": [1]},
+            {"field": "suppressed", "affirmative": [""]},
+        ],
+    )
+    def test_suppression_marker_must_match_the_implemented_encoding(self, marker: dict) -> None:
+        doc = valid_observations()
+        doc["contract"]["suppression_marker"] = marker
+        with pytest.raises(ContractViolation, match="suppression_marker"):
+            validate_observations_v0(doc)
+
+    def test_count_fields_items_must_be_strings(self) -> None:
+        doc = valid_observations()
+        doc["contract"]["count_fields"] = ["total", 3]
+        with pytest.raises(ContractViolation, match="only strings"):
+            validate_observations_v0(doc)
+
+    @pytest.mark.parametrize("mutation", ["extra", "missing"])
+    def test_declared_count_paths_match_the_actual_by_type_surface(self, mutation: str) -> None:
+        doc = valid_observations()
+        by_type = doc["neighborhoods"][0]["observations"][0]["by_type"]
+        if mutation == "extra":
+            by_type["family"] = 10
+        else:
+            del by_type["vehicle"]
+        with pytest.raises(ContractViolation, match="declared count paths"):
             validate_observations_v0(doc)
 
 

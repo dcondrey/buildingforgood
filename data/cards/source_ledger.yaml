@@ -505,6 +505,36 @@ sources:
         note: City payments to Alpha Project 2009-2021, per-check grain, $17.12M total.
       - raw_path: data/raw/pra_sandiego/Payments to Alpha Project for the Homeless PRA 21-5187 March 2007 to June 2009.xlsx
         note: City payments 2007-2009, 273 checks, $3.28M.
+      - raw_path: data/raw/pra_sandiego/unsorted/Maximum Shelter Capacity.pdf
+        note: >-
+          SDHC working table (last updated 2022-09-12): per-site, per-shift
+          client capacity and shelter-staff counts (e.g. 16th & Newton /
+          Alpha Project bridge shelter: 276 clients, staff 30/15/8 across
+          Day/Swing/Graveyard). Real observed staff-per-client-per-shift
+          grounding for the capacity-context card; shelter operations, not
+          street outreach.
+      - raw_path: data/raw/pra_sandiego/unsorted/HHI-19-21 FJV Bridge Shelter.pdf
+        note: FJV Golden Hall bridge-shelter agreement (HHI-19-21).
+      - raw_path: data/raw/pra_sandiego/unsorted/Convention Center MOA July 2020 (1).pdf
+        note: Convention Center shelter operation MOA, July 2020.
+      - raw_path: data/raw/pra_sandiego/unsorted/2364117 (1).pdf
+        note: Convention Center management agreement.
+      - raw_path: data/raw/pra_sandiego/unsorted/R-313098 County and RTF.pdf
+        note: Council resolution R-313098 (County and RTFH funding context).
+      - raw_path: data/raw/pra_sandiego/unsorted/0bc2b4ab-ad60-405a-b010-874fa744e117.pdf
+        note: Fire-Rescue fire/life-safety notice for the Golden Hall shelter.
+      - raw_path: data/raw/pra_sandiego/unsorted/PDF 15 2023.pdf
+        note: >-
+          City staff emails on Golden Hall shelter permits and capacities
+          (with PDF 16/17; government business contacts only).
+      - raw_path: data/raw/pra_sandiego/unsorted/PDF 16 2023.pdf
+        note: Golden Hall permit/capacity email series, continued.
+      - raw_path: data/raw/pra_sandiego/unsorted/PDF 17 2023.pdf
+        note: Golden Hall permit/capacity email series, continued.
+      - raw_path: data/raw/pra_sandiego/unsorted/fy_23_caper_-_final.pdf
+        note: HUD FY23 CAPER (public report; system-outcome context).
+      - raw_path: data/raw/pra_sandiego/unsorted/fy24ab_v1cbo.pdf
+        note: FY24 adopted budget volume (public document; funding context).
     retrieval_method: >-
       Manual authenticated download from the NextRequest portal; pinned by
       SHA-256 in checksums.sha256. Reviewed for client-level content before
@@ -528,8 +558,185 @@ sources:
         releases are complete only as published.
       - Two large companion invoice PDFs from the same portal were reviewed
         but deliberately NOT pinned; their scanned pages could not be fully
-        cleared for personal information.
+        cleared for personal information. The 2026-08-21 download batch
+        confirmed one of them is Allstate Security invoices; both stay out,
+        along with all image-only files that cannot be text-cleared.
       - Payments are cash-accounting checks, not program-year costs.
+
+  - id: city_pra_outreach_contracts
+    name: City of San Diego public-records releases (street-outreach and HRC contracts)
+    role: local_capacity_context
+    analytical_question: >-
+      What contracted street-outreach and coordinated-intake staffing, scope,
+      hours, and funding do executed City contracts document for
+      downtown-serving providers?
+    publisher: >-
+      City of San Diego via sandiego.nextrequest.com (PRA requests 24-3385 and
+      23-5948; original requesters unknown). Documents authored by the City,
+      City Net (Kingdom Causes), PATH, NAMI San Diego, and DSDP.
+    package_page: https://sandiego.nextrequest.com/requests/24-3385
+    retrieved_at: "2026-08-21"
+    files:
+      - raw_path: data/raw/pra_sandiego/24-3385/Contract_RFP 10089902-22-F_PATH San Diego (executed).pdf
+        note: >-
+          PATH Coordinated Street Outreach contract + RFP scope (40 pp, fully
+          text-extractable). Five-year term, NTE $3,000,000. Staffing stated
+          verbatim: Rapid Response Team of two outreach staff per shift plus
+          a shared team leader, two shifts per day (4 staff/day), available
+          7 days per week, 8am-10pm; team leaders provide seven-day coverage
+          over every shift. No numeric caseload ratio anywhere in the text —
+          only smaller-group-intensely (Mobile team) vs
+          large-group-peripherally (Rapid Response) framing. The 10.0/5.0
+          direct-service-FTE figures on p6 are RFP scoring examples, not
+          contracted counts.
+      - raw_path: "data/raw/pra_sandiego/24-3385/Contract_RFP 10089902-22-F_PATH San Diego (executed agreement)_Redacted Peronal Employee & Fin Info.pdf"
+        note: >-
+          Full 159-page executed package, City-redacted. The unredacted
+          224-page portal siblings carry PATH employee resumes and financial
+          statements and were deliberately NOT pinned; this redacted variant
+          is the pinnable record of the same agreement.
+      - raw_path: data/raw/pra_sandiego/24-3385/Executed_CityNet Coordinated Street Outreach Svcs Agreement.pdf
+        note: >-
+          City Net (Kingdom Causes) street outreach: five-year term, NTE
+          $600,000 FY2024 initial, $1,000,000 per option period; Caltrans
+          right-of-way focus, Monday-Friday 8am-5pm, two shifts per day. No
+          numeric FTE or caseload figures in text.
+      - raw_path: data/raw/pra_sandiego/24-3385/Executed_OCL NAMI Alliance Program Agreement HSSD.pdf
+        note: >-
+          NAMI Alliance Program base agreement, NTE $1,000,000 initial and
+          per option; Nov 2022-Apr 2023 budget total $596,914. CAUTION: the
+          Alliance Program is a 180-day shelter for single individuals who
+          identify as female — shelter services, not street outreach,
+          despite adjacent "Outreach Services" filenames.
+      - raw_path: data/raw/pra_sandiego/24-3385/02. Executed_Second Amendment_NAMI Outreach Services.pdf
+        note: NAMI second amendment; term through 2025-06-30 plus two 1-year options.
+      - raw_path: data/raw/pra_sandiego/24-3385/FY23 Executed_DSDP FRP.pdf
+        note: >-
+          DSDP Family Reunification Program FY23 agreement with exhibits, NTE
+          $950,000 (Personnel $582,079 / Non-Personnel $367,921).
+      - raw_path: data/raw/pra_sandiego/24-3385/2nd Amnd - DSDP (Budget Mod).pdf
+        note: >-
+          DSDP second amendment (budget mod): Personnel $517,079 /
+          Non-Personnel $432,921, $65,000 transfer funding a seasonal FY23
+          aide. Source PDF has a broken font map; figures cross-verified
+          against the Third Amendment recitals.
+      - raw_path: data/raw/pra_sandiego/24-3385/Executed_Third Amendment_DSDP Family Reunification and Outreach Program Svcs.pdf
+        note: >-
+          DSDP Family Reunification and Outreach third amendment: total NTE
+          $2,894,068 ($950,000 initial + $1,944,068 first option); coverage
+          most of Downtown south and west of Interstate 5.
+      - raw_path: data/raw/pra_sandiego/23-5948/HHI-24-23 Initial Term (HRC - PATH).pdf
+        note: >-
+          PATH Homelessness Response Center system-navigation agreement,
+          maximum compensation $748,154 per term.
+      - raw_path: "data/raw/pra_sandiego/23-5948/HHI-21-17.1 First Option & First Amendment (Homelessness Response Center - PATH).pdf"
+        note: HRC-PATH first option/amendment instrument.
+      - raw_path: data/raw/pra_sandiego/23-5948/HHI-21-17.2 Second Option  Second Amendment (HRC - PATH).pdf
+        note: HRC-PATH second option/amendment instrument.
+      - raw_path: data/raw/pra_sandiego/23-5948/Revised Signed Copy FY22 Scope and Budget HRC (carryforward).pdf
+        note: >-
+          HRC FY22 scope/budget: FY21 carryforward $721,430.09 + FY22
+          $278,569.91 (= $1,000,000); HRC at 1122 Broadway Suite 300.
+    retrieval_method: >-
+      Manual authenticated download from the NextRequest portal against the
+      document manifest in issue #85; SHA-256 pinned in checksums.sha256.
+      Reviewed for client-level content before pinning: none found in
+      extracted text (signatory names, titles, and business contacts only).
+    update_cadence: >-
+      Static releases. The executed PATH street-outreach City agreement, both
+      PATH outreach amendments, the DSDP FRP first amendment, and the
+      Outreach MOU are image-only scans that cannot be text-cleared and stay
+      un-pinned pending manual review; tracked in issue #85.
+    license_terms: >-
+      California Public Records Act releases; public documents. Attribute the
+      City portal and the authoring organization.
+    collection_method: Executed contracts, amendments, and program agreements.
+    intended_use: >-
+      Citable local grounding for the capacity-context card and annual
+      system-context figures: contracted street-outreach coverage hours,
+      shift staffing, and funding. Never a forecast feature, allocation
+      weight, or claim about staffing actually fielded.
+    time_grain: Document-specific (contract terms roughly FY21-FY25).
+    geo_grain: Program level, City of San Diego; downtown-serving providers.
+    known_limitations:
+      - No pinned contract states a numeric street-outreach caseload ratio;
+        the shipped capacity card's 1:15 and 1:12.5 remain shelter
+        case-management figures from a proposal, and these contracts do not
+        change that labeling.
+      - Contracted shift staffing (e.g. PATH's 4 outreach staff/day) is a
+        contract requirement, not observed field staffing.
+      - The image-only executed agreements may carry FTE exhibits that the
+        text-extractable variants do not; conclusions here are complete only
+        as to extractable text.
+
+  - id: city_pra_encampment_operations
+    name: City of San Diego public-records releases (encampment reporting and abatement)
+    role: displacement_method_context
+    analytical_question: >-
+      What do City records document about encampment-report volumes and
+      encampment-abatement operations that could displace or reshape downtown
+      street counts?
+    publisher: >-
+      City of San Diego via sandiego.nextrequest.com (PRA requests 25-360,
+      25-6108, 23-45, 25-5316, 24-3875; original requesters include We Work
+      Count/WWC and CalMatters per document labels).
+    package_page: https://sandiego.nextrequest.com/requests/25-360
+    retrieved_at: "2026-08-21"
+    files:
+      - raw_path: "data/raw/pra_sandiego/25-360/PRA #25-360 - ESD - FINAL Encampment Abatement Procedures 8.8.23.pdf"
+        note: >-
+          The August 2023 abatement procedures — method/provenance context
+          for displacement artifacts in downtown counts.
+      - raw_path: "data/raw/pra_sandiego/25-360/PRA #25-360 - ESD - CY 2024 Encampment Abatements 1.31.2025.pdf"
+        note: CY2024 abatement counts; 2024 total $5,996,045.85.
+      - raw_path: "data/raw/pra_sandiego/25-360/PRA #25-360 - ESD - Encampments Abated Report 1.31.2025.pdf"
+        note: Site-level abated-encampment report (sites and costs, no people).
+      - raw_path: "data/raw/pra_sandiego/25-6108/PRA #25-6108 - EDS - FY 2024-2025  Encampment Abatements.pdf"
+        note: "FY2024 total $6,437,176.10; FY2025 total $7,123,902.41 (Urban Corps, Alpha Project, City labor)."
+      - raw_path: "data/raw/pra_sandiego/23-45/PRA #23-45 ESD - ESD Encampment Abatement FY23.pdf"
+        note: FY23 abatement budget/position table.
+      - raw_path: data/raw/pra_sandiego/25-5316/LC1.2 (D)_Monthly Encampment Report Counts, WWC SD 2024.xlsx
+        note: >-
+          Monthly Get It Done report counts vs encampment-report counts and
+          share, by council district (1-9 plus unrecorded), Jan 2023-Apr
+          2024. Council-district grain only; no sub-area or person-level
+          detail. A reporting-attention comparable for the Get It Done
+          diagnostic lane, never a model input.
+      - raw_path: data/raw/pra_sandiego/25-5316/LC1.2 (C)_Email w- Monthly Encampment Report, WWC SD 2024.pdf
+        note: Companion transmittal email (city staff business contacts only).
+      - raw_path: data/raw/pra_sandiego/25-5316/LC1.2 (B)_2023-11-20 GID Weekly Summary, WWC SD 2024.pdf
+        note: Get It Done weekly summary exhibit from the same release.
+      - raw_path: data/raw/pra_sandiego/24-3875/FY24 Downtown San Diego Partnership Monthly Report_O Lot.pdf
+        note: >-
+          DSDP FY24 monthly report for the O Lot safe-sleeping site:
+          aggregate performance measures and reporting-only targets, not
+          street-outreach operations.
+    retrieval_method: >-
+      Manual authenticated download from the NextRequest portal against the
+      issue #85 manifest; SHA-256 pinned in checksums.sha256. Reviewed for
+      client-level content before pinning: none found ("case number" text is
+      impound-label procedure boilerplate, not person-linked records).
+    update_cadence: Static releases; successors tracked in issue #85.
+    license_terms: >-
+      California Public Records Act releases; public documents. Attribute the
+      City portal.
+    collection_method: >-
+      Administrative procedure documents, abatement count/cost tables, and a
+      requester-compiled Get It Done monthly series.
+    intended_use: >-
+      Method and displacement context for the assumption explorer and the
+      Get It Done reporting-attention diagnostic. Never a forecast feature,
+      allocation weight, or validation of any count.
+    time_grain: Document-specific (FY23-FY25 abatement; Jan 2023-Apr 2024 monthly series).
+    geo_grain: Citywide and council district; abatement reports at site level.
+    known_limitations:
+      - Abatement counts measure operations, not people, and overlap the
+        counts' visual-sweep universe in unknown ways.
+      - The WWC monthly series is council-district grain and cannot be
+        mapped onto the six downtown areas without a crosswalk that does not
+        exist here.
+      - Requester-compiled spreadsheets reflect the requester's tabulation
+        of City data, complete only as published.
 
   - id: sdhc_city_program_dashboard
     name: SDHC and City of San Diego Homeless Services Programs Overview

@@ -515,6 +515,50 @@ sources:
       - Guidance contains definitions, not San Diego observations.
       - HMIS system outcomes cannot fill monthly DSDP gaps or validate a downtown forecast.
 
+  - id: hud_case_management_ratios
+    name: HUD Homeless System Response — Case Management Ratios guidance
+    role: capacity_context
+    analytical_question: >-
+      What staff-to-client ratios does primary federal guidance suggest for
+      homeless-services case management, as context for discussing what an
+      assumed staff-hour budget could mean in staffing terms?
+    publisher: >-
+      U.S. Department of Housing and Urban Development (prepared by HUD
+      technical assistance providers, COVID-19 Homeless System Response
+      series).
+    package_page: https://files.hudexchange.info/resources/documents/COVID-19-Homeless-System-Response-Case-Management-Ratios.pdf
+    retrieval_method: >-
+      Reference-only public guidance PDF, reviewed 2026-08-21; not a dataset
+      or demo input. Community-based table on page 1 (Intensive 10–12;
+      housing-focused navigation 20–30 individuals, 20–25 families and
+      transition-age youth; broad engagement 50); CTI and intensive
+      case-management tables on page 2.
+    update_cadence: Static technical-assistance product; no revision cadence.
+    license_terms: U.S. federal public document; cite HUD.
+    collection_method: >-
+      Technical-assistance synthesis of practice ratios, footnoted by the
+      document to NASW, CSH, and Critical Time Intervention sources.
+    intended_use: >-
+      The rendered capacity-context card only: restating the assumed
+      staff-hour budget against published case-management ratios, labeled as
+      context. Excluded from the forecast, the planner, and every allocation
+      rule.
+    time_grain: Not applicable (guidance document).
+    geo_grain: National guidance; not a San Diego observation.
+    known_limitations:
+      - The document describes community-based case management, not street
+        outreach; no street-outreach caseload standard was found in primary
+        federal guidance (HUD, SAMHSA PATH, USICH, VA directives) when
+        reviewed on 2026-08-21.
+      - The document states its contents do not have the force and effect of
+        law; ratios are planning aid, not requirements.
+      - The widely repeated HUD-VASH 1:25 figure appears in VA oversight
+        reports as an internal staffing-model average, not in the governing
+        VHA directive, and is deliberately not cited.
+      - Caseload ratios describe staffing models elsewhere; they are not
+        evidence about downtown San Diego capacity, need, eligibility, or
+        availability.
+
   - id: hud_ca601_system_reports
     name: HUD CA-601 CoC Performance Profile, HIC, PIT, and System Performance data
     role: annual_coc_context

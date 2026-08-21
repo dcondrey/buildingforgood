@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import "./App.css";
+import { DIGITIZATION_AUDIT } from "./data/digitizationAudit";
 import { EMBEDDED_DEMO, loadDemoData, type DemoData, type HistoryPoint } from "./lib/demo";
 import { applyIntervention } from "./lib/intervention";
 import { allocateHours, type PlanResult } from "./lib/planner";
@@ -27,6 +28,7 @@ type GuideStep = {
     | "restore"
     | "lock"
     | "explore"
+    | "audit"
     | "brief";
   title: string;
   body: string;
@@ -104,6 +106,12 @@ function buildGuideSteps(data: DemoData): GuideStep[] {
       targetId: "planner",
       task: "Select a neighborhood on the plan map, then press “Explore this assumption”.",
       body: "The most reached-for action is a clearance. Here you audit one honestly: you state how much of that area's load shifts next door instead of being resolved, and the plan reacts. No setting makes the need smaller without assuming it away in the open — the data cannot show who moves where, and this tool refuses to pretend otherwise.",
+    },
+    {
+      id: "audit",
+      title: "The ruler gets audited too",
+      targetId: "digitization-audit",
+      body: "Even the measuring instrument gets checked: computer vision reads the scanned field sheets behind the published counts — fully offline — and the recovered City Center totals reconcile through the published multipliers: 152 plus 14 tents times 1.75 is 176.5, published 177. The OCR engine is swappable, so EyePop's hosted abilities drop in with one flag. Vision that audits the instrument, never the people.",
     },
     {
       id: "brief",
@@ -1768,6 +1776,27 @@ function App() {
   function renderBriefCluster() {
     return (
       <>
+        <details className="data-table-disclosure capacity-context">
+          <summary>Capacity context: staff-hours in staffing terms</summary>
+          <p>
+            The assumed {formatNumber(budget)}-hour budget equals {formatNumber(budget / 40, 1)}{" "}
+            forty-hour staff-weeks. The budget, and the forty-hour week used to restate it, are
+            stated assumptions, not staffing data.
+          </p>
+          <p>
+            For scale only: HUD case-management guidance suggests roughly 20 to 30 clients per case
+            manager for housing-focused navigation and 10 to 12 for intensive support (HUD, Homeless
+            System Response: Case Management Ratios, HUD Exchange). That guidance describes
+            community-based case management, not street outreach; no street-outreach caseload
+            standard appears in the primary federal guidance we reviewed, and HUD publishes these
+            ratios as planning help, not binding rules.
+          </p>
+          <p>
+            These benchmarks are context for a capacity conversation only. No benchmark number
+            enters the allocation, and nothing here estimates any person&apos;s service need,
+            eligibility, or availability.
+          </p>
+        </details>
         <div className="brief-action">
           <div>
             <span className="eyebrow">Portable output</span>
@@ -3095,6 +3124,71 @@ function App() {
                 )}
               </div>
             )}
+
+            <div className="digitization-audit" id="digitization-audit">
+              <div className="digitization-audit-head">
+                <div>
+                  <span className="eyebrow">The ruler gets audited too · computer vision</span>
+                  <strong>Field-sheet digitization audit</strong>
+                </div>
+                <span className="selected-chip">
+                  {DIGITIZATION_AUDIT.engine === "local"
+                    ? "Engine: Apple Vision · offline"
+                    : "Engine: EyePop.ai · hosted"}
+                </span>
+              </div>
+              <p>
+                The published counts are digitized by hand from scanned, hand-annotated field
+                sheets. This audit recovers the sheets&apos; own written totals from the pinned
+                public June 2026 report — per page, area-scale values only; anything block-scale is
+                counted but withheld.
+              </p>
+              <p className="digitization-audit-finding">
+                <strong>Recovered and reconciled:</strong> the City Center sheet&apos;s handwritten
+                totals (152 observed individuals, 14 tents) reconcile through the published
+                multipliers to the published area total: 152 + 14 × 1.75 = 176.5 ≈ 177. Reading
+                handwriting is unstable across scan resolutions — surfacing that uncertainty is the
+                audit&apos;s job, so recovered values are candidates for human verification, never
+                counts.
+              </p>
+              <details className="digitization-audit-pages">
+                <summary>Per-page recovery across {DIGITIZATION_AUDIT.pages.length} pages</summary>
+                <table>
+                  <caption>
+                    Recovered integer tokens and area-scale values (≥
+                    {DIGITIZATION_AUDIT.value_threshold}) by page
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Page</th>
+                      <th scope="col">Integer tokens</th>
+                      <th scope="col">Area-scale values</th>
+                      <th scope="col">Withheld</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {DIGITIZATION_AUDIT.pages.map((page) => (
+                      <tr key={page.page}>
+                        <td>{page.page}</td>
+                        <td>{page.integer_tokens}</td>
+                        <td>
+                          {page.values.length === 0
+                            ? "—"
+                            : page.values.length > 6
+                              ? `${page.values.slice(0, 6).join(", ")} … +${page.values.length - 6} more`
+                              : page.values.join(", ")}
+                        </td>
+                        <td>{page.withheld_below_threshold}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </details>
+              <p className="digitization-audit-boundary">
+                {DIGITIZATION_AUDIT.boundary} The OCR engine is swappable; EyePop.ai&apos;s hosted
+                abilities are a drop-in replacement.
+              </p>
+            </div>
           </section>
 
           <section className="decision-section" id="forecast" aria-labelledby="forecast-title">

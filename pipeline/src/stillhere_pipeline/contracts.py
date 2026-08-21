@@ -90,6 +90,63 @@ def validate_observations_v0(doc: dict[str, Any]) -> None:
     assert_no_precise_fields(doc)
 
 
+ALLOWED_CLASSIFICATIONS = frozenset(
+    {"likely_improvement", "possible_displacement", "insufficient_evidence"}
+)
+
+
+def validate_evidence_v0(doc: dict[str, Any]) -> None:
+    if _require(doc, "schema", str) != "evidence.v0":
+        raise ContractViolation("schema must be evidence.v0")
+    _require(doc, "source", dict)
+    _require(doc, "thresholds", dict)
+    areas = _require(doc, "areas", list)
+    for entry in areas:
+        if not isinstance(entry, dict):
+            raise ContractViolation("evidence areas must be objects")
+        _require(entry, "area", str)
+        _require(entry, "period", str)
+        classification = _require(entry, "classification", str)
+        if classification not in ALLOWED_CLASSIFICATIONS:
+            raise ContractViolation(f"unknown classification {classification!r}")
+        _require(entry, "forced_reasons", list)
+        components = _require(entry, "components", list)
+        if not components:
+            raise ContractViolation("every evidence entry must publish its components")
+        for component in components:
+            if not isinstance(component, dict):
+                raise ContractViolation("evidence components must be objects")
+            _require(component, "id", str)
+            if _require(component, "direction", str) not in {"for", "against", "uncertainty"}:
+                raise ContractViolation("component direction must be for/against/uncertainty")
+            _require(component, "statement", str)
+    assert_no_precise_fields(doc)
+
+
+def validate_forecast_v0(doc: dict[str, Any]) -> None:
+    if _require(doc, "schema", str) != "forecast.v0":
+        raise ContractViolation("schema must be forecast.v0")
+    _require(doc, "source", dict)
+    _require(doc, "settings", dict)
+    areas = _require(doc, "areas", list)
+    for entry in areas:
+        if not isinstance(entry, dict):
+            raise ContractViolation("forecast areas must be objects")
+        _require(entry, "area", str)
+        status = _require(entry, "status", str)
+        if status not in {"ok", "insufficient_forecast_evidence"}:
+            raise ContractViolation(f"unknown forecast status {status!r}")
+        _require(entry, "backtest", dict)
+        _require(entry, "limitations", list)
+        if status == "ok":
+            point = _require(entry, "point", (int, float))
+            lower, upper = entry.get("lower"), entry.get("upper")
+            if lower is not None and upper is not None:
+                if not (lower <= point <= upper):
+                    raise ContractViolation("interval must be ordered around the point")
+    assert_no_precise_fields(doc)
+
+
 def validate_quality_report_v0(doc: dict[str, Any]) -> None:
     if _require(doc, "schema", str) != "quality_report.v0":
         raise ContractViolation("schema must be quality_report.v0")

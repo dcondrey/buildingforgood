@@ -20,16 +20,20 @@ hesitates, misreads, or asks for help; hesitation is data, not failure.
 | # | Prompt (read verbatim) | Expected outcome (observer only) | Time box |
 |---|---|---|---|
 | 1 | "Without clicking anything: what decision does this tool help someone make, for when, and with what resources?" | Reads decision, horizon, budget from the header | 1 min |
-| 2 | "Pick the East Village neighborhood and September 2022, and test whether its numbers really dropped." | Uses selectors + Test the drop; lands on a verdict card | 2 min |
-| 3 | "In your own words: what did it conclude, and what is one piece of evidence for and one against?" | Restates the label + one item from each column | 2 min |
-| 4 | "Find a month in the history where there is no count at all. How does the chart tell you?" | Points at a hatched band / legend, not a zero | 1 min |
-| 5 | "What does the tool expect for next month, and how sure is it?" | Reads central estimate + interval; notices wide-interval warning if shown | 2 min |
-| 6 | "Why did it use the model it used?" | Opens the Why? on the model line; mentions baseline/backtest in any words | 1 min |
-| 7 | "Set the monthly budget to 40 hours and describe what happens." | Triggers the infeasible/constrained state; reads the shortfall banner rather than guessing | 2 min |
-| 8 | "You disagree with one allocation. Change it, and show me how the tool records that." | Uses lock/override; finds the OVERRIDDEN marker or change list | 1 min |
+| 2 | "Using the area and period the demo suggests, test whether the apparent decline is real." | Uses the area/period selectors (draft scenario is fine, even if the period reads as provisional) + Test the drop; lands on an evidence result | 2 min |
+| 3 | "In your own words: what did it conclude, and what is one piece of evidence for and one against?" | Restates the label + one item from each column | 1 min |
+| 4 | "Find a month in the history where there is no count at all. How do you know?" | Points at the gap presentation / missing-period list, not a zero | 1 min |
+| 5 | "What does the tool expect for the next observation period, and how sure is it?" | Reads the point forecast + range; notices the wide-interval warning if shown | 2 min |
+| 6 | "Why did it use the model it used?" | Opens the model disclosure; mentions baseline/held-out comparison in any words | 1 min |
+| 7 | "Set the budget to 30 hours and describe what happens." | Triggers the infeasible/constrained state (floors exceed budget); reads the constraint list rather than guessing | 2 min |
+| 8 | "The plan can be compared with its coverage guard off. Find that comparison: what changes, and which version does the tool stand behind?" | Opens the guarded-vs-unguarded comparison; identifies the guarded plan as the recommendation and the other as an audit view | 1 min |
+| 9 | "You disagree with one allocation. Change it, and show me how the tool records that." | Uses lock/override; finds the recorded human change | 1 min |
 
-Missing/uncertain-data case: prompts 4 and 5 (2018-11 or 2019-12 in range;
-wide interval). Infeasible/constrained case: prompt 7.
+Missing/uncertain-data case: prompts 4 and 5 (the series has real gap months;
+wide interval). Infeasible/constrained case: prompt 7 (the default floor is 8
+hours per included area, so a 30-hour budget cannot cover them). Comparison:
+prompt 8. Data anchors are deliberately generic so the script survives
+whatever period the scenario lock (#2) freezes.
 
 ## Part 2: Keyboard-only checklist (3 minutes, observer drives)
 
@@ -40,7 +44,7 @@ Mouse away. Using only Tab / Shift+Tab / Enter / Space / arrows:
 - [ ] Focus is visible on every stop (no invisible focus).
 - [ ] Every control announces a label (check with the browser accessibility
       inspector if in doubt, not a screen reader session).
-- [ ] The full path prompt-1-through-8 can be completed without the mouse.
+- [ ] The full path prompt-1-through-9 can be completed without the mouse.
 - [ ] Charts offer a "View as table" (or equivalent) reachable by keyboard.
 
 ## Part 3: Meaning and comfort checks (3 minutes)

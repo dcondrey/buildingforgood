@@ -157,13 +157,27 @@ invention: Community Solutions' Built for Zero program uses by-name data
 across 100+ communities to model real-time caseloads and the system capacity
 and staffing needed to reach functional zero, and the Homelessness Policy
 Research Institute at USC publishes studies built on administrative street
-outreach data comparing contact frequency, caseload ratios, and retention. A
-real deployment would take its budget from the provider's scheduling records
-(the outreach provider or the Regional Task Force on Homelessness, the
-region's CoC lead), or from a caseload-based capacity model of that kind, and
-cross-check planned coverage against HMIS or HDIS encounter volumes. The
-planner accepts any whole-hour budget, so replacing 80 with a real number
-changes no code.
+outreach data comparing contact frequency, caseload ratios, and retention.
+
+In that practice, outreach capacity is quantified three ways:
+
+- **Caseload ratio** — active clients per full-time-equivalent outreach
+  worker, typically targeted around 1:15 to 1:30 for intensive case management
+  and higher for broad canvassing.
+- **Encounter volume** — total monthly contacts logged before formal
+  engagement.
+- **Geographic coverage** — the density of unsheltered individuals in a
+  designated zone relative to the outreach teams assigned there.
+
+The demo maps onto each. The 80-hour budget is roughly two FTEs of weekly
+street time and would in practice be derived from FTE counts and a caseload
+target, taken from the provider's scheduling records (the outreach provider or
+the Regional Task Force on Homelessness, the region's CoC lead). HMIS or HDIS
+encounter volumes are the natural cross-check on planned coverage. And the
+planner's allocation weight—each area's upper-bound expected observations—is a
+simplified geographic-coverage ratio, with the user-set floor guaranteeing
+that no zone's coverage drops to zero. The planner accepts any whole-hour
+budget, so replacing 80 with a derived number changes no code.
 
 ### Why an 8-hour minimum?
 

@@ -20,6 +20,12 @@ Realistic: 10/12 without EyePop live, 11–12/12 with it.
 
 ## EyePop runbook (do this at the venue, ~10 minutes)
 
+Known snag (2026-08-21): self-serve signup demanded the $200/mo Production
+plan despite the DSA2026 code. Do not enter payment — get credentials from
+the EyePop rep at the venue or andy@eyepop.ai, or borrow a teammate's key.
+If no key materializes, the honest presentation line is: "the integration is
+built, tested, and fail-closed; sponsor signup was pay-walled on the day."
+
 1. Sign up at dashboard.eyepop.ai (event code **DSA2026**; questions:
    andy@eyepop.ai). Hamburger menu → API Keys → Create API Key.
 2. `export EYEPOP_API_KEY=eyp_...` (and `EYEPOP_POP_ID` if the dashboard

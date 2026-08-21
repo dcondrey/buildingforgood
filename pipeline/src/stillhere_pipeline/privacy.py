@@ -496,17 +496,16 @@ def _declares_here(node: dict[str, Any]) -> bool:
     )
 
 
-def declares_aggregate_geography(document: Any) -> bool:
-    """True when the document root declares geography covering the whole file."""
-    if not isinstance(document, dict):
-        return False
-    if _declares_here(document):
-        return True
-    properties = document.get("properties")
-    return isinstance(properties, dict) and _declares_here(properties)
+class _GeometryCounter:
+    """Counts geometries during the single declaration walk."""
+
+    def __init__(self) -> None:
+        self.total = 0
 
 
-def _walk_geography(node: Any, where: str, declared: bool) -> Iterator[Finding]:
+def _walk_geography(
+    node: Any, where: str, declared: bool, counter: _GeometryCounter
+) -> Iterator[Finding]:
     """Check every geometry against a declaration that actually covers it.
 
     A declaration is inherited DOWNWARD only. A root-level
@@ -526,6 +525,8 @@ def _walk_geography(node: Any, where: str, declared: bool) -> Iterator[Finding]:
         if isinstance(properties, dict) and _declares_here(properties):
             declared_here = True
 
+        if "coordinates" in node and "type" in node:
+            counter.total += 1
         if "coordinates" in node and "type" in node and not declared_here:
             yield Finding(
                 "BLOCK",
@@ -536,21 +537,12 @@ def _walk_geography(node: Any, where: str, declared: bool) -> Iterator[Finding]:
                 "dissolve source blocks to canonical planning areas before publication",
             )
         for key, value in node.items():
-            yield from _walk_geography(value, f"{where}.{key}", declared_here)
+            yield from _walk_geography(value, f"{where}.{key}", declared_here, counter)
         return
 
     if isinstance(node, list):
         for index, item in enumerate(node):
-            yield from _walk_geography(item, f"{where}[{index}]", declared)
-
-
-def _count_geometries(node: Any) -> int:
-    if isinstance(node, dict):
-        here = 1 if ("coordinates" in node and "type" in node) else 0
-        return here + sum(_count_geometries(v) for v in node.values())
-    if isinstance(node, list):
-        return sum(_count_geometries(item) for item in node)
-    return 0
+            yield from _walk_geography(item, f"{where}[{index}]", declared, counter)
 
 
 def scan_geography_grain(document: Any, where: str = "$") -> list[Finding]:
@@ -561,11 +553,14 @@ def scan_geography_grain(document: Any, where: str = "$") -> list[Finding]:
     planning-area publication grain, and identifying once joined to the
     block-keyed count table. Requested by Track D on #7.
     """
-    geometry_count = _count_geometries(document)
+    # One traversal, not two. An earlier version counted geometries in a
+    # separate recursive pass, which doubled the walk over the 382-polygon
+    # source bundles this rule exists for.
+    counter = _GeometryCounter()
+    findings = list(_walk_geography(document, where, declared=False, counter=counter))
+    geometry_count = counter.total
     if geometry_count == 0:
         return []
-
-    findings = list(_walk_geography(document, where, declared=False))
     if geometry_count > MAX_AGGREGATE_FEATURES:
         findings.append(
             Finding(

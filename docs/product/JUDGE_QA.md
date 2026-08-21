@@ -175,7 +175,13 @@ In that practice, outreach capacity is quantified three ways:
 The demo maps onto each. The 80-hour budget is roughly two FTEs of weekly
 street time and would in practice be derived from FTE counts and a caseload
 target, taken from the provider's scheduling records (the outreach provider or
-the Regional Task Force on Homelessness, the region's CoC lead). HMIS or HDIS
+the Regional Task Force on Homelessness, the region's CoC lead). The closest
+public hours figure we located is facility-level, via SDHC public records:
+the downtown Homelessness Response Center's contracted operating schedule is
+Monday–Friday 8 AM–5 PM and Saturday 8 AM–2 PM (SDHC Agreement HHI-24-23 with
+PATH; operations transitioned to the Downtown San Diego Partnership under
+HHI-25-51 in mid-2025)—again facility operations, not street outreach
+staff-hours. HMIS or HDIS
 encounter volumes are the natural cross-check on planned coverage. And the
 planner's allocation weight—each area's upper-bound expected observations—is a
 simplified geographic-coverage ratio, with the user-set floor guaranteeing
@@ -276,6 +282,14 @@ and HCAI's homelessness identification rule changes before 2023. Separately,
 the exact St. Vincent de Paul Village Family Health Center (`306374018`)
 reports 2,916 to 3,409 patients from 2022 to 2024. These show health-system and
 service load, not downtown prevalence, causality, or planner demand.
+
+A second signal came from public records rather than a portal: SDHC's response
+to records request 25-52 (its NextRequest portal) includes the downtown
+Homelessness Response Center's activity reports, which log total walk-ins per
+month from provider internal records—between 1,278 and 2,245 per month across
+FY24, and 1,410 to 1,837 in July–January of FY25. Walk-ins measure
+help-seeking at one facility, so like 311 volume they stay out of the forecast
+and planner; they are cited only as service-load context.
 
 ### Is there external evidence that operational flags miss people?
 

@@ -33,9 +33,30 @@ const POLICY: PlannerPolicy = {
 };
 
 const AREAS: AreaPlanningInput[] = [
-  { area_id: "cortez_hill", label: "Cortez Hill", forecast_upper: 18, forecast_lower: 12, drop_test: "likely_improvement", included: true },
-  { area_id: "east_village", label: "East Village", forecast_upper: 150, forecast_lower: 110, drop_test: "possible_displacement", included: true },
-  { area_id: "gaslamp", label: "Gaslamp", forecast_upper: 60, forecast_lower: 44, drop_test: "likely_improvement", included: true },
+  {
+    area_id: "cortez_hill",
+    label: "Cortez Hill",
+    forecast_upper: 18,
+    forecast_lower: 12,
+    drop_test: "likely_improvement",
+    included: true,
+  },
+  {
+    area_id: "east_village",
+    label: "East Village",
+    forecast_upper: 150,
+    forecast_lower: 110,
+    drop_test: "possible_displacement",
+    included: true,
+  },
+  {
+    area_id: "gaslamp",
+    label: "Gaslamp",
+    forecast_upper: 60,
+    forecast_lower: 44,
+    drop_test: "likely_improvement",
+    included: true,
+  },
 ];
 
 async function violationsFor(element: HTMLElement): Promise<string[]> {

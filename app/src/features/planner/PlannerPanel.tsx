@@ -169,8 +169,8 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
 
           <table>
             <caption>
-              Suggested hours per area, ordered by area name. This is a coverage plan, not a
-              priority list.
+              Suggested hours per area, ordered by area name. This table shows a coverage plan. It
+              does not set priority order.
             </caption>
             <thead>
               <tr>

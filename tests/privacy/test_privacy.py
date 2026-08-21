@@ -126,9 +126,38 @@ def test_bundle_scan_catches_embedded_coordinates_and_fields(tmp_path: Path) -> 
     assert "bundle.coordinate_pair" in rules
 
 
-def test_bundle_scan_reads_source_maps(tmp_path: Path) -> None:
-    (tmp_path / "index.js.map").write_text('{"sourcesContent":["lat: 32.71234"]}', encoding="utf-8")
-    assert scan_bundle_dir(tmp_path) is not None
+def test_bundle_scan_catches_a_realistic_leaked_source_map(tmp_path: Path) -> None:
+    """Replaces an assertion that could never fail.
+
+    The previous version of this test asserted `scan_bundle_dir(...) is not
+    None`, which is true of every list, so it counted as source-map coverage
+    while proving nothing. Auditing it showed the scan caught only the street
+    address in a realistic map and missed the coordinates and the block id,
+    because it matched quoted JSON keys while `sourcesContent` embeds the
+    ORIGINAL source, where keys are bare.
+    """
+    (tmp_path / "index.js.map").write_text(
+        '{"version":3,"sourcesContent":["const site = { lat: 32.71234, '
+        'lon: -117.14832, address: \\"1425 Island Avenue\\" };\\n'
+        'export const rows = [{ block_id: \\"0412-3\\" }];"]}',
+        encoding="utf-8",
+    )
+    findings = [f for f in scan_bundle_dir(tmp_path) if f.severity == "BLOCK"]
+    fields = {f.detail.split("'")[1] for f in findings if f.rule == "bundle.forbidden_field"}
+    assert {"lat", "lon", "address", "block_id"} <= fields
+
+
+def test_bundle_scan_ignores_minified_schema_flags(tmp_path: Path) -> None:
+    """A deny-listed key with a boolean flag is a schema, not a payload.
+
+    React ships a minified table of HTML input types containing `email:!0`.
+    Flagging it made the bundle check fail on every build, which is how a
+    gate gets switched off.
+    """
+    (tmp_path / "index.js").write_text(
+        "var pr={color:!0,date:!0,email:!0,month:!0,password:!0};", encoding="utf-8"
+    )
+    assert [f for f in scan_bundle_dir(tmp_path) if f.severity == "BLOCK"] == []
 
 
 def test_missing_bundle_is_a_warning_not_a_block(tmp_path: Path) -> None:

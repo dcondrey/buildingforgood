@@ -855,15 +855,29 @@ def scan_bundle_dir(directory: Path) -> list[Finding]:
                     f"street address {match.group(0)!r} embedded in the bundle",
                 )
             )
-        for quoted in re.finditer(r"[\"']([A-Za-z_][A-Za-z0-9_-]{2,40})[\"']\s*:", text):
-            norm = normalize_key(quoted.group(1))
+        # Both quoted and UNQUOTED keys. A source map embeds the original
+        # source in sourcesContent, where object keys are written bare
+        # (`lat: 32.7`), so a quoted-key-only pattern reads a leaked map as
+        # clean. Found by auditing what the source-map check actually caught
+        # rather than trusting that it ran.
+        for match in re.finditer(
+            # A deny-listed key matters only when it carries something that
+            # could be data. `!0` and `!1` are how minifiers write true and
+            # false; React ships a table of HTML input types containing
+            # `email:!0`, and flagging that made the bundle check fail on
+            # every build. Only that exact form is excluded: a bare 0 or 1
+            # can still be a real value.
+            r"[\"']?([A-Za-z_][A-Za-z0-9_-]{2,40})[\"']?\s*:\s*(?!![01]\b)",
+            text,
+        ):
+            norm = normalize_key(match.group(1))
             if norm in FORBIDDEN_KEYS or any(s in norm for s in FORBIDDEN_KEY_SUBSTRINGS):
                 findings.append(
                     Finding(
                         "BLOCK",
                         "bundle.forbidden_field",
                         str(path),
-                        f"deny-listed field {quoted.group(1)!r} embedded in the bundle",
+                        f"deny-listed field {match.group(1)!r} embedded in the bundle",
                     )
                 )
     return findings

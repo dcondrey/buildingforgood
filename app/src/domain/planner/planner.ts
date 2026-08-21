@@ -49,14 +49,26 @@ export class PlannerInputError extends Error {
  * untyped at the boundary. This is the check that keeps an extra field in a
  * generated file from becoming an allocation input by way of a spread.
  */
-export function assertNoComplaintSignal(record: Record<string, unknown>, where: string): void {
-  for (const key of Object.keys(record)) {
+export function assertNoComplaintSignal(record: unknown, where: string): void {
+  if (Array.isArray(record)) {
+    record.forEach((item, index) => assertNoComplaintSignal(item, `${where}[${index}]`));
+    return;
+  }
+  if (typeof record !== "object" || record === null) return;
+
+  for (const [key, value] of Object.entries(record)) {
     if (COMPLAINT_FIELD_PATTERN.test(key)) {
       throw new PlannerInputError(
         `${where} carries "${key}"; complaint volume may never influence planning load ` +
           `or allocation (config/decision.v1.json → observations.complaint_volume_excluded_uses)`,
       );
     }
+    // Recurse. The first version checked only the object's own keys, so a
+    // nested `diagnostics: { complaint_count: N }` passed the guard while
+    // Track D had been told the contract rejects any complaint-shaped field
+    // on an area object. The planner would not have USED it, but the
+    // promise made about the guard has to be true as stated.
+    assertNoComplaintSignal(value, `${where}.${key}`);
   }
 }
 
@@ -89,7 +101,7 @@ function validate(areas: AreaPlanningInput[], policy: PlannerPolicy, locks: Area
     if (!area.area_id) throw new PlannerInputError("every area needs a non-empty area_id");
     if (seen.has(area.area_id)) throw new PlannerInputError(`duplicate area_id ${area.area_id}`);
     seen.add(area.area_id);
-    assertNoComplaintSignal(area as unknown as Record<string, unknown>, `area ${area.area_id}`);
+    assertNoComplaintSignal(area, `area ${area.area_id}`);
     requireFinite(area.forecast_upper, `${area.area_id}.forecast_upper`);
     requireFinite(area.forecast_lower, `${area.area_id}.forecast_lower`);
     if (area.forecast_lower < 0 || area.forecast_upper < 0) {

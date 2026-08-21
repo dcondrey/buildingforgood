@@ -315,3 +315,30 @@ describe("infeasible plans still carry a full allocation list", () => {
     expect(plan.allocations).toHaveLength(SIX_AREAS.length);
   });
 });
+
+describe("the complaint guard reaches all the way down", () => {
+  it("rejects a nested complaint field, not only a top-level one", () => {
+    // Found by auditing the claim rather than re-reading it: the guard
+    // checked one level, so `diagnostics: { complaint_count }` slipped
+    // through while Track D had been told the contract rejects any
+    // complaint-shaped field on an area object.
+    const nested = [
+      { ...area("a", 100, 80), diagnostics: { complaint_count: 900 } },
+    ] as unknown as AreaPlanningInput[];
+    expect(() => buildPlan(nested, POLICY)).toThrow(PlannerInputError);
+  });
+
+  it("rejects a complaint field inside an array", () => {
+    const inArray = [
+      { ...area("a", 100, 80), history: [{ month: "2021-09", service_request_count: 4 }] },
+    ] as unknown as AreaPlanningInput[];
+    expect(() => buildPlan(inArray, POLICY)).toThrow(PlannerInputError);
+  });
+
+  it("names the path so the emitter knows which field to remove", () => {
+    const nested = [
+      { ...area("a", 100, 80), diagnostics: { complaint_count: 900 } },
+    ] as unknown as AreaPlanningInput[];
+    expect(() => buildPlan(nested, POLICY)).toThrow(/diagnostics/);
+  });
+});

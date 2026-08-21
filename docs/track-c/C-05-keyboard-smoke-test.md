@@ -56,6 +56,15 @@ npm --prefix app run preview
 - [ ] The comparison column is labelled as an audit view.
 - [ ] Nothing on screen presents the unguarded plan as the better one.
 
+### 5b. Map selection (added 2026-08-21 with the interactive neighborhood map)
+
+- [ ] `Tab` reaches each neighborhood on both maps in a sensible order; every stop
+      announces the area name and its value.
+- [ ] `Enter` and `Space` both select an area; the detail panel updates and the
+      selection is announced (the panel is a live region).
+- [ ] Selecting the same area again clears the selection.
+- [ ] The selected area is distinguishable with the OS display in greyscale.
+
 ### 6. Colour and motion
 
 - [ ] Set the OS display to greyscale. Every state is still distinguishable: infeasible, floor-dominant, locked, suppressed.

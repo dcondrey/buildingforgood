@@ -16,7 +16,7 @@
  */
 
 import axe from "axe-core";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -111,6 +111,34 @@ describe("aggregate spatial view (#13)", () => {
     for (const state of states) {
       expect(state).toMatch(/Human lock|No minimum|Below minimum|Minimum met|\d+h/);
     }
+  });
+
+  it("selects a neighborhood on the map, shows its detail panel, and toggles off", async () => {
+    const user = userEvent.setup();
+    await renderOffline();
+    await user.click(screen.getByRole("button", { name: /Test the drop/ }));
+    const areaButton = screen.getAllByRole("button", { name: /East Village:/ })[0];
+    await user.click(areaButton);
+    expect(areaButton.getAttribute("aria-pressed")).toBe("true");
+    const detailHeadings = await screen.findAllByRole("heading", {
+      level: 5,
+      name: "East Village",
+    });
+    expect(detailHeadings.length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Held-out WAPE").length).toBeGreaterThan(0);
+    await user.click(screen.getAllByRole("button", { name: /East Village:/ })[0]);
+    expect(screen.queryAllByRole("heading", { level: 5, name: "East Village" }).length).toBe(0);
+  });
+
+  it("selects a map area with the keyboard", async () => {
+    const user = userEvent.setup();
+    await renderOffline();
+    await user.click(screen.getByRole("button", { name: /Test the drop/ }));
+    const areaButton = screen.getAllByRole("button", { name: /Marina:/ })[0];
+    fireEvent.keyDown(areaButton, { key: "Enter" });
+    expect(areaButton.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.keyDown(areaButton, { key: " " });
+    expect(areaButton.getAttribute("aria-pressed")).toBe("false");
   });
 });
 

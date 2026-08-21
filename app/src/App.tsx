@@ -68,22 +68,50 @@ function CheckIcon() {
   );
 }
 
-// Simplified relative positions of the six downtown neighborhoods (harbor to the
-// west/left, I-5 to the east). Deliberately schematic: aggregate area values only,
-// no block geometry or precise locations ship with the app.
-const AREA_MAP_LAYOUT: Record<string, { x: number; y: number; w: number; h: number }> = {
-  columbia: { x: 10, y: 16, w: 53, h: 54 },
-  cortez: { x: 65, y: 2, w: 53, h: 36 },
-  city_center: { x: 65, y: 40, w: 53, h: 45 },
-  east_village: { x: 120, y: 2, w: 78, h: 108 },
-  marina: { x: 10, y: 72, w: 53, h: 76 },
-  gaslamp: { x: 65, y: 87, w: 53, h: 61 },
+// Simplified boundary polygons of the six downtown neighborhoods (San Diego Bay
+// to the southwest, I-5 past the northeast corner), derived by dissolving the
+// organizer block grid to area level on a block-pitch cell grid
+// (scripts/gen_area_outlines.py) and expressed in viewBox units. Deliberately
+// aggregate: area values only, no block geometry or precise observation
+// locations ship with the app.
+const AREA_MAP_GEOMETRY: Record<string, { outline: string; label: { x: number; y: number } }> = {
+  city_center: {
+    outline:
+      "M103.8,40.5 L109.5,40.5 L109.5,34.8 L115.2,34.8 L115.2,69.2 L109.5,69.2 L109.5,75.0 L98.0,75.0 L98.0,69.2 L92.2,69.2 L92.2,75.0 L80.8,75.0 L80.8,69.2 L75.0,69.2 L75.0,63.5 L69.2,63.5 L69.2,69.2 L63.5,69.2 L63.5,80.8 L69.2,80.8 L69.2,86.5 L52.0,86.5 L52.0,92.2 L46.2,92.2 L46.2,80.8 L40.5,80.8 L40.5,46.2 L103.8,46.2 Z",
+    label: { x: 78, y: 56 },
+  },
+  columbia: {
+    outline: "M6.0,69.2 L6.0,34.8 L40.5,34.8 L40.5,69.2 Z",
+    label: { x: 23.2, y: 50 },
+  },
+  cortez: {
+    outline:
+      "M40.5,46.2 L40.5,6.0 L52.0,6.0 L52.0,11.8 L103.8,11.8 L103.8,34.8 L109.5,34.8 L109.5,40.5 L103.8,40.5 L103.8,46.2 Z",
+    label: { x: 74, y: 26 },
+  },
+  east_village: {
+    outline:
+      "M75.0,144.0 L75.0,138.2 L80.8,138.2 L80.8,75.0 L92.2,75.0 L92.2,69.2 L98.0,69.2 L98.0,75.0 L109.5,75.0 L109.5,69.2 L115.2,69.2 L115.2,57.8 L149.8,57.8 L149.8,144.0 Z",
+    label: { x: 115, y: 100 },
+  },
+  gaslamp: {
+    outline:
+      "M63.5,80.8 L63.5,69.2 L69.2,69.2 L69.2,63.5 L75.0,63.5 L75.0,69.2 L80.8,69.2 L80.8,138.2 L69.2,138.2 L69.2,109.5 L63.5,109.5 L63.5,86.5 L69.2,86.5 L69.2,80.8 Z",
+    label: { x: 72, y: 96 },
+  },
+  marina: {
+    outline:
+      "M6.0,69.2 L40.5,69.2 L40.5,80.8 L46.2,80.8 L46.2,92.2 L52.0,92.2 L52.0,86.5 L63.5,86.5 L63.5,109.5 L69.2,109.5 L69.2,132.5 L46.2,132.5 L46.2,115.2 L23.2,115.2 L23.2,103.8 L17.5,103.8 L17.5,98.0 L6.0,98.0 Z",
+    label: { x: 32, y: 92 },
+  },
 };
 
 function AreaMap({
   areas,
   ariaLabel,
   valueFor,
+  selectedId,
+  onSelect,
 }: {
   areas: DemoData["areas"];
   ariaLabel: string;
@@ -91,8 +119,10 @@ function AreaMap({
     text: string;
     tone: "up" | "down" | "neutral" | "missing";
   };
+  selectedId?: string | null;
+  onSelect?: (areaId: string) => void;
 }) {
-  if (!areas.every((area) => AREA_MAP_LAYOUT[area.id])) {
+  if (!areas.every((area) => AREA_MAP_GEOMETRY[area.id])) {
     return (
       <div aria-label={ariaLabel} className="area-map" role="img">
         {areas.map((area) => {
@@ -119,37 +149,55 @@ function AreaMap({
       </div>
     );
   }
+  const interactive = typeof onSelect === "function";
   return (
-    <svg aria-label={ariaLabel} className="area-map-svg" role="img" viewBox="0 0 200 150">
+    <svg
+      aria-label={ariaLabel}
+      className={`area-map-svg ${interactive ? "area-map-interactive" : ""}`}
+      role={interactive ? "group" : "img"}
+      viewBox="0 0 160 150"
+    >
       <title>{ariaLabel}</title>
       {areas.map((area) => {
-        const cell = AREA_MAP_LAYOUT[area.id];
+        const cell = AREA_MAP_GEOMETRY[area.id];
         const value = valueFor(area);
+        const selected = selectedId === area.id;
         return (
-          <g className={`map-area map-${value.tone}`} key={area.id}>
-            <rect height={cell.h} rx="7" width={cell.w} x={cell.x} y={cell.y} />
-            <text
-              className="map-name"
-              textAnchor="middle"
-              x={cell.x + cell.w / 2}
-              y={cell.y + cell.h / 2 - 3}
-            >
+          <g
+            aria-label={interactive ? `${area.name}: ${value.text}` : undefined}
+            aria-pressed={interactive ? selected : undefined}
+            className={`map-area map-${value.tone} ${selected ? "map-selected" : ""}`}
+            key={area.id}
+            onClick={interactive ? () => onSelect(area.id) : undefined}
+            onKeyDown={
+              interactive
+                ? (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onSelect(area.id);
+                    }
+                  }
+                : undefined
+            }
+            role={interactive ? "button" : undefined}
+            tabIndex={interactive ? 0 : undefined}
+          >
+            <path d={cell.outline} />
+            <text className="map-name" textAnchor="middle" x={cell.label.x} y={cell.label.y}>
               {area.name}
             </text>
-            <text
-              className="map-value"
-              textAnchor="middle"
-              x={cell.x + cell.w / 2}
-              y={cell.y + cell.h / 2 + 12}
-            >
+            <text className="map-value" textAnchor="middle" x={cell.label.x} y={cell.label.y + 13}>
               {value.text}
             </text>
             <title>{`${area.name}: ${value.text}`}</title>
           </g>
         );
       })}
-      <text className="map-edge" textAnchor="middle" transform="rotate(-90 4 112)" x="4" y="112">
+      <text className="map-edge" textAnchor="middle" transform="rotate(-42 22 122)" x="22" y="122">
         San Diego Bay
+      </text>
+      <text className="map-edge" textAnchor="middle" transform="rotate(90 155 100)" x="155" y="100">
+        I-5
       </text>
     </svg>
   );
@@ -158,6 +206,45 @@ function AreaMap({
 // Keyboard- and screen-reader-accessible equivalent for each schematic map.
 // The SVG is exposed as a single labelled image, so per-area values need a
 // real table; state words carry the meaning without relying on color.
+function AreaDetailPanel({
+  area,
+  kicker,
+  rows,
+  note,
+  empty,
+}: {
+  area: DemoData["areas"][number] | null;
+  kicker: string;
+  rows: Array<{ label: string; value: string; hint?: string; flagged?: boolean }>;
+  note?: ReactNode;
+  empty: string;
+}) {
+  return (
+    <aside aria-live="polite" className="map-detail">
+      {area === null ? (
+        <p className="map-detail-empty">{empty}</p>
+      ) : (
+        <>
+          <span className="map-detail-kicker">{kicker}</span>
+          <h5>{area.name}</h5>
+          <dl>
+            {rows.map((row) => (
+              <div key={row.label}>
+                <dt>{row.label}</dt>
+                <dd className={row.flagged ? "map-detail-flag" : undefined}>
+                  {row.value}
+                  {row.hint ? <small>{row.hint}</small> : null}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          {note ? <p className="map-detail-note">{note}</p> : null}
+        </>
+      )}
+    </aside>
+  );
+}
+
 function MapValueTable({
   caption,
   rows,
@@ -439,6 +526,7 @@ function App() {
   const [copyStatus, setCopyStatus] = useState("");
   const [guideIndex, setGuideIndex] = useState<number | null>(null);
   const [projectorMode, setProjectorMode] = useState(false);
+  const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const resultHeading = useRef<HTMLHeadingElement>(null);
   const guidePanel = useRef<HTMLDivElement>(null);
   const guideIndexRef = useRef<number | null>(null);
@@ -513,6 +601,9 @@ function App() {
 
   const planTotal = plan?.allocations.reduce((sum, row) => sum + row.hours, 0) ?? 0;
   const maxHours = Math.max(1, ...Array.from(allocationById.values()));
+  const selectedArea = data.areas.find((area) => area.id === selectedAreaId) ?? null;
+  const toggleAreaSelection = (areaId: string) =>
+    setSelectedAreaId((current) => (current === areaId ? null : areaId));
   // Unmet planning load: hours the forecast-proportional split would have
   // assigned an area but the guaranteed minimums moved elsewhere. Mirrors the
   // domain planner's unmet_hours definition (app/src/domain/planner/planner.ts).
@@ -618,7 +709,7 @@ function App() {
       `Historical one-step-ahead planning scenario (data frozen Dec 2025): ${data.forecast.targetPeriod} ${formatNumber(data.forecast.point)}; historical 80% residual interval ${formatNumber(data.forecast.lower)}–${formatNumber(data.forecast.upper)}. ${data.forecast.model}; rolling-origin MAE ${formatNumber(data.forecast.mae)}; empirical coverage ${formatNumber(data.forecast.coverage)}% across ${data.forecast.intervalPoints} folds. Not a live future forecast or a guaranteed probability interval.`,
       `Illustrative coverage-continuity scenario for human review: ${budget} staff-hours; user-set guard ${guardEnabled ? `on (${coverageFloor}h demo-policy minimum)` : "off — audit only"}. ${rows}.${auditedAreaWapes.length ? ` Area forecasts are noisier than the aggregate (held-out WAPE ranges ${formatNumber(Math.min(...auditedAreaWapes), 1)}%–${formatNumber(Math.max(...auditedAreaWapes), 1)}%).` : " Area-level audit WAPE is unavailable in this artifact; do not infer equal accuracy."}`,
       `Review triggers: new month, budget or boundary change, wider interval, infeasible floor, or local knowledge conflict.`,
-      `Privacy and authorization boundary: aggregate place-level evidence only; no block records or geometry ship. This does not track people, establish causality, authorize enforcement, or dispatch staff automatically.`,
+      `Privacy and authorization boundary: aggregate place-level evidence only; no block records or block-level geometry ship (the map draws simplified neighborhood boundaries only). This does not track people, establish causality, authorize enforcement, or dispatch staff automatically.`,
     ].join("\n");
   }, [
     allocationById,
@@ -800,7 +891,10 @@ function App() {
             </div>
             <div>
               <dt>Privacy</dt>
-              <dd>No block records or geometry; small per-area component cells are omitted.</dd>
+              <dd>
+                No block records or block-level geometry; the map draws simplified neighborhood
+                boundaries only. Small per-area component cells are omitted.
+              </dd>
             </div>
             <div>
               <dt>AI use</dt>
@@ -1251,35 +1345,84 @@ function App() {
                       </div>
                       <span className="formula positive">Active blocks +{signal.activeChange}</span>
                     </div>
-                    <AreaMap
-                      areas={data.areas}
-                      ariaLabel="Schematic map of the six downtown neighborhoods showing the change in raw field observations"
-                      valueFor={(area) =>
-                        area.latest === null
-                          ? { text: "no data", tone: "missing" }
-                          : {
-                              text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
-                              tone: area.delta > 0 ? "up" : "down",
-                            }
-                      }
-                    />
-                    <div className="map-legend" aria-label="Map legend">
-                      <span>
-                        <i className="map-legend-up" /> More observed units
-                      </span>
-                      <span>
-                        <i className="map-legend-down" /> Fewer observed units
-                      </span>
-                      {data.areas.some((area) => area.latest === null) && (
-                        <span>
-                          <i className="map-legend-missing" /> No recent observation
-                        </span>
-                      )}
+                    <div className="map-detail-row">
+                      <div>
+                        <AreaMap
+                          areas={data.areas}
+                          ariaLabel="Map of the six downtown neighborhoods showing the change in raw field observations; select a neighborhood for detail"
+                          onSelect={toggleAreaSelection}
+                          selectedId={selectedAreaId}
+                          valueFor={(area) =>
+                            area.latest === null
+                              ? { text: "no data", tone: "missing" }
+                              : {
+                                  text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                                  tone: area.delta > 0 ? "up" : "down",
+                                }
+                          }
+                        />
+                        <div className="map-legend" aria-label="Map legend">
+                          <span>
+                            <i className="map-legend-up" /> More observed units
+                          </span>
+                          <span>
+                            <i className="map-legend-down" /> Fewer observed units
+                          </span>
+                          {data.areas.some((area) => area.latest === null) && (
+                            <span>
+                              <i className="map-legend-missing" /> No recent observation
+                            </span>
+                          )}
+                        </div>
+                        <p className="map-caption">
+                          Change in raw field observations by neighborhood · simplified neighborhood
+                          boundaries, aggregate values only · not a count of people
+                        </p>
+                      </div>
+                      <AreaDetailPanel
+                        area={selectedArea}
+                        empty="Select a neighborhood on the map — click, or Tab and press Enter — to see what changed there."
+                        kicker="Neighborhood detail"
+                        note="Raw observed units on the fixed like-for-like panel. Aggregate area values, not unique people; components are digitized from the same maps."
+                        rows={
+                          selectedArea
+                            ? [
+                                {
+                                  label: "Observed change",
+                                  value: `${selectedArea.delta > 0 ? "+" : ""}${selectedArea.delta} units`,
+                                  hint: "Jan 2024 → Jan 2025, same blocks",
+                                },
+                                {
+                                  label: "Latest observations",
+                                  value:
+                                    selectedArea.latest === null
+                                      ? "no data"
+                                      : formatNumber(selectedArea.latest),
+                                  hint: "most recent monthly street count",
+                                },
+                                {
+                                  label: "Planning load",
+                                  value: formatNumber(selectedArea.planningLoad),
+                                  hint: "upper forecast bound",
+                                },
+                                {
+                                  label: "Held-out WAPE",
+                                  value:
+                                    selectedArea.auditWape === null
+                                      ? "not audited"
+                                      : `${formatNumber(selectedArea.auditWape, 1)}%`,
+                                  hint:
+                                    selectedArea.auditWape !== null && selectedArea.auditWape > 30
+                                      ? "noisy — treat with caution"
+                                      : "2025 held-out audit",
+                                  flagged:
+                                    selectedArea.auditWape !== null && selectedArea.auditWape > 30,
+                                },
+                              ]
+                            : []
+                        }
+                      />
                     </div>
-                    <p className="map-caption">
-                      Change in raw field observations by neighborhood · schematic, not to scale ·
-                      not a count of people
-                    </p>
                     <MapValueTable
                       caption="Change in raw field observations by neighborhood"
                       rows={data.areas.map((area) => ({
@@ -1930,7 +2073,7 @@ function App() {
                   const belowFloor = hours < coverageFloor;
                   return (
                     <article
-                      className={`allocation-row ${belowFloor ? "below-floor" : ""}`}
+                      className={`allocation-row ${belowFloor ? "below-floor" : ""} ${selectedAreaId === area.id ? "is-selected" : ""}`}
                       key={area.id}
                       role="listitem"
                     >
@@ -2000,22 +2143,74 @@ function App() {
                     forecast expects the most people.
                   </p>
                 </div>
-                <AreaMap
-                  areas={data.areas}
-                  ariaLabel="Schematic map of the six downtown neighborhoods showing planned staff-hours"
-                  valueFor={(area) => {
-                    const hours = allocationById.get(area.id) ?? 0;
-                    const belowFloor = guardEnabled && hours < coverageFloor;
-                    return {
-                      text: `${hours}h${belowFloor ? " !" : ""}`,
-                      tone: belowFloor ? "down" : "neutral",
-                    };
-                  }}
-                />
-                <p className="map-caption">
-                  Planned staff-hours by neighborhood · schematic, not to scale
-                  {guardEnabled ? " · ! marks hours below the minimum" : ""}
-                </p>
+                <div className="map-detail-row">
+                  <div>
+                    <AreaMap
+                      areas={data.areas}
+                      ariaLabel="Map of the six downtown neighborhoods showing planned staff-hours; select a neighborhood for detail"
+                      onSelect={toggleAreaSelection}
+                      selectedId={selectedAreaId}
+                      valueFor={(area) => {
+                        const hours = allocationById.get(area.id) ?? 0;
+                        const belowFloor = guardEnabled && hours < coverageFloor;
+                        return {
+                          text: `${hours}h${belowFloor ? " !" : ""}`,
+                          tone: belowFloor ? "down" : "neutral",
+                        };
+                      }}
+                    />
+                    <p className="map-caption">
+                      Planned staff-hours by neighborhood · simplified neighborhood boundaries
+                      {guardEnabled ? " · ! marks hours below the minimum" : ""}
+                    </p>
+                  </div>
+                  <AreaDetailPanel
+                    area={selectedArea}
+                    empty="Select a neighborhood on the map — click, or Tab and press Enter — to inspect its share of the plan."
+                    kicker="Allocation detail"
+                    note={selectedArea?.reason}
+                    rows={
+                      selectedArea
+                        ? [
+                            {
+                              label: "Planned hours",
+                              value: `${allocationById.get(selectedArea.id) ?? 0}h`,
+                              hint: lockedIds.has(selectedArea.id)
+                                ? "human lock — edit in the list above"
+                                : "recompute updates this",
+                            },
+                            {
+                              label: "Coverage floor",
+                              value: guardEnabled
+                                ? `${coverageFloor}h minimum`
+                                : "off — audit only",
+                              hint: guardEnabled
+                                ? "user-set continuity floor"
+                                : "no minimum enforced",
+                            },
+                            {
+                              label: "Planning load",
+                              value: formatNumber(selectedArea.planningLoad),
+                              hint: "weights the remaining hours",
+                            },
+                            {
+                              label: "Held-out WAPE",
+                              value:
+                                selectedArea.auditWape === null
+                                  ? "not audited"
+                                  : `${formatNumber(selectedArea.auditWape, 1)}%`,
+                              hint:
+                                selectedArea.auditWape !== null && selectedArea.auditWape > 30
+                                  ? "noisy — human review required"
+                                  : "2025 held-out audit",
+                              flagged:
+                                selectedArea.auditWape !== null && selectedArea.auditWape > 30,
+                            },
+                          ]
+                        : []
+                    }
+                  />
+                </div>
                 <MapValueTable
                   caption="Planned staff-hours by neighborhood"
                   rows={data.areas.map((area) => {

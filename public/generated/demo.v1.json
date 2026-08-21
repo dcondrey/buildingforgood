@@ -1,0 +1,4215 @@
+{
+  "evidence": {
+    "balanced_panel": {
+      "active_blocks": {
+        "change": 20,
+        "change_pct": 16.5,
+        "from": 121,
+        "to": 141
+      },
+      "annual_contrast_sensitivity": {
+        "contrasts": [
+          {
+            "direction_divergence_percentage_points": -19.7,
+            "from_month": "2018-01",
+            "individual_active_blocks_change": -17,
+            "individual_active_blocks_change_pct": -12.1,
+            "individuals_change_pct": 7.6,
+            "selected": false,
+            "to_month": "2019-01"
+          },
+          {
+            "direction_divergence_percentage_points": 4.2,
+            "from_month": "2019-01",
+            "individual_active_blocks_change": 9,
+            "individual_active_blocks_change_pct": 7.3,
+            "individuals_change_pct": 3.1,
+            "selected": false,
+            "to_month": "2020-01"
+          },
+          {
+            "direction_divergence_percentage_points": 17.6,
+            "from_month": "2020-01",
+            "individual_active_blocks_change": -20,
+            "individual_active_blocks_change_pct": -15.0,
+            "individuals_change_pct": -32.6,
+            "selected": false,
+            "to_month": "2021-01"
+          },
+          {
+            "direction_divergence_percentage_points": 31.3,
+            "from_month": "2020-02",
+            "individual_active_blocks_change": -9,
+            "individual_active_blocks_change_pct": -7.5,
+            "individuals_change_pct": -38.8,
+            "selected": false,
+            "to_month": "2021-02"
+          },
+          {
+            "direction_divergence_percentage_points": -7.1,
+            "from_month": "2021-01",
+            "individual_active_blocks_change": 20,
+            "individual_active_blocks_change_pct": 17.7,
+            "individuals_change_pct": 24.8,
+            "selected": false,
+            "to_month": "2022-01"
+          },
+          {
+            "direction_divergence_percentage_points": -19.6,
+            "from_month": "2021-02",
+            "individual_active_blocks_change": 21,
+            "individual_active_blocks_change_pct": 18.9,
+            "individuals_change_pct": 38.5,
+            "selected": false,
+            "to_month": "2022-02"
+          },
+          {
+            "direction_divergence_percentage_points": 3.8,
+            "from_month": "2022-01",
+            "individual_active_blocks_change": -26,
+            "individual_active_blocks_change_pct": -19.5,
+            "individuals_change_pct": -23.3,
+            "selected": false,
+            "to_month": "2023-01"
+          },
+          {
+            "direction_divergence_percentage_points": -16.3,
+            "from_month": "2023-01",
+            "individual_active_blocks_change": 4,
+            "individual_active_blocks_change_pct": 3.7,
+            "individuals_change_pct": 20.0,
+            "selected": false,
+            "to_month": "2024-01"
+          },
+          {
+            "direction_divergence_percentage_points": 15.0,
+            "from_month": "2024-01",
+            "individual_active_blocks_change": 25,
+            "individual_active_blocks_change_pct": 22.5,
+            "individuals_change_pct": 7.5,
+            "selected": true,
+            "to_month": "2025-01"
+          }
+        ],
+        "eligible_contrasts": 9,
+        "ineligible_contrasts": [],
+        "interpretation": "The prepared contrast was selected by recency, not by maximizing divergence. All 9 same-month pairs are complete for observed individuals; the prepared pair ranks 3 of 9 on the gap between individual-block-footprint change and observed-individual count change. Missingness in the secondary tent component does not disqualify a lead-component sensitivity.",
+        "measure": "Observed individuals and blocks with at least one observed individual.",
+        "selected_divergence_rank_descending": 3,
+        "selection_rule": "Most recent complete same-month year-over-year contrast for the lead observed-individual component."
+      },
+      "areas": [
+        {
+          "active_blocks": {
+            "change": 5,
+            "change_pct": 20.8,
+            "from": 24,
+            "to": 29
+          },
+          "area": "City Center",
+          "gross_change": {
+            "blocks_unchanged": 17,
+            "blocks_with_decrease": 14,
+            "blocks_with_increase": 19,
+            "decrease_units_on_blocks_with_decline": 55,
+            "increase_units_on_blocks_with_growth": 64
+          },
+          "panel_blocks": 50,
+          "raw_observation_units": {
+            "change": 9,
+            "change_pct": 5.3,
+            "from": 169,
+            "to": 178
+          }
+        },
+        {
+          "active_blocks": {
+            "change": 8,
+            "change_pct": 114.3,
+            "from": 7,
+            "to": 15
+          },
+          "area": "Columbia",
+          "gross_change": {
+            "blocks_unchanged": 8,
+            "blocks_with_decrease": 4,
+            "blocks_with_increase": 10,
+            "decrease_units_on_blocks_with_decline": 12,
+            "increase_units_on_blocks_with_growth": 17
+          },
+          "panel_blocks": 22,
+          "raw_observation_units": {
+            "change": 5,
+            "change_pct": 17.2,
+            "from": 29,
+            "to": 34
+          }
+        },
+        {
+          "active_blocks": {
+            "change": -2,
+            "change_pct": -12.5,
+            "from": 16,
+            "to": 14
+          },
+          "area": "Cortez",
+          "gross_change": {
+            "blocks_unchanged": 20,
+            "blocks_with_decrease": 11,
+            "blocks_with_increase": 11,
+            "decrease_units_on_blocks_with_decline": 87,
+            "increase_units_on_blocks_with_growth": 24
+          },
+          "panel_blocks": 42,
+          "raw_observation_units": {
+            "change": -63,
+            "change_pct": -57.3,
+            "from": 110,
+            "to": 47
+          }
+        },
+        {
+          "active_blocks": {
+            "change": 6,
+            "change_pct": 11.3,
+            "from": 53,
+            "to": 59
+          },
+          "area": "East Village",
+          "gross_change": {
+            "blocks_unchanged": 30,
+            "blocks_with_decrease": 35,
+            "blocks_with_increase": 38,
+            "decrease_units_on_blocks_with_decline": 196,
+            "increase_units_on_blocks_with_growth": 142
+          },
+          "panel_blocks": 103,
+          "raw_observation_units": {
+            "change": -54,
+            "change_pct": -13.3,
+            "from": 407,
+            "to": 353
+          }
+        },
+        {
+          "active_blocks": {
+            "change": 0,
+            "change_pct": 0.0,
+            "from": 14,
+            "to": 14
+          },
+          "area": "Gaslamp",
+          "gross_change": {
+            "blocks_unchanged": 4,
+            "blocks_with_decrease": 7,
+            "blocks_with_increase": 6,
+            "decrease_units_on_blocks_with_decline": 21,
+            "increase_units_on_blocks_with_growth": 15
+          },
+          "panel_blocks": 17,
+          "raw_observation_units": {
+            "change": -6,
+            "change_pct": -12.8,
+            "from": 47,
+            "to": 41
+          }
+        },
+        {
+          "active_blocks": {
+            "change": 3,
+            "change_pct": 42.9,
+            "from": 7,
+            "to": 10
+          },
+          "area": "Marina",
+          "gross_change": {
+            "blocks_unchanged": 14,
+            "blocks_with_decrease": 4,
+            "blocks_with_increase": 9,
+            "decrease_units_on_blocks_with_decline": 11,
+            "increase_units_on_blocks_with_growth": 12
+          },
+          "panel_blocks": 27,
+          "raw_observation_units": {
+            "change": 1,
+            "change_pct": 6.2,
+            "from": 16,
+            "to": 17
+          }
+        }
+      ],
+      "comparison": {
+        "from_month": "2024-01",
+        "to_month": "2025-01",
+        "why_these_months": "This is the latest available same-month year-over-year pair: the same POST2020 method and exactly the same 261 blocks on both dates. It was not selected by maximizing the observed divergence."
+      },
+      "component_distribution_sensitivity": {
+        "components": [
+          {
+            "active_block_thresholds": [
+              {
+                "change": 25,
+                "entered_threshold": 59,
+                "exited_threshold": 34,
+                "from_active_blocks": 111,
+                "minimum_component_units": 1,
+                "retained_at_threshold": 77,
+                "to_active_blocks": 136
+              },
+              {
+                "change": 16,
+                "entered_threshold": 47,
+                "exited_threshold": 31,
+                "from_active_blocks": 78,
+                "minimum_component_units": 2,
+                "retained_at_threshold": 47,
+                "to_active_blocks": 94
+              }
+            ],
+            "component": "individuals",
+            "concentration": {
+              "effective_blocks_change_pct": 0.9,
+              "from": {
+                "effective_number_of_blocks": 35.1,
+                "hhi": 0.028466
+              },
+              "hhi_change_pct": -0.8,
+              "measure": "HHI of each block's share of this component.",
+              "to": {
+                "effective_number_of_blocks": 35.4,
+                "hhi": 0.028231
+              }
+            },
+            "label": "Individuals observed",
+            "observed_units": {
+              "change": 38,
+              "change_pct": 7.5,
+              "from": 510,
+              "to": 548
+            }
+          },
+          {
+            "active_block_thresholds": [
+              {
+                "change": -18,
+                "entered_threshold": 14,
+                "exited_threshold": 32,
+                "from_active_blocks": 47,
+                "minimum_component_units": 1,
+                "retained_at_threshold": 15,
+                "to_active_blocks": 29
+              },
+              {
+                "change": -16,
+                "entered_threshold": 7,
+                "exited_threshold": 23,
+                "from_active_blocks": 35,
+                "minimum_component_units": 2,
+                "retained_at_threshold": 12,
+                "to_active_blocks": 19
+              }
+            ],
+            "component": "tents_structures",
+            "concentration": {
+              "effective_blocks_change_pct": -56.7,
+              "from": {
+                "effective_number_of_blocks": 24.0,
+                "hhi": 0.041584
+              },
+              "hhi_change_pct": 132.1,
+              "measure": "HHI of each block's share of this component.",
+              "to": {
+                "effective_number_of_blocks": 10.4,
+                "hhi": 0.096501
+              }
+            },
+            "label": "Tents or structures observed",
+            "observed_units": {
+              "change": -141,
+              "change_pct": -54.7,
+              "from": 258,
+              "to": 117
+            }
+          },
+          {
+            "active_block_thresholds": [
+              {
+                "change": -2,
+                "entered_threshold": 4,
+                "exited_threshold": 6,
+                "from_active_blocks": 7,
+                "minimum_component_units": 1,
+                "retained_at_threshold": 1,
+                "to_active_blocks": 5
+              },
+              {
+                "change": -1,
+                "entered_threshold": 0,
+                "exited_threshold": 1,
+                "from_active_blocks": 1,
+                "minimum_component_units": 2,
+                "retained_at_threshold": 0,
+                "to_active_blocks": 0
+              }
+            ],
+            "component": "vehicles",
+            "concentration": {
+              "effective_blocks_change_pct": 11.1,
+              "from": {
+                "effective_number_of_blocks": 4.5,
+                "hhi": 0.22
+              },
+              "hhi_change_pct": -9.1,
+              "measure": "HHI of each block's share of this component.",
+              "to": {
+                "effective_number_of_blocks": 5.0,
+                "hhi": 0.2
+              }
+            },
+            "label": "Vehicles observed",
+            "observed_units": {
+              "change": -5,
+              "change_pct": -50.0,
+              "from": 10,
+              "to": 5
+            }
+          }
+        ],
+        "headline": "Individuals observed rose from 510 to 548 while blocks with at least one individual rose from 111 to 136; the block increase remains at a two-observed-individual threshold (78 to 94).",
+        "interpretation": "The like-for-like individual footprint widened at both prespecified thresholds, while individual concentration was nearly unchanged. Tent and vehicle footprints contracted, and tent concentration rose sharply. Thus, the mixed-index HHI increase is composition-driven. These are aggregate visual observations, not unique people or linked movements.",
+        "lead_component": "individuals",
+        "post2020_multiplier_decomposition": {
+          "change": -218.9,
+          "change_pct": -22.3,
+          "contributions_to_change": {
+            "individuals": 38,
+            "tents_structures": -246.75,
+            "vehicles": -10.15
+          },
+          "formula": "individuals + 1.75*tents_structures + 2.03*vehicles",
+          "from": 981.8,
+          "interpretation": "The derived decline is structure-driven and partly offset by more visually observed individuals. It is based on secondary component digitization and must not be equated with unique people or the published total series.",
+          "status": "secondary_derived_estimate",
+          "to": 762.9
+        },
+        "role": "primary_spatial_sensitivity"
+      },
+      "components": {
+        "individuals": {
+          "change": 38,
+          "from": 510,
+          "to": 548
+        },
+        "tents_structures": {
+          "change": -141,
+          "from": 258,
+          "to": 117
+        },
+        "vehicles": {
+          "change": -5,
+          "from": 10,
+          "to": 5
+        }
+      },
+      "distribution_sensitivity": {
+        "active_block_thresholds": [
+          {
+            "change": 20,
+            "entered_threshold": 57,
+            "exited_threshold": 37,
+            "from_active_blocks": 121,
+            "minimum_raw_units": 1,
+            "retained_at_threshold": 84,
+            "to_active_blocks": 141
+          },
+          {
+            "change": 10,
+            "entered_threshold": 45,
+            "exited_threshold": 35,
+            "from_active_blocks": 91,
+            "minimum_raw_units": 2,
+            "retained_at_threshold": 56,
+            "to_active_blocks": 101
+          },
+          {
+            "change": 0,
+            "entered_threshold": 28,
+            "exited_threshold": 28,
+            "from_active_blocks": 70,
+            "minimum_raw_units": 3,
+            "retained_at_threshold": 42,
+            "to_active_blocks": 70
+          }
+        ],
+        "concentration": {
+          "effective_blocks_change_pct": -13.2,
+          "from": {
+            "effective_number_of_blocks": 42.0,
+            "hhi": 0.023794
+          },
+          "hhi_change_pct": 15.3,
+          "measure": "HHI of each block's share of raw observation units; lower HHI and a higher effective number indicate more even intensity.",
+          "to": {
+            "effective_number_of_blocks": 36.5,
+            "hhi": 0.027423
+          }
+        },
+        "interpretation": "The extensive-margin increase survives after excluding one-unit blocks (91 to 101 at a two-unit threshold), but disappears at three units (70 to 70). The mixed-index HHI rises and effective blocks fall, but component-specific results show this is driven by the shift away from tents, whose footprint contracted and concentration rose; individual concentration was nearly flat.",
+        "single_unit_blocks": {
+          "change": 10,
+          "from": 30,
+          "to": 40
+        }
+      },
+      "footprint_sensitivity": {
+        "balanced_261_panel": {
+          "adjusted_estimate": {
+            "change_pct": 95.8,
+            "from": 671.42,
+            "to": 1314.49
+          },
+          "blocks": {
+            "from": 261,
+            "to": 261
+          }
+        },
+        "comparison": {
+          "from_month": "2021-02",
+          "to_month": "2023-01"
+        },
+        "conclusion": "The apparent increase is materially larger when 121 newly covered blocks are mistaken for longitudinal change; all primary spatial comparisons use panel261.",
+        "expanded_footprint": {
+          "adjusted_estimate": {
+            "change_pct": 191.2,
+            "from": 671.42,
+            "to": 1955.09
+          },
+          "blocks": {
+            "from": 261,
+            "to": 382
+          }
+        },
+        "expansion_overstatement_percentage_points": 95.4,
+        "measure": "Block-level estimate using POST2020 factors: individuals + 1.75*tents + 2.03*vehicles."
+      },
+      "gross_change": {
+        "blocks_unchanged": 93,
+        "blocks_with_decrease": 75,
+        "blocks_with_increase": 93,
+        "decrease_units_on_blocks_with_decline": 382,
+        "increase_units_on_blocks_with_growth": 274
+      },
+      "interpretation": "The like-for-like individual footprint widened at the one- and two-person thresholds while tent and vehicle footprints contracted. The mixed raw-unit index is retained as a secondary summary. This is not a claim of more even intensity or evidence that any identified person moved.",
+      "measure": {
+        "formula": "individuals + tents_structures + vehicles",
+        "id": "raw_observation_units",
+        "reason": "The block maps contain raw observed units. Occupancy multipliers are not applied, so this is not an estimated person total.",
+        "role": "secondary_composite_index"
+      },
+      "panel_size": 261,
+      "privacy": "Only aggregate summaries ship; block identifiers and geometry are omitted.",
+      "raw_observation_units": {
+        "change": -108,
+        "change_pct": -13.9,
+        "from": 778,
+        "to": 670
+      },
+      "validity_checks": {
+        "claim_guard": "Gross increases and decreases are arithmetic changes on blocks. They do not link observations across time and cannot establish person movement.",
+        "comparison_selection": "latest eligible same-month year-over-year pair",
+        "complete_selected_panel": true,
+        "expanded_footprint_excluded": true,
+        "same_block_set": true,
+        "same_methodology": "POST2020",
+        "same_month_of_year": true
+      }
+    },
+    "robustness": {
+      "count_day_weather": {
+        "comparison": {
+          "both_zero_precipitation": true,
+          "interpretation": "The two fixed-panel count dates were both dry and differed by only 1\u00b0F in maximum temperature at the airport station, ruling out an obvious same-day rain or maximum-temperature contrast.",
+          "maximum_temperature_difference_f": 1
+        },
+        "dates": [
+          {
+            "date": "2024-01-25",
+            "maximum_temperature_f": 62,
+            "precipitation_inches": 0.0
+          },
+          {
+            "date": "2025-01-31",
+            "maximum_temperature_f": 63,
+            "precipitation_inches": 0.0
+          }
+        ],
+        "limitations": [
+          "One airport station may not represent block-level downtown conditions.",
+          "Same-day precipitation and maximum temperature do not capture prior weather.",
+          "Weather similarity does not make the year-over-year comparison causal."
+        ],
+        "source_quality": {
+          "duplicate_station_dates": 0,
+          "missing_tmax_rows": 2,
+          "missing_tmin_rows": 1,
+          "negative_precipitation_rows": 0,
+          "rows": 3287,
+          "selected_rows_complete": true,
+          "station_date_end": "2025-12-31",
+          "station_date_start": "2017-01-01",
+          "stations": [
+            "USW00023188"
+          ],
+          "tmax_below_tmin_rows": 0,
+          "treatment": "Only exact station/date rows enter the descriptive count-day check; the two selected rows are complete.",
+          "units": {
+            "PRCP": "inches",
+            "TMAX": "degrees Fahrenheit"
+          }
+        },
+        "station": {
+          "id": "USW00023188",
+          "label": "San Diego International Airport"
+        },
+        "status": "descriptive_same_day_robustness"
+      },
+      "parking_exposure": {
+        "cohort": {
+          "current_status_required_for_cohort": false,
+          "definition": "Poles with a Downtown transaction row in every comparison month, stable transaction-area label, and continuous historic Downtown location coverage from 2023-01-01 through 2024-01-31.",
+          "historic_location_gap_exclusions": 5,
+          "historically_verified_poles": 2035,
+          "stable_area_candidates": 2040,
+          "still_listed_as_current_downtown": 1938,
+          "transaction_complete_candidates": 2040
+        },
+        "comparison": {
+          "all_observed_downtown_meters": {
+            "absolute_change": -8957.8,
+            "percent_change": -2.9,
+            "post_monthly_mean": 295004.2,
+            "pre_monthly_mean": 303962.0
+          },
+          "fixed_cohort": {
+            "absolute_change": -5092.5,
+            "percent_change": -1.7,
+            "post_monthly_mean": 286531.2,
+            "post_transactions_per_meter_month": 140.8,
+            "pre_monthly_mean": 291623.7,
+            "pre_transactions_per_meter_month": 143.3
+          },
+          "interpretation": "Paid-parking transactions did not rise in the aligned windows, while Get It Done Encampment reporting rose. This weakens a simple broad-footfall explanation but does not identify why reporting changed.",
+          "matched_calendar_sensitivity": {
+            "all_observed_downtown_meters": {
+              "absolute_change": -12430.5,
+              "percent_change": -4.0,
+              "post_monthly_mean": 295004.2,
+              "pre_monthly_mean": 307434.7
+            },
+            "fixed_cohort": {
+              "absolute_change": -6905.3,
+              "percent_change": -2.4,
+              "post_monthly_mean": 281613.8,
+              "pre_monthly_mean": 288519.2
+            },
+            "historically_verified_poles": 1997,
+            "interpretation": "Paid-parking transactions also fell in the same six calendar months one year apart, so the exposure result is not driven by the unmatched seasonal composition of the prepared windows.",
+            "post_period": {
+              "end_month": "2024-01",
+              "start_month": "2023-08"
+            },
+            "pre_period": {
+              "end_month": "2023-01",
+              "start_month": "2022-08"
+            }
+          },
+          "post_period": {
+            "end_month": "2024-01",
+            "start_month": "2023-08"
+          },
+          "pre_period": {
+            "end_month": "2023-06",
+            "start_month": "2023-01"
+          },
+          "reporting_context": {
+            "all_gid_reports_percent_change": 9.2,
+            "encampment_raw_percent_change": 50.7,
+            "encampment_unique_parent_percent_change": 54.8
+          },
+          "transition_excluded": "2023-07"
+        },
+        "coverage": {
+          "calendar_months": 48,
+          "end_month": "2025-12",
+          "start_month": "2022-01"
+        },
+        "geography_filter": {
+          "exact_value": "Downtown",
+          "field": "zone"
+        },
+        "limitations": [
+          "A parking transaction is neither a unique visitor nor a complete trip count.",
+          "Rates, hours, meter inventory, payment substitution, free parking, events, transit, and economic conditions can change transactions.",
+          "The fixed cohort conditions on a positive transaction row in every comparison month; the all-meter result is supplied as a sensitivity.",
+          "The pre/post windows contain different calendar months, so seasonality is not eliminated.",
+          "Parking zone Downtown and Get It Done community plan DOWNTOWN are related labels, not proven identical boundaries."
+        ],
+        "monthly": [
+          {
+            "all_downtown_transactions": 266857,
+            "fixed_cohort_transactions": null,
+            "month": "2022-01",
+            "observed_downtown_meters": 2234
+          },
+          {
+            "all_downtown_transactions": 287787,
+            "fixed_cohort_transactions": null,
+            "month": "2022-02",
+            "observed_downtown_meters": 2195
+          },
+          {
+            "all_downtown_transactions": 331257,
+            "fixed_cohort_transactions": null,
+            "month": "2022-03",
+            "observed_downtown_meters": 2197
+          },
+          {
+            "all_downtown_transactions": 334887,
+            "fixed_cohort_transactions": null,
+            "month": "2022-04",
+            "observed_downtown_meters": 2211
+          },
+          {
+            "all_downtown_transactions": 317888,
+            "fixed_cohort_transactions": null,
+            "month": "2022-05",
+            "observed_downtown_meters": 2225
+          },
+          {
+            "all_downtown_transactions": 331074,
+            "fixed_cohort_transactions": null,
+            "month": "2022-06",
+            "observed_downtown_meters": 2215
+          },
+          {
+            "all_downtown_transactions": 319065,
+            "fixed_cohort_transactions": null,
+            "month": "2022-07",
+            "observed_downtown_meters": 2230
+          },
+          {
+            "all_downtown_transactions": 340756,
+            "fixed_cohort_transactions": null,
+            "month": "2022-08",
+            "observed_downtown_meters": 2242
+          },
+          {
+            "all_downtown_transactions": 305936,
+            "fixed_cohort_transactions": null,
+            "month": "2022-09",
+            "observed_downtown_meters": 2221
+          },
+          {
+            "all_downtown_transactions": 314330,
+            "fixed_cohort_transactions": null,
+            "month": "2022-10",
+            "observed_downtown_meters": 2211
+          },
+          {
+            "all_downtown_transactions": 283645,
+            "fixed_cohort_transactions": null,
+            "month": "2022-11",
+            "observed_downtown_meters": 2213
+          },
+          {
+            "all_downtown_transactions": 306410,
+            "fixed_cohort_transactions": null,
+            "month": "2022-12",
+            "observed_downtown_meters": 2208
+          },
+          {
+            "all_downtown_transactions": 293531,
+            "fixed_cohort_transactions": 279971,
+            "month": "2023-01",
+            "observed_downtown_meters": 2216
+          },
+          {
+            "all_downtown_transactions": 278716,
+            "fixed_cohort_transactions": 267519,
+            "month": "2023-02",
+            "observed_downtown_meters": 2227
+          },
+          {
+            "all_downtown_transactions": 315717,
+            "fixed_cohort_transactions": 303724,
+            "month": "2023-03",
+            "observed_downtown_meters": 2230
+          },
+          {
+            "all_downtown_transactions": 306525,
+            "fixed_cohort_transactions": 294617,
+            "month": "2023-04",
+            "observed_downtown_meters": 2240
+          },
+          {
+            "all_downtown_transactions": 315856,
+            "fixed_cohort_transactions": 303449,
+            "month": "2023-05",
+            "observed_downtown_meters": 2227
+          },
+          {
+            "all_downtown_transactions": 313427,
+            "fixed_cohort_transactions": 300462,
+            "month": "2023-06",
+            "observed_downtown_meters": 2220
+          },
+          {
+            "all_downtown_transactions": 314716,
+            "fixed_cohort_transactions": null,
+            "month": "2023-07",
+            "observed_downtown_meters": 2191
+          },
+          {
+            "all_downtown_transactions": 334186,
+            "fixed_cohort_transactions": 324114,
+            "month": "2023-08",
+            "observed_downtown_meters": 2216
+          },
+          {
+            "all_downtown_transactions": 296284,
+            "fixed_cohort_transactions": 287699,
+            "month": "2023-09",
+            "observed_downtown_meters": 2194
+          },
+          {
+            "all_downtown_transactions": 302771,
+            "fixed_cohort_transactions": 294480,
+            "month": "2023-10",
+            "observed_downtown_meters": 2196
+          },
+          {
+            "all_downtown_transactions": 267370,
+            "fixed_cohort_transactions": 259994,
+            "month": "2023-11",
+            "observed_downtown_meters": 2179
+          },
+          {
+            "all_downtown_transactions": 287005,
+            "fixed_cohort_transactions": 278620,
+            "month": "2023-12",
+            "observed_downtown_meters": 2188
+          },
+          {
+            "all_downtown_transactions": 282409,
+            "fixed_cohort_transactions": 274280,
+            "month": "2024-01",
+            "observed_downtown_meters": 2180
+          },
+          {
+            "all_downtown_transactions": 273753,
+            "fixed_cohort_transactions": null,
+            "month": "2024-02",
+            "observed_downtown_meters": 2182
+          },
+          {
+            "all_downtown_transactions": 308421,
+            "fixed_cohort_transactions": null,
+            "month": "2024-03",
+            "observed_downtown_meters": 2210
+          },
+          {
+            "all_downtown_transactions": 304328,
+            "fixed_cohort_transactions": null,
+            "month": "2024-04",
+            "observed_downtown_meters": 2237
+          },
+          {
+            "all_downtown_transactions": 313925,
+            "fixed_cohort_transactions": null,
+            "month": "2024-05",
+            "observed_downtown_meters": 2271
+          },
+          {
+            "all_downtown_transactions": 291780,
+            "fixed_cohort_transactions": null,
+            "month": "2024-06",
+            "observed_downtown_meters": 2271
+          },
+          {
+            "all_downtown_transactions": 312537,
+            "fixed_cohort_transactions": null,
+            "month": "2024-07",
+            "observed_downtown_meters": 2294
+          },
+          {
+            "all_downtown_transactions": 322905,
+            "fixed_cohort_transactions": null,
+            "month": "2024-08",
+            "observed_downtown_meters": 2307
+          },
+          {
+            "all_downtown_transactions": 272428,
+            "fixed_cohort_transactions": null,
+            "month": "2024-09",
+            "observed_downtown_meters": 2287
+          },
+          {
+            "all_downtown_transactions": 299656,
+            "fixed_cohort_transactions": null,
+            "month": "2024-10",
+            "observed_downtown_meters": 2290
+          },
+          {
+            "all_downtown_transactions": 258373,
+            "fixed_cohort_transactions": null,
+            "month": "2024-11",
+            "observed_downtown_meters": 2267
+          },
+          {
+            "all_downtown_transactions": 258743,
+            "fixed_cohort_transactions": null,
+            "month": "2024-12",
+            "observed_downtown_meters": 2243
+          },
+          {
+            "all_downtown_transactions": 264056,
+            "fixed_cohort_transactions": null,
+            "month": "2025-01",
+            "observed_downtown_meters": 2198
+          },
+          {
+            "all_downtown_transactions": 268341,
+            "fixed_cohort_transactions": null,
+            "month": "2025-02",
+            "observed_downtown_meters": 2261
+          },
+          {
+            "all_downtown_transactions": 288131,
+            "fixed_cohort_transactions": null,
+            "month": "2025-03",
+            "observed_downtown_meters": 2237
+          },
+          {
+            "all_downtown_transactions": 307578,
+            "fixed_cohort_transactions": null,
+            "month": "2025-04",
+            "observed_downtown_meters": 2275
+          },
+          {
+            "all_downtown_transactions": 306097,
+            "fixed_cohort_transactions": null,
+            "month": "2025-05",
+            "observed_downtown_meters": 2272
+          },
+          {
+            "all_downtown_transactions": 278499,
+            "fixed_cohort_transactions": null,
+            "month": "2025-06",
+            "observed_downtown_meters": 2257
+          },
+          {
+            "all_downtown_transactions": 314034,
+            "fixed_cohort_transactions": null,
+            "month": "2025-07",
+            "observed_downtown_meters": 2284
+          },
+          {
+            "all_downtown_transactions": 313526,
+            "fixed_cohort_transactions": null,
+            "month": "2025-08",
+            "observed_downtown_meters": 2280
+          },
+          {
+            "all_downtown_transactions": 289028,
+            "fixed_cohort_transactions": null,
+            "month": "2025-09",
+            "observed_downtown_meters": 2266
+          },
+          {
+            "all_downtown_transactions": 311335,
+            "fixed_cohort_transactions": null,
+            "month": "2025-10",
+            "observed_downtown_meters": 2256
+          },
+          {
+            "all_downtown_transactions": 245294,
+            "fixed_cohort_transactions": null,
+            "month": "2025-11",
+            "observed_downtown_meters": 2219
+          },
+          {
+            "all_downtown_transactions": 278185,
+            "fixed_cohort_transactions": null,
+            "month": "2025-12",
+            "observed_downtown_meters": 2098
+          }
+        ],
+        "source_measure": "num_trans (paid parking transactions)",
+        "source_quality": {
+          "current_inventory_duplicate_poles": 0,
+          "duplicate_pole_month_keys": 0,
+          "historic_location_exact_duplicate_rows": 0,
+          "historic_location_rows_missing_dates": 0,
+          "historic_parallel_config_extra_rows": 1285,
+          "negative_or_fractional_transaction_counts": 0,
+          "observed_downtown_meter_inventory": {
+            "maximum": 2307,
+            "minimum": 2098
+          },
+          "poles_with_area_label_drift": 0,
+          "poles_with_zone_label_drift": 0,
+          "transaction_rows": 181286,
+          "treatment": "Primary sensitivity uses a historically continuous, transaction-complete fixed cohort; changing all-meter inventory remains a disclosed sensitivity."
+        },
+        "status": "descriptive_exposure_sensitivity"
+      }
+    },
+    "validity_checks": {
+      "claim_guard": "Gross increases and decreases are arithmetic changes on blocks. They do not link observations across time and cannot establish person movement.",
+      "comparison_selection": "latest eligible same-month year-over-year pair",
+      "complete_selected_panel": true,
+      "expanded_footprint_excluded": true,
+      "same_block_set": true,
+      "same_methodology": "POST2020",
+      "same_month_of_year": true
+    }
+  },
+  "forecast": {
+    "aggregate": {
+      "area": "Six-area downtown core",
+      "backtest": {
+        "empirical_coverage_pct": 75.0,
+        "evaluated_points": 8,
+        "interval_points": 8,
+        "mae": 62.8,
+        "wape_pct": 8.6
+      },
+      "interval_level": 0.8,
+      "limitations": [
+        "A planning baseline, not a prediction of service need or an operational target.",
+        "The symmetric residual-quantile interval is conformal-style, not a guarantee under structural change."
+      ],
+      "lower": 769.0,
+      "model": "local_linear_6_observed",
+      "model_scorecard": [
+        {
+          "evaluated_points": 12,
+          "mae": 119.8,
+          "model": "local_linear_6_observed",
+          "role": "challenger",
+          "wape_pct": 9.7
+        },
+        {
+          "evaluated_points": 12,
+          "mae": 121.2,
+          "model": "recent_3_observed_mean",
+          "role": "challenger",
+          "wape_pct": 9.9
+        },
+        {
+          "evaluated_points": 12,
+          "mae": 191.3,
+          "model": "seasonal_naive_12m",
+          "role": "registered_baseline",
+          "wape_pct": 15.6
+        }
+      ],
+      "point": 882.5,
+      "promotion": {
+        "baseline_model": "seasonal_naive_12m",
+        "challenger_promoted": true,
+        "criterion": "A challenger is promoted only for strictly lower rolling-origin MAE on the 2023 promotion holdout; ties retain seasonal naive.",
+        "selected_model": "local_linear_6_observed"
+      },
+      "status": "ok",
+      "upper": 996.1
+    },
+    "areas": [
+      {
+        "area": "City Center",
+        "backtest": {
+          "empirical_coverage_pct": 87.5,
+          "evaluated_points": 8,
+          "interval_points": 8,
+          "mae": 20.4,
+          "wape_pct": 12.9
+        },
+        "interval_level": 0.8,
+        "limitations": [
+          "A planning baseline, not a prediction of service need or an operational target.",
+          "The symmetric residual-quantile interval is conformal-style, not a guarantee under structural change."
+        ],
+        "lower": 106.3,
+        "model": "recent_3_observed_mean",
+        "model_scorecard": [
+          {
+            "evaluated_points": 12,
+            "mae": 49.8,
+            "model": "local_linear_6_observed",
+            "role": "challenger",
+            "wape_pct": 20.8
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 45.3,
+            "model": "recent_3_observed_mean",
+            "role": "challenger",
+            "wape_pct": 18.9
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 66.6,
+            "model": "seasonal_naive_12m",
+            "role": "registered_baseline",
+            "wape_pct": 27.8
+          }
+        ],
+        "point": 149.7,
+        "promotion": {
+          "baseline_model": "seasonal_naive_12m",
+          "challenger_promoted": true,
+          "criterion": "A challenger is promoted only for strictly lower rolling-origin MAE on the 2023 promotion holdout; ties retain seasonal naive.",
+          "selected_model": "recent_3_observed_mean"
+        },
+        "status": "ok",
+        "upper": 193.0
+      },
+      {
+        "area": "Columbia",
+        "backtest": {
+          "empirical_coverage_pct": 87.5,
+          "evaluated_points": 8,
+          "interval_points": 8,
+          "mae": 5.9,
+          "wape_pct": 19.9
+        },
+        "interval_level": 0.8,
+        "limitations": [
+          "A planning baseline, not a prediction of service need or an operational target.",
+          "The symmetric residual-quantile interval is conformal-style, not a guarantee under structural change."
+        ],
+        "lower": 21.3,
+        "model": "recent_3_observed_mean",
+        "model_scorecard": [
+          {
+            "evaluated_points": 12,
+            "mae": 12.2,
+            "model": "local_linear_6_observed",
+            "role": "challenger",
+            "wape_pct": 36.0
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 9.6,
+            "model": "recent_3_observed_mean",
+            "role": "challenger",
+            "wape_pct": 28.3
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 17.2,
+            "model": "seasonal_naive_12m",
+            "role": "registered_baseline",
+            "wape_pct": 51.0
+          }
+        ],
+        "point": 28.0,
+        "promotion": {
+          "baseline_model": "seasonal_naive_12m",
+          "challenger_promoted": true,
+          "criterion": "A challenger is promoted only for strictly lower rolling-origin MAE on the 2023 promotion holdout; ties retain seasonal naive.",
+          "selected_model": "recent_3_observed_mean"
+        },
+        "status": "ok",
+        "upper": 34.7
+      },
+      {
+        "area": "Cortez",
+        "backtest": {
+          "empirical_coverage_pct": 100.0,
+          "evaluated_points": 8,
+          "interval_points": 8,
+          "mae": 20.1,
+          "wape_pct": 34.2
+        },
+        "interval_level": 0.8,
+        "limitations": [
+          "A planning baseline, not a prediction of service need or an operational target.",
+          "The symmetric residual-quantile interval is conformal-style, not a guarantee under structural change."
+        ],
+        "lower": 1.3,
+        "model": "recent_3_observed_mean",
+        "model_scorecard": [
+          {
+            "evaluated_points": 12,
+            "mae": 21.9,
+            "model": "local_linear_6_observed",
+            "role": "challenger",
+            "wape_pct": 21.8
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 17.5,
+            "model": "recent_3_observed_mean",
+            "role": "challenger",
+            "wape_pct": 17.4
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 32.2,
+            "model": "seasonal_naive_12m",
+            "role": "registered_baseline",
+            "wape_pct": 32.0
+          }
+        ],
+        "point": 57.3,
+        "promotion": {
+          "baseline_model": "seasonal_naive_12m",
+          "challenger_promoted": true,
+          "criterion": "A challenger is promoted only for strictly lower rolling-origin MAE on the 2023 promotion holdout; ties retain seasonal naive.",
+          "selected_model": "recent_3_observed_mean"
+        },
+        "status": "ok",
+        "upper": 113.3
+      },
+      {
+        "area": "East Village",
+        "backtest": {
+          "empirical_coverage_pct": 87.5,
+          "evaluated_points": 8,
+          "interval_points": 8,
+          "mae": 33.7,
+          "wape_pct": 7.8
+        },
+        "interval_level": 0.8,
+        "limitations": [
+          "A planning baseline, not a prediction of service need or an operational target.",
+          "The symmetric residual-quantile interval is conformal-style, not a guarantee under structural change."
+        ],
+        "lower": 347.7,
+        "model": "recent_3_observed_mean",
+        "model_scorecard": [
+          {
+            "evaluated_points": 12,
+            "mae": 107.5,
+            "model": "local_linear_6_observed",
+            "role": "challenger",
+            "wape_pct": 13.7
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 101.4,
+            "model": "recent_3_observed_mean",
+            "role": "challenger",
+            "wape_pct": 12.9
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 143.4,
+            "model": "seasonal_naive_12m",
+            "role": "registered_baseline",
+            "wape_pct": 18.2
+          }
+        ],
+        "point": 469.3,
+        "promotion": {
+          "baseline_model": "seasonal_naive_12m",
+          "challenger_promoted": true,
+          "criterion": "A challenger is promoted only for strictly lower rolling-origin MAE on the 2023 promotion holdout; ties retain seasonal naive.",
+          "selected_model": "recent_3_observed_mean"
+        },
+        "status": "ok",
+        "upper": 591.0
+      },
+      {
+        "area": "Gaslamp",
+        "backtest": {
+          "empirical_coverage_pct": 87.5,
+          "evaluated_points": 8,
+          "interval_points": 8,
+          "mae": 8.4,
+          "wape_pct": 22.6
+        },
+        "interval_level": 0.8,
+        "limitations": [
+          "A planning baseline, not a prediction of service need or an operational target.",
+          "The symmetric residual-quantile interval is conformal-style, not a guarantee under structural change."
+        ],
+        "lower": 27.7,
+        "model": "recent_3_observed_mean",
+        "model_scorecard": [
+          {
+            "evaluated_points": 12,
+            "mae": 18.2,
+            "model": "local_linear_6_observed",
+            "role": "challenger",
+            "wape_pct": 40.2
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 14.7,
+            "model": "recent_3_observed_mean",
+            "role": "challenger",
+            "wape_pct": 32.4
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 14.8,
+            "model": "seasonal_naive_12m",
+            "role": "registered_baseline",
+            "wape_pct": 32.6
+          }
+        ],
+        "point": 44.7,
+        "promotion": {
+          "baseline_model": "seasonal_naive_12m",
+          "challenger_promoted": true,
+          "criterion": "A challenger is promoted only for strictly lower rolling-origin MAE on the 2023 promotion holdout; ties retain seasonal naive.",
+          "selected_model": "recent_3_observed_mean"
+        },
+        "status": "ok",
+        "upper": 61.7
+      },
+      {
+        "area": "Marina",
+        "backtest": {
+          "empirical_coverage_pct": 75.0,
+          "evaluated_points": 8,
+          "interval_points": 8,
+          "mae": 4.5,
+          "wape_pct": 32.7
+        },
+        "interval_level": 0.8,
+        "limitations": [
+          "A planning baseline, not a prediction of service need or an operational target.",
+          "The symmetric residual-quantile interval is conformal-style, not a guarantee under structural change."
+        ],
+        "lower": 6.7,
+        "model": "recent_3_observed_mean",
+        "model_scorecard": [
+          {
+            "evaluated_points": 12,
+            "mae": 11.7,
+            "model": "local_linear_6_observed",
+            "role": "challenger",
+            "wape_pct": 52.8
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 9.7,
+            "model": "recent_3_observed_mean",
+            "role": "challenger",
+            "wape_pct": 43.7
+          },
+          {
+            "evaluated_points": 12,
+            "mae": 17.2,
+            "model": "seasonal_naive_12m",
+            "role": "registered_baseline",
+            "wape_pct": 77.2
+          }
+        ],
+        "point": 15.3,
+        "promotion": {
+          "baseline_model": "seasonal_naive_12m",
+          "challenger_promoted": true,
+          "criterion": "A challenger is promoted only for strictly lower rolling-origin MAE on the 2023 promotion holdout; ties retain seasonal naive.",
+          "selected_model": "recent_3_observed_mean"
+        },
+        "status": "ok",
+        "upper": 24.0
+      }
+    ],
+    "current_use_guard": "Replays the decision that could have been made with data frozen through 2025-12; it is not a live forecast as of artifact generation.",
+    "data_frozen_through": "2025-12",
+    "scenario_status": "historical_one_step_ahead_planning_scenario",
+    "selection_rule": {
+      "final_audit_window": "2025-01..2025-12",
+      "interval_calibration_window": "2024-01..2024-12",
+      "interval_method": "Symmetric 80% finite-sample-corrected absolute-residual quantile, seeded on 2024 origins and sequentially updated after each observed 2025 audit target for walk-forward empirical coverage.",
+      "interval_update_rule": "The residual pool starts with 2024 origins. At each 2025 audit origin, it may also use residuals from earlier 2025 targets, never the current or a future target. The final planning interval uses the resulting 2024-plus-2025 residual pool.",
+      "leakage_control": "No random split: promotion ends before the separately reported 2025 audit. Each origin can read only observations earlier than its target.",
+      "models": [
+        "local_linear_6_observed",
+        "recent_3_observed_mean",
+        "seasonal_naive_12m"
+      ],
+      "promotion_holdout": "2023-01..2023-12",
+      "rule": "Seasonal naive remains the baseline unless the best challenger has strictly lower rolling-origin MAE on the 2023 promotion holdout; WAPE is reported as a scale-relative diagnostic but does not govern promotion."
+    },
+    "target_month": "2026-01",
+    "training_window": {
+      "end_month": "2025-12",
+      "missing_values": "Retained as missing and skipped; never imputed as zero.",
+      "start_month": "2021-01",
+      "why": "Starts after the final Fellowship-assisted count; all months use the unchanged POST2020 DSDP multiplier method."
+    }
+  },
+  "generated_from": {
+    "bundle": "SD Downtown Homelessness hackathon-provided curated data",
+    "deterministic": true,
+    "input_sha256": {
+      "Area_Crosswalk.csv": "d1bb4ff2dd4cd33483f27bfc9a84575cddfeb7b7d764eb3e8643f9f50f2016c4",
+      "BlockLevel_Counts.csv": "7450b447a1bb6c5985ac5a761520f3c880532e590dbc07db63858350b905b82b",
+      "BlockLevel_Counts_Panel261.csv": "c45dfa15015b6683b798ade2dda9a23cb45050ccf5397a2abac8c6f56e4f2353",
+      "DowntownCounts_Monthly.csv": "666802cf2e01d0b9c8216e3d73e662ddeba9a5ef3527b7c54b48c3629c8a5cce",
+      "Methodology_Periods.csv": "47bdb989d76ea8e0efe0be31a64cce0b21cd7268c7cbb37919d3ed16349087b0",
+      "get_it_done_requests_CD3_datasd.csv": "b2ca79f301d4df743992d6db88b073c3e286ec5db2c6f3f240325ea5bf4ac836",
+      "parking_meters_current.csv": "59aeefb3bc4081f9f7457e4649fa1c6f39dcf4ed8eca2f7003410fe11adddf17",
+      "san_diego_airport_daily_2017_2025.csv": "b080cd42f7a69ec20984fcfdad1917cb154bb4dde7e3dcc5e8f1aa1b7aa6ad30",
+      "treas_meters_2022_pole_by_month_datasd.csv": "f540dd9682e3bf676e9c05e665799946b9c9fc379cae033d72c8a51ed2b85a4d",
+      "treas_meters_2023_pole_by_month_datasd.csv": "7ba223bf0c17b7f502ae752cf7683b420f716b319bddc15e673d78acf3bdf0f1",
+      "treas_meters_2024_pole_by_month_datasd.csv": "f6e4f0196176a23740545355e9e7acf937e0ff06ea982db6ce12e9ac1ee2a7d6",
+      "treas_meters_2025_pole_by_month_datasd.csv": "6ab5bff6453ea4e9e5a297ca158e7cbfe9226505abba229de0e4c87c610edab6",
+      "treas_parking_meters_loc_datasd.csv": "aa6121bc042d94c7c97764227f7cbbbb43ecdb68245b1b626d7a0a29027bea37"
+    },
+    "source_data_through": "2025-12"
+  },
+  "limitations": [
+    "The monthly figures are visual street-sweep observations, not a census of unique people.",
+    "Published totals use period-specific occupancy multipliers; cross-break changes need caution.",
+    "Four 2025 reports are absent and remain null; no missing month is zero-filled.",
+    "Component mismatches affect secondary digitized components, not the verified total trend used here.",
+    "Spatial evidence uses raw units while monthly totals are multiplier-adjusted; their levels should not be equated.",
+    "Balanced-panel redistribution is an aggregate pattern, not evidence of person movement or causality.",
+    "The allocation is an explainable scenario for human review, not automatic operational authorization.",
+    "Get It Done reports reflect reporting behavior and workflow, not unique people, verified abatements, or outreach need."
+  ],
+  "observations": {
+    "coverage": {
+      "calendar_months": 108,
+      "completeness_pct": 96.3,
+      "end_month": "2025-12",
+      "latest_reported_month": "2025-12",
+      "reported_months": 104,
+      "start_month": "2017-01"
+    },
+    "history": [
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "PRE2017",
+        "month": "2017-01",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 882
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "PRE2017",
+        "month": "2017-02",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1027
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "PRE2017",
+        "month": "2017-03",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1105
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "APR2017",
+        "month": "2017-04",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 875
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "APR2017",
+        "month": "2017-05",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 892
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "APR2017",
+        "month": "2017-06",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1156
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "APR2017",
+        "month": "2017-07",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1100
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "APR2017",
+        "month": "2017-08",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1335
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "APR2017",
+        "month": "2017-09",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1276
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "APR2017",
+        "month": "2017-10",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1092
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "APR2017",
+        "month": "2017-11",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 941
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "APR2017",
+        "month": "2017-12",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1013
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "APR2017",
+        "month": "2018-01",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 804
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "APR2017",
+        "month": "2018-02",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 862
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "APR2017",
+        "month": "2018-03",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 980
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "APR2017",
+        "month": "2018-04",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 791
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2018-05",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 904
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "MAY2018",
+        "month": "2018-06",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 759
+      },
+      {
+        "component_quality_warning_areas": [
+          "East Village"
+        ],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2018-07",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 926
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2018-08",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 965
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2018-09",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 787
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "MAY2018",
+        "month": "2018-10",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 739
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2018-11",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 799
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2018-12",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 806
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2019-01",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 898
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2019-02",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 799
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "MAY2018",
+        "month": "2019-03",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 733
+      },
+      {
+        "component_quality_warning_areas": [
+          "East Village"
+        ],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2019-04",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 777
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2019-05",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 861
+      },
+      {
+        "component_quality_warning_areas": [
+          "East Village"
+        ],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2019-06",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 821
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2019-07",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 962
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "MAY2018",
+        "month": "2019-08",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 771
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2019-09",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 946
+      },
+      {
+        "component_quality_warning_areas": [
+          "East Village"
+        ],
+        "fellowship_month": false,
+        "method": "MAY2018",
+        "month": "2019-10",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 847
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "MAY2018",
+        "month": "2019-11",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 678
+      },
+      {
+        "component_quality_warning_areas": [
+          "City Center",
+          "Columbia",
+          "Cortez",
+          "East Village",
+          "Gaslamp",
+          "Marina"
+        ],
+        "fellowship_month": true,
+        "method": "MAY2018",
+        "month": "2019-12",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 627
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2020-01",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 789
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": true,
+        "method": "POST2020",
+        "month": "2020-02",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 744
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2020-03",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 529
+      },
+      {
+        "component_quality_warning_areas": [
+          "Cortez",
+          "Gaslamp"
+        ],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2020-04",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 545
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2020-05",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 595
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2020-06",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 722
+      },
+      {
+        "component_quality_warning_areas": [
+          "Gaslamp"
+        ],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2020-07",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 678
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2020-08",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 559
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2020-09",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 719
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2020-10",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 639
+      },
+      {
+        "component_quality_warning_areas": [
+          "East Village"
+        ],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2020-11",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 694
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2020-12",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 622
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-01",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 715
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-02",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 668
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-03",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 721
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-04",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 654
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-05",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 800
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-06",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 787
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-07",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 732
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-08",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 776
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-09",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 716
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-10",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 859
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-11",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 901
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2021-12",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1001
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-01",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1150
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-02",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1175
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-03",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1042
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-04",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1154
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-05",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1009
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-06",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1191
+      },
+      {
+        "component_quality_warning_areas": [
+          "Cortez",
+          "Marina"
+        ],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-07",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 997
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-08",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1285
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-09",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1272
+      },
+      {
+        "component_quality_warning_areas": [
+          "East Village"
+        ],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-10",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1203
+      },
+      {
+        "component_quality_warning_areas": [
+          "Marina"
+        ],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-11",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1240
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2022-12",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1348
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-01",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1298
+      },
+      {
+        "component_quality_warning_areas": [
+          "City Center",
+          "East Village",
+          "Gaslamp"
+        ],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-02",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1290
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-03",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1237
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-04",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1351
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-05",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1527
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-06",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1143
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-07",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1270
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-08",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1207
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-09",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1277
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-10",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1238
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-11",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1095
+      },
+      {
+        "component_quality_warning_areas": [
+          "East Village"
+        ],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2023-12",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 809
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-01",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 982
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-02",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 1007
+      },
+      {
+        "component_quality_warning_areas": [
+          "City Center"
+        ],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-03",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 775
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-04",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 777
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-05",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 806
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-06",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 830
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-07",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 833
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-08",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 805
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-09",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 741
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-10",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 772
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-11",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 721
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2024-12",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 818
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-01",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 759
+      },
+      {
+        "component_quality_warning_areas": [
+          "East Village"
+        ],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-02",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 731
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-03",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 670
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-04",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 708
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-05",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 691
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-06",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 653
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-07",
+        "reported_area_count": 0,
+        "status": "not_reported",
+        "total": null
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-08",
+        "reported_area_count": 0,
+        "status": "not_reported",
+        "total": null
+      },
+      {
+        "component_quality_warning_areas": [
+          "East Village"
+        ],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-09",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 722
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-10",
+        "reported_area_count": 0,
+        "status": "not_reported",
+        "total": null
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-11",
+        "reported_area_count": 0,
+        "status": "not_reported",
+        "total": null
+      },
+      {
+        "component_quality_warning_areas": [],
+        "fellowship_month": false,
+        "method": "POST2020",
+        "month": "2025-12",
+        "reported_area_count": 6,
+        "status": "reported_verified_total",
+        "total": 918
+      }
+    ],
+    "latest_by_area": [
+      {
+        "area": "City Center",
+        "month": "2025-12",
+        "total": 195
+      },
+      {
+        "area": "Columbia",
+        "month": "2025-12",
+        "total": 32
+      },
+      {
+        "area": "Cortez",
+        "month": "2025-12",
+        "total": 83
+      },
+      {
+        "area": "East Village",
+        "month": "2025-12",
+        "total": 555
+      },
+      {
+        "area": "Gaslamp",
+        "month": "2025-12",
+        "total": 42
+      },
+      {
+        "area": "Marina",
+        "month": "2025-12",
+        "total": 11
+      }
+    ],
+    "methodology_periods": [
+      {
+        "effective_from": "2012-01-01",
+        "effective_to": "2017-04-26",
+        "id": "PRE2017",
+        "multipliers": {
+          "individual": 1.0,
+          "tent_structure": 2.0,
+          "vehicle": 2.0
+        },
+        "note": "Preliminary Clean & Safe methodology: 2 persons per tent, 2 per vehicle. No tent/vehicle breakdown was published, so no adjustment can be reconstructed for these months."
+      },
+      {
+        "effective_from": "2017-04-27",
+        "effective_to": "2018-05-30",
+        "id": "APR2017",
+        "multipliers": {
+          "individual": 1.0,
+          "tent_structure": 1.75,
+          "vehicle": 1.66
+        },
+        "note": "Clean & Safe adopted the Regional Task Force on the Homeless (RTFH) methodology on 2017-04-27."
+      },
+      {
+        "effective_from": "2018-05-31",
+        "effective_to": "2019-12-31",
+        "id": "MAY2018",
+        "multipliers": {
+          "individual": 1.0,
+          "tent_structure": 1.75,
+          "vehicle": 2.03
+        },
+        "note": "RTFH raised the vehicle multiplier to 2.03; tent multiplier unchanged. Implemented by Clean & Safe on 2018-05-31."
+      },
+      {
+        "effective_from": "2020-01-01",
+        "effective_to": null,
+        "id": "POST2020",
+        "multipliers": {
+          "individual": 1.0,
+          "tent_structure": 1.75,
+          "vehicle": 2.03
+        },
+        "note": "RTFH stopped applying tent/vehicle multipliers in January 2020; Clean & Safe continued. Multiplier values are UNCHANGED from MAY2018 - this period marks a divergence in practice, not a change in factors."
+      }
+    ],
+    "missing_months": [
+      "2025-07",
+      "2025-08",
+      "2025-10",
+      "2025-11"
+    ],
+    "scope": {
+      "areas": [
+        "City Center",
+        "Columbia",
+        "Cortez",
+        "East Village",
+        "Gaslamp",
+        "Marina"
+      ],
+      "count_definition": "Sum of verified published neighborhood totals; totals apply the DSDP occupancy multipliers in force for each month.",
+      "excluded": [
+        {
+          "area": "Outside Perimeter",
+          "reason": "Joined the program in 2021 and would break geographic consistency."
+        },
+        {
+          "area": "East Village subareas",
+          "reason": "They overlap the East Village neighborhood total."
+        },
+        {
+          "area": "Outreach Area (legacy)",
+          "reason": "Supplemental 2017 geography outside the downtown total."
+        }
+      ],
+      "label": "Six-area consistent downtown core"
+    }
+  },
+  "planner": {
+    "allocations": [
+      {
+        "allocated_hours": 14,
+        "area": "City Center",
+        "base_hours": 8,
+        "load_share_pct": 19.0,
+        "planning_load": 193.0,
+        "planning_load_definition": "upper bound of the area monthly baseline",
+        "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
+        "variable_hours": 6
+      },
+      {
+        "allocated_hours": 9,
+        "area": "Columbia",
+        "base_hours": 8,
+        "load_share_pct": 3.4,
+        "planning_load": 34.7,
+        "planning_load_definition": "upper bound of the area monthly baseline",
+        "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
+        "variable_hours": 1
+      },
+      {
+        "allocated_hours": 11,
+        "area": "Cortez",
+        "base_hours": 8,
+        "load_share_pct": 11.1,
+        "planning_load": 113.3,
+        "planning_load_definition": "upper bound of the area monthly baseline",
+        "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
+        "variable_hours": 3
+      },
+      {
+        "allocated_hours": 27,
+        "area": "East Village",
+        "base_hours": 8,
+        "load_share_pct": 58.1,
+        "planning_load": 591.0,
+        "planning_load_definition": "upper bound of the area monthly baseline",
+        "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
+        "variable_hours": 19
+      },
+      {
+        "allocated_hours": 10,
+        "area": "Gaslamp",
+        "base_hours": 8,
+        "load_share_pct": 6.1,
+        "planning_load": 61.7,
+        "planning_load_definition": "upper bound of the area monthly baseline",
+        "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
+        "variable_hours": 2
+      },
+      {
+        "allocated_hours": 9,
+        "area": "Marina",
+        "base_hours": 8,
+        "load_share_pct": 2.4,
+        "planning_load": 24.0,
+        "planning_load_definition": "upper bound of the area monthly baseline",
+        "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
+        "variable_hours": 1
+      }
+    ],
+    "basis": "Every area receives a user-set coverage-continuity floor; remaining whole staff-hours are distributed by forecast upper bound with deterministic largest-remainder rounding.",
+    "budget_hours": 80,
+    "constraints": {
+      "allocated_hours_equal_budget": true,
+      "complaint_data_used": false,
+      "human_review_required": true,
+      "minimum_floor_satisfied": true,
+      "precise_location_data_used": false,
+      "reporting_bias_diagnostic_used": false
+    },
+    "decision_support_only": true,
+    "minimum_hours_per_area": 8,
+    "not_in_scope": [
+      "live routing",
+      "shelter capacity or eligibility",
+      "person-level prioritization",
+      "enforcement recommendations"
+    ],
+    "status": "prepared_decision_support"
+  },
+  "quality_audit": {
+    "area_crosswalk": {
+      "duplicate_source_label_keys": 0,
+      "rows": 24,
+      "treatment": "No unmapped label enters a prepared aggregate.",
+      "unmapped_block_source_labels": [],
+      "unmapped_monthly_source_labels": []
+    },
+    "balanced_panel": {
+      "blocks": 261,
+      "blocks_with_area_drift": 0,
+      "blocks_with_source_label_drift": 0,
+      "duplicate_block_month_keys": 0,
+      "missing_component_cells": 1,
+      "negative_or_fractional_component_cells": 0,
+      "panel_membership_matches_full_file_flag": true,
+      "report_months": 12,
+      "report_months_with_count_date_offset": [
+        "2022-02"
+      ],
+      "report_months_with_multiple_count_dates": 0,
+      "rows": 3132,
+      "rows_per_report_month": {
+        "2018-01": 261,
+        "2018-02": 261,
+        "2019-01": 261,
+        "2020-01": 261,
+        "2020-02": 261,
+        "2021-01": 261,
+        "2021-02": 261,
+        "2022-01": 261,
+        "2022-02": 261,
+        "2023-01": 261,
+        "2024-01": 261,
+        "2025-01": 261
+      },
+      "treatment": "All selected spatial claims require the complete fixed 261-block panel."
+    },
+    "claim_treatments": [
+      {
+        "claim": "Monthly level and forecast",
+        "treatment": "Use verified published totals; retain missing months as null."
+      },
+      {
+        "claim": "Spatial change",
+        "treatment": "Use the fixed panel and lead with like-for-like components; retain the mixed raw-unit index only as a secondary summary."
+      },
+      {
+        "claim": "Reporting-pattern shift",
+        "treatment": "Show raw/root and matched-calendar sensitivities; exclude the lane from forecasting and allocation."
+      },
+      {
+        "claim": "Outreach allocation",
+        "treatment": "Use forecast upper bounds plus a user-set coverage-continuity guard; require human review."
+      }
+    ],
+    "cross_digitization_consistency": {
+      "area_months_with_any_difference": 20,
+      "comparable_core_area_months": 72,
+      "direction_consistent_in_prepared_change": true,
+      "maximum_absolute_delta": {
+        "individual": 13,
+        "tent": 9,
+        "vehicle": 4
+      },
+      "prepared_months": [
+        {
+          "block_map_digitization": {
+            "individual": 510,
+            "tent": 258,
+            "vehicle": 10
+          },
+          "month": "2024-01",
+          "monthly_table_digitization": {
+            "individual": 505,
+            "tent": 257,
+            "vehicle": 13
+          }
+        },
+        {
+          "block_map_digitization": {
+            "individual": 548,
+            "tent": 117,
+            "vehicle": 5
+          },
+          "month": "2025-01",
+          "monthly_table_digitization": {
+            "individual": 544,
+            "tent": 117,
+            "vehicle": 5
+          }
+        }
+      ],
+      "treatment": "These are separate digitizations of the same underlying map images, not independent validation. Spatial claims use block-map values; the published monthly total remains authoritative for trend and forecasting."
+    },
+    "expanded_block_file": {
+      "blocks": 382,
+      "blocks_with_area_drift": 0,
+      "blocks_with_source_label_drift": 0,
+      "duplicate_block_month_keys": 0,
+      "missing_component_cells": 1,
+      "negative_or_fractional_component_cells": 0,
+      "report_months": 12,
+      "report_months_with_count_date_offset": [
+        "2022-02"
+      ],
+      "report_months_with_multiple_count_dates": 0,
+      "rows": 3737,
+      "treatment": "The expanded footprint is used only for coverage sensitivity; its one missing component cell is outside the prepared comparison."
+    },
+    "ledger": [
+      {
+        "affected_claim": "Monthly completeness and forecast origins",
+        "count": 143,
+        "id": "monthly_missing_cells",
+        "treatment": "Retain as null; never zero-fill or interpolate."
+      },
+      {
+        "affected_claim": "Component-derived estimates",
+        "count": 25,
+        "id": "component_total_mismatch_area_months",
+        "treatment": "Use published totals for trend; label components secondary."
+      },
+      {
+        "affected_claim": "Subarea descriptive levels",
+        "count": 6,
+        "id": "robust_monthly_high_tail_flags",
+        "treatment": "Retain without correction; none enters the core-total lead."
+      },
+      {
+        "affected_claim": "Annual panel sensitivity",
+        "count": 1,
+        "id": "panel_missing_component_cells",
+        "treatment": "Exclude both annual pairs touching the missing January 2020 cell; the prepared 2024-2025 comparison is complete."
+      },
+      {
+        "affected_claim": "Component-level spatial change",
+        "count": 20,
+        "id": "cross_digitization_area_month_differences",
+        "treatment": "Disclose separate-digitization sensitivity; do not call it independent validation."
+      },
+      {
+        "affected_claim": "Panel time alignment",
+        "count": 1,
+        "id": "report_month_count_date_offsets",
+        "treatment": "Index by organizer report_month, not count-date calendar month."
+      },
+      {
+        "affected_claim": "Raw Get It Done row counts",
+        "count": 3,
+        "id": "gid_duplicate_request_rows",
+        "treatment": "Disclose globally; none occurs in the prepared Downtown Encampment slice."
+      },
+      {
+        "affected_claim": "Workflow parent sensitivity",
+        "count": 2114,
+        "id": "gid_orphan_parent_reference_rows",
+        "treatment": "Do not repair or traverse the graph; show raw and no-parent-root counts and make no incident claim."
+      },
+      {
+        "affected_claim": "Workflow parent sensitivity",
+        "count": 24,
+        "id": "gid_parent_cycles",
+        "treatment": "No graph resolution; root counts use empty parent ids only."
+      },
+      {
+        "affected_claim": "Broad activity-exposure sensitivity",
+        "count": 209,
+        "id": "parking_observed_inventory_range",
+        "treatment": "Lead with a historically continuous fixed cohort and retain all-meter results as sensitivity."
+      },
+      {
+        "affected_claim": "Count-day weather robustness",
+        "count": 3,
+        "id": "noaa_missing_temperature_rows_full_series",
+        "treatment": "Both exact prepared station/date rows are complete."
+      }
+    ],
+    "monthly_table": {
+      "core_total_missing_months": [
+        "2025-07",
+        "2025-08",
+        "2025-10",
+        "2025-11"
+      ],
+      "duplicate_date_area_component_keys": 0,
+      "material_component_total_mismatch_area_months": 25,
+      "material_mismatch_area_months_by_month": {
+        "2018-07": 1,
+        "2019-04": 1,
+        "2019-06": 1,
+        "2019-10": 1,
+        "2019-12": 6,
+        "2020-04": 2,
+        "2020-07": 1,
+        "2020-11": 1,
+        "2022-07": 2,
+        "2022-10": 1,
+        "2022-11": 1,
+        "2023-02": 3,
+        "2023-12": 1,
+        "2024-03": 1,
+        "2025-02": 1,
+        "2025-09": 1
+      },
+      "maximum_material_mismatch_units": 57.4,
+      "maximum_unflagged_formula_difference": 1.01,
+      "missing_cells_by_month": {
+        "2018-11": 18,
+        "2021-01": 1,
+        "2021-02": 1,
+        "2021-03": 1,
+        "2021-09": 3,
+        "2021-12": 3,
+        "2025-07": 29,
+        "2025-08": 29,
+        "2025-10": 29,
+        "2025-11": 29
+      },
+      "missing_component_cells": 143,
+      "missing_flags": {
+        "not_in_program": 3,
+        "not_reported": 140
+      },
+      "negative_fractional_or_nonfinite_counts": 0,
+      "robust_high_tail_flags_gt_5_mad": [
+        {
+          "area": "East Village - North East",
+          "month": "2023-03",
+          "robust_z": 11.7,
+          "total": 344
+        },
+        {
+          "area": "East Village - North East",
+          "month": "2025-04",
+          "robust_z": 8.4,
+          "total": 264
+        },
+        {
+          "area": "East Village - North West",
+          "month": "2023-05",
+          "robust_z": 5.4,
+          "total": 253
+        },
+        {
+          "area": "East Village - South West",
+          "month": "2022-11",
+          "robust_z": 16.2,
+          "total": 437
+        },
+        {
+          "area": "East Village - South West",
+          "month": "2024-04",
+          "robust_z": 8.6,
+          "total": 251
+        },
+        {
+          "area": "East Village - South West",
+          "month": "2025-03",
+          "robust_z": 6.3,
+          "total": 196
+        }
+      ],
+      "rows": 2880,
+      "treatment": "Published total rows are authoritative; missing values remain null; component-derived results are explicitly secondary.",
+      "unflagged_formula_difference_note": "Published totals are integer values while raw tent/vehicle components use decimal multipliers; small unflagged residuals are expected rounding, distinct from source-flagged material mismatches.",
+      "unflagged_formula_differences": 397
+    },
+    "optional_sources": {
+      "get_it_done": {
+        "closure_right_censor": {
+          "by_request_year": {
+            "2022": {
+              "all_rows": 35471,
+              "encampment_missing_date_closed": 3,
+              "encampment_rows": 15542,
+              "missing_date_closed": 315
+            },
+            "2023": {
+              "all_rows": 53373,
+              "encampment_missing_date_closed": 3,
+              "encampment_rows": 25766,
+              "missing_date_closed": 520
+            },
+            "2024": {
+              "all_rows": 44550,
+              "encampment_missing_date_closed": 23,
+              "encampment_rows": 20543,
+              "missing_date_closed": 931
+            },
+            "2025": {
+              "all_rows": 33041,
+              "encampment_missing_date_closed": 6,
+              "encampment_rows": 11618,
+              "missing_date_closed": 1701
+            }
+          },
+          "close_before_request_rows_full_extract": 2,
+          "treatment": "Monthly assignment uses date_requested and includes all workflow statuses; date_closed and case_age_days do not enter the diagnostic.",
+          "workflow_status_rows_full_extract": {
+            "Closed": 612634,
+            "In Process": 16798,
+            "New": 1774,
+            "Referred": 130599
+          }
+        },
+        "excluded_case_age": {
+          "negative_rows_full_extract": 26150,
+          "treatment": "Excluded as workflow metadata, not interpreted as response time."
+        },
+        "label_exactness": {
+          "community_case_variants": {
+            "DOWNTOWN": 293507,
+            "Downtown": 360
+          },
+          "encampment_service_case_variants": {
+            "Encampment": 148247
+          },
+          "treatment": "Prepared aggregates use exact comm_plan_name=DOWNTOWN and exact service_name=Encampment; near-match labels are excluded."
+        },
+        "monthly_outlier_screen": {
+          "level_flags": {
+            "all_reports": [],
+            "encampment_raw": [],
+            "encampment_unique_parent": [
+              {
+                "month": "2023-11",
+                "robust_z": 3.6,
+                "value": 1254
+              },
+              {
+                "month": "2023-12",
+                "robust_z": 4.2,
+                "value": 1342
+              },
+              {
+                "month": "2024-01",
+                "robust_z": 6.5,
+                "value": 1680
+              },
+              {
+                "month": "2024-02",
+                "robust_z": 4.3,
+                "value": 1353
+              },
+              {
+                "month": "2024-03",
+                "robust_z": 3.7,
+                "value": 1264
+              }
+            ]
+          },
+          "method": "Global median/MAD descriptive flag at |robust z| > 3.5.",
+          "month_over_month_change_flags": {
+            "all_reports": [],
+            "encampment_raw": [
+              {
+                "month": "2023-06",
+                "robust_z": -3.7,
+                "value": -845
+              },
+              {
+                "month": "2024-02",
+                "robust_z": -4.2,
+                "value": -948
+              }
+            ],
+            "encampment_unique_parent": [
+              {
+                "month": "2022-03",
+                "robust_z": 4.0,
+                "value": 484
+              }
+            ]
+          },
+          "treatment": "Retained without correction; no flagged month is excluded."
+        },
+        "parent_graph": {
+          "cycle_nodes": 48,
+          "cycles": 24,
+          "distinct_orphan_parent_ids": 1087,
+          "eligible_downtown_encampment": {
+            "cycle_nodes": 14,
+            "distinct_request_ids": 73469,
+            "maximum_child_rows_per_parent": 84,
+            "orphan_reference_rows": 362,
+            "outside_filtered_scope_reference_rows": 935,
+            "parents_outside_filtered_scope": 265
+          },
+          "maximum_child_rows_per_parent": 168,
+          "orphan_reference_rows": 2114,
+          "parents_with_at_least_25_child_rows": 148,
+          "rows_with_parent": 133494,
+          "self_parent_links": 0,
+          "treatment": "The diagnostic reports both raw rows and no-parent root rows. It does not traverse or repair the workflow graph and makes no incident or unique-person claim."
+        },
+        "request_ids": {
+          "conflicting_parent_rows": 0,
+          "distinct_ids": 761802,
+          "duplicate_extra_rows": 3,
+          "eligible_downtown_encampment_duplicate_extra_rows": 0,
+          "rows_with_id": 761805
+        }
+      },
+      "noaa_weather": {
+        "duplicate_station_dates": 0,
+        "missing_tmax_rows": 2,
+        "missing_tmin_rows": 1,
+        "negative_precipitation_rows": 0,
+        "rows": 3287,
+        "selected_rows_complete": true,
+        "station_date_end": "2025-12-31",
+        "station_date_start": "2017-01-01",
+        "stations": [
+          "USW00023188"
+        ],
+        "tmax_below_tmin_rows": 0,
+        "treatment": "Only exact station/date rows enter the descriptive count-day check; the two selected rows are complete.",
+        "units": {
+          "PRCP": "inches",
+          "TMAX": "degrees Fahrenheit"
+        }
+      },
+      "parking_meters": {
+        "current_inventory_duplicate_poles": 0,
+        "duplicate_pole_month_keys": 0,
+        "historic_location_exact_duplicate_rows": 0,
+        "historic_location_rows_missing_dates": 0,
+        "historic_parallel_config_extra_rows": 1285,
+        "negative_or_fractional_transaction_counts": 0,
+        "observed_downtown_meter_inventory": {
+          "maximum": 2307,
+          "minimum": 2098
+        },
+        "poles_with_area_label_drift": 0,
+        "poles_with_zone_label_drift": 0,
+        "transaction_rows": 181286,
+        "treatment": "Primary sensitivity uses a historically continuous, transaction-complete fixed cohort; changing all-meter inventory remains a disclosed sensitivity."
+      }
+    },
+    "policy": "No cherry-picked corrections: retain source values, fail closed on structural violations used by a claim, and disclose material descriptive anomalies.",
+    "status": "audited_with_retained_source_values"
+  },
+  "reporting_bias": {
+    "comparison": {
+      "all_reports": {
+        "absolute_change": 403.0,
+        "percent_change": 9.2,
+        "post_monthly_mean": 4804.2,
+        "pre_monthly_mean": 4401.2
+      },
+      "case_origin_sensitivity": {
+        "change_percentage_points": -1.5,
+        "channel": "Mobile",
+        "interpretation": "Mobile remained the dominant intake channel in both periods, so the raw reporting increase is not explained by a switch into Mobile.",
+        "post_share_pct": 91.4,
+        "pre_share_pct": 93.0
+      },
+      "design": {
+        "causal_identification": false,
+        "estimand": "Difference in six-month mean monthly reporting levels.",
+        "post_period": {
+          "end_month": "2024-01",
+          "start_month": "2023-08"
+        },
+        "pre_period": {
+          "end_month": "2023-06",
+          "start_month": "2023-01"
+        },
+        "randomization": false,
+        "transition_excluded": "2023-07"
+      },
+      "encampment_raw": {
+        "absolute_change": 915.5,
+        "percent_change": 50.7,
+        "post_monthly_mean": 2721.2,
+        "pre_monthly_mean": 1805.7
+      },
+      "encampment_share": {
+        "change_percentage_points": 15.6,
+        "post_pct": 56.6,
+        "pre_pct": 41.0
+      },
+      "encampment_unique_parent": {
+        "absolute_change": 409.7,
+        "percent_change": 54.8,
+        "post_monthly_mean": 1157.2,
+        "pre_monthly_mean": 747.5
+      },
+      "interpretation": "Encampment reporting rose more than total reporting, and the direction is unchanged after parent grouping. The placebo categories are mixed and do not supply a causal counterfactual. This is a pre/post reporting-pattern shift, not an estimate of homelessness or intervention impact.",
+      "matched_calendar_sensitivity": {
+        "all_reports": {
+          "percent_change": 40.9,
+          "post_total": 28825,
+          "pre_total": 20463
+        },
+        "encampment_raw": {
+          "percent_change": 88.1,
+          "post_total": 16327,
+          "pre_total": 8680
+        },
+        "encampment_share": {
+          "change_percentage_points": 14.2,
+          "post_pct": 56.6,
+          "pre_pct": 42.4
+        },
+        "encampment_unique_parent": {
+          "percent_change": 96.0,
+          "post_total": 6943,
+          "pre_total": 3542
+        },
+        "interpretation": "The reporting increase is larger against the same six calendar months one year earlier, so the result is not explained by the unmatched seasonal composition of the prepared pre/post windows.",
+        "post_period": {
+          "end_month": "2024-01",
+          "start_month": "2023-08"
+        },
+        "pre_period": {
+          "end_month": "2023-01",
+          "start_month": "2022-08"
+        }
+      },
+      "placebo_combined_raw": {
+        "absolute_change": -105.5,
+        "percent_change": -27.3,
+        "post_monthly_mean": 281.5,
+        "pre_monthly_mean": 387.0
+      },
+      "placebos": [
+        {
+          "absolute_change": -61.8,
+          "percent_change": -60.4,
+          "post_monthly_mean": 40.5,
+          "pre_monthly_mean": 102.3,
+          "service_name": "Pothole"
+        },
+        {
+          "absolute_change": -41.7,
+          "percent_change": -20.7,
+          "post_monthly_mean": 159.5,
+          "pre_monthly_mean": 201.2,
+          "service_name": "Street Light Maintenance"
+        },
+        {
+          "absolute_change": -2.0,
+          "percent_change": -2.4,
+          "post_monthly_mean": 81.5,
+          "pre_monthly_mean": 83.5,
+          "service_name": "Traffic Signal Issue"
+        }
+      ],
+      "raw_vs_parent_sensitivity": {
+        "caveat": "A parent id marks a related child workflow request; it does not prove that two reports describe the same real-world observation.",
+        "difference_percentage_points": 4.1,
+        "direction_consistent": true,
+        "post_duplicate_child_share_pct": 57.5,
+        "post_raw_reports": 16327,
+        "post_unique_parent_requests": 6943,
+        "pre_duplicate_child_share_pct": 58.6,
+        "pre_raw_reports": 10834,
+        "pre_unique_parent_requests": 4485,
+        "raw_percent_change": 50.7,
+        "unique_parent_percent_change": 54.8
+      }
+    },
+    "cross_source_checkpoints": {
+      "changes": {
+        "published_total_may_2023_to_june_2025_pct": -64.0,
+        "raw_gid_may_2023_to_january_2024_pct": 27.2
+      },
+      "checkpoints": [
+        {
+          "dsdp_all_neighborhood_published_total": 2104,
+          "gid_encampment_raw": 2600,
+          "gid_encampment_unique_parent": 1001,
+          "month": "2023-05",
+          "raw_reports_per_published_total_unit": 1.24,
+          "unique_parent_requests_per_published_total_unit": 0.48
+        },
+        {
+          "dsdp_all_neighborhood_published_total": 1019,
+          "gid_encampment_raw": 3306,
+          "gid_encampment_unique_parent": 1680,
+          "month": "2024-01",
+          "raw_reports_per_published_total_unit": 3.24,
+          "unique_parent_requests_per_published_total_unit": 1.65
+        },
+        {
+          "dsdp_all_neighborhood_published_total": 757,
+          "gid_encampment_raw": 892,
+          "gid_encampment_unique_parent": 646,
+          "month": "2025-06",
+          "raw_reports_per_published_total_unit": 1.18,
+          "unique_parent_requests_per_published_total_unit": 0.85
+        }
+      ],
+      "interpretation": "The three checkpoints show that reporting intensity per published total unit changed sharply over time. The ratio is a bias diagnostic only and must not be called reports per person.",
+      "noncomparability": [
+        "DSDP uses seven published neighborhood totals, including Outside Perimeter; Get It Done uses the DOWNTOWN community-plan boundary.",
+        "The DSDP denominator is a multiplier-adjusted visual observation total, not unique people; the numerator is reporting events, not incidents.",
+        "The selected months are descriptive checkpoints, not an identified time-series model."
+      ],
+      "status": "descriptive_mismatched_constructs"
+    },
+    "definitions": {
+      "all_reports": "Raw Get It Done request rows in the exact geography.",
+      "case_origin": "Submission channel metadata; Mobile does not identify who submitted a request or why.",
+      "child_report_share": "Share of Encampment rows with a non-empty parent id. These are related child requests in the workflow, not verified duplicate observations.",
+      "encampment_raw": "Rows with service_name exactly equal to Encampment.",
+      "encampment_share_pct": "Encampment raw rows divided by all report rows.",
+      "encampment_unique_parent": "Distinct service_request_id among top-level Encampment rows whose service_request_parent_id is empty, counted independently by month."
+    },
+    "excluded_uses": [
+      "planning load or outreach allocation",
+      "unique people or person movement",
+      "verified abatement or resolution",
+      "causal effect of any ordinance, site, training, or operational change"
+    ],
+    "geography": {
+      "exact_value": "DOWNTOWN",
+      "field": "comm_plan_name",
+      "near_match_labels_in_source_excluded": true
+    },
+    "monthly": [
+      {
+        "all_reports": 2400,
+        "encampment_mobile_origin": 927,
+        "encampment_mobile_origin_share_pct": 93.3,
+        "encampment_raw": 994,
+        "encampment_share_pct": 41.4,
+        "encampment_unique_parent": 687,
+        "month": "2022-01",
+        "placebos": {
+          "Pothole": 38,
+          "Street Light Maintenance": 86,
+          "Traffic Signal Issue": 55
+        }
+      },
+      {
+        "all_reports": 2190,
+        "encampment_mobile_origin": 849,
+        "encampment_mobile_origin_share_pct": 93.0,
+        "encampment_raw": 913,
+        "encampment_share_pct": 41.7,
+        "encampment_unique_parent": 705,
+        "month": "2022-02",
+        "placebos": {
+          "Pothole": 27,
+          "Street Light Maintenance": 76,
+          "Traffic Signal Issue": 39
+        }
+      },
+      {
+        "all_reports": 2681,
+        "encampment_mobile_origin": 1214,
+        "encampment_mobile_origin_share_pct": 92.0,
+        "encampment_raw": 1320,
+        "encampment_share_pct": 49.2,
+        "encampment_unique_parent": 1189,
+        "month": "2022-03",
+        "placebos": {
+          "Pothole": 35,
+          "Street Light Maintenance": 92,
+          "Traffic Signal Issue": 83
+        }
+      },
+      {
+        "all_reports": 2398,
+        "encampment_mobile_origin": 902,
+        "encampment_mobile_origin_share_pct": 88.3,
+        "encampment_raw": 1022,
+        "encampment_share_pct": 42.6,
+        "encampment_unique_parent": 878,
+        "month": "2022-04",
+        "placebos": {
+          "Pothole": 37,
+          "Street Light Maintenance": 127,
+          "Traffic Signal Issue": 75
+        }
+      },
+      {
+        "all_reports": 2408,
+        "encampment_mobile_origin": 1130,
+        "encampment_mobile_origin_share_pct": 90.2,
+        "encampment_raw": 1253,
+        "encampment_share_pct": 52.0,
+        "encampment_unique_parent": 833,
+        "month": "2022-05",
+        "placebos": {
+          "Pothole": 33,
+          "Street Light Maintenance": 110,
+          "Traffic Signal Issue": 73
+        }
+      },
+      {
+        "all_reports": 3473,
+        "encampment_mobile_origin": 1260,
+        "encampment_mobile_origin_share_pct": 86.8,
+        "encampment_raw": 1451,
+        "encampment_share_pct": 41.8,
+        "encampment_unique_parent": 540,
+        "month": "2022-06",
+        "placebos": {
+          "Pothole": 51,
+          "Street Light Maintenance": 149,
+          "Traffic Signal Issue": 91
+        }
+      },
+      {
+        "all_reports": 3567,
+        "encampment_mobile_origin": 1196,
+        "encampment_mobile_origin_share_pct": 82.0,
+        "encampment_raw": 1458,
+        "encampment_share_pct": 40.9,
+        "encampment_unique_parent": 507,
+        "month": "2022-07",
+        "placebos": {
+          "Pothole": 71,
+          "Street Light Maintenance": 90,
+          "Traffic Signal Issue": 75
+        }
+      },
+      {
+        "all_reports": 3455,
+        "encampment_mobile_origin": 1223,
+        "encampment_mobile_origin_share_pct": 87.7,
+        "encampment_raw": 1394,
+        "encampment_share_pct": 40.3,
+        "encampment_unique_parent": 574,
+        "month": "2022-08",
+        "placebos": {
+          "Pothole": 66,
+          "Street Light Maintenance": 125,
+          "Traffic Signal Issue": 75
+        }
+      },
+      {
+        "all_reports": 3020,
+        "encampment_mobile_origin": 1220,
+        "encampment_mobile_origin_share_pct": 87.9,
+        "encampment_raw": 1388,
+        "encampment_share_pct": 46.0,
+        "encampment_unique_parent": 608,
+        "month": "2022-09",
+        "placebos": {
+          "Pothole": 23,
+          "Street Light Maintenance": 104,
+          "Traffic Signal Issue": 85
+        }
+      },
+      {
+        "all_reports": 3220,
+        "encampment_mobile_origin": 1195,
+        "encampment_mobile_origin_share_pct": 90.1,
+        "encampment_raw": 1326,
+        "encampment_share_pct": 41.2,
+        "encampment_unique_parent": 630,
+        "month": "2022-10",
+        "placebos": {
+          "Pothole": 20,
+          "Street Light Maintenance": 158,
+          "Traffic Signal Issue": 90
+        }
+      },
+      {
+        "all_reports": 3247,
+        "encampment_mobile_origin": 1361,
+        "encampment_mobile_origin_share_pct": 92.1,
+        "encampment_raw": 1478,
+        "encampment_share_pct": 45.5,
+        "encampment_unique_parent": 557,
+        "month": "2022-11",
+        "placebos": {
+          "Pothole": 44,
+          "Street Light Maintenance": 186,
+          "Traffic Signal Issue": 81
+        }
+      },
+      {
+        "all_reports": 3412,
+        "encampment_mobile_origin": 1366,
+        "encampment_mobile_origin_share_pct": 88.4,
+        "encampment_raw": 1545,
+        "encampment_share_pct": 45.3,
+        "encampment_unique_parent": 594,
+        "month": "2022-12",
+        "placebos": {
+          "Pothole": 57,
+          "Street Light Maintenance": 171,
+          "Traffic Signal Issue": 90
+        }
+      },
+      {
+        "all_reports": 4109,
+        "encampment_mobile_origin": 1332,
+        "encampment_mobile_origin_share_pct": 86.0,
+        "encampment_raw": 1549,
+        "encampment_share_pct": 37.7,
+        "encampment_unique_parent": 579,
+        "month": "2023-01",
+        "placebos": {
+          "Pothole": 192,
+          "Street Light Maintenance": 481,
+          "Traffic Signal Issue": 123
+        }
+      },
+      {
+        "all_reports": 3109,
+        "encampment_mobile_origin": 1120,
+        "encampment_mobile_origin_share_pct": 90.5,
+        "encampment_raw": 1237,
+        "encampment_share_pct": 39.8,
+        "encampment_unique_parent": 626,
+        "month": "2023-02",
+        "placebos": {
+          "Pothole": 71,
+          "Street Light Maintenance": 140,
+          "Traffic Signal Issue": 83
+        }
+      },
+      {
+        "all_reports": 4547,
+        "encampment_mobile_origin": 1645,
+        "encampment_mobile_origin_share_pct": 92.8,
+        "encampment_raw": 1773,
+        "encampment_share_pct": 39.0,
+        "encampment_unique_parent": 726,
+        "month": "2023-03",
+        "placebos": {
+          "Pothole": 193,
+          "Street Light Maintenance": 186,
+          "Traffic Signal Issue": 88
+        }
+      },
+      {
+        "all_reports": 5657,
+        "encampment_mobile_origin": 1821,
+        "encampment_mobile_origin_share_pct": 94.8,
+        "encampment_raw": 1920,
+        "encampment_share_pct": 33.9,
+        "encampment_unique_parent": 821,
+        "month": "2023-04",
+        "placebos": {
+          "Pothole": 89,
+          "Street Light Maintenance": 213,
+          "Traffic Signal Issue": 80
+        }
+      },
+      {
+        "all_reports": 5207,
+        "encampment_mobile_origin": 2491,
+        "encampment_mobile_origin_share_pct": 95.8,
+        "encampment_raw": 2600,
+        "encampment_share_pct": 49.9,
+        "encampment_unique_parent": 1001,
+        "month": "2023-05",
+        "placebos": {
+          "Pothole": 33,
+          "Street Light Maintenance": 87,
+          "Traffic Signal Issue": 64
+        }
+      },
+      {
+        "all_reports": 3778,
+        "encampment_mobile_origin": 1664,
+        "encampment_mobile_origin_share_pct": 94.8,
+        "encampment_raw": 1755,
+        "encampment_share_pct": 46.5,
+        "encampment_unique_parent": 732,
+        "month": "2023-06",
+        "placebos": {
+          "Pothole": 36,
+          "Street Light Maintenance": 100,
+          "Traffic Signal Issue": 63
+        }
+      },
+      {
+        "all_reports": 4075,
+        "encampment_mobile_origin": 1769,
+        "encampment_mobile_origin_share_pct": 92.6,
+        "encampment_raw": 1911,
+        "encampment_share_pct": 46.9,
+        "encampment_unique_parent": 777,
+        "month": "2023-07",
+        "placebos": {
+          "Pothole": 24,
+          "Street Light Maintenance": 86,
+          "Traffic Signal Issue": 93
+        }
+      },
+      {
+        "all_reports": 4790,
+        "encampment_mobile_origin": 2382,
+        "encampment_mobile_origin_share_pct": 90.2,
+        "encampment_raw": 2641,
+        "encampment_share_pct": 55.1,
+        "encampment_unique_parent": 998,
+        "month": "2023-08",
+        "placebos": {
+          "Pothole": 30,
+          "Street Light Maintenance": 125,
+          "Traffic Signal Issue": 86
+        }
+      },
+      {
+        "all_reports": 3912,
+        "encampment_mobile_origin": 1890,
+        "encampment_mobile_origin_share_pct": 90.0,
+        "encampment_raw": 2101,
+        "encampment_share_pct": 53.7,
+        "encampment_unique_parent": 788,
+        "month": "2023-09",
+        "placebos": {
+          "Pothole": 34,
+          "Street Light Maintenance": 167,
+          "Traffic Signal Issue": 98
+        }
+      },
+      {
+        "all_reports": 4286,
+        "encampment_mobile_origin": 2145,
+        "encampment_mobile_origin_share_pct": 90.5,
+        "encampment_raw": 2370,
+        "encampment_share_pct": 55.3,
+        "encampment_unique_parent": 881,
+        "month": "2023-10",
+        "placebos": {
+          "Pothole": 48,
+          "Street Light Maintenance": 177,
+          "Traffic Signal Issue": 88
+        }
+      },
+      {
+        "all_reports": 4795,
+        "encampment_mobile_origin": 2678,
+        "encampment_mobile_origin_share_pct": 90.6,
+        "encampment_raw": 2956,
+        "encampment_share_pct": 61.6,
+        "encampment_unique_parent": 1254,
+        "month": "2023-11",
+        "placebos": {
+          "Pothole": 35,
+          "Street Light Maintenance": 143,
+          "Traffic Signal Issue": 74
+        }
+      },
+      {
+        "all_reports": 5108,
+        "encampment_mobile_origin": 2765,
+        "encampment_mobile_origin_share_pct": 93.6,
+        "encampment_raw": 2953,
+        "encampment_share_pct": 57.8,
+        "encampment_unique_parent": 1342,
+        "month": "2023-12",
+        "placebos": {
+          "Pothole": 44,
+          "Street Light Maintenance": 160,
+          "Traffic Signal Issue": 61
+        }
+      },
+      {
+        "all_reports": 5934,
+        "encampment_mobile_origin": 3068,
+        "encampment_mobile_origin_share_pct": 92.8,
+        "encampment_raw": 3306,
+        "encampment_share_pct": 55.7,
+        "encampment_unique_parent": 1680,
+        "month": "2024-01",
+        "placebos": {
+          "Pothole": 52,
+          "Street Light Maintenance": 185,
+          "Traffic Signal Issue": 82
+        }
+      },
+      {
+        "all_reports": 4897,
+        "encampment_mobile_origin": 2224,
+        "encampment_mobile_origin_share_pct": 94.3,
+        "encampment_raw": 2358,
+        "encampment_share_pct": 48.2,
+        "encampment_unique_parent": 1353,
+        "month": "2024-02",
+        "placebos": {
+          "Pothole": 66,
+          "Street Light Maintenance": 152,
+          "Traffic Signal Issue": 106
+        }
+      },
+      {
+        "all_reports": 3426,
+        "encampment_mobile_origin": 1704,
+        "encampment_mobile_origin_share_pct": 93.9,
+        "encampment_raw": 1814,
+        "encampment_share_pct": 52.9,
+        "encampment_unique_parent": 1264,
+        "month": "2024-03",
+        "placebos": {
+          "Pothole": 46,
+          "Street Light Maintenance": 136,
+          "Traffic Signal Issue": 77
+        }
+      },
+      {
+        "all_reports": 3075,
+        "encampment_mobile_origin": 1534,
+        "encampment_mobile_origin_share_pct": 90.0,
+        "encampment_raw": 1704,
+        "encampment_share_pct": 55.4,
+        "encampment_unique_parent": 1001,
+        "month": "2024-04",
+        "placebos": {
+          "Pothole": 36,
+          "Street Light Maintenance": 149,
+          "Traffic Signal Issue": 55
+        }
+      },
+      {
+        "all_reports": 3763,
+        "encampment_mobile_origin": 1556,
+        "encampment_mobile_origin_share_pct": 92.3,
+        "encampment_raw": 1686,
+        "encampment_share_pct": 44.8,
+        "encampment_unique_parent": 1052,
+        "month": "2024-05",
+        "placebos": {
+          "Pothole": 27,
+          "Street Light Maintenance": 148,
+          "Traffic Signal Issue": 43
+        }
+      },
+      {
+        "all_reports": 3385,
+        "encampment_mobile_origin": 1388,
+        "encampment_mobile_origin_share_pct": 90.5,
+        "encampment_raw": 1533,
+        "encampment_share_pct": 45.3,
+        "encampment_unique_parent": 948,
+        "month": "2024-06",
+        "placebos": {
+          "Pothole": 21,
+          "Street Light Maintenance": 64,
+          "Traffic Signal Issue": 68
+        }
+      },
+      {
+        "all_reports": 3678,
+        "encampment_mobile_origin": 1534,
+        "encampment_mobile_origin_share_pct": 88.9,
+        "encampment_raw": 1725,
+        "encampment_share_pct": 46.9,
+        "encampment_unique_parent": 1033,
+        "month": "2024-07",
+        "placebos": {
+          "Pothole": 22,
+          "Street Light Maintenance": 59,
+          "Traffic Signal Issue": 51
+        }
+      },
+      {
+        "all_reports": 3313,
+        "encampment_mobile_origin": 1292,
+        "encampment_mobile_origin_share_pct": 89.7,
+        "encampment_raw": 1441,
+        "encampment_share_pct": 43.5,
+        "encampment_unique_parent": 791,
+        "month": "2024-08",
+        "placebos": {
+          "Pothole": 15,
+          "Street Light Maintenance": 78,
+          "Traffic Signal Issue": 90
+        }
+      },
+      {
+        "all_reports": 3309,
+        "encampment_mobile_origin": 1354,
+        "encampment_mobile_origin_share_pct": 90.6,
+        "encampment_raw": 1495,
+        "encampment_share_pct": 45.2,
+        "encampment_unique_parent": 803,
+        "month": "2024-09",
+        "placebos": {
+          "Pothole": 22,
+          "Street Light Maintenance": 142,
+          "Traffic Signal Issue": 75
+        }
+      },
+      {
+        "all_reports": 3903,
+        "encampment_mobile_origin": 1247,
+        "encampment_mobile_origin_share_pct": 90.1,
+        "encampment_raw": 1384,
+        "encampment_share_pct": 35.5,
+        "encampment_unique_parent": 715,
+        "month": "2024-10",
+        "placebos": {
+          "Pothole": 22,
+          "Street Light Maintenance": 201,
+          "Traffic Signal Issue": 78
+        }
+      },
+      {
+        "all_reports": 3158,
+        "encampment_mobile_origin": 1042,
+        "encampment_mobile_origin_share_pct": 87.8,
+        "encampment_raw": 1187,
+        "encampment_share_pct": 37.6,
+        "encampment_unique_parent": 758,
+        "month": "2024-11",
+        "placebos": {
+          "Pothole": 13,
+          "Street Light Maintenance": 126,
+          "Traffic Signal Issue": 65
+        }
+      },
+      {
+        "all_reports": 2709,
+        "encampment_mobile_origin": 827,
+        "encampment_mobile_origin_share_pct": 90.9,
+        "encampment_raw": 910,
+        "encampment_share_pct": 33.6,
+        "encampment_unique_parent": 661,
+        "month": "2024-12",
+        "placebos": {
+          "Pothole": 15,
+          "Street Light Maintenance": 128,
+          "Traffic Signal Issue": 40
+        }
+      },
+      {
+        "all_reports": 3017,
+        "encampment_mobile_origin": 753,
+        "encampment_mobile_origin_share_pct": 91.5,
+        "encampment_raw": 823,
+        "encampment_share_pct": 27.3,
+        "encampment_unique_parent": 645,
+        "month": "2025-01",
+        "placebos": {
+          "Pothole": 17,
+          "Street Light Maintenance": 292,
+          "Traffic Signal Issue": 49
+        }
+      },
+      {
+        "all_reports": 2576,
+        "encampment_mobile_origin": 719,
+        "encampment_mobile_origin_share_pct": 91.7,
+        "encampment_raw": 784,
+        "encampment_share_pct": 30.4,
+        "encampment_unique_parent": 578,
+        "month": "2025-02",
+        "placebos": {
+          "Pothole": 28,
+          "Street Light Maintenance": 159,
+          "Traffic Signal Issue": 90
+        }
+      },
+      {
+        "all_reports": 3036,
+        "encampment_mobile_origin": 867,
+        "encampment_mobile_origin_share_pct": 91.6,
+        "encampment_raw": 947,
+        "encampment_share_pct": 31.2,
+        "encampment_unique_parent": 675,
+        "month": "2025-03",
+        "placebos": {
+          "Pothole": 99,
+          "Street Light Maintenance": 243,
+          "Traffic Signal Issue": 101
+        }
+      },
+      {
+        "all_reports": 2635,
+        "encampment_mobile_origin": 786,
+        "encampment_mobile_origin_share_pct": 92.4,
+        "encampment_raw": 851,
+        "encampment_share_pct": 32.3,
+        "encampment_unique_parent": 667,
+        "month": "2025-04",
+        "placebos": {
+          "Pothole": 45,
+          "Street Light Maintenance": 106,
+          "Traffic Signal Issue": 68
+        }
+      },
+      {
+        "all_reports": 2751,
+        "encampment_mobile_origin": 871,
+        "encampment_mobile_origin_share_pct": 92.7,
+        "encampment_raw": 940,
+        "encampment_share_pct": 34.2,
+        "encampment_unique_parent": 673,
+        "month": "2025-05",
+        "placebos": {
+          "Pothole": 31,
+          "Street Light Maintenance": 102,
+          "Traffic Signal Issue": 81
+        }
+      },
+      {
+        "all_reports": 2530,
+        "encampment_mobile_origin": 850,
+        "encampment_mobile_origin_share_pct": 95.3,
+        "encampment_raw": 892,
+        "encampment_share_pct": 35.3,
+        "encampment_unique_parent": 646,
+        "month": "2025-06",
+        "placebos": {
+          "Pothole": 31,
+          "Street Light Maintenance": 65,
+          "Traffic Signal Issue": 67
+        }
+      },
+      {
+        "all_reports": 2728,
+        "encampment_mobile_origin": 818,
+        "encampment_mobile_origin_share_pct": 93.6,
+        "encampment_raw": 874,
+        "encampment_share_pct": 32.0,
+        "encampment_unique_parent": 649,
+        "month": "2025-07",
+        "placebos": {
+          "Pothole": 17,
+          "Street Light Maintenance": 118,
+          "Traffic Signal Issue": 54
+        }
+      },
+      {
+        "all_reports": 2828,
+        "encampment_mobile_origin": 939,
+        "encampment_mobile_origin_share_pct": 92.2,
+        "encampment_raw": 1018,
+        "encampment_share_pct": 36.0,
+        "encampment_unique_parent": 657,
+        "month": "2025-08",
+        "placebos": {
+          "Pothole": 24,
+          "Street Light Maintenance": 88,
+          "Traffic Signal Issue": 68
+        }
+      },
+      {
+        "all_reports": 2713,
+        "encampment_mobile_origin": 809,
+        "encampment_mobile_origin_share_pct": 91.5,
+        "encampment_raw": 884,
+        "encampment_share_pct": 32.6,
+        "encampment_unique_parent": 622,
+        "month": "2025-09",
+        "placebos": {
+          "Pothole": 15,
+          "Street Light Maintenance": 257,
+          "Traffic Signal Issue": 74
+        }
+      },
+      {
+        "all_reports": 2813,
+        "encampment_mobile_origin": 1137,
+        "encampment_mobile_origin_share_pct": 95.1,
+        "encampment_raw": 1195,
+        "encampment_share_pct": 42.5,
+        "encampment_unique_parent": 750,
+        "month": "2025-10",
+        "placebos": {
+          "Pothole": 11,
+          "Street Light Maintenance": 81,
+          "Traffic Signal Issue": 57
+        }
+      },
+      {
+        "all_reports": 2549,
+        "encampment_mobile_origin": 1159,
+        "encampment_mobile_origin_share_pct": 95.7,
+        "encampment_raw": 1211,
+        "encampment_share_pct": 47.5,
+        "encampment_unique_parent": 674,
+        "month": "2025-11",
+        "placebos": {
+          "Pothole": 32,
+          "Street Light Maintenance": 88,
+          "Traffic Signal Issue": 53
+        }
+      },
+      {
+        "all_reports": 2865,
+        "encampment_mobile_origin": 1063,
+        "encampment_mobile_origin_share_pct": 88.7,
+        "encampment_raw": 1199,
+        "encampment_share_pct": 41.8,
+        "encampment_unique_parent": 685,
+        "month": "2025-12",
+        "placebos": {
+          "Pothole": 33,
+          "Street Light Maintenance": 310,
+          "Traffic Signal Issue": 57
+        }
+      }
+    ],
+    "period_sensitivity": {
+      "encampment_raw_rows_2022_2025": 73469,
+      "monthly_parent_grouping_reduction_pct": 47.2,
+      "sum_of_monthly_unique_parent_counts": 38807
+    },
+    "placebo_categories": [
+      {
+        "prespecified_role": "Non-homelessness municipal-report category used to check whether a platform-wide reporting shift moved in the same direction.",
+        "service_name": "Pothole"
+      },
+      {
+        "prespecified_role": "Non-homelessness municipal-report category used to check whether a platform-wide reporting shift moved in the same direction.",
+        "service_name": "Street Light Maintenance"
+      },
+      {
+        "prespecified_role": "Non-homelessness municipal-report category used to check whether a platform-wide reporting shift moved in the same direction.",
+        "service_name": "Traffic Signal Issue"
+      }
+    ],
+    "source_quality": {
+      "closure_right_censor": {
+        "by_request_year": {
+          "2022": {
+            "all_rows": 35471,
+            "encampment_missing_date_closed": 3,
+            "encampment_rows": 15542,
+            "missing_date_closed": 315
+          },
+          "2023": {
+            "all_rows": 53373,
+            "encampment_missing_date_closed": 3,
+            "encampment_rows": 25766,
+            "missing_date_closed": 520
+          },
+          "2024": {
+            "all_rows": 44550,
+            "encampment_missing_date_closed": 23,
+            "encampment_rows": 20543,
+            "missing_date_closed": 931
+          },
+          "2025": {
+            "all_rows": 33041,
+            "encampment_missing_date_closed": 6,
+            "encampment_rows": 11618,
+            "missing_date_closed": 1701
+          }
+        },
+        "close_before_request_rows_full_extract": 2,
+        "treatment": "Monthly assignment uses date_requested and includes all workflow statuses; date_closed and case_age_days do not enter the diagnostic.",
+        "workflow_status_rows_full_extract": {
+          "Closed": 612634,
+          "In Process": 16798,
+          "New": 1774,
+          "Referred": 130599
+        }
+      },
+      "excluded_case_age": {
+        "negative_rows_full_extract": 26150,
+        "treatment": "Excluded as workflow metadata, not interpreted as response time."
+      },
+      "label_exactness": {
+        "community_case_variants": {
+          "DOWNTOWN": 293507,
+          "Downtown": 360
+        },
+        "encampment_service_case_variants": {
+          "Encampment": 148247
+        },
+        "treatment": "Prepared aggregates use exact comm_plan_name=DOWNTOWN and exact service_name=Encampment; near-match labels are excluded."
+      },
+      "monthly_outlier_screen": {
+        "level_flags": {
+          "all_reports": [],
+          "encampment_raw": [],
+          "encampment_unique_parent": [
+            {
+              "month": "2023-11",
+              "robust_z": 3.6,
+              "value": 1254
+            },
+            {
+              "month": "2023-12",
+              "robust_z": 4.2,
+              "value": 1342
+            },
+            {
+              "month": "2024-01",
+              "robust_z": 6.5,
+              "value": 1680
+            },
+            {
+              "month": "2024-02",
+              "robust_z": 4.3,
+              "value": 1353
+            },
+            {
+              "month": "2024-03",
+              "robust_z": 3.7,
+              "value": 1264
+            }
+          ]
+        },
+        "method": "Global median/MAD descriptive flag at |robust z| > 3.5.",
+        "month_over_month_change_flags": {
+          "all_reports": [],
+          "encampment_raw": [
+            {
+              "month": "2023-06",
+              "robust_z": -3.7,
+              "value": -845
+            },
+            {
+              "month": "2024-02",
+              "robust_z": -4.2,
+              "value": -948
+            }
+          ],
+          "encampment_unique_parent": [
+            {
+              "month": "2022-03",
+              "robust_z": 4.0,
+              "value": 484
+            }
+          ]
+        },
+        "treatment": "Retained without correction; no flagged month is excluded."
+      },
+      "parent_graph": {
+        "cycle_nodes": 48,
+        "cycles": 24,
+        "distinct_orphan_parent_ids": 1087,
+        "eligible_downtown_encampment": {
+          "cycle_nodes": 14,
+          "distinct_request_ids": 73469,
+          "maximum_child_rows_per_parent": 84,
+          "orphan_reference_rows": 362,
+          "outside_filtered_scope_reference_rows": 935,
+          "parents_outside_filtered_scope": 265
+        },
+        "maximum_child_rows_per_parent": 168,
+        "orphan_reference_rows": 2114,
+        "parents_with_at_least_25_child_rows": 148,
+        "rows_with_parent": 133494,
+        "self_parent_links": 0,
+        "treatment": "The diagnostic reports both raw rows and no-parent root rows. It does not traverse or repair the workflow graph and makes no incident or unique-person claim."
+      },
+      "request_ids": {
+        "conflicting_parent_rows": 0,
+        "distinct_ids": 761802,
+        "duplicate_extra_rows": 3,
+        "eligible_downtown_encampment_duplicate_extra_rows": 0,
+        "rows_with_id": 761805
+      }
+    },
+    "staged_context": [
+      {
+        "label": "Safe Sleeping program stage",
+        "period": "2023-06",
+        "role": "Coincident context; no isolated effect is estimated."
+      },
+      {
+        "label": "Unsafe Camping Ordinance enforcement stage",
+        "period": "2023-07-31",
+        "role": "Coincident context; no isolated effect is estimated."
+      },
+      {
+        "label": "Training and O Lot stage",
+        "period": "2023-10",
+        "role": "Coincident context; no isolated effect is estimated."
+      }
+    ],
+    "status": "descriptive_diagnostic_only",
+    "time": {
+      "calendar_months": 48,
+      "end_month": "2025-12",
+      "field": "date_requested",
+      "invalid_requested_dates_excluded": 0,
+      "start_month": "2022-01"
+    },
+    "workflow_caveat": "case_age_days is closure/referral workflow elapsed time only. It is excluded and must not be interpreted as response time, resolution quality, or abatement."
+  },
+  "scenario": {
+    "claim_boundary": "The scenario describes aggregate place observations. It does not identify people, infer movement, establish causality, or measure service need.",
+    "decision_owner": "Outreach or community-services coordinator",
+    "decision_question": "How can an outreach coordinator distribute 80 staff-hours across the six prepared downtown areas in the historical one-step-ahead scenario while preserving coverage continuity?",
+    "headline": "Two rulers, like for like: on the same 261 blocks, individuals observed rose 7.5% while blocks with at least one observed individual rose 22.5%.",
+    "id": "wider-footprint-next-shift",
+    "prepared_forecast_month": "2026-01",
+    "prepared_observation_month": "2025-12",
+    "spatial_comparison": {
+      "from_month": "2024-01",
+      "to_month": "2025-01",
+      "why_these_months": "This is the latest available same-month year-over-year pair: the same POST2020 method and exactly the same 261 blocks on both dates. It was not selected by maximizing the observed divergence."
+    },
+    "title": "Two rulers, one city"
+  },
+  "schema": "stillhere.demo.v1",
+  "technical_summary": {
+    "aggregate_final_audit": {
+      "empirical_coverage_pct": 75.0,
+      "evaluated_points": 8,
+      "interval_points": 8,
+      "mae": 62.8,
+      "wape_pct": 8.6
+    },
+    "aggregate_model_scorecard": [
+      {
+        "evaluated_points": 12,
+        "mae": 119.8,
+        "model": "local_linear_6_observed",
+        "role": "challenger",
+        "wape_pct": 9.7
+      },
+      {
+        "evaluated_points": 12,
+        "mae": 121.2,
+        "model": "recent_3_observed_mean",
+        "role": "challenger",
+        "wape_pct": 9.9
+      },
+      {
+        "evaluated_points": 12,
+        "mae": 191.3,
+        "model": "seasonal_naive_12m",
+        "role": "registered_baseline",
+        "wape_pct": 15.6
+      }
+    ],
+    "aggregate_promotion": {
+      "baseline_model": "seasonal_naive_12m",
+      "challenger_promoted": true,
+      "criterion": "A challenger is promoted only for strictly lower rolling-origin MAE on the 2023 promotion holdout; ties retain seasonal naive.",
+      "selected_model": "local_linear_6_observed"
+    },
+    "allocation_sensitivity": {
+      "floor_hours": 8,
+      "interpretation": "The user-set guard preserves coverage continuity in every included area; only the variable budget responds to uncertainty-aware forecast load.",
+      "variable_budget_hours": 32
+    },
+    "annual_contrast_selection": {
+      "eligible_contrasts": 9,
+      "selected_divergence_rank_descending": 3,
+      "selection_rule": "Most recent complete same-month year-over-year contrast for the lead observed-individual component."
+    },
+    "footprint_sensitivity": {
+      "balanced_261_panel": {
+        "adjusted_estimate": {
+          "change_pct": 95.8,
+          "from": 671.42,
+          "to": 1314.49
+        },
+        "blocks": {
+          "from": 261,
+          "to": 261
+        }
+      },
+      "comparison": {
+        "from_month": "2021-02",
+        "to_month": "2023-01"
+      },
+      "conclusion": "The apparent increase is materially larger when 121 newly covered blocks are mistaken for longitudinal change; all primary spatial comparisons use panel261.",
+      "expanded_footprint": {
+        "adjusted_estimate": {
+          "change_pct": 191.2,
+          "from": 671.42,
+          "to": 1955.09
+        },
+        "blocks": {
+          "from": 261,
+          "to": 382
+        }
+      },
+      "expansion_overstatement_percentage_points": 95.4,
+      "measure": "Block-level estimate using POST2020 factors: individuals + 1.75*tents + 2.03*vehicles."
+    },
+    "monthly_estimand": "Verified published multiplier-adjusted total on a fixed six-area core.",
+    "primary_spatial_sensitivity": {
+      "active_block_thresholds": [
+        {
+          "change": 25,
+          "entered_threshold": 59,
+          "exited_threshold": 34,
+          "from_active_blocks": 111,
+          "minimum_component_units": 1,
+          "retained_at_threshold": 77,
+          "to_active_blocks": 136
+        },
+        {
+          "change": 16,
+          "entered_threshold": 47,
+          "exited_threshold": 31,
+          "from_active_blocks": 78,
+          "minimum_component_units": 2,
+          "retained_at_threshold": 47,
+          "to_active_blocks": 94
+        }
+      ],
+      "concentration": {
+        "effective_blocks_change_pct": 0.9,
+        "from": {
+          "effective_number_of_blocks": 35.1,
+          "hhi": 0.028466
+        },
+        "hhi_change_pct": -0.8,
+        "measure": "HHI of each block's share of this component.",
+        "to": {
+          "effective_number_of_blocks": 35.4,
+          "hhi": 0.028231
+        }
+      },
+      "lead_component": "individuals",
+      "observed_units": {
+        "change": 38,
+        "change_pct": 7.5,
+        "from": 510,
+        "to": 548
+      }
+    },
+    "reporting_bias_design": "Optional, allocation-excluded Get It Done reporting diagnostic using exact DOWNTOWN community-plan geography and date_requested.",
+    "robustness_design": "A historically verified fixed cohort of downtown paid-parking meters tests broad activity exposure; NOAA compares weather on the two prepared fixed-panel count dates. Neither enters forecasting or allocation.",
+    "spatial_estimand": "Raw observed units on the identical 261 blocks; no occupancy inference.",
+    "validation_design": "Historical one-step-ahead planning scenario with data frozen through 2025-12. Three deterministic models use rolling origins only: 2023 promotion holdout, 2024 initial interval calibration, then a 2025 sequential audit. The point model stays fixed; the interval residual pool updates only after each audit target is observed."
+  }
+}

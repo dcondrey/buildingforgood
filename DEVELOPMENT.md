@@ -40,14 +40,14 @@ prettier check, oxlint, vitest, and the production build (app). CI
 | `data/raw/` | Immutable source files; never deployed, not committed |
 | `data/processed/` | Normalized aggregate tables; generated, not committed |
 | `data/cards/` | Source/quality/model metadata cards; committed |
-| `public/generated/` | Deployment-safe aggregate JSON the app ships |
+| `data/processed/generated/` | Legacy normalized aggregate outputs from `stillhere_pipeline.build`; not deployed |
+| `public/generated/demo.v1.json` | Single deployment artifact consumed by the app |
 | `tests/` | Python test suite (UI unit tests are co-located in `app/src/`) |
 | `scripts/` | Reproducible build and privacy checks |
 
-## Current placeholders
+## Generated-artifact boundary
 
-- `public/generated/prepared_scenario.v0.json` is a hand-written placeholder;
-  the real decision contract lands with issue #2 and versioned schemas with
-  issue #4. The TypeScript parser (`app/src/lib/scenario.ts`) and the Python
-  manifest module (`pipeline/src/stillhere_pipeline/manifest.py`) are the seams
-  those issues extend.
+The production build publishes only `public/generated/demo.v1.json`. The
+earlier v0 normalization outputs remain supported for pipeline development but
+default to `data/processed/generated/`; placeholder and legacy artifacts must
+not be copied into the static application.

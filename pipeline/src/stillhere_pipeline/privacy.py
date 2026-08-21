@@ -344,7 +344,33 @@ def _max_coordinate_precision(node: Any) -> int:
 
 def is_cell_context(node: dict[str, Any]) -> bool:
     """True when this object identifies one area and/or one period."""
-    return any(normalize_key(k) in CELL_CONTEXT_KEYS for k in node)
+    for key, value in node.items():
+        norm = normalize_key(key)
+        # A document-level ``observations`` collection is a container, not a
+        # single cell. Only treat the ambiguous key as context when it is a
+        # scalar label/count; nested records still carry their own month or
+        # area keys and are scanned normally.
+        if norm == "observations" and isinstance(value, (dict, list)):
+            continue
+        if norm in CELL_CONTEXT_KEYS:
+            return True
+    return False
+
+
+def is_non_person_metric(node: dict[str, Any]) -> bool:
+    """Identify declared resource/block metrics, not person observations."""
+    keys = {normalize_key(key) for key in node}
+    return bool(
+        keys
+        & {
+            "activeblocks",
+            "rawobservationunits",
+            "grosschange",
+            "allocatedhours",
+            "basehours",
+            "variablehours",
+        }
+    )
 
 
 #: Values that count as an affirmative suppression declaration. Anything
@@ -412,7 +438,7 @@ def _scan_json(
         if not in_geometry and "coordinates" in node and "type" in node:
             yield from _scan_geometry(node, where)
             geometry_here = True
-        cell_scope = in_cell or is_cell_context(node)
+        cell_scope = (in_cell or is_cell_context(node)) and not is_non_person_metric(node)
         # Suppression covers the whole cell, nested breakdowns included, so an
         # observation marked suppressed is not re-flagged through its own
         # by_type object. It must NOT cross into a separate record: a node

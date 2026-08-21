@@ -1,0 +1,11 @@
+{
+  "neighborhoods": [
+    {
+      "neighborhood": "barrio_logan",
+      "observations": [
+        { "month": "2021-09", "total": null, "suppressed": true },
+        { "month": "2021-10", "total": 44, "by_type": { "individual": 40, "structure": 22, "vehicle": 12 } }
+      ]
+    }
+  ]
+}

@@ -50,18 +50,48 @@ def test_polygon_geometry_is_permitted_but_point_geometry_is_not() -> None:
 
 
 def test_small_cell_counts_are_blocked_unless_declared_suppressed() -> None:
-    published = {"area_id": "a", "observed_count": 3}
-    suppressed = {"area_id": "a", "observed_count": None, "suppressed": True}
+    published = {"area_id": "a", "month": "2026-05", "observed_count": 3}
+    suppressed = {"area_id": "a", "month": "2026-05", "observed_count": None, "suppressed": True}
     assert _blocking(scan_json_document(published, min_cell=5))
     assert _blocking(scan_json_document(suppressed, min_cell=5)) == []
 
 
+def test_small_cell_detection_is_context_based_not_name_based() -> None:
+    """The regression that mattered: real schemas do not name counts `count`.
+
+    The first version of this rule looked for field names like ``count`` and
+    ``observed`` and passed the A-07 artifact clean while it published 306
+    cells below the threshold, because that schema names them ``total``,
+    ``individual``, ``structure`` and ``vehicle``.
+    """
+    cell = {"neighborhood": "barrio_logan", "month": "2021-09", "total": 3}
+    assert _blocking(scan_json_document(cell, min_cell=5))
+
+    nested = {
+        "neighborhood": "barrio_logan",
+        "month": "2021-09",
+        "by_type": {"individual": 2, "structure": 1, "vehicle": 0},
+    }
+    rules = {f.rule for f in _blocking(scan_json_document(nested, min_cell=5))}
+    assert rules == {"smallcell.unsuppressed_count"}
+
+
+def test_small_integers_outside_a_cell_do_not_fire() -> None:
+    """Config and metadata carry small integers legitimately."""
+    config = {"schema_version": 1, "horizon_periods": 1, "time_increment": 1}
+    assert _blocking(scan_json_document(config, min_cell=5)) == []
+
+
 def test_zero_counts_are_not_small_cell_violations() -> None:
-    assert _blocking(scan_json_document({"observed_count": 0}, min_cell=5)) == []
+    assert (
+        _blocking(scan_json_document({"month": "2026-05", "observed_count": 0}, min_cell=5)) == []
+    )
 
 
 def test_small_cell_threshold_is_configurable() -> None:
-    assert _blocking(scan_json_document({"observed_count": 3}, min_cell=2)) == []
+    assert (
+        _blocking(scan_json_document({"month": "2026-05", "observed_count": 3}, min_cell=2)) == []
+    )
 
 
 def test_key_normalization_catches_spelling_variants() -> None:
@@ -71,7 +101,7 @@ def test_key_normalization_catches_spelling_variants() -> None:
 
 
 def test_counts_are_not_mistaken_for_coordinates() -> None:
-    assert _blocking(scan_json_document({"observed_count": 142, "budget_hours": 80})) == []
+    assert _blocking(scan_json_document({"month": "2026-05", "observed_count": 142})) == []
 
 
 def test_generated_dir_rejects_raw_tabular_files(tmp_path: Path) -> None:

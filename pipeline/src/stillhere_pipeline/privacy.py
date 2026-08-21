@@ -128,16 +128,36 @@ FORBIDDEN_KEY_SUBSTRINGS: tuple[str, ...] = (
     "streetaddress",
 )
 
-#: Key names whose small integer values re-identify (finding R-06).
-COUNT_KEY_SUBSTRINGS: tuple[str, ...] = (
-    "count",
-    "observed",
-    "persons",
-    "people",
-    "individuals",
-    "unsheltered",
-    "sheltered",
-    "tally",
+#: Keys that mark an object as a *cell* — one area, one period. Any small
+#: integer inside such an object is a published cell value, whatever it is
+#: named. Detecting cells by context rather than by guessing count-field
+#: names is deliberate: the first version of this rule looked for names like
+#: ``count`` and ``observed``, and missed 306 real small cells in the A-07
+#: artifact because that schema names them ``total``, ``individual``,
+#: ``structure`` and ``vehicle``. Context is stable; field names are not.
+CELL_CONTEXT_KEYS: frozenset[str] = frozenset(
+    {"month", "period", "date", "yearmonth", "neighborhood", "areaid", "area", "observations"}
+)
+
+#: Keys inside a cell whose small integers are structural, not observations.
+CELL_NUMERIC_ALLOWLIST: frozenset[str] = frozenset(
+    {
+        "schemaversion",
+        "version",
+        "year",
+        "day",
+        "quarter",
+        "index",
+        "rank",
+        "horizonperiods",
+        "periods",
+        "months",
+        "seasonalperiods",
+        "weight",
+        "timeincrement",
+        "increment",
+        "minimumsustainedperiods",
+    }
 )
 
 #: Sibling markers that make a small count legitimate, because it is already
@@ -260,14 +280,19 @@ def _max_coordinate_precision(node: Any) -> int:
     return 0
 
 
+def is_cell_context(node: dict[str, Any]) -> bool:
+    """True when this object identifies one area and/or one period."""
+    return any(normalize_key(k) in CELL_CONTEXT_KEYS for k in node)
+
+
 def _scan_counts(node: dict[str, Any], where: str, min_cell: int) -> Iterator[Finding]:
-    """Flag published counts small enough to identify a person (R-06)."""
+    """Flag published cell values small enough to identify a person (R-06)."""
     normalized = {normalize_key(k): v for k, v in node.items()}
     if any(marker in normalized for marker in SUPPRESSION_MARKERS):
         return
     for key, value in node.items():
         norm = normalize_key(key)
-        if not any(token in norm for token in COUNT_KEY_SUBSTRINGS):
+        if norm in CELL_NUMERIC_ALLOWLIST:
             continue
         if isinstance(value, bool) or not isinstance(value, int):
             continue
@@ -276,19 +301,21 @@ def _scan_counts(node: dict[str, Any], where: str, min_cell: int) -> Iterator[Fi
                 "BLOCK",
                 "smallcell.unsuppressed_count",
                 f"{where}.{key}",
-                f"published count {value} is below the small-cell threshold of {min_cell}; "
-                "publish it as suppressed instead of as a number",
+                f"published value {value} in an area/period cell is below the small-cell "
+                f"threshold of {min_cell}; publish it as suppressed instead of as a number",
             )
 
 
 def _scan_json(
-    node: Any, where: str, min_cell: int, *, in_geometry: bool = False
+    node: Any, where: str, min_cell: int, *, in_geometry: bool = False, in_cell: bool = False
 ) -> Iterator[Finding]:
     if isinstance(node, dict):
         if not in_geometry and "coordinates" in node and "type" in node:
             yield from _scan_geometry(node, where)
             in_geometry = True
-        yield from _scan_counts(node, where, min_cell)
+        cell_scope = in_cell or is_cell_context(node)
+        if cell_scope:
+            yield from _scan_counts(node, where, min_cell)
         for key, value in node.items():
             child = f"{where}.{key}"
             norm = normalize_key(key)
@@ -305,12 +332,16 @@ def _scan_json(
                     child,
                     f"field name {key!r} is on the deny-list",
                 )
-            yield from _scan_json(value, child, min_cell, in_geometry=in_geometry)
+            yield from _scan_json(
+                value, child, min_cell, in_geometry=in_geometry, in_cell=cell_scope
+            )
         return
 
     if isinstance(node, list):
         for index, item in enumerate(node):
-            yield from _scan_json(item, f"{where}[{index}]", min_cell, in_geometry=in_geometry)
+            yield from _scan_json(
+                item, f"{where}[{index}]", min_cell, in_geometry=in_geometry, in_cell=in_cell
+            )
         return
 
     if isinstance(node, str):

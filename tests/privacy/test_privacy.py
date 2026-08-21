@@ -142,18 +142,14 @@ def test_layout_blocks_raw_data_inside_public(tmp_path: Path) -> None:
     assert _blocking(scan_publication_layout(tmp_path))
 
 
-@pytest.mark.xfail(
-    strict=False,
-    reason=(
-        "KNOWN FAILURE, tracked on #7 and PR #44. public/generated/observations.v0.json "
-        "from A-07 (#41) publishes 306 unsuppressed cells below the threshold. Recorded "
-        "here rather than hidden, and rather than dropping the rule to WARN: the gate "
-        "stays at BLOCK and this flips to passing when the pipeline emitter suppresses "
-        "small cells. Do not weaken the rule to make this green."
-    ),
-)
 def test_repository_generated_artifacts_are_clean() -> None:
-    """The real deployable directory must always pass. This is the live gate."""
+    """The real deployable directory must always pass. This is the live gate.
+
+    Carried an xfail marker while A-07's artifact published 306 unsuppressed
+    small cells. The emitter suppresses them as of #45, so the marker is gone
+    and this is an ordinary assertion again. It was never worth dropping the
+    rule to WARN to make this green in the meantime.
+    """
     root = Path(__file__).resolve().parents[2]
     blocking = _blocking(scan_generated_dir(root / "public" / "generated"))
     assert blocking == [], "\n".join(f.render() for f in blocking)

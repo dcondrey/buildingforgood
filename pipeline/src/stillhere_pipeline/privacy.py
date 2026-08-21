@@ -360,16 +360,30 @@ def _scan_json(
     in_geometry: bool = False,
     in_cell: bool = False,
     suppressed: bool = False,
+    in_list: bool = False,
 ) -> Iterator[Finding]:
     if isinstance(node, dict):
+        # A geometry approval covers its own ``coordinates`` payload and
+        # nothing else. Letting it cover the whole object exempted siblings
+        # from the numeric coordinate check, so a raw longitude parked next
+        # to an approved polygon escaped entirely. Same mirror-image flaw as
+        # cell scope and suppression: scope must follow the thing it approved.
+        geometry_here = False
         if not in_geometry and "coordinates" in node and "type" in node:
             yield from _scan_geometry(node, where)
-            in_geometry = True
+            geometry_here = True
         cell_scope = in_cell or is_cell_context(node)
-        # Suppression covers the whole cell, nested breakdowns included: an
-        # observation marked suppressed must not be re-flagged through its
-        # own by_type object.
-        cell_suppressed = suppressed or is_suppressed(node)
+        # Suppression covers the whole cell, nested breakdowns included, so an
+        # observation marked suppressed is not re-flagged through its own
+        # by_type object. It must NOT cross into a separate record: a node
+        # that names its own area or period, or that sits as a list element,
+        # is a different cell and re-evaluates its own markers. Inheriting
+        # across that boundary let a suppressed 2021-09 cell silently exempt
+        # an unsuppressed 2021-08 count nested under it. Narrowing what
+        # inherits suppression only ever scans more, which is the safe
+        # direction; narrowing what gets scanned is what caused the last bug.
+        own_record = is_cell_context(node) or in_list
+        cell_suppressed = is_suppressed(node) if own_record else (suppressed or is_suppressed(node))
         if cell_scope and not cell_suppressed:
             yield from _scan_counts(node, where, min_cell)
         for key, value in node.items():
@@ -378,7 +392,7 @@ def _scan_json(
             # ``coordinates`` is the payload of a geometry we have already
             # approved as an aggregate area, so the key deny-list must not
             # fire on it there. Everywhere else it stays forbidden.
-            exempt = in_geometry and norm == "coordinates"
+            exempt = (in_geometry or geometry_here) and norm == "coordinates"
             if not exempt and (
                 norm in FORBIDDEN_KEYS or any(s in norm for s in FORBIDDEN_KEY_SUBSTRINGS)
             ):
@@ -397,11 +411,12 @@ def _scan_json(
             # Over-blocking is the acceptable error direction here; a silent
             # miss is not. Noise is reduced by naming structural keys in
             # CELL_NUMERIC_ALLOWLIST, never by narrowing what gets scanned.
+            child_geometry = in_geometry or (geometry_here and norm == "coordinates")
             yield from _scan_json(
                 value,
                 child,
                 min_cell,
-                in_geometry=in_geometry,
+                in_geometry=child_geometry,
                 in_cell=cell_scope,
                 suppressed=cell_suppressed,
             )
@@ -416,6 +431,7 @@ def _scan_json(
                 in_geometry=in_geometry,
                 in_cell=in_cell,
                 suppressed=suppressed,
+                in_list=True,
             )
         return
 

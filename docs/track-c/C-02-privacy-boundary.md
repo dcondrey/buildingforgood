@@ -51,7 +51,19 @@ The small-cell rule infers whether an integer is a person count from the *shape*
 4. Rejecting integer-encoded booleans blocked correctly-redacted data from pandas- and SQL-derived JSON.
 5. Gating scope propagation on "is this child a pure numeric breakdown", to silence a false positive on a nested config object, silently exempted a breakdown containing a further breakdown — so real small counts were never scanned at any depth below it.
 
+6. Suppression propagated to every descendant, so a suppressed `2021-09` cell silently exempted an unsuppressed `2021-08` count nested beneath it.
+
 Round 5 is the one worth naming. **It traded a fail-closed property for a cosmetic fix**, converting a noisy-but-safe gate into a quiet one with a silent miss, in a file whose own docstring says it fails closed. Over-blocking is the acceptable error direction here. Noise gets handled by naming structural keys in the allow-list, never by narrowing what gets scanned.
+
+### The one pattern behind most of these
+
+Three of the six were the same mirror-image flaw: **a scope flag propagating past the thing it was approved for.** Cell scope, suppression, and geometry approval each set a boolean and then passed it to every descendant unconditionally.
+
+- Cell scope propagating too little missed nested breakdowns.
+- Suppression propagating too far exempted a different month's cell.
+- Geometry approval propagating too far exempted a raw longitude parked beside an approved polygon. That third one was found by auditing the other two rather than by review, which is the only reason it is not a seventh round.
+
+The rule that resolves all three: **scope follows the thing it approved, and a separate record re-evaluates.** A node naming its own area or period, or sitting as a list element, is a separate record. A geometry approval covers its own `coordinates` key and nothing else. When the direction of an error is unclear, narrow what *inherits an exemption*, never what *gets scanned*.
 
 Each fix was correct and each one moved the error somewhere new, because deciding "is this integer a person" from structure alone is not decidable.
 

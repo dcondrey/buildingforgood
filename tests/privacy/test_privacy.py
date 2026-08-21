@@ -279,3 +279,69 @@ def test_is_redacted_is_recognised_like_is_suppressed() -> None:
     """Caught in review: `issuppressed` was a marker but `isredacted` was not."""
     cell = {"neighborhood": "a", "month": "2021-09", "total": 3, "is_redacted": True}
     assert _blocking(scan_json_document(cell, min_cell=5)) == []
+
+
+def test_suppression_does_not_cross_into_a_separate_record() -> None:
+    """Caught in review: suppression inherited into an unrelated nested cell.
+
+    Cell scope was fixed to propagate unconditionally, but suppression had
+    the mirror-image flaw left in place. A suppressed 2021-09 cell silently
+    exempted an unsuppressed 2021-08 count nested beneath it, so the gate
+    believed it failed closed when it did not.
+    """
+    doc = {
+        "neighborhood": "a",
+        "month": "2021-09",
+        "suppressed": True,
+        "history": [
+            {"month": "2021-08", "total": 1},
+            {"month": "2021-10", "total": 47},
+        ],
+    }
+    blocking = _blocking(scan_json_document(doc, min_cell=5))
+    assert len(blocking) == 1
+    assert blocking[0].where == "$.history[0].total"
+
+
+def test_list_elements_re_evaluate_their_own_suppression() -> None:
+    doc = {
+        "neighborhood": "a",
+        "month": "2021-09",
+        "suppressed": True,
+        "areas": [{"area_id": "b", "total": 2}],
+    }
+    assert _blocking(scan_json_document(doc, min_cell=5))
+
+
+def test_suppression_still_covers_its_own_nested_breakdown() -> None:
+    """The legitimate case must keep working after the narrowing."""
+    cell = {
+        "neighborhood": "a",
+        "month": "2021-09",
+        "total": None,
+        "suppressed": True,
+        "by_type": {"individual": 2, "structure": 1, "by_severity": {"high": 1}},
+    }
+    assert _blocking(scan_json_document(cell, min_cell=5)) == []
+
+
+def test_geometry_approval_covers_only_its_own_coordinates() -> None:
+    """Found by audit, not by review: geometry scope leaked to siblings.
+
+    Approving a Polygon exempted the whole object from the numeric
+    coordinate check, so a raw longitude parked next to the approved
+    coordinates escaped. Third instance of the same mirror-image flaw, after
+    cell scope and suppression: scope must follow the thing it approved.
+    """
+    leak = {
+        "type": "Polygon",
+        "coordinates": [[[-117.152, 32.710], [-117.144, 32.716]]],
+        "centroid_lon": -117.14832,
+    }
+    blocking = _blocking(scan_json_document(leak))
+    assert [f.where for f in blocking] == ["$.centroid_lon"]
+
+
+def test_a_clean_polygon_still_passes() -> None:
+    polygon = {"type": "Polygon", "coordinates": [[[-117.152, 32.710], [-117.144, 32.716]]]}
+    assert _blocking(scan_json_document(polygon)) == []

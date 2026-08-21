@@ -30,7 +30,7 @@ function App() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/generated/prepared_scenario.v0.json")
+    fetch(`${import.meta.env.BASE_URL}generated/prepared_scenario.v0.json`)
       .then(async (response) => {
         if (!response.ok) {
           throw new Error(`fetch failed with status ${response.status}`);

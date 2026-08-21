@@ -206,13 +206,31 @@ def test_affirmative_suppression_values_are_accepted() -> None:
         assert _blocking(scan_json_document(cell, min_cell=5)) == [], f"suppressed={truthy!r}"
 
 
-def test_every_cell_identifying_key_is_exempt_from_the_count_rule() -> None:
-    """Caught in review: `month` was allow-listed but `area` was not.
+def test_temporal_labels_are_exempt_but_ambiguous_names_are_not() -> None:
+    """Caught in review: exempting every context key recreated the R-06 hole.
 
-    A key that identifies a cell is a label, so its own value can never be an
-    observation. Asserting the set relation stops a newly-added context key
-    from reintroducing the false positive.
+    An earlier fix unioned CELL_CONTEXT_KEYS into the numeric allow-list so
+    that `{"area": 3}` would not false-positive. That also exempted
+    `{"observations": 3}`, a scalar count named after a context key, which is
+    exactly the name-based false negative the rule was rewritten to kill.
+
+    The allow-list is now narrow. Unambiguously temporal names are labels;
+    ambiguous ones block, because a privacy gate resolves ambiguity by
+    blocking and an integer identifier can be published as a string instead.
     """
-    assert CELL_CONTEXT_KEYS <= CELL_NUMERIC_ALLOWLIST
-    cell = {"area": 3, "areaid": 2, "month": 3, "total": 91}
+    assert not (CELL_CONTEXT_KEYS <= CELL_NUMERIC_ALLOWLIST)
+
+    temporal = {"neighborhood": "barrio_logan", "month": 3, "year": 2021, "total": 91}
+    assert _blocking(scan_json_document(temporal, min_cell=5)) == []
+
+    for ambiguous in ("observations", "area", "areaid"):
+        cell = {"neighborhood": "barrio_logan", "month": "2021-09", ambiguous: 3}
+        assert _blocking(scan_json_document(cell, min_cell=5)), ambiguous
+
+
+def test_integer_encoded_suppression_is_accepted() -> None:
+    """Caught in review: pandas and SQL serialize booleans as 1/0."""
+    cell = {"neighborhood": "a", "month": "2021-09", "total": 3, "suppressed": 1}
     assert _blocking(scan_json_document(cell, min_cell=5)) == []
+    published = {"neighborhood": "a", "month": "2021-09", "total": 3, "suppressed": 0}
+    assert _blocking(scan_json_document(published, min_cell=5))

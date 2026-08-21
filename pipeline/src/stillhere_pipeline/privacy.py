@@ -157,13 +157,22 @@ CELL_NUMERIC_ALLOWLIST: frozenset[str] = frozenset(
         "timeincrement",
         "increment",
         "minimumsustainedperiods",
+        # Unambiguously temporal. A schema encoding month as 3 is naming a
+        # period, not counting three people.
+        "month",
+        "period",
+        "date",
+        "yearmonth",
     }
-    # Every cell-identifying key is a label, never an observation: a schema
-    # encoding month as 3, or area as 3, must not read as three people.
-    # Unioned rather than hand-listed so adding a context key cannot
-    # reintroduce this false positive.
-    | CELL_CONTEXT_KEYS
 )
+# Deliberately NARROW. `area`, `areaid`, `neighborhood` and `observations`
+# are cell-context keys but are NOT exempt, because an integer under those
+# names is genuinely ambiguous: `{"observations": 3}` is as likely a count as
+# a label. An earlier version unioned CELL_CONTEXT_KEYS in wholesale and
+# recreated exactly the name-based false negative this rule was rewritten to
+# eliminate. A privacy gate resolves ambiguity by blocking, so an integer
+# identifier will fail the scan and should be published as a string — which
+# the real observations artifact already does (`"neighborhood": "barrio_logan"`).
 
 #: Sibling markers that make a small count legitimate, because it is already
 #: declared as suppressed rather than published.
@@ -292,7 +301,7 @@ def is_cell_context(node: dict[str, Any]) -> bool:
 
 #: Values that count as an affirmative suppression declaration. Anything
 #: else — False, None, 0, "no" — means the cell is published.
-SUPPRESSION_TRUE_VALUES: frozenset[str] = frozenset({"true", "yes", "suppressed", "redacted"})
+SUPPRESSION_TRUE_VALUES: frozenset[str] = frozenset({"true", "yes", "1", "suppressed", "redacted"})
 
 
 def is_suppressed(node: dict[str, Any]) -> bool:
@@ -307,7 +316,9 @@ def is_suppressed(node: dict[str, Any]) -> bool:
     for key, value in node.items():
         if normalize_key(key) not in SUPPRESSION_MARKERS:
             continue
-        if value is True:
+        if value is True or value == 1:
+            # `1` covers pandas- and SQL-derived JSON, which serializes
+            # booleans as integers. `0` and `False` stay unsuppressed.
             return True
         if isinstance(value, str) and value.strip().lower() in SUPPRESSION_TRUE_VALUES:
             return True
@@ -328,7 +339,8 @@ def _scan_counts(node: dict[str, Any], where: str, min_cell: int) -> Iterator[Fi
                 "smallcell.unsuppressed_count",
                 f"{where}.{key}",
                 f"published value {value} in an area/period cell is below the small-cell "
-                f"threshold of {min_cell}; publish it as suppressed instead of as a number",
+                f"threshold of {min_cell}; publish it as suppressed instead of as a number. "
+                "If this is an identifier rather than an observation, publish it as a string.",
             )
 
 

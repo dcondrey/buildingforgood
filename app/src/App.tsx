@@ -1681,9 +1681,9 @@ function App() {
             <div className={`guard-status ${guardEnabled ? "guard-on" : "guard-off"}`}>
               <span>{guardEnabled ? "✓" : "!"}</span>
               <div>
-                <small>Coverage guard</small>
+                <small>Guaranteed minimum</small>
                 <strong>
-                  {guardEnabled ? `ON · ${coverageFloor}h floor` : "OFF · AUDIT ONLY"}
+                  {guardEnabled ? `ON · ${coverageFloor}h per area` : "OFF · COMPARISON ONLY"}
                 </strong>
               </div>
             </div>
@@ -1706,9 +1706,7 @@ function App() {
                   type="button"
                 >
                   <strong>{floor}h</strong>
-                  <span>
-                    {floor === 0 ? "audit only" : floor === 8 ? "prepared demo" : "sensitivity"}
-                  </span>
+                  <span>{floor === 0 ? "no minimum" : floor === 8 ? "default" : "compare"}</span>
                 </button>
               ))}
             </div>
@@ -1771,8 +1769,8 @@ function App() {
                     type="button"
                   >
                     {guardEnabled
-                      ? "Audit without coverage guard"
-                      : `Restore ${coverageFloor || DEFAULT_COVERAGE_FLOOR}h demo guard`}
+                      ? "Compare with no minimum"
+                      : `Restore the ${coverageFloor || DEFAULT_COVERAGE_FLOOR}h minimum`}
                   </button>
                   <button
                     className="button button-quiet"

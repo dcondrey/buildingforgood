@@ -2291,10 +2291,11 @@ function App() {
                 <em>or fewer people?</em>
               </h1>
               <p className="hero-lede">
-                Downtown San Diego’s unsheltered estimate fell 22% in a year, but the drop came from
-                tents, not people: on the same 261 blocks, outreach workers saw more people than the
-                year before. This tool shows what changed, what’s uncertain, and where the next
-                outreach shift should go.
+                Downtown San Diego’s component-derived unsheltered estimate fell 22% in a year on
+                the fixed 261-block panel, but the drop came from tents, not people: direct
+                observations of people rose and appeared on 25 more blocks than the year before.
+                This tool shows what changed, what’s uncertain, and where the next outreach shift
+                should go.
               </p>
               <div
                 className="composition-lead"
@@ -3249,16 +3250,18 @@ function App() {
                   </span>
                 </div>
                 <p className="model-rule">
-                  A candidate is promoted only if it improves held-out error. Lower MAE and WAPE are
-                  better; interval coverage is audited separately.
+                  A candidate is promoted only if it improves held-out error on the 2023 promotion
+                  window — the scorecard rows below. The audit figures above them come from the
+                  separate, untouched 2025 walk-forward, which is why the two error levels differ.
+                  Lower MAE and WAPE are better; interval coverage is audited separately.
                 </p>
                 <div className="model-audit" aria-label="Final 2025 walk-forward audit">
                   <span>
-                    <small>Audit MAE</small>
+                    <small>2025 audit MAE</small>
                     <strong>{formatNumber(data.forecast.mae, 1)}</strong>
                   </span>
                   <span>
-                    <small>Audit WAPE</small>
+                    <small>2025 audit WAPE</small>
                     <strong>{formatNumber(data.forecast.wape, 1)}%</strong>
                   </span>
                   <span>
@@ -3273,8 +3276,8 @@ function App() {
                     <thead>
                       <tr>
                         <th>Model</th>
-                        <th>MAE</th>
-                        <th>WAPE</th>
+                        <th>2023 MAE</th>
+                        <th>2023 WAPE</th>
                         <th>Coverage</th>
                       </tr>
                     </thead>

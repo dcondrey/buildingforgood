@@ -141,3 +141,112 @@ def test_cli_compare_writes_agreement_card(tmp_path: Path) -> None:
 def test_cli_requires_pdf_without_compare(tmp_path: Path) -> None:
     with pytest.raises(SystemExit):
         main(["--out", str(tmp_path / "card.json")])
+
+
+def test_collect_text_observations_walks_top_level_and_nested() -> None:
+    from stillhere_pipeline.eyepop_audit import collect_text_observations
+
+    prediction = {
+        "texts": [{"text": "Grand Total", "confidence": 0.9}],
+        "objects": [
+            {
+                "classLabel": "text",
+                "texts": [{"text": "152", "confidence": 0.8}],
+                "objects": [{"classLabel": "text", "texts": [{"text": "14"}]}],
+            }
+        ],
+    }
+    observations = collect_text_observations(prediction)
+    assert [o["text"] for o in observations] == ["Grand Total", "152", "14"]
+    assert observations[2]["confidence"] == 1.0  # missing confidence defaults, not drops
+    assert collect_text_observations(None) == []
+    assert collect_text_observations({"texts": ["not-a-dict"]}) == []
+
+
+def _install_fake_eyepop(
+    monkeypatch: pytest.MonkeyPatch, prediction: dict[str, object], recorded: dict[str, object]
+) -> None:
+    import sys
+    import types
+
+    import stillhere_pipeline.eyepop_audit as module
+
+    fake_types = types.ModuleType("eyepop.worker.worker_types")
+
+    class Pop:
+        def __init__(self, components: list[object]) -> None:
+            self.components = components
+
+    class InferenceComponent:
+        def __init__(self, **kwargs: object) -> None:
+            self.__dict__.update(kwargs)
+
+    class CropForward:
+        def __init__(self, **kwargs: object) -> None:
+            self.__dict__.update(kwargs)
+
+    fake_types.Pop = Pop  # type: ignore[attr-defined]
+    fake_types.InferenceComponent = InferenceComponent  # type: ignore[attr-defined]
+    fake_types.CropForward = CropForward  # type: ignore[attr-defined]
+
+    class FakeEndpoint:
+        def __enter__(self) -> FakeEndpoint:
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            recorded["closed"] = True
+
+        def upload(self, path: str) -> FakeEndpoint:
+            recorded.setdefault("uploads", []).append(path)  # type: ignore[union-attr]
+            return self
+
+        def predict(self) -> dict[str, object]:
+            return prediction
+
+    class EyePopSdk:
+        @staticmethod
+        def sync_worker(pop: object = None) -> FakeEndpoint:
+            recorded["workers"] = int(recorded.get("workers", 0)) + 1
+            recorded["pop"] = pop
+            return FakeEndpoint()
+
+    fake_eyepop = types.ModuleType("eyepop")
+    fake_eyepop.EyePopSdk = EyePopSdk  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "eyepop", fake_eyepop)
+    monkeypatch.setitem(sys.modules, "eyepop.worker", types.ModuleType("eyepop.worker"))
+    monkeypatch.setitem(sys.modules, "eyepop.worker.worker_types", fake_types)
+    monkeypatch.setattr(module, "_EYEPOP_ENDPOINT", None)
+
+
+def test_eyepop_engine_configures_ocr_pop_and_parses_nested_texts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("EYEPOP_API_KEY", "eyp_test")
+    monkeypatch.delenv("EYEPOP_POP_ID", raising=False)
+    recorded: dict[str, object] = {}
+    prediction = {
+        "objects": [{"classLabel": "text", "texts": [{"text": "152", "confidence": 0.8}]}]
+    }
+    _install_fake_eyepop(monkeypatch, prediction, recorded)
+
+    observations = eyepop_engine(Path("page-01.png"))
+    assert observations == [{"text": "152", "confidence": 0.8}]
+    assert recorded["uploads"] == ["page-01.png"]
+    abilities = [
+        getattr(c, "ability", None)
+        for c in recorded["pop"].components  # type: ignore[attr-defined]
+    ]
+    assert abilities == ["eyepop.text:latest"]
+    forward = recorded["pop"].components[0].forward  # type: ignore[attr-defined]
+    assert [t.ability for t in forward.targets] == ["eyepop.text.recognize.landscape:latest"]
+
+    # A second page reuses the session instead of opening another worker.
+    eyepop_engine(Path("page-02.png"))
+    assert recorded["workers"] == 1
+
+
+def test_eyepop_engine_refuses_pop_id_with_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("EYEPOP_API_KEY", "eyp_test")
+    monkeypatch.setenv("EYEPOP_POP_ID", "some-pop")
+    with pytest.raises(SystemExit, match="Unset EYEPOP_POP_ID"):
+        eyepop_engine(Path("page.png"))

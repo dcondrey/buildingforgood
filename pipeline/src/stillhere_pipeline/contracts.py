@@ -73,8 +73,19 @@ def validate_observations_v0(doc: dict[str, Any]) -> None:
             if not isinstance(observation, dict):
                 raise ContractViolation("observations must be objects")
             _require(observation, "month", str)
+            if observation.get("suppressed") is True:
+                # Whole-row small-cell suppression: total is null and no
+                # per-type breakdown is published.
+                if observation.get("total") is not None:
+                    raise ContractViolation("suppressed rows must have total null")
+                if "by_type" in observation:
+                    raise ContractViolation("suppressed rows must not publish by_type")
+                continue
             _require(observation, "total", int)
-            _require(observation, "by_type", dict)
+            by_type = _require(observation, "by_type", dict)
+            for type_name, value in by_type.items():
+                if value is not None and (isinstance(value, bool) or not isinstance(value, int)):
+                    raise ContractViolation(f"by_type value for {type_name} must be an int or null")
     _require(doc, "comparability_events", list)
     assert_no_precise_fields(doc)
 

@@ -113,6 +113,41 @@ class TestRunBuild:
         quality = json.loads((tmp_path / "out" / "quality_report.v0.json").read_text())
         assert quality["source_maps_without_counts"] == ["f9"]
 
+    def test_no_rollup_totals_are_published(self, tmp_path: Path) -> None:
+        # PR #44 review, point 4: a published rollup (neighborhood, downtown,
+        # or annual total) reopens subtraction recovery across the rollup's
+        # members. The artifact publishes ONLY per-row totals; this pins the
+        # exact key surface so adding any rollup fails here first and forces
+        # the suppression design to extend to it.
+        write_fixture_tree(tmp_path)
+        build(tmp_path)
+        doc = json.loads((tmp_path / "out" / "observations.v0.json").read_text())
+        assert set(doc) == {
+            "schema",
+            "source",
+            "months_observed",
+            "missing_months_global",
+            "neighborhoods",
+            "comparability_events",
+        }
+        for entry in doc["neighborhoods"]:
+            assert set(entry) == {
+                "neighborhood",
+                "label_variants",
+                "coverage_start",
+                "coverage_end",
+                "observed_gap_months",
+                "observations",
+            }
+            for observation in entry["observations"]:
+                assert set(observation) <= {
+                    "month",
+                    "total",
+                    "by_type",
+                    "by_type_suppressed",
+                    "suppressed",
+                }
+
     def test_embedded_newline_in_quoted_field_survives(self, tmp_path: Path) -> None:
         counts = (
             "file_id,neighborhood,date,count,type,x,y\n"

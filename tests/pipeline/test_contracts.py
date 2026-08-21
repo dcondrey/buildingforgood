@@ -73,6 +73,36 @@ class TestObservationsValidatorRejects:
         with pytest.raises(ContractViolation, match="by_type"):
             validate_observations_v0(doc)
 
+    def test_suppressed_row_shape_is_accepted(self) -> None:
+        doc = valid_observations()
+        doc["neighborhoods"][0]["observations"].append(
+            {"month": "2018-02", "total": None, "suppressed": True}
+        )
+        validate_observations_v0(doc)
+
+    def test_suppressed_row_must_not_publish_by_type(self) -> None:
+        doc = valid_observations()
+        doc["neighborhoods"][0]["observations"].append(
+            {"month": "2018-02", "total": None, "suppressed": True, "by_type": {"individual": 2}}
+        )
+        with pytest.raises(ContractViolation, match="suppressed"):
+            validate_observations_v0(doc)
+
+    def test_null_by_type_values_are_accepted(self) -> None:
+        doc = valid_observations()
+        doc["neighborhoods"][0]["observations"][0]["by_type"] = {
+            "individual": 40,
+            "structure": None,
+            "vehicle": None,
+        }
+        validate_observations_v0(doc)
+
+    def test_string_by_type_value_rejected(self) -> None:
+        doc = valid_observations()
+        doc["neighborhoods"][0]["observations"][0]["by_type"] = {"individual": "many"}
+        with pytest.raises(ContractViolation, match="by_type value"):
+            validate_observations_v0(doc)
+
 
 class TestQualityValidatorRejects:
     def test_missing_required_field(self) -> None:

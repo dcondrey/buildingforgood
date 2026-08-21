@@ -64,6 +64,7 @@ class TestBuildQualityReport:
             series=series,
             file_total_mismatches=[],
             source_maps_without_counts=["f9"],
+            small_cell_suppression={"threshold": 5, "rows_suppressed": 0, "cells_suppressed": 0},
             source_id="sdrdl_source",
             retrieved_at="2026-08-21T01:06:45Z",
         )
@@ -79,4 +80,5 @@ class TestBuildQualityReport:
         assert report["comparability_events"] == COMPARABILITY_EVENTS
         assert "missing_months_global" in report
         assert report["source_maps_without_counts"] == ["f9"]
+        assert report["small_cell_suppression"]["threshold"] == 5
         assert report["day_of_month_reliable"] is False

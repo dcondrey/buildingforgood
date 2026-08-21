@@ -500,3 +500,66 @@ def test_a_root_declaration_covers_every_feature() -> None:
         ],
     }
     assert _blocking(scan_json_document(doc)) == []
+
+
+def test_a_lone_withheld_cell_is_exactly_recoverable() -> None:
+    """Suppressing a value does not hide it if the total pins it down."""
+    row = {"neighborhood": "a", "month": "2021-09", "total": 10, "by_type": {"i": 8, "s": None}}
+    rules = {f.rule for f in _blocking(scan_json_document(row, min_cell=5))}
+    assert "recovery.exact" in rules
+
+
+def test_two_withheld_cells_summing_to_two_are_both_pinned() -> None:
+    """The k=2 vector my first review missed.
+
+    With two withheld cells no complementary partner fires, and a remainder
+    of 2 across two cells that must each be at least 1 pins both at exactly
+    1. Seven rows in the first emitter artifact were recoverable this way,
+    and I certified that artifact as clean because my check only covered the
+    lone-null case. A presence check cannot see this; enumeration can.
+    """
+    row = {
+        "neighborhood": "a",
+        "month": "2018-02",
+        "total": 12,
+        "by_type": {"i": 10, "s": None, "v": None},
+    }
+    rules = {f.rule for f in _blocking(scan_json_document(row, min_cell=5))}
+    assert "recovery.exact" in rules
+
+
+def test_a_wide_remainder_leaves_real_ambiguity() -> None:
+    row = {
+        "neighborhood": "a",
+        "month": "2021-10",
+        "total": 44,
+        "by_type": {"i": 38, "s": None, "v": None},
+    }
+    assert _blocking(scan_json_document(row, min_cell=5)) == []
+
+
+def test_a_whole_row_suppression_is_not_attacked() -> None:
+    row = {"neighborhood": "a", "month": "2021-09", "total": None, "suppressed": True}
+    assert _blocking(scan_json_document(row, min_cell=5)) == []
+
+
+def test_uncertifiable_rows_say_so_rather_than_passing_quietly() -> None:
+    """A guard that declines to check must not look like a clean result."""
+    row = {
+        "neighborhood": "a",
+        "month": "2021-09",
+        "total": 400,
+        "by_type": {
+            "a": None,
+            "b": None,
+            "c": None,
+            "d": None,
+            "e": None,
+            "f": None,
+            "g": None,
+            "h": None,
+            "i": None,
+        },
+    }
+    findings = scan_json_document(row, min_cell=5)
+    assert any(f.rule == "recovery.not_certified" for f in findings)

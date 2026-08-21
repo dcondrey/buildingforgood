@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 from collections.abc import Iterator, Sequence
@@ -574,10 +575,130 @@ def scan_geography_grain(document: Any, where: str = "$") -> list[Finding]:
     return findings
 
 
+#: Enumeration guard, sized on the feasible SET rather than the remainder.
+#: The number of ways to split a remainder R into k positive parts is
+#: C(R-1, k-1), so k=2 stays linear no matter how large R is while k=5 blows
+#: up quickly. Capping on the raw remainder instead made the scan decline to
+#: check rows it could have certified in microseconds.
+MAX_FEASIBLE_ASSIGNMENTS = 200_000
+MAX_SUPPRESSED_CELLS = 8
+
+
+def _feasible_assignments(remainder: int, count: int) -> list[tuple[int, ...]]:
+    """Every way the withheld cells could sum to the published remainder.
+
+    Suppressed cells are always strictly positive under the emitter policy: a
+    cell is withheld either because it is small, or because it was pulled in
+    as a complementary partner, and both branches require a nonzero value.
+    """
+    if count == 1:
+        return [(remainder,)] if remainder >= 1 else []
+    results: list[tuple[int, ...]] = []
+    for first in range(1, remainder - count + 2):
+        for rest in _feasible_assignments(remainder - first, count - 1):
+            results.append((first, *rest))
+    return results
+
+
+def analyze_recoverability(
+    total: int, published: list[int], suppressed_count: int, where: str
+) -> list[Finding]:
+    """Flag withheld cells that arithmetic can still recover.
+
+    Suppressing a value does not hide it if the published total and the
+    published siblings pin it down. Two rounds of this were live in the real
+    artifact: a lone withheld cell is recoverable by plain subtraction, and
+    a remainder of 2 split across two withheld cells pins both at exactly 1.
+
+    A presence check cannot see either. This enumerates every assignment the
+    emitter policy could have produced and reports a leak when the attacker
+    is left with no ambiguity.
+    """
+    if suppressed_count <= 0:
+        return []
+    remainder = total - sum(published)
+    if remainder < suppressed_count:
+        return []
+    estimated = math.comb(remainder - 1, suppressed_count - 1)
+    if estimated > MAX_FEASIBLE_ASSIGNMENTS or suppressed_count > MAX_SUPPRESSED_CELLS:
+        return [
+            Finding(
+                "WARN",
+                "recovery.not_certified",
+                where,
+                f"{estimated} possible assignments of remainder {remainder} across "
+                f"{suppressed_count} withheld cells is too many to enumerate; "
+                "recoverability was NOT checked here",
+            )
+        ]
+
+    feasible = _feasible_assignments(remainder, suppressed_count)
+    if not feasible:
+        return []
+    if len(feasible) == 1:
+        return [
+            Finding(
+                "BLOCK",
+                "recovery.exact",
+                where,
+                f"the withheld cells are exactly recoverable as {feasible[0]} from the published "
+                f"total {total} and its published siblings; suppress the whole row instead",
+            )
+        ]
+
+    findings: list[Finding] = []
+    for index in range(suppressed_count):
+        values = {assignment[index] for assignment in feasible}
+        if len(values) == 1:
+            findings.append(
+                Finding(
+                    "BLOCK",
+                    "recovery.pinned_cell",
+                    where,
+                    f"withheld cell {index} is pinned at {values.pop()} across every assignment "
+                    "consistent with the published total; suppress the whole row instead",
+                )
+            )
+    multisets = {tuple(sorted(assignment)) for assignment in feasible}
+    if len(multisets) == 1:
+        findings.append(
+            Finding(
+                "BLOCK",
+                "recovery.unique_multiset",
+                where,
+                f"the withheld values are known to be exactly {sorted(multisets.pop())} even if "
+                "their order is not; suppress the whole row instead",
+            )
+        )
+    return findings
+
+
+def _scan_recoverability(node: Any, where: str, min_cell: int) -> Iterator[Finding]:
+    if isinstance(node, dict):
+        total = node.get("total")
+        if isinstance(total, int) and not isinstance(total, bool) and not is_suppressed(node):
+            for key, value in node.items():
+                if not isinstance(value, dict):
+                    continue
+                numbers = [
+                    v for v in value.values() if isinstance(v, int) and not isinstance(v, bool)
+                ]
+                withheld = sum(1 for v in value.values() if v is None)
+                if withheld:
+                    yield from analyze_recoverability(total, numbers, withheld, f"{where}.{key}")
+        for key, value in node.items():
+            yield from _scan_recoverability(value, f"{where}.{key}", min_cell)
+        return
+    if isinstance(node, list):
+        for index, item in enumerate(node):
+            yield from _scan_recoverability(item, f"{where}[{index}]", min_cell)
+
+
 def scan_json_document(document: Any, where: str = "$", min_cell: int = 5) -> list[Finding]:
     """Scan one parsed JSON document and return every finding."""
     findings = scan_geography_grain(document, where)
     findings.extend(_scan_json(document, where, min_cell))
+    findings.extend(_scan_recoverability(document, where, min_cell))
     return findings
 
 

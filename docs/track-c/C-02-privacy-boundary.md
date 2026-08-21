@@ -70,7 +70,20 @@ Each fix was correct and each one moved the error somewhere new, because decidin
 
 **The durable fix belongs in the artifact contract, not in this scanner.** If `#4` declares which fields are counts — a `count_fields` list, or a per-field type in the schema — the rule becomes a lookup instead of an inference, and this entire class of bug disappears. Handed to Track D. Until then the scan stays as a structural backstop that fails closed, which is the right posture for a privacy gate but not a substitute for a declared schema.
 
-**Open follow-up:** suppressed cells must not be recoverable by subtraction from a published total. That is a pipeline aggregation concern (Track A, #6) as much as a scan concern, and is not yet enforced.
+### Recoverability is now enforced, and how that got found
+
+**Suppressing a value does not hide it if arithmetic can put it back.** This started as an open follow-up and is now a scan rule, after two rounds of the same mistake:
+
+1. A lone withheld cell is recoverable by plain subtraction from the published total. Handed to the emitter as complementary suppression.
+2. **A remainder of 2 split across two withheld cells pins both at exactly 1.** No complementary partner fires when two cells are already small, so the first emitter fix did not cover it.
+
+Round 2 matters because of how it was missed. Track C ran a recovery attack over all 708 published rows of the first emitter artifact, found zero, and certified it. That attack only tested the lone-null vector, so it returned zero while **7 rows were exactly recoverable**, including `cortez 2018-02 structure=1 vehicle=1` — a single-person cell fully reconstructed — and 20 more leaked their value multiset. Track A found it in an adversarial pass afterwards. The check passed; the check was weaker than the claim it was used to support.
+
+`analyze_recoverability` now enumerates every assignment the emitter policy could have produced and blocks on three conditions: `recovery.exact` when one assignment remains, `recovery.pinned_cell` when any position holds the same value across all of them, and `recovery.unique_multiset` when the values are known even if their order is not. The enumeration guard is sized on the feasible set `C(R-1, k-1)` rather than the raw remainder, so `k=2` stays linear at any magnitude, and a row it declines to certify emits `recovery.not_certified` rather than passing quietly.
+
+Validated against a known-bad and a known-good artifact, which is the discipline that was missing the first time: 10 findings on the first-cut emitter output, 0 on the corrected one.
+
+**Still not enforced:** recovery across files or across rollup levels. Track A pinned the artifact key surface with a test so that adding a neighborhood, downtown, or annual total fails the suite and forces the suppression design to extend to it.
 
 ### 6. Publication layout
 Raw and tabular file types (`.csv`, `.xlsx`, `.shp`, `.parquet`, `.sqlite`, …) are **BLOCK** anywhere under the generated directory or the production bundle, whatever they contain. `data/raw` and `data/processed` appearing inside `public/` is **BLOCK**. A data directory with no `.gitignore` is a **WARN**.

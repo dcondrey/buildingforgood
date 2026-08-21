@@ -1861,10 +1861,10 @@ function App() {
                         className={`constraint-chip ${belowFloor ? "constraint-fail" : "constraint-pass"}`}
                       >
                         {!guardEnabled
-                          ? "Guard off"
+                          ? "No minimum"
                           : belowFloor
-                            ? "Below floor"
-                            : `${coverageFloor}h floor met`}
+                            ? "Below minimum"
+                            : `${coverageFloor}h minimum met`}
                       </span>
                     </article>
                   );
@@ -1930,18 +1930,18 @@ function App() {
           </div>
           <div className="section-intro split-intro">
             <div>
-              <p className="eyebrow">Human accountability</p>
+              <p className="eyebrow">You decide</p>
               <h2 id="review-title">Review before the next shift</h2>
               <p>
-                The system prepares a brief. A coordinator—not the model—decides what local context
-                changes.
+                The tool writes the plan up with its caveats attached. A coordinator decides what
+                local context changes.
               </p>
             </div>
             <span className={`review-status ${planReady ? "review-ready" : ""}`}>
               {planReady
                 ? "Ready for coordinator review"
                 : plan?.feasible && !guardEnabled
-                  ? "Audit only · restore a coverage guard"
+                  ? "Comparison view · restore a minimum to continue"
                   : plan?.feasible && planTotal !== budget
                     ? "Budget mismatch · cannot copy"
                     : planDirty
@@ -1983,7 +1983,7 @@ function App() {
                 <strong>
                   {guardEnabled
                     ? `${coverageFloor}h demo-policy minimum`
-                    : "Guard off · audit only"}
+                    : "No minimum · comparison only"}
                 </strong>
               </div>
               <div>

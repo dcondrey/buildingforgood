@@ -26,6 +26,10 @@ npm --prefix app run preview
 
 ### 1. Reach the plan
 
+Note (2026-08-21): the shell now opens with the default plan already
+generated; these checks start from that live state rather than from a
+Generate press.
+
 - [ ] `Tab` from page load reaches the budget field without passing through anything unlabelled.
 - [ ] Every stop announces what it is. Nothing reads as "button" or "edit text" with no name.
 - [ ] Focus is visible at every stop. If you cannot tell where you are, that is a failure regardless of what axe said.

@@ -72,6 +72,16 @@ describe("decision shell offline fallback (#12)", () => {
 });
 
 describe("decision flow (#12)", () => {
+  it("opens mid-work with a live default plan and persistent status chrome", async () => {
+    await renderOffline();
+    expect(await screen.findByText(/80\/80 hours allocated\./)).toBeDefined();
+    expect(screen.queryByRole("button", { name: /Generate coverage scenario/ })).toBeNull();
+    const status = screen.getByRole("status", { name: "Live plan state" });
+    expect(status.textContent).toContain("80/80h allocated");
+    expect(status.textContent).toContain("8h floor");
+    expect(status.textContent).toContain("unmet");
+  });
+
   it("reveals the evidence result and moves focus to its heading", async () => {
     const user = userEvent.setup();
     await renderOffline();
@@ -84,9 +94,8 @@ describe("decision flow (#12)", () => {
   });
 
   it("generates a plan, conserves the budget, and always shows unmet planning load", async () => {
-    const user = userEvent.setup();
     await renderOffline();
-    await user.click(screen.getByRole("button", { name: /Generate coverage scenario/ }));
+    await screen.findByText(/\d+\/\d+ hours allocated\./); // the shell opens with a live plan
     expect(await screen.findByText(/\/\d+ hours allocated\./)).toBeDefined();
     expect(screen.getByText("Unmet planning load")).toBeDefined();
     expect(
@@ -100,7 +109,7 @@ describe("aggregate spatial view (#13)", () => {
     const user = userEvent.setup();
     await renderOffline();
     await user.click(screen.getByRole("button", { name: /Test the drop/ }));
-    await user.click(screen.getByRole("button", { name: /Generate coverage scenario/ }));
+    await screen.findByText(/\d+\/\d+ hours allocated\./); // the shell opens with a live plan
     const disclosures = screen.getAllByText("View map values as a table");
     expect(disclosures.length).toBe(2);
     const tables = screen.getAllByRole("table").filter((table) => {
@@ -138,9 +147,8 @@ describe("aggregate spatial view (#13)", () => {
   });
 
   it("live-replans on budget change while a plan is on screen, and reports infeasibility", async () => {
-    const user = userEvent.setup();
     await renderOffline();
-    await user.click(screen.getByRole("button", { name: /Generate coverage scenario/ }));
+    await screen.findByText(/\d+\/\d+ hours allocated\./); // the shell opens with a live plan
     await screen.findByText(/80\/80 hours allocated\./);
     const slider = screen.getByLabelText(/What-if · drag to stress-test the budget/);
     fireEvent.change(slider, { target: { value: "100" } });
@@ -265,7 +273,7 @@ describe("scenario workbench", () => {
 
   async function generateAndSave(user: ReturnType<typeof userEvent.setup>) {
     await renderOffline();
-    await user.click(screen.getByRole("button", { name: /Generate coverage scenario/ }));
+    await screen.findByText(/\d+\/\d+ hours allocated\./); // the shell opens with a live plan
     await screen.findByText(/80\/80 hours allocated\./);
     await user.click(screen.getByRole("button", { name: "Save scenario" }));
     return screen.getByRole("button", { name: "80h · 8h floor" });
@@ -318,7 +326,7 @@ describe("intervention assumption explorer", () => {
   it("explores a clearance assumption, reallocates hours, discloses it, and clears cleanly", async () => {
     const user = userEvent.setup();
     await renderOffline();
-    await user.click(screen.getByRole("button", { name: /Generate coverage scenario/ }));
+    await screen.findByText(/\d+\/\d+ hours allocated\./); // the shell opens with a live plan
     await screen.findByText(/80\/80 hours allocated\./);
     expect(screen.getByLabelText("Hours for East Village").getAttribute("value")).toBe("27");
     await user.click(screen.getAllByRole("button", { name: /East Village:/ })[0]);
@@ -362,7 +370,7 @@ describe("automated accessibility over the deployed shell (#16)", () => {
     const user = userEvent.setup();
     await renderOffline();
     await user.click(screen.getByRole("button", { name: /Test the drop/ }));
-    await user.click(screen.getByRole("button", { name: /Generate coverage scenario/ }));
+    await screen.findByText(/\d+\/\d+ hours allocated\./); // the shell opens with a live plan
     expect(await violationsFor(document.body)).toEqual([]);
   }, 30000);
 });

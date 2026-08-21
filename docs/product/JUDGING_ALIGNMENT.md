@@ -37,8 +37,10 @@ With a key, run both engines and show the cards side by side.
 
 1. Sign up at dashboard.eyepop.ai (event code **DSA2026**; questions:
    andy@eyepop.ai). Hamburger menu → API Keys → Create API Key.
-2. `export EYEPOP_API_KEY=eyp_...` (and `EYEPOP_POP_ID` if the dashboard
-   assigns one), then `uv pip install eyepop`.
+2. `export EYEPOP_API_KEY=eyp_...` and leave `EYEPOP_POP_ID` **unset** —
+   API-key auth works only with the SDK's default transient pop (the module
+   refuses to run otherwise; a named pop needs `EYEPOP_SECRET_KEY` instead).
+   Then `uv pip install eyepop` (needs Python 3.12+; the repo venv is 3.14).
 3. Run (the `--engine eyepop` flag is required; the default engine is local):
 
    ```bash

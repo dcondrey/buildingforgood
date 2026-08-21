@@ -21,7 +21,7 @@ which also owns the offline fallback checklist and the time-slip cut order.
 
 ### 0:00–0:30 · Hook (Guide step 1: press "Test the drop")
 
-> "Downtown San Diego's unsheltered estimate fell 22% in a year. Good news?
+> "Downtown San Diego's adjusted unsheltered estimate fell 22% in a year. Good news?
 > This tool exists because that question deserves a better answer than a
 > dashboard headline. Let's test the drop."
 

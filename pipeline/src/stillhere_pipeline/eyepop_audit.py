@@ -205,26 +205,101 @@ def local_engine(image: Path) -> list[TextObservation]:
     ]
 
 
+def collect_text_observations(node: object) -> list[TextObservation]:
+    """Flatten recognized text from a prediction dict. Pure; tested.
+
+    OCR strings can appear at the top-level ``texts`` (whole-frame abilities)
+    or nested under each detected region in ``objects[i].texts`` (the
+    detect-then-recognize composition), so this walks both.
+    """
+    observations: list[TextObservation] = []
+    if not isinstance(node, dict):
+        return observations
+    for text in node.get("texts") or []:
+        if isinstance(text, dict) and "text" in text:
+            observations.append(
+                {"text": str(text["text"]), "confidence": text.get("confidence", 1.0)}
+            )
+    for obj in node.get("objects") or []:
+        observations.extend(collect_text_observations(obj))
+    return observations
+
+
+def eyepop_text_pop() -> object:
+    """The detect-then-recognize Pop for OCR over a rasterized page.
+
+    Mirrors the SDK's own text example: eyepop.text finds regions, CropForward
+    hands each crop to eyepop.text.recognize.landscape.
+    """
+    from eyepop.worker.worker_types import (  # type: ignore[import-not-found]
+        CropForward,
+        InferenceComponent,
+        Pop,
+    )
+
+    return Pop(
+        components=[
+            InferenceComponent(
+                ability="eyepop.text:latest",
+                categoryName="text",
+                confidenceThreshold=0.5,
+                forward=CropForward(
+                    maxItems=256,
+                    targets=[
+                        InferenceComponent(
+                            ability="eyepop.text.recognize.landscape:latest",
+                            confidenceThreshold=0.1,
+                        )
+                    ],
+                ),
+            )
+        ]
+    )
+
+
+_EYEPOP_ENDPOINT: object | None = None
+
+
+def _eyepop_endpoint() -> object:
+    """One worker session for the whole run instead of one per page."""
+    global _EYEPOP_ENDPOINT
+    if _EYEPOP_ENDPOINT is None:
+        import atexit
+
+        from eyepop import EyePopSdk  # type: ignore[import-not-found]
+
+        endpoint = EyePopSdk.sync_worker(pop=eyepop_text_pop())
+        endpoint.__enter__()
+        atexit.register(endpoint.__exit__, None, None, None)
+        _EYEPOP_ENDPOINT = endpoint
+    return _EYEPOP_ENDPOINT
+
+
 def eyepop_engine(image: Path) -> list[TextObservation]:
-    """EyePop.ai text recognition; drop-in replacement for the local engine."""
+    """EyePop.ai hosted OCR; drop-in replacement for the local engine.
+
+    API-key auth works only with the default transient pop, so
+    ``EYEPOP_POP_ID`` must stay unset when authenticating with
+    ``EYEPOP_API_KEY``.
+    """
     if not os.environ.get("EYEPOP_API_KEY"):
         raise SystemExit(
             "EYEPOP_API_KEY is not set. Get credentials from the EyePop rep "
             "or andy@eyepop.ai (code DSA2026), export the key, and re-run."
         )
-    try:  # pragma: no cover - environment-specific
-        from eyepop import EyePopSdk  # type: ignore[import-not-found]
-    except ImportError as error:  # pragma: no cover
+    if os.environ.get("EYEPOP_POP_ID"):
+        raise SystemExit(
+            "Unset EYEPOP_POP_ID: API-key auth requires the default transient "
+            "pop (a named pop needs EYEPOP_SECRET_KEY instead)."
+        )
+    try:
+        import eyepop  # noqa: F401
+    except ImportError as error:
         raise SystemExit("The eyepop package is missing: uv pip install eyepop") from error
 
-    with EyePopSdk.workerEndpoint() as endpoint:  # pragma: no cover - network
-        result = endpoint.upload(str(image)).predict()
-    texts = result.get("texts", []) if isinstance(result, dict) else []
-    return [
-        {"text": str(t.get("text", "")), "confidence": t.get("confidence", 1.0)}
-        for t in texts
-        if isinstance(t, dict)
-    ]
+    endpoint = _eyepop_endpoint()
+    result = endpoint.upload(str(image)).predict()  # type: ignore[attr-defined]
+    return collect_text_observations(result)
 
 
 ENGINES: dict[str, Engine] = {"local": local_engine, "eyepop": eyepop_engine}

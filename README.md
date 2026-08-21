@@ -10,9 +10,10 @@ works offline once loaded ·
 
 ![The map workspace: planned staff-hours across the six downtown neighborhoods, with East Village's dossier and the assumption explorer open in the inspector](docs/img/workspace.png)
 
-Downtown San Diego's unsheltered estimate fell 22% in a year — but the drop
-came from tents, not people. On the same 261 blocks, outreach workers saw
-*more* people than the year before. Still Here SD audits that ruler before it
+Downtown San Diego's component-derived unsheltered estimate fell 22% in a
+year on the fixed 261-block panel — but the drop came from tents, not people.
+On those same blocks, direct observations of people rose 7.5% and appeared on
+25 *more* blocks than the year before. Still Here SD audits that ruler before it
 becomes a coverage policy: it decomposes the change, backtests a forecast
 honestly, and turns the evidence into an editable, human-owned outreach plan
 on a real map of the six downtown neighborhoods.

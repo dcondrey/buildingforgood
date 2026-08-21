@@ -315,6 +315,12 @@ function App() {
   const [projectorMode, setProjectorMode] = useState(false);
   const resultHeading = useRef<HTMLHeadingElement>(null);
   const guidePanel = useRef<HTMLDivElement>(null);
+  const guideIndexRef = useRef<number | null>(null);
+  const advanceGuideRef = useRef<() => void>(() => undefined);
+
+  useEffect(() => {
+    guideIndexRef.current = guideIndex;
+  }, [guideIndex]);
   const signal = data.signal;
   const individualSpatial = signal.componentDistribution?.components.find(
     (component) => component.id === "individuals",
@@ -359,16 +365,16 @@ function App() {
         return;
       }
       if (
-        guideIndex !== null &&
+        guideIndexRef.current !== null &&
         !isControl &&
         (event.key === "ArrowRight" || event.key === "Enter")
       ) {
-        advanceGuide();
+        advanceGuideRef.current();
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  });
+  }, []);
 
   const allocationById = useMemo(
     () => new Map(plan?.allocations.map((item) => [item.areaId, item.hours]) ?? []),
@@ -519,6 +525,12 @@ function App() {
     setGuideIndex(next);
     window.setTimeout(() => guidePanel.current?.focus(), 50);
   }
+
+  useEffect(() => {
+    advanceGuideRef.current = advanceGuide;
+    // The ref intentionally tracks the latest callback; the keyboard listener remains stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanceGuide]);
 
   const classificationLabel =
     signal.classification === "wider_footprint"

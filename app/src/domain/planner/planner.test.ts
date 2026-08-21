@@ -240,7 +240,7 @@ describe("explanations", () => {
 
   it("states that the plan is a capacity split, not a need estimate", () => {
     const plan = buildPlan(SIX_AREAS, POLICY);
-    expect(plan.constraint_notes.join(" ")).toMatch(/does not mean all need is met/);
+    expect(plan.constraint_notes.join(" ")).toMatch(/still leaves load uncovered/);
   });
 
   it("never uses causal, enforcement, or individual-movement language", () => {

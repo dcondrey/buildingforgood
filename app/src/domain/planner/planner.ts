@@ -222,7 +222,7 @@ export function buildPlan(
       `The ${openIncluded.length} unlocked areas require ${guaranteedHours} hours to meet the ` +
         `${policy.minimum_coverage_floor_hours}-hour coverage floor and continuity reserves, but only ` +
         `${remainingHours} hours remain. Shortfall: ${shortfall} hours. ` +
-        `Raise the budget, exclude an area, or lower the floor — the planner will not weaken it silently.`,
+        `Raise the budget or exclude an area. The planner does not lower the floor by itself.`,
     );
   }
 
@@ -349,7 +349,7 @@ export function buildPlan(
       );
     }
     reasons.push(
-      "Complaint volume was not used. These hours are a capacity split, not a need estimate.",
+      "Complaint volume was not used. These hours describe available capacity. They do not estimate need.",
     );
 
     allocations.push({
@@ -378,7 +378,7 @@ export function buildPlan(
     );
   }
   constraintNotes.push(
-    "The budget is a capacity constraint. Allocating all available hours does not mean all need is met.",
+    "The budget sets how many hours exist. Allocating every hour still leaves load uncovered.",
   );
 
   return {

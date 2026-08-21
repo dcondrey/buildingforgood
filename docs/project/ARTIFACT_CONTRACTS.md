@@ -12,8 +12,10 @@ validators and the rule for keeping them in sync.
 | --------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------- |
 | `observations.v0`           | `pipeline/src/stillhere_pipeline/contracts.py::validate_observations_v0`   | `app/src/lib/contracts.ts::parseObservationsV0`              | `tests/pipeline/test_contracts.py`, `app/src/lib/contracts.test.ts` |
 | `quality_report.v0`         | `pipeline/src/stillhere_pipeline/contracts.py::validate_quality_report_v0` | `app/src/lib/contracts.ts::parseQualityReportV0`             | same                                                                |
-| `prepared_scenario`         | none yet (UI-only artifact)                                                | `app/src/lib/scenario.ts::parsePreparedScenario`             | `app/src/lib/scenario.test.ts`                                      |
 | Generated-artifact manifest | `pipeline/src/stillhere_pipeline/manifest.py::build_manifest`              | no reader yet (add when the app consumes `manifest.v0.json`) | —                                                                   |
+
+The placeholder `prepared_scenario` reader (`app/src/lib/scenario.ts`) was retired
+with the v0 artifacts; the demo consumes `demo.v1.json` via `app/src/lib/demo.ts`.
 
 ## The sync rule
 

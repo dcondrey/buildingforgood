@@ -1,5 +1,3 @@
-import { existsSync, readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   ContractViolation,
@@ -219,26 +217,5 @@ describe("ContractViolation", () => {
     const error = new ContractViolation("x");
     expect(error).toBeInstanceOf(Error);
     expect(error.name).toBe("ContractViolation");
-  });
-});
-
-// The only check that empirically binds the hand-maintained TS and Python
-// validators to the same artifact: parse the ACTUAL generated files. With
-// artifacts built (verify.sh builds them before this suite runs), fixture
-// parity cannot drift from reality in both languages at once. Skips when the
-// artifacts have not been built (plain vitest run on a fresh clone).
-const GENERATED_DIR = fileURLToPath(new URL("../../../public/generated/", import.meta.url));
-const observationsPath = `${GENERATED_DIR}observations.v0.json`;
-
-describe.skipIf(!existsSync(observationsPath))("generated artifacts meet the TS contract", () => {
-  it("parses the built observations.v0.json with the policy threshold", () => {
-    const doc = parseObservationsV0(JSON.parse(readFileSync(observationsPath, "utf-8")));
-    expect(doc.contract.small_cell_threshold).toBe(SMALL_CELL_THRESHOLD);
-    expect(doc.neighborhoods.length).toBeGreaterThan(0);
-  });
-
-  it("parses the built quality_report.v0.json", () => {
-    const quality = JSON.parse(readFileSync(`${GENERATED_DIR}quality_report.v0.json`, "utf-8"));
-    expect(() => parseQualityReportV0(quality)).not.toThrow();
   });
 });

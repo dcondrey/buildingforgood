@@ -130,6 +130,24 @@ unlocked hours**. Point to the preserved lock and the rebalanced unlocked hours.
 
 **Land:** Human oversight changes the result and remains disclosed.
 
+### Optional power beat — stress-test a sweep (30s, cut first if tight)
+
+**Do:** Select East Village on the plan map, leave the displaced-share slider
+at 100%, and press **Explore this assumption**. Point to the banner, the
+neighbors' hours rising, and the reallocated staff time.
+
+**Say:**
+
+> "The most reached-for action is a clearance. The Auditor says the data
+> cannot show who moves where — so instead of predicting, you state the
+> assumption. At one hundred percent displacement the need just moves next
+> door and the plan churns hours. Slide it lower and the tool says out loud
+> that you are assuming people's need away. There is no setting where a sweep
+> quietly wins."
+
+**Land:** The tool audits interventions honestly instead of endorsing them.
+Clear the assumption before moving on.
+
 ### 2:48–3:00 — Close with accountability
 
 **Do:** Click **Copy decision brief** and point to the source, method, privacy,
@@ -156,10 +174,11 @@ in this order:
 Do not cut the causal/privacy boundary or imply the decline proves progress.
 
 **Guide demo** also carries this script on its own for a viewer exploring with
-no presenter in the room. Eight steps narrate the same story with the
+no presenter in the room. Nine steps narrate the same story with the
 artifact's live numbers and ask the viewer to work the real controls — **Test
 the drop**, **Generate coverage scenario**, the 0h and 8h floors, a lock plus
-**Recompute unlocked hours**, and **Copy decision brief**. The guide detects
+**Recompute unlocked hours**, the assumption explorer on the plan map, and
+**Copy decision brief**. The guide detects
 each completed action and advances by itself; **Do it for me** performs a step
 for a hands-off viewer, and **Play** runs the whole flow unattended and stops
 on any outside interaction. Presenting live, drive it with `→` and `←`. Stop

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import "./App.css";
 import { EMBEDDED_DEMO, loadDemoData, type DemoData, type HistoryPoint } from "./lib/demo";
+import { applyIntervention } from "./lib/intervention";
 import { allocateHours, type PlanResult } from "./lib/planner";
 
 const DEFAULT_COVERAGE_FLOOR = 8;
@@ -17,7 +18,16 @@ function formatNumber(value: number, digits = 0): string {
 // numbers on the panel always match the numbers on screen, including in the
 // embedded offline fallback.
 type GuideStep = {
-  id: "reveal" | "evidence" | "forecast" | "generate" | "compare" | "restore" | "lock" | "brief";
+  id:
+    | "reveal"
+    | "evidence"
+    | "forecast"
+    | "generate"
+    | "compare"
+    | "restore"
+    | "lock"
+    | "explore"
+    | "brief";
   title: string;
   body: string;
   targetId: string;
@@ -53,7 +63,7 @@ function buildGuideSteps(data: DemoData): GuideStep[] {
         (individualOne
           ? ` People were seen in more places, not fewer: blocks with at least one observed individual went from ${formatNumber(individualOne.fromBlocks)} to ${formatNumber(individualOne.toBlocks)}.`
           : "") +
-        " What dropped was tents. Audit the ruler before it becomes a coverage policy.",
+        " What dropped was tents. A conventional dashboard reports where a count rose or fell; this tool tests whether the ruler itself changed before anyone acts on it.",
     },
     {
       id: "forecast",
@@ -90,11 +100,18 @@ function buildGuideSteps(data: DemoData): GuideStep[] {
       body: "Local knowledge outranks the model. A locked line is preserved exactly and disclosed in the brief; recomputing rebalances only the unlocked hours and never silently repairs your choice.",
     },
     {
+      id: "explore",
+      title: "Stress-test the obvious action",
+      targetId: "planner",
+      task: "Select a neighborhood on the plan map, then press “Explore this assumption”.",
+      body: "The most reached-for action is a clearance. Here you audit one honestly: you state how much of that area's load shifts next door instead of being resolved, and the plan reacts. No setting makes the need smaller without assuming it away in the open — the data cannot show who moves where, and this tool refuses to pretend otherwise.",
+    },
+    {
       id: "brief",
       title: "Leave with the brief",
       targetId: "review",
       task: "Press “Copy decision brief”.",
-      body: "The brief carries the evidence, the uncertainty, the policy settings, and your overrides. Aggregate places only: nothing here tracks people, infers movement, or dispatches staff automatically. You decide which ruler governs the next shift.",
+      body: "The brief carries the evidence, the uncertainty, the policy settings, your overrides, and any assumption you explored. No login, no live API, no person-level model, and no LLM behind any number. Aggregate places only: nothing here tracks people, infers movement, or dispatches staff automatically. You decide which ruler governs the next shift.",
     },
   ];
 }
@@ -748,6 +765,10 @@ function App() {
   const [guideAuto, setGuideAuto] = useState(false);
   const [scenarios, setScenarios] = useState<SavedScenario[]>(readSavedScenarios);
   const [compareId, setCompareId] = useState<string | null>(null);
+  // Active clearance assumption (assumption explorer) and the slider's draft
+  // share while no assumption is applied. Never persisted: exploratory only.
+  const [intervention, setIntervention] = useState<{ areaId: string; share: number } | null>(null);
+  const [shareDraft, setShareDraft] = useState(1);
   // First-visit cue on the Guide button: with no presenter in the room, the
   // tour has to advertise itself. Storage failures err toward showing it.
   const [guideUsed, setGuideUsed] = useState(() => {
@@ -845,6 +866,19 @@ function App() {
   const selectedArea = data.areas.find((area) => area.id === selectedAreaId) ?? null;
   const toggleAreaSelection = (areaId: string) =>
     setSelectedAreaId((current) => (current === areaId ? null : areaId));
+  const interventionResult = useMemo(
+    () =>
+      intervention
+        ? applyIntervention(data.areas, {
+            targetAreaId: intervention.areaId,
+            displacedShare: intervention.share,
+          })
+        : null,
+    [intervention, data.areas],
+  );
+  // The planner runs on the assumption-adjusted loads while an intervention is
+  // being explored; observed loads are untouched underneath.
+  const planningAreas = interventionResult?.areas ?? data.areas;
   // Unmet planning load: hours the forecast-proportional split would have
   // assigned an area but the guaranteed minimums moved elsewhere. Mirrors the
   // domain planner's unmet_hours definition (app/src/domain/planner/planner.ts).
@@ -858,7 +892,7 @@ function App() {
         plan.allocations.find((row) => row.areaId === id)?.hours ?? 0,
       ]),
     );
-    const reference = allocateHours(data.areas, budget, 0, false, locks);
+    const reference = allocateHours(planningAreas, budget, 0, false, locks);
     if (!reference.feasible) return new Map<string, number>();
     return new Map(
       reference.allocations.map((row) => {
@@ -866,7 +900,7 @@ function App() {
         return [row.areaId, Math.max(0, row.hours - allocated)] as const;
       }),
     );
-  }, [plan, data.areas, budget, lockedIds]);
+  }, [plan, planningAreas, budget, lockedIds]);
   const unmetTotal = Array.from(unmetByArea.values()).reduce((sum, value) => sum + value, 0);
   const budgetValid = Number.isInteger(budget) && budget >= 0 && budget <= MAX_BUDGET_HOURS;
   const planReady = Boolean(
@@ -904,12 +938,24 @@ function App() {
     locks = currentLocks(),
     nextFloor = coverageFloor,
     nextBudget = budget,
+    areasArg: DemoData["areas"] = planningAreas,
   ) {
-    const next = allocateHours(data.areas, nextBudget, nextFloor, nextGuard, locks);
+    const next = allocateHours(areasArg, nextBudget, nextFloor, nextGuard, locks);
     setPlan(next);
     setPlanDirty(false);
     setCopyStatus("");
     return next;
+  }
+
+  function setInterventionScenario(next: { areaId: string; share: number } | null) {
+    setIntervention(next);
+    const adjusted = next
+      ? (applyIntervention(data.areas, {
+          targetAreaId: next.areaId,
+          displacedShare: next.share,
+        })?.areas ?? data.areas)
+      : data.areas;
+    if (plan) runPlan(guardEnabled, currentLocks(), coverageFloor, budget, adjusted);
   }
 
   // Live what-if: while a plan is on screen, a budget change recomputes it in
@@ -968,6 +1014,11 @@ function App() {
       `Evidence: ${signal.classification === "wider_footprint" ? "Wider observed-individual footprint" : titleCase(signal.classification)}. ${signal.fromPeriod} to ${signal.toPeriod}: observed individuals ${signal.components.individuals.from} → ${signal.components.individuals.to} (+${formatNumber(signal.components.individuals.changePct, 1)}%); tents/structures ${signal.components.structures.from} → ${signal.components.structures.to} (${formatNumber(signal.components.structures.changePct, 1)}%).${individualOne && individualTwo ? ` Blocks with ≥1 observed individual ${individualOne.fromBlocks} → ${individualOne.toBlocks}; blocks with ≥2 ${individualTwo.fromBlocks} → ${individualTwo.toBlocks}.` : ` Active mixed-component blocks ${signal.activeFrom} → ${signal.activeTo} (+${formatNumber(signal.activeChangePct, 1)}%).`} The mixed-unit index is secondary, not a person count.${individualSpatial ? ` Individual HHI was nearly unchanged (${individualSpatial.hhiFrom.toFixed(6)} → ${individualSpatial.hhiTo.toFixed(6)}).` : ""}`,
       `Historical one-step-ahead planning scenario (data frozen Dec 2025): ${data.forecast.targetPeriod} ${formatNumber(data.forecast.point)}; historical 80% residual interval ${formatNumber(data.forecast.lower)}–${formatNumber(data.forecast.upper)}. ${data.forecast.model}; rolling-origin MAE ${formatNumber(data.forecast.mae)}; empirical coverage ${formatNumber(data.forecast.coverage)}% across ${data.forecast.intervalPoints} folds. Not a live future forecast or a guaranteed probability interval.`,
       `Illustrative coverage-continuity scenario for human review: ${budget} staff-hours; user-set guard ${guardEnabled ? `on (${coverageFloor}h demo-policy minimum)` : "off — audit only"}. ${rows}.${auditedAreaWapes.length ? ` Area forecasts are noisier than the aggregate (held-out WAPE ranges ${formatNumber(Math.min(...auditedAreaWapes), 1)}%–${formatNumber(Math.max(...auditedAreaWapes), 1)}%).` : " Area-level audit WAPE is unavailable in this artifact; do not infer equal accuracy."}`,
+      ...(intervention && interventionResult
+        ? [
+            `Stress-test assumption active: ${data.areas.find((area) => area.id === intervention.areaId)?.name ?? intervention.areaId} modeled as cleared, with ${formatNumber(intervention.share * 100)}% of its planning load assumed to shift to adjacent areas (${formatNumber(interventionResult.shifted, 1)} shifted, ${formatNumber(interventionResult.assumedResolved, 1)} assumed resolved). An explored assumption for review, not a prediction: the source data cannot verify displacement (April 2026 City Auditor).`,
+          ]
+        : []),
       `Review triggers: new month, budget or boundary change, wider interval, infeasible floor, or local knowledge conflict.`,
       `Privacy and authorization boundary: aggregate place-level evidence only; no block records or block-level geometry ship (the map draws simplified neighborhood boundaries only). This does not track people, establish causality, authorize enforcement, or dispatch staff automatically.`,
     ].join("\n");
@@ -983,6 +1034,8 @@ function App() {
     lockedIds,
     signal,
     auditedAreaWapes,
+    intervention,
+    interventionResult,
   ]);
 
   async function copyBrief() {
@@ -1043,6 +1096,37 @@ function App() {
     return new Map(baseline.allocations.map((row) => [row.areaId, row.hours]));
   }, [compareScenario, data.areas]);
 
+  // Staff-hours the active clearance assumption reallocates, measured against
+  // the same policy settings on the observed loads.
+  const interventionHourChurn = useMemo(() => {
+    if (!interventionResult || !plan?.feasible) return null;
+    const locks = new Map(Array.from(lockedIds).map((id) => [id, lockValues[id] ?? 0] as const));
+    const baseline = allocateHours(
+      data.areas,
+      budget,
+      guardEnabled ? coverageFloor : 0,
+      guardEnabled,
+      locks,
+    );
+    if (!baseline.feasible) return null;
+    const base = new Map(baseline.allocations.map((row) => [row.areaId, row.hours]));
+    return (
+      plan.allocations.reduce(
+        (sum, row) => sum + Math.abs(row.hours - (base.get(row.areaId) ?? 0)),
+        0,
+      ) / 2
+    );
+  }, [
+    interventionResult,
+    plan,
+    data.areas,
+    budget,
+    guardEnabled,
+    coverageFloor,
+    lockedIds,
+    lockValues,
+  ]);
+
   const guideSteps = useMemo(() => buildGuideSteps(data), [data]);
 
   // Whether the viewer has completed the step's task with the app's own
@@ -1059,6 +1143,8 @@ function App() {
         return Boolean(plan) && guardEnabled && coverageFloor > 0;
       case "lock":
         return Boolean(plan) && lockedIds.size > 0 && !planDirty;
+      case "explore":
+        return intervention !== null;
       case "brief":
         return copyStatus !== "";
       default:
@@ -1095,6 +1181,14 @@ function App() {
           setLockedIds(new Set([first.id]));
           setLockValues({ [first.id]: hours });
           runPlan(true, new Map([[first.id, hours]]), floor);
+        }
+        break;
+      }
+      case "explore": {
+        const target = data.areas.find((area) => area.id === "east_village") ?? data.areas[0];
+        if (target) {
+          setSelectedAreaId(target.id);
+          setInterventionScenario({ areaId: target.id, share: shareDraft });
         }
         break;
       }
@@ -1361,9 +1455,9 @@ function App() {
             </h1>
             <p className="hero-lede">
               Downtown San Diego’s unsheltered estimate fell 22% in a year, but the drop came from
-              tents, not people. On the exact same 261 blocks, outreach workers actually saw more
-              people than the year before. This tool shows what really changed, how much is
-              uncertain, and helps plan where the next outreach shift should go.
+              tents, not people: on the same 261 blocks, outreach workers saw more people than the
+              year before. This tool shows what changed, what’s uncertain, and where the next
+              outreach shift should go.
             </p>
             <div
               className="composition-lead"
@@ -1449,8 +1543,8 @@ function App() {
             <h2 id="drop-title">Test the drop</h2>
             <p>
               The falling estimate is built from three things counted in the field: people, tents,
-              and vehicles. Compare each one on the same {signal.panelSize} blocks, one January to
-              the next, and see which of them actually dropped.
+              and vehicles. Compare each on the same {signal.panelSize} blocks, one January to the
+              next, and see which actually dropped.
             </p>
           </div>
 
@@ -1806,7 +1900,7 @@ function App() {
                       </div>
                       <AreaDetailPanel
                         area={selectedArea}
-                        empty="Select a neighborhood on the map — click, or Tab and press Enter — to see what changed there."
+                        empty="Select a neighborhood — click, or Tab and Enter — to see what changed there."
                         kicker="Neighborhood detail"
                         note="Raw observed units on the fixed like-for-like panel. Aggregate area values, not unique people; components are digitized from the same maps."
                         rows={
@@ -2194,9 +2288,8 @@ function App() {
               <h2 id="forecast-title">Could we have predicted January 2026?</h2>
               <p>
                 Using only data available in December 2025, the tool forecasts the next month, then
-                grades itself: how far off were forecasts like this in the past? The plan below uses
-                the high end of that error range, so uncertainty buys extra coverage instead of
-                being ignored.
+                grades itself against its own past errors. The plan uses the high end of that error
+                range, so uncertainty buys extra coverage.
               </p>
             </div>
             <span className="wide-warning">A rehearsal on past data · not a live forecast</span>
@@ -2571,6 +2664,35 @@ function App() {
                 </div>
               )}
 
+              {intervention && interventionResult && (
+                <div className="intervention-banner" role="status">
+                  <div>
+                    <strong>
+                      Assumption explorer:{" "}
+                      {data.areas.find((area) => area.id === intervention.areaId)?.name ??
+                        intervention.areaId}{" "}
+                      modeled as cleared.
+                    </strong>{" "}
+                    Under your assumption, {formatNumber(intervention.share * 100)}% of its planning
+                    load ({formatNumber(interventionResult.shifted, 1)}) shifts to adjacent areas
+                    and {formatNumber(interventionResult.assumedResolved, 1)} is assumed resolved —
+                    assumed, not observed.
+                    {interventionHourChurn !== null
+                      ? ` The plan reallocates ${formatNumber(interventionHourChurn, 1)} staff-hours in response.`
+                      : ""}{" "}
+                    The counts cannot show who moves where or why, so this explores your stated
+                    assumption; it is not a prediction and does not endorse the action.
+                  </div>
+                  <button
+                    className="button button-quiet"
+                    onClick={() => setInterventionScenario(null)}
+                    type="button"
+                  >
+                    Clear assumption
+                  </button>
+                </div>
+              )}
+
               <div className="area-accuracy-warning" role="note">
                 <strong>Illustrative and human-review-only.</strong> Aggregate audit WAPE is{" "}
                 {formatNumber(data.forecast.wape, 1)}%.{" "}
@@ -2586,7 +2708,7 @@ function App() {
                 role="list"
                 aria-label="Illustrative staff-hour allocation"
               >
-                {data.areas.map((area) => {
+                {planningAreas.map((area) => {
                   const hours = allocationById.get(area.id) ?? 0;
                   const locked = lockedIds.has(area.id);
                   const belowFloor = hours < coverageFloor;
@@ -2682,7 +2804,7 @@ function App() {
                 <div className="map-detail-row">
                   <div>
                     <AreaMap
-                      areas={data.areas}
+                      areas={planningAreas}
                       ariaLabel="Map of the six downtown neighborhoods showing planned staff-hours; select a neighborhood for detail"
                       onSelect={toggleAreaSelection}
                       selectedId={selectedAreaId}
@@ -2699,11 +2821,14 @@ function App() {
                     <p className="map-caption">
                       Planned staff-hours by neighborhood · simplified neighborhood boundaries
                       {guardEnabled ? " · ! marks hours below the minimum" : ""}
+                      {intervention
+                        ? ` · ${data.areas.find((area) => area.id === intervention.areaId)?.name ?? ""} modeled as cleared (assumption)`
+                        : ""}
                     </p>
                   </div>
                   <AreaDetailPanel
                     area={selectedArea}
-                    empty="Select a neighborhood on the map — click, or Tab and press Enter — to inspect its share of the plan."
+                    empty="Select a neighborhood on the map — click, or Tab and press Enter — to inspect its share of the plan, or to stress-test an action there."
                     kicker="Allocation detail"
                     note={selectedArea?.reason}
                     rows={
@@ -2727,8 +2852,15 @@ function App() {
                             },
                             {
                               label: "Planning load",
-                              value: formatNumber(selectedArea.planningLoad),
-                              hint: "weights the remaining hours",
+                              value: formatNumber(
+                                planningAreas.find((area) => area.id === selectedArea.id)
+                                  ?.planningLoad ?? selectedArea.planningLoad,
+                                1,
+                              ),
+                              hint:
+                                intervention && interventionResult
+                                  ? "adjusted by the active assumption"
+                                  : "weights the remaining hours",
                             },
                             {
                               label: "Held-out WAPE",
@@ -2748,9 +2880,76 @@ function App() {
                     }
                   />
                 </div>
+                {selectedArea && (
+                  <div className="intervention-control">
+                    <div>
+                      <span className="eyebrow">Stress-test an action · assumption explorer</span>
+                      <p>
+                        What if {selectedArea.name} were cleared? The counts cannot show who moves
+                        where or why, so you state the assumption and the plan shows its
+                        consequences. Clearing an area adds no shelter capacity.
+                      </p>
+                    </div>
+                    <label htmlFor="displaced-share">
+                      Assumed share of its planning load that shifts to adjacent areas instead of
+                      being resolved
+                    </label>
+                    <div className="intervention-row">
+                      <input
+                        id="displaced-share"
+                        max="100"
+                        min="0"
+                        onChange={(event) => {
+                          const share = Number(event.target.value) / 100;
+                          setShareDraft(share);
+                          if (intervention?.areaId === selectedArea.id) {
+                            setInterventionScenario({ areaId: selectedArea.id, share });
+                          }
+                        }}
+                        step="5"
+                        type="range"
+                        value={Math.round(
+                          (intervention?.areaId === selectedArea.id
+                            ? intervention.share
+                            : shareDraft) * 100,
+                        )}
+                      />
+                      <output htmlFor="displaced-share">
+                        {Math.round(
+                          (intervention?.areaId === selectedArea.id
+                            ? intervention.share
+                            : shareDraft) * 100,
+                        )}
+                        %
+                      </output>
+                      {intervention?.areaId === selectedArea.id ? (
+                        <button
+                          className="button button-quiet"
+                          onClick={() => setInterventionScenario(null)}
+                          type="button"
+                        >
+                          Clear assumption
+                        </button>
+                      ) : (
+                        <button
+                          className="button button-primary"
+                          onClick={() =>
+                            setInterventionScenario({
+                              areaId: selectedArea.id,
+                              share: shareDraft,
+                            })
+                          }
+                          type="button"
+                        >
+                          Explore this assumption
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <MapValueTable
                   caption="Planned staff-hours by neighborhood"
-                  rows={data.areas.map((area) => {
+                  rows={planningAreas.map((area) => {
                     const hours = allocationById.get(area.id) ?? 0;
                     return {
                       name: area.name,

@@ -2790,6 +2790,60 @@ summary {
   border-radius: 6px;
 }
 
+/* Intervention assumption explorer */
+.intervention-banner {
+  align-items: center;
+  background: var(--amber-dim);
+  border-bottom: 1px solid rgba(240, 173, 78, 0.22);
+  color: var(--ink-soft);
+  display: flex;
+  font-size: 0.745rem;
+  gap: 1rem;
+  justify-content: space-between;
+  line-height: 1.55;
+  padding: 0.7rem 1.2rem;
+}
+.intervention-banner .button {
+  flex: none;
+}
+.intervention-control {
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin: 1rem 1.2rem;
+  padding: 0.85rem 1rem;
+}
+.intervention-control p {
+  color: var(--muted);
+  font-size: 0.745rem;
+  line-height: 1.55;
+  margin: 0.3rem 0 0.6rem;
+}
+.intervention-control > label {
+  color: var(--muted);
+  display: block;
+  font-size: 0.705rem;
+  margin-bottom: 0.35rem;
+}
+.intervention-row {
+  align-items: center;
+  display: flex;
+  gap: 0.9rem;
+}
+.intervention-row input[type="range"] {
+  accent-color: var(--amber);
+  flex: 1;
+  min-height: 1.5rem;
+}
+.intervention-row output {
+  color: var(--amber-bright);
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  min-width: 4ch;
+  text-align: right;
+}
+
 /* Scenario workbench */
 .scenario-bench {
   background: var(--bg-raised);

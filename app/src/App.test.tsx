@@ -174,7 +174,7 @@ describe("guided onboarding", () => {
   it("asks for the real control, detects completion, and advances on its own", async () => {
     const user = userEvent.setup();
     const panel = await beginGuide(user);
-    expect(within(panel).getByText(/Step 1 of 8/)).toBeDefined();
+    expect(within(panel).getByText(/Step 1 of 9/)).toBeDefined();
     expect(panel.textContent).toContain("Your turn:");
     expect(panel.textContent).toContain("Test the drop");
     await user.click(screen.getByRole("button", { name: /Test the drop/ }));
@@ -193,20 +193,20 @@ describe("guided onboarding", () => {
     expect(screen.getByRole("dialog").textContent).toContain("Read what actually moved");
     await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Back" }));
     const revisited = screen.getByRole("dialog");
-    expect(revisited.textContent).toContain("Step 1 of 8");
+    expect(revisited.textContent).toContain("Step 1 of 9");
     expect(revisited.textContent).toContain("Done — press Next to continue.");
     // The completed task must wait for an explicit Next instead of auto-advancing.
     await new Promise((resolve) => setTimeout(resolve, 1100));
-    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 8");
+    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 9");
   });
 
   it("advances with the arrow keys", async () => {
     const user = userEvent.setup();
     await beginGuide(user);
     fireEvent.keyDown(document.body, { key: "ArrowRight" });
-    expect(screen.getByRole("dialog").textContent).toContain("Step 2 of 8");
+    expect(screen.getByRole("dialog").textContent).toContain("Step 2 of 9");
     fireEvent.keyDown(document.body, { key: "ArrowLeft" });
-    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 8");
+    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 9");
   });
 
   it("never strands the guard-off comparison view when stopped", async () => {
@@ -311,6 +311,32 @@ describe("scenario workbench", () => {
     await user.click(screen.getByRole("button", { name: "Delete scenario 80h · 8h floor" }));
     expect(screen.queryByRole("button", { name: "80h · 8h floor" })).toBeNull();
     expect(screen.getByText(/Save this plan, change the policy/)).toBeDefined();
+  });
+});
+
+describe("intervention assumption explorer", () => {
+  it("explores a clearance assumption, reallocates hours, discloses it, and clears cleanly", async () => {
+    const user = userEvent.setup();
+    await renderOffline();
+    await user.click(screen.getByRole("button", { name: /Generate coverage scenario/ }));
+    await screen.findByText(/80\/80 hours allocated\./);
+    expect(screen.getByLabelText("Hours for East Village").getAttribute("value")).toBe("27");
+    await user.click(screen.getAllByRole("button", { name: /East Village:/ })[0]);
+    expect(screen.getByText(/What if East Village were cleared\?/)).toBeDefined();
+    // Apply at the default 100% displaced share: need moves, it does not shrink.
+    await user.click(screen.getByRole("button", { name: "Explore this assumption" }));
+    const banner = await screen.findByText(/Assumption explorer:/);
+    expect(banner.parentElement?.textContent).toContain("assumed, not observed");
+    expect(banner.parentElement?.textContent).toContain("not a prediction");
+    // With its load moved off, East Village keeps only the guaranteed minimum.
+    expect(screen.getByLabelText("Hours for East Village").getAttribute("value")).toBe("8");
+    // The brief carries the assumption disclosure.
+    await user.click(screen.getByRole("button", { name: "Copy decision brief" }));
+    expect(await screen.findByText(/Stress-test assumption active: East Village/)).toBeDefined();
+    // Clearing the assumption restores the observed-load plan.
+    await user.click(screen.getAllByRole("button", { name: "Clear assumption" })[0]);
+    expect(screen.queryByText(/Assumption explorer:/)).toBeNull();
+    expect(screen.getByLabelText("Hours for East Village").getAttribute("value")).toBe("27");
   });
 });
 

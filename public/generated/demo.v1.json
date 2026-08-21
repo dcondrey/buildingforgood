@@ -1368,7 +1368,7 @@
     "The allocation is an explainable scenario for human review, not automatic operational authorization.",
     "Get It Done reports reflect reporting behavior and workflow, not unique people, verified abatements, or outreach need."
   ],
-  "observations": {
+  "observation_context": {
     "coverage": {
       "calendar_months": 108,
       "completeness_pct": 96.3,

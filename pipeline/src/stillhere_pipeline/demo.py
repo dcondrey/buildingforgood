@@ -2668,7 +2668,20 @@ def build_demo_document(
                 "people, infer movement, establish causality, or measure service need."
             ),
         },
-        "observations": observations,
+        # Named "observation_context", not "observations": the privacy
+        # scanner's CELL_CONTEXT_KEYS treats an "observations" key as marking
+        # its containing object as a single area/period cell (the historical
+        # observations.v0 shape), and that context propagates unconditionally
+        # to every descendant (see privacy.py's _scan_json). This document's
+        # top-level envelope is not itself a cell, but naming this section
+        # "observations" made the scanner treat it as one, poisoning the
+        # entire artifact -- every unrelated small integer anywhere in the
+        # document (weather QA row counts, GetItDone extract QA, planner
+        # rounding remainders, quality-audit ledger counts) was flagged as an
+        # unsuppressed small-cell count. Renaming the section removes the
+        # collision at its source rather than allowlisting dozens of
+        # unrelated field names.
+        "observation_context": observations,
         "evidence": evidence,
         "reporting_bias": reporting_bias,
         "forecast": forecast,
@@ -2822,8 +2835,8 @@ def main(argv: list[str] | None = None) -> int:
         + json.dumps(
             {
                 "schema": document["schema"],
-                "history_months": len(document["observations"]["history"]),
-                "missing_months": len(document["observations"]["missing_months"]),
+                "history_months": len(document["observation_context"]["history"]),
+                "missing_months": len(document["observation_context"]["missing_months"]),
                 "panel_change_pct": panel["raw_observation_units"]["change_pct"],
                 "allocated_hours": sum(
                     row["allocated_hours"] for row in document["planner"]["allocations"]

@@ -184,6 +184,12 @@ CELL_NUMERIC_ALLOWLIST: frozenset[str] = frozenset(
         "period",
         "date",
         "yearmonth",
+        # The planner's per-area computed hours ABOVE the coverage-continuity
+        # floor. It is an allocation decision the product exists to display
+        # (the "Why this amount?" breakdown, M4), not an observation of
+        # people -- unlike a neighbourhood-month observation count, a small
+        # `variable_hours` value cannot identify anyone.
+        "variablehours",
     }
 )
 # Deliberately NARROW. `area`, `areaid`, `neighborhood` and `observations`

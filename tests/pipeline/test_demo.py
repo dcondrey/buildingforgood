@@ -45,7 +45,7 @@ def demo() -> dict:
 
 
 def test_reliable_history_keeps_reporting_gaps_null(demo: dict) -> None:
-    observations = demo["observations"]
+    observations = demo["observation_context"]
     assert observations["coverage"] == {
         "start_month": "2017-01",
         "end_month": "2025-12",
@@ -66,7 +66,7 @@ def test_reliable_history_keeps_reporting_gaps_null(demo: dict) -> None:
 
 
 def test_monthly_total_uses_fixed_nonoverlapping_core(demo: dict) -> None:
-    observations = demo["observations"]
+    observations = demo["observation_context"]
     assert observations["scope"]["areas"] == list(CORE_AREAS)
     january = next(row for row in observations["history"] if row["month"] == "2025-01")
     assert january["total"] == 759

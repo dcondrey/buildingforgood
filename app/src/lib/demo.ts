@@ -144,6 +144,21 @@ export interface DemoData {
       rawPerPublishedUnit: number;
     }>;
     interpretation: string;
+    // A same-six-calendar-months-one-year-apart sensitivity, stronger than
+    // the aligned-window comparison above because it removes the seasonal
+    // confound entirely. Not yet emitted by the pipeline (no
+    // `matched_calendar` block in demo.v1.json), so this stays optional; the
+    // UI already falls back to the aligned-window fields via `??` and `?.`
+    // wherever it reads this.
+    matchedCalendar?: {
+      rawChangePct: number;
+      uniqueParentChangePct: number;
+      allReportsChangePct: number;
+      sharePrePct: number;
+      sharePostPct: number;
+      shareChangePoints: number;
+      interpretation: string;
+    };
   };
   robustness?: {
     parking: {
@@ -155,6 +170,16 @@ export interface DemoData {
       postPerMeter: number;
       allMeterChangePct: number;
       interpretation: string;
+      // Same rationale as reportingBias.matchedCalendar above: not yet
+      // emitted by the pipeline, kept optional, UI already falls back.
+      matchedCalendar?: {
+        verifiedPoles: number;
+        preMonthlyMean: number;
+        postMonthlyMean: number;
+        changePct: number;
+        allMeterChangePct: number;
+        interpretation: string;
+      };
     };
     weather: {
       station: string;
@@ -399,7 +424,7 @@ export function adaptDemoV1(input: unknown): DemoData | null {
 
   const generatedFrom = record(root.generated_from) ?? {};
   const scenario = record(root.scenario) ?? {};
-  const observations = record(root.observations) ?? {};
+  const observations = record(root.observation_context) ?? {};
   const evidence = record(root.evidence) ?? {};
   const panel = record(evidence.balanced_panel);
   const forecast = record(root.forecast) ?? {};

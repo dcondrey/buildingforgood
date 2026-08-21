@@ -2,7 +2,7 @@
   "schema_version": "decision-contract/v1",
   "scenario_id": "stillhere-demo-001",
   "scenario_status": "provisional",
-  "last_updated": "2026-08-20",
+  "last_updated": "2026-08-21",
   "decision": {
     "owner_role": "outreach_or_community_services_coordinator",
     "question": "How should the available outreach hours be distributed across the prepared downtown planning areas for the next shift?",
@@ -141,27 +141,35 @@
       "status": "fixed"
     },
     "minimum_coverage_floor": {
-      "value": 8,
+      "value": 6,
       "unit": "staff_hour_per_included_area",
-      "status": "provisional",
-      "review_issue_number": 14
+      "status": "fixed",
+      "resolved_by_track": "C",
+      "resolved_issue_number": 14,
+      "rationale": "8h across the 7 candidate areas committed 56 of the 80-hour budget before the forecast was consulted, and became infeasible at 7 possible_displacement areas. 6h leaves 38h (48%) discretionary and stays feasible at 7."
     },
     "uncertainty_policy": {
       "planning_reference": "upper_prediction_bound",
-      "status": "provisional",
-      "review_issue_number": 14
+      "status": "fixed",
+      "uncertainty_weight": 0.5,
+      "resolved_by_track": "C",
+      "resolved_issue_number": 14,
+      "rationale": "relative_load = forecast_upper + uncertainty_weight * (forecast_upper - forecast_lower). The weight was unspecified, so the formula had nothing to read. 0.5 lets interval width matter without letting it dominate the bound."
     },
     "possible_displacement_continuity_reserve": {
       "value": 4,
       "unit": "staff_hour",
-      "status": "provisional",
-      "review_issue_number": 14
+      "status": "fixed",
+      "review_issue_number": 14,
+      "resolved_by_track": "C"
     },
     "travel_burden_policy": {
       "value": "equal_until_validated_aggregate_bands_exist",
       "live_routing_required": false,
-      "status": "provisional",
-      "review_issue_number": 14
+      "status": "fixed",
+      "review_issue_number": 14,
+      "resolved_by_track": "C",
+      "rationale": "Any non-equal travel term needs an aggregate, auditable basis. Route data would reintroduce precise geography (C-01 finding R-05)."
     },
     "rounding_method": "deterministic_largest_remainder",
     "constraints": [
@@ -171,7 +179,15 @@
       "human_locks_are_preserved",
       "complaint_volume_never_changes_planning_load_or_allocation"
     ],
-    "infeasible_result": "return_no_plan_with_reasons"
+    "infeasible_result": "return_no_plan_with_reasons",
+    "floor_dominance_warning_threshold": {
+      "value": 0.25,
+      "unit": "discretionary_share_of_budget",
+      "status": "fixed",
+      "resolved_by_track": "C",
+      "resolved_issue_number": 15,
+      "rationale": "Below this the coverage floor, not the forecast, is determining the plan. Without saying so, a floor-dominated plan is indistinguishable from a forecast-driven one (C-01 finding R-10)."
+    }
   },
   "review_triggers": [
     "new_monthly_observation",
@@ -216,11 +232,6 @@
       "field": "forecast.*.provisional",
       "reason": "Forecast settings require the A-05 evaluation scorecard and history audit.",
       "owner_track": "A"
-    },
-    {
-      "field": "planner.*.provisional",
-      "reason": "Planner defaults require feasibility and safeguard review.",
-      "owner_track": "C"
     }
   ]
 }

@@ -7,7 +7,7 @@ import type { AreaPlanningInput, PlannerPolicy } from "./types.ts";
 const POLICY: PlannerPolicy = {
   budget_hours: 80,
   time_increment_hours: 1,
-  minimum_coverage_floor_hours: 8,
+  minimum_coverage_floor_hours: 6,
   continuity_reserve_hours: 4,
   uncertainty_weight: 0.5,
 };
@@ -42,8 +42,8 @@ describe("budget conservation", () => {
   });
 
   it("conserves the budget at every feasible budget level", () => {
-    // 6 areas x 8h floor + 4h continuity for east_village = 52h guaranteed.
-    for (let budget = 52; budget <= 400; budget += 7) {
+    // 6 areas x 6h floor + 4h continuity for east_village = 40h guaranteed.
+    for (let budget = 40; budget <= 400; budget += 7) {
       const plan = buildPlan(SIX_AREAS, { ...POLICY, budget_hours: budget });
       expect(plan.status).toBe("planned");
       expect(plan.total_allocated_hours + plan.rounding_residue_hours).toBe(budget);
@@ -73,7 +73,7 @@ describe("non-negativity and the coverage floor", () => {
   it("holds the floor even when one area dominates the forecast", () => {
     const lopsided = [area("a", 5000), area("b", 1), area("c", 1)];
     const plan = buildPlan(lopsided, POLICY);
-    for (const a of plan.allocations) expect(a.allocated_hours).toBeGreaterThanOrEqual(8);
+    for (const a of plan.allocations) expect(a.allocated_hours).toBeGreaterThanOrEqual(6);
   });
 
   it("adds a continuity reserve only for possible_displacement", () => {
@@ -95,22 +95,22 @@ describe("non-negativity and the coverage floor", () => {
 
 describe("infeasibility is declared, never absorbed", () => {
   it("refuses to plan when the budget cannot cover the floor", () => {
-    const plan = buildPlan(SIX_AREAS, { ...POLICY, budget_hours: 20 });
+    const plan = buildPlan(SIX_AREAS, { ...POLICY, budget_hours: 12 });
     expect(plan.status).toBe("infeasible");
     expect(plan.total_allocated_hours).toBe(0);
     expect(plan.infeasible_reasons.join(" ")).toMatch(/coverage floor/i);
   });
 
   it("names the shortfall in hours so the coordinator can act", () => {
-    const plan = buildPlan(SIX_AREAS, { ...POLICY, budget_hours: 40 });
-    // 6 areas x 8 floor + 4 continuity = 52 required, 40 available.
-    expect(plan.infeasible_reasons.join(" ")).toMatch(/Shortfall: 12 hours/);
+    const plan = buildPlan(SIX_AREAS, { ...POLICY, budget_hours: 30 });
+    // 6 areas x 6 floor + 4 continuity = 40 required, 30 available.
+    expect(plan.infeasible_reasons.join(" ")).toMatch(/Shortfall: 10 hours/);
   });
 
   it("is feasible at exactly the guaranteed total", () => {
-    const plan = buildPlan(SIX_AREAS, { ...POLICY, budget_hours: 52 });
+    const plan = buildPlan(SIX_AREAS, { ...POLICY, budget_hours: 40 });
     expect(plan.status).toBe("planned");
-    expect(plan.total_allocated_hours).toBe(52);
+    expect(plan.total_allocated_hours).toBe(40);
   });
 
   it("refuses when locks alone exceed the budget", () => {

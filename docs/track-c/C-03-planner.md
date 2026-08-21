@@ -39,7 +39,21 @@ Sweeping the contract defaults (budget 80h, floor 8h, continuity 4h) across the 
 
 **The defaults are fragile.** With all 7 areas included, 56 of 80 hours are committed before the forecast is consulted at all. Worse, the failure mode is perverse: every `possible_displacement` result — the product's headline finding — shrinks the discretionary pool further, so **the more the product detects what it was built to detect, the less the forecast influences the plan.** At six displacement areas the forecast stops mattering entirely, and at seven there is no plan.
 
-### Recommended resolution of `planner.*.provisional`
+### RESOLVED 2026-08-21 — `planner.*.provisional` is no longer a release blocker
+
+Track C owned this blocker and nobody had ruled on it hours before the demo, so it is decided and written into `config/decision.v1.json`. Anyone may override it; leaving it unset was the option that was going to cost us on stage.
+
+| Field | Was | Now | Effect |
+|---|---|---|---|
+| `minimum_coverage_floor` | 8h, provisional | **6h, fixed** | Discretionary share rises from 24h (30%) to 38h (48%); stays feasible at 7 displacement areas |
+| `uncertainty_weight` | **absent** | **0.5, fixed** | The load formula previously had nothing to read for this term |
+| `possible_displacement_continuity_reserve` | 4h, provisional | 4h, fixed | Meaningful without dominating once the floor drops |
+| `travel_burden_policy` | provisional | equal, fixed | Route data would reintroduce precise geography (R-05) |
+| `floor_dominance_warning_threshold` | did not exist | **0.25, fixed** | New. Warns when the floor rather than the forecast is driving the plan (R-10) |
+
+The planner test fixture documents itself as mirroring the contract, so it was updated in the same commit and the numbers were re-derived rather than adjusted until green: guaranteed total moves from 52h to 40h, and the shortfall case moves to a 30h budget.
+
+### Original recommendation (retained for the reasoning)
 
 | Field | Contract value | Recommended | Why |
 |---|---|---|---|

@@ -209,6 +209,27 @@ These must not appear in the interface, exports, README, or the spoken demo. Any
 
 ---
 
-## 5. Second-pass trigger
+## 5. Second pass — 2026-08-21, Lucas Cooper-Bey
+
+Ran the §4 launch-blocking checklist against every product-facing file that exists now: `README.md`, `docs/product/UI_STORYBOARD.md`, `docs/product/PREPARED_SCENARIO.md`, the C-05 card copy, `config/decision.v1.json`, and the planner panel strings.
+
+**Clean:** causal claims, enforcement framing, capacity and service claims, complaint-as-demand, probability language the method does not produce, and fairness used as a moral property. No hits in any of those categories.
+
+**Two hits, both R-01, both fixed.** The README's own Language boundaries section forbids movement claims, and two lines in the same file broke it by applying "displaced" to a *decline* rather than to people:
+
+| Where | Was | Now |
+|---|---|---|
+| Comparison table | "supported, displaced, or uncertain" | "supported, coincides with nearby aggregate increases, or is unresolved" |
+| **Working pitch** | "an apparent improvement is supported, displaced, or simply uncertain" | "supported by comparable evidence, coincides with nearby aggregate increases, or is simply uncertain" |
+
+The second one is the finding that matters. R-01 predicted that the slip would happen in the demo narrative, because `possible_displacement` is one preposition away from a movement claim and the pitch is where compression is strongest. It was already sitting in the working pitch, which is the sentence most likely to be spoken aloud to judges. A grammatical reading says the *improvement* was displaced; a listener hears that people were.
+
+The same line also said the plan "refuses to hide who could be left behind." That reads as a claim about people the product cannot make, and it is now "refuses to hide what it cannot cover," which is what unmet load actually measures.
+
+**Note on method:** the banned-word grep found nothing in the categories where the risk is a *word*. Both real hits were in categories where the risk is a *construction*, and they were only visible by reading every displacement-adjacent sentence in full. A checklist run as a grep would have passed this file.
+
+**Still owed:** a third short pass once #12 and #13 render real interface copy, and once #24's demo narrative is written down rather than improvised.
+
+## 6. Second-pass trigger
 
 Repeat a short pass (§4 audit + R-01, R-04, R-11 re-test against real copy) once #12 and #13 land and the demo narrative in #24 exists. Log the result in this file with a new date and reviewer line.

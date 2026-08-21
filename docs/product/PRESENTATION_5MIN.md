@@ -1,7 +1,7 @@
 # Five-Minute Presentation Script (paired with the Guide demo)
 
 Format: 1 min setup · 5 min presentation · 3 min Q&A · 1 min teardown.
-This script drives the app's own nine-step Guide demo, so the screen and the
+This script drives the app's own ten-step Guide demo, so the screen and the
 narration can never drift apart. Every scored rubric item is said out loud —
 judges award points for what they hear, not what the repo contains.
 
@@ -93,7 +93,7 @@ scenario, pin **Compare**.
 > a working product, deployed, offline-capable, keyboard-accessible, and
 > axe-clean."
 
-### 4:05–4:35 · Leave with the brief (Guide step 9)
+### 4:05–4:35 · Leave with the brief (Guide step 10)
 
 Press **Copy decision brief**.
 
@@ -112,11 +112,23 @@ Press **Copy decision brief**.
 > observations rose. Which ruler should govern a coverage policy? That
 > decision belongs to a person — this tool just makes it honest."
 
-If the EyePop digitization audit ran (see JUDGING_ALIGNMENT), add one line:
+Then the digitization-audit beat — Guide step 9 puts the card itself on
+screen in the evidence section, so point at it:
 
-> "And with EyePop we pointed computer vision at the ruler itself — detecting
-> the printed map symbols on the published count documents to audit the
-> digitization step. CV that audits the instrument, never the people."
+> "And we pointed computer vision at the ruler itself — it ships in the
+> product. The published counts come from scanned, hand-annotated field
+> sheets; this audit card OCRs them, fully offline, and the City Center
+> sheet's handwritten totals reconcile through the documented multipliers to
+> the published number: 152 plus 14 tents times 1.75 is 176.5, published 177.
+> The engine is swappable: EyePop's hosted abilities drop in with one flag.
+> Vision that audits the instrument, never the people."
+
+If a borrowed EyePop key exists, run `--engine eyepop` beforehand and show
+both cards side by side (runbook in JUDGING_ALIGNMENT.md).
+
+Optional viability close (10s, if time allows): "Data requests are already
+pending with SDHC, RTFH, the City's homelessness department, and DSDP —
+disclosed in the product, and pre-committed to the same documented lanes."
 
 ## The three-minute Q&A
 
@@ -163,9 +175,11 @@ has to defend a coverage policy. Success is a brief a coordinator would
 actually attach to a staffing decision.
 
 **"What's next?"**
-The tract-to-neighborhood crosswalk to bring the 2026 PIT down to area level;
-a capacity baseline card (caseload-per-FTE benchmarks); and the EyePop
-digitization audit becoming a standing QA step for every monthly report.
+Responses to the pending data requests (SDHC, RTFH, the City's homelessness
+department, DSDP) entering the documented lanes; the tract-to-neighborhood
+crosswalk to bring the 2026 PIT down to area level; a capacity baseline card
+(caseload-per-FTE benchmarks); and the digitization audit becoming a standing
+QA step for every monthly report, with EyePop as the hosted engine.
 
 **"Fresh code?"**
 Everything was built inside the hacking window; the repo history shows the

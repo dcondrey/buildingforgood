@@ -46,7 +46,7 @@ on a real map of the six downtown neighborhoods.
 npm ci --prefix app && npm --prefix app run dev -- --host 127.0.0.1
 ```
 
-In the app, **Guide demo** gives a nine-step hands-on tour that asks you to
+In the app, **Guide demo** gives a ten-step hands-on tour that asks you to
 work the real controls and notices when you have. The **Map workspace**
 toggle switches to an operations view: one map with switchable layers
 (planned hours, observed change, unmet load) and a tabbed inspector holding

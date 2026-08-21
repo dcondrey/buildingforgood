@@ -214,7 +214,7 @@ recorded on its own; the fallback capture follows that core.
 Do not cut the causal/privacy boundary or imply the decline proves progress.
 
 **Guide demo** also carries this script on its own for a viewer exploring with
-no presenter in the room. Nine steps narrate the same story with the
+no presenter in the room. Ten steps narrate the same story with the
 artifact's live numbers and ask the viewer to work the real controls — **Test
 the drop**, the 0h and 8h floors, a lock plus **Recompute unlocked hours**,
 the assumption explorer on the plan map, and **Copy decision brief**. The

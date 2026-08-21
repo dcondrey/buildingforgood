@@ -111,6 +111,17 @@ describe("decision flow (#12)", () => {
       screen.getByText(/^(\d+h moved to minimums and locks|0h · hours follow the forecast)$/),
     ).toBeDefined();
   });
+
+  it("shows a cited, context-only capacity card that stays out of the allocation (#79)", async () => {
+    await renderOffline();
+    const summary = await screen.findByText("Capacity context: staff-hours in staffing terms");
+    const card = summary.closest("details");
+    expect(card).not.toBeNull();
+    expect(card?.textContent).toContain("Case Management Ratios");
+    expect(card?.textContent).toContain("not street outreach");
+    expect(card?.textContent).toContain("No benchmark number enters the allocation");
+    expect(card?.textContent).toContain("stated assumptions, not staffing data");
+  });
 });
 
 describe("aggregate spatial view (#13)", () => {
@@ -191,7 +202,7 @@ describe("guided onboarding", () => {
   it("asks for the real control, detects completion, and advances on its own", async () => {
     const user = userEvent.setup();
     const panel = await beginGuide(user);
-    expect(within(panel).getByText(/Step 1 of 9/)).toBeDefined();
+    expect(within(panel).getByText(/Step 1 of 10/)).toBeDefined();
     expect(panel.textContent).toContain("Your turn:");
     expect(panel.textContent).toContain("Test the drop");
     await user.click(screen.getByRole("button", { name: /Test the drop/ }));
@@ -210,20 +221,20 @@ describe("guided onboarding", () => {
     expect(screen.getByRole("dialog").textContent).toContain("Read what actually moved");
     await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Back" }));
     const revisited = screen.getByRole("dialog");
-    expect(revisited.textContent).toContain("Step 1 of 9");
+    expect(revisited.textContent).toContain("Step 1 of 10");
     expect(revisited.textContent).toContain("Done — press Next to continue.");
     // The completed task must wait for an explicit Next instead of auto-advancing.
     await new Promise((resolve) => setTimeout(resolve, 1100));
-    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 9");
+    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 10");
   });
 
   it("advances with the arrow keys", async () => {
     const user = userEvent.setup();
     await beginGuide(user);
     fireEvent.keyDown(document.body, { key: "ArrowRight" });
-    expect(screen.getByRole("dialog").textContent).toContain("Step 2 of 9");
+    expect(screen.getByRole("dialog").textContent).toContain("Step 2 of 10");
     fireEvent.keyDown(document.body, { key: "ArrowLeft" });
-    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 9");
+    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 10");
   });
 
   it("never strands the guard-off comparison view when stopped", async () => {
@@ -416,6 +427,17 @@ describe("map workspace view", () => {
     await openWorkspace(user);
     expect(await violationsFor(document.body)).toEqual([]);
   }, 30000);
+});
+
+describe("digitization audit card", () => {
+  it("renders the audit with its engine, reconciliation, and boundary", async () => {
+    await renderOffline();
+    expect(screen.getByText("Field-sheet digitization audit")).toBeDefined();
+    expect(screen.getByText(/Engine: Apple Vision · offline/)).toBeDefined();
+    expect(screen.getByText(/152 \+ 14 × 1.75 = 176.5/)).toBeDefined();
+    expect(screen.getByText(/never a model input/)).toBeDefined();
+    expect(screen.getByText(/Per-page recovery across 11 pages/)).toBeDefined();
+  });
 });
 
 describe("keyboard access (#12, #16)", () => {

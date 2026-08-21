@@ -2812,6 +2812,70 @@ summary {
   border-radius: 6px;
 }
 
+/* Digitization audit card */
+.digitization-audit {
+  background: linear-gradient(135deg, rgba(240, 173, 78, 0.06), transparent 70%), var(--panel-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  margin-top: 1.5rem;
+  padding: 1.1rem 1.25rem;
+}
+.digitization-audit-head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: space-between;
+}
+.digitization-audit-head strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  margin-top: 0.2rem;
+}
+.digitization-audit p {
+  color: var(--muted);
+  font-size: 0.745rem;
+  line-height: 1.55;
+  margin: 0.6rem 0 0;
+}
+.digitization-audit-finding {
+  border-left: 3px solid var(--amber);
+  color: var(--ink-soft) !important;
+  padding-left: 0.7rem;
+}
+.digitization-audit-pages {
+  margin-top: 0.7rem;
+}
+.digitization-audit-pages > summary {
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.705rem;
+}
+.digitization-audit-pages table {
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.665rem;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+.digitization-audit-pages caption {
+  color: var(--faint);
+  font-size: 0.665rem;
+  margin-bottom: 0.4rem;
+  text-align: left;
+}
+.digitization-audit-pages th,
+.digitization-audit-pages td {
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  padding: 0.3rem 0.6rem 0.3rem 0;
+  text-align: left;
+}
+.digitization-audit-boundary {
+  font-size: 0.705rem !important;
+}
+
 /* Map workspace view */
 .view-toggle {
   border: 1px solid var(--line-strong);

@@ -158,22 +158,20 @@ Severity is the harm if the scenario succeeds: **S1** catastrophic/irreversible 
 
 | ID | Finding | Sev | Handoff | Status | Evidence |
 |---|---|---|---|---|---|
-| R-01 | MITIGATION NEEDED | S1 | #8, #16 | **Partly resolved** | Both README instances fixed in the second pass, including the working pitch. The classification-label disclaimer needs real interface copy from #12 |
-| R-02 | NON-GOAL / partial | S1 | #16, #7, #14 | **Partly resolved** | Non-goal text drafted in the C-05 allocation card; panel has no priority-rank column and orders by area name, under test. Card is not rendered until #13 |
+| R-01 | MITIGATION NEEDED | S1 | #8, #16 | **Resolved (§7)** | The shipped shell renders the disclaimer beside every classification: "These are on-site observations: they cannot say who moved where, or why", and the copyable brief carries the same boundary. Demo script's only movement-adjacent spoken line is a negation |
+| R-02 | NON-GOAL / partial | S1 | #16, #7, #14 | **Resolved (§7)** | The shipped shell renders "Never authorized: person tracking, causal claims, enforcement, eligibility decisions, or automatic dispatch" in the review step and in the brief; the allocation list has no priority-rank column; the no-minimum view is labeled comparison-only |
 | R-03 | PROTECTED, needs test | S2 | #14, #16 | **Resolved** | Complaint volume unrepresentable in the planner input type; guard recurses objects and arrays; 5 tests |
-| R-04 | MITIGATION NEEDED | S3→S2 | #8, #16 | Open | Needs the evidence panel from #12 |
+| R-04 | MITIGATION NEEDED | S3→S2 | #8, #16 | **Resolved (§7)** | The shipped evidence panel decomposes the drop into components with no causal attribution; the script says the tool "cannot prove movement or policy impact" |
 | R-05 | NON-GOAL / PROTECTED | S1 | #7 | **Resolved** | Deny-list, geometry-type rule, and grain rule implemented; 7 declared planning areas scan clean, 382 source blocks raise 1529 findings |
 | R-06 | MITIGATION NEEDED (new gap) | S1 | #7, #6, #16 | **Resolved** | Suppression in the emitter (#45) plus small-cell and recoverability rules in the scan; 0 exact recoveries, 0 pinned cells, 0 unique multisets on the real artifact |
 | R-07 | MITIGATION NEEDED | S3 | #14, #15 | **Resolved** | 1-hour increment fixed in the contract; unmet load on every allocation and rendered in the panel |
-| R-08 | MITIGATION NEEDED | S2 | #15, #16 | **Partly resolved** | Locks survive recomputation and the coordinator-set count is disclosed, both under test. AI-disclosure card awaits #13 |
-| R-09 | NON-GOAL / PROTECTED | S2 | #16 | **Partly resolved** | Limitations card drafted; not rendered until #13 |
-| R-10 | MITIGATION NEEDED | S2 | #14, #15, #16 | **Partly resolved** | `floor_dominance_warning_threshold` fixed at 0.25 and the panel warns; the word "fairness" still needs auditing in rendered copy |
-| R-11 | MITIGATION NEEDED | S2 | #13, #16 | Open | Entirely dependent on the spatial view in #13 |
-| R-12 | MITIGATION NEEDED | S2 | #8, #16 | Open | Comparability guard is contract-level; needs the classification path from #8 |
+| R-08 | MITIGATION NEEDED | S2 | #15, #16 | **Resolved (§7)** | Locks survive recomputation and the coordinator-set count is disclosed, both under test; the shipped drawer renders "AI use: Development assistance only; no AI runs in the product or determines evidence, forecasts, or allocations" |
+| R-09 | NON-GOAL / PROTECTED | S2 | #16 | **Resolved (§7)** | The shipped shell renders the limitation cards (Boundary card, Model card, Claim limits) and the never-authorized list; "Which shelters have beds tonight?" has no answering surface anywhere in the product |
+| R-10 | MITIGATION NEEDED | S2 | #14, #15, #16 | **Resolved (§7)** | `floor_dominance_warning_threshold` fixed at 0.25 and the panel warns; the deployed shell contains zero occurrences of "fair" in any rendered string |
+| R-11 | MITIGATION NEEDED | S2 | #13, #16 | **Resolved (§7)** | The shipped spatial view encodes change in observed units with neutral captions ("not a count of people"), no severity ranking, and now a tabular equivalent whose state words replace color |
+| R-12 | MITIGATION NEEDED | S2 | #8, #16 | **Resolved (§7)** | The shipped comparison is same-month, same-method (POST2020 both sides) and says so beside the result; the module-level guard is documented and confirmed in docs/project/DROP_TEST_RULES.md |
 
-**Genuinely unresolved S1 before release:** R-01 and R-02, both partly mitigated and both waiting on interface copy that does not exist yet. **R-06 is closed**, which matters because it was the gap this review added to the plan rather than inherited from it.
-
-**Still open at lower severity:** R-04, R-11 and R-12, all blocked on #8, #12 or #13.
+**As of the third pass (§7): no unresolved finding remains at any severity.** The interface copy R-01 and R-02 were waiting on shipped in the released shell and holds the line. **R-06 is closed**, which matters because it was the gap this review added to the plan rather than inherited from it.
 
 ## 4. Launch-blocking claim checklist
 
@@ -232,4 +230,24 @@ The same line also said the plan "refuses to hide who could be left behind." Tha
 
 ## 6. Second-pass trigger
 
-Repeat a short pass (§4 audit + R-01, R-04, R-11 re-test against real copy) once #12 and #13 land and the demo narrative in #24 exists. Log the result in this file with a new date and reviewer line.
+Repeat a short pass (§4 audit + R-01, R-04, R-11 re-test against real copy) once #12 and #13 land and the demo narrative in #24 exists. Log the result in this file with a new date and reviewer line. **This trigger fired when the release shipped; the resulting pass is §7.**
+
+## 7. Third pass — 2026-08-21, run in the Track B working session (tool-assisted full read)
+
+Scope: the surfaces the second pass could not reach because they did not exist yet. Every rendered string in the deployed shell `app/src/App.tsx` (read in full, all 2,200+ lines, not grepped), the spoken lines and stage directions of `docs/product/DEMO_SCRIPT.md`, `docs/product/JUDGE_QA.md`, and the new `docs/product/PRODUCT_COPY.md`. Method follows the §5 lesson: the banned-word grep ran first for navigation, then every displacement-, causality-, and location-adjacent sentence was read in full, because the risk is a construction, not a word.
+
+**Clean categories, same as the second pass:** causal claims, enforcement framing, live-capacity claims, complaint-as-demand, probability language the method does not produce, and fairness as a moral property ("fair" does not occur in the shell at all).
+
+**R-01 re-test.** The classification result renders with its disclaimer adjacent, not behind a control: "These are on-site observations: they cannot say who moved where, or why." The brief repeats the boundary in its final line. The demo script's only movement-adjacent spoken sentence is a negation ("this cannot prove movement or policy impact"). No sentence applies "displaced", "moved", or "went" to people. Resolved.
+
+**R-02 re-test.** "Never authorized: person tracking, causal claims, enforcement, eligibility decisions, or automatic dispatch" renders in the review step and travels in the copyable brief. The allocation list carries no priority ranking, and the no-minimum view is labeled "Comparison view, not a recommendation". Resolved.
+
+**R-04 re-test.** The shell's framing decomposes the drop instead of celebrating it ("Fewer tents, or fewer people?"); nothing attributes the change to outreach or policy. Resolved.
+
+**R-11 re-test.** The spatial view encodes change in observed units, captioned "schematic, not to scale · not a count of people", with no severity ordering. Each map now has a tabular equivalent whose state words (More observed units / Fewer observed units / Below minimum / Minimum met / Human lock / No recent observation) carry the meaning without color. Resolved.
+
+**Adjudicated, previously flagged as unaudited:** the shell's "261 blocks" framing (hero, panel notes, threshold cards). These are aggregate statistics over a fixed panel; no specific block, address, coordinate, or geometry is named or drawn anywhere, the drawer states "No block records or geometry", and the bundle privacy scan reports 0 findings against `app/dist`. PROTECTED under the §4 location rule.
+
+**One construction reviewed and kept:** the plan footer's "Nh moved to minimums and locks" applies "moved" to hours with hours as the explicit subject; no person-reading is available. Kept.
+
+**Verdict:** the §4 launch-blocking checklist passes against every surface that ships. No open finding remains in §3. The standing rule stays: any new rendered copy, especially anything compressing `possible_displacement` into a headline, gets a full-sentence read before release, not a grep.

@@ -9,4 +9,8 @@ export default defineConfig({
   // Deployment-safe generated artifacts live at the repo root (public/generated/),
   // produced by the pipeline; the app serves and ships them as static assets.
   publicDir: fileURLToPath(new URL("../public", import.meta.url)),
+  build: {
+    // Vite 8 ships Lightning CSS; keep the fast, standards-aware minifier explicit.
+    cssMinify: "lightningcss",
+  },
 });

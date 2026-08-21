@@ -64,6 +64,9 @@ npm --prefix app run preview
       selection is announced (the panel is a live region).
 - [ ] Selecting the same area again clears the selection.
 - [ ] The selected area is distinguishable with the OS display in greyscale.
+- [ ] The **What-if** budget slider is reachable by `Tab`, adjusts with the
+      arrow keys, and the announced plan total tracks the value; dragging it
+      below the floors' total announces the infeasibility alert.
 
 ### 6. Colour and motion
 

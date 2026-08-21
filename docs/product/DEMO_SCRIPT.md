@@ -95,6 +95,15 @@ the **0h audit only**, **4h sensitivity**, and **8h prepared demo** controls.
 
 **Land:** The policy choice is explicit, adjustable, and testable.
 
+**Optional add-on (if the room is engaged):** drag the **What-if** budget
+slider a few steps and let the map and bars reflow live.
+
+> "Every recompute is the same deterministic rule. Drag it low enough and the
+> floors become infeasible—the tool says so instead of quietly repairing the
+> plan."
+
+Return the slider to 80 before moving on.
+
 ### 2:05–2:28 — Make the tradeoff visible
 
 **Do:** Click **Audit without coverage guard**. Point to the areas that lose

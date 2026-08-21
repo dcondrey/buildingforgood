@@ -489,26 +489,59 @@ def _scan_json(
             )
 
 
+def _declares_here(node: dict[str, Any]) -> bool:
+    """True when this exact object carries a geography declaration."""
+    return any(
+        normalize_key(key) in GEOGRAPHY_DECLARATION_KEYS and value for key, value in node.items()
+    )
+
+
 def declares_aggregate_geography(document: Any) -> bool:
-    """True when the document names the approved geography it publishes.
+    """True when the document root declares geography covering the whole file."""
+    if not isinstance(document, dict):
+        return False
+    if _declares_here(document):
+        return True
+    properties = document.get("properties")
+    return isinstance(properties, dict) and _declares_here(properties)
 
-    Recurses the whole structure, because GeoJSON convention puts a
-    declaration in each feature's ``properties`` rather than at the document
-    root. Checking only the root and one hop would have blocked legitimate,
-    already-dissolved planning-area data, which is fail-closed but still a
-    broken build for the emitter.
 
-    ``_count_geometries`` already recurses fully, so the two must match or
-    the pair disagrees about the same file.
+def _walk_geography(node: Any, where: str, declared: bool) -> Iterator[Finding]:
+    """Check every geometry against a declaration that actually covers it.
+
+    A declaration is inherited DOWNWARD only. A root-level
+    ``geography_version`` covers the whole file, and a feature's own
+    ``properties`` declaration covers that feature. It never travels sideways
+    to a sibling: one declared feature must not exempt an undeclared,
+    source-grain feature sitting next to it.
+
+    This is the same "scope follows the thing it approved" rule already
+    applied to cell scope, suppression, and geometry approval. An earlier
+    version checked declarations across the entire document at once, which
+    let a single declared feature launder every other feature in the file.
     """
-    if isinstance(document, dict):
-        for key, value in document.items():
-            if normalize_key(key) in GEOGRAPHY_DECLARATION_KEYS and value:
-                return True
-        return any(declares_aggregate_geography(value) for value in document.values())
-    if isinstance(document, list):
-        return any(declares_aggregate_geography(item) for item in document)
-    return False
+    if isinstance(node, dict):
+        declared_here = declared or _declares_here(node)
+        properties = node.get("properties")
+        if isinstance(properties, dict) and _declares_here(properties):
+            declared_here = True
+
+        if "coordinates" in node and "type" in node and not declared_here:
+            yield Finding(
+                "BLOCK",
+                "geography.undeclared_grain",
+                where,
+                "geometry published without naming an approved aggregate geography; "
+                "declare geography_version on this feature or at the document root, and "
+                "dissolve source blocks to canonical planning areas before publication",
+            )
+        for key, value in node.items():
+            yield from _walk_geography(value, f"{where}.{key}", declared_here)
+        return
+
+    if isinstance(node, list):
+        for index, item in enumerate(node):
+            yield from _walk_geography(item, f"{where}[{index}]", declared)
 
 
 def _count_geometries(node: Any) -> int:
@@ -532,18 +565,7 @@ def scan_geography_grain(document: Any, where: str = "$") -> list[Finding]:
     if geometry_count == 0:
         return []
 
-    findings: list[Finding] = []
-    if not declares_aggregate_geography(document):
-        findings.append(
-            Finding(
-                "BLOCK",
-                "geography.undeclared_grain",
-                where,
-                f"{geometry_count} geometry object(s) published without naming an approved "
-                "aggregate geography; declare geography_version and dissolve source blocks "
-                "to canonical planning areas before publication",
-            )
-        )
+    findings = list(_walk_geography(document, where, declared=False))
     if geometry_count > MAX_AGGREGATE_FEATURES:
         findings.append(
             Finding(

@@ -62,6 +62,7 @@ Three of the six were the same mirror-image flaw: **a scope flag propagating pas
 - Cell scope propagating too little missed nested breakdowns.
 - Suppression propagating too far exempted a different month's cell.
 - Geometry approval propagating too far exempted a raw longitude parked beside an approved polygon. That third one was found by auditing the other two rather than by review, which is the only reason it is not a seventh round.
+- The geography *declaration* check then hit both ends of the same axis in consecutive rounds. Checking only the document root blocked legitimate per-feature GeoJSON declarations; recursing the whole document let one declared feature exempt every undeclared source-grain feature beside it. Having already written this rule down did not stop me making the same mistake a fourth time, which is the honest argument for the declared-contract fix below rather than for more careful traversal code.
 
 The rule that resolves all three: **scope follows the thing it approved, and a separate record re-evaluates.** A node naming its own area or period, or sitting as a list element, is a separate record. A geometry approval covers its own `coordinates` key and nothing else. When the direction of an error is unclear, narrow what *inherits an exemption*, never what *gets scanned*.
 

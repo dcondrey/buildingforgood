@@ -455,3 +455,48 @@ def test_undeclared_feature_collection_still_blocks() -> None:
     }
     rules = {f.rule for f in _blocking(scan_json_document(undeclared))}
     assert "geography.undeclared_grain" in rules
+
+
+def _polygon_feature(properties: dict[str, object]) -> dict[str, object]:
+    return {
+        "type": "Feature",
+        "properties": properties,
+        "geometry": {"type": "Polygon", "coordinates": [[[-117.152, 32.710]]]},
+    }
+
+
+def test_one_declared_feature_does_not_exempt_its_siblings() -> None:
+    """Caught in review, and the third time this exact pattern has bitten.
+
+    Fixing the too-narrow root-only check by recursing the whole document
+    swung to the opposite error: a `geography_version` on one feature
+    satisfied the check for every other feature, so an undeclared
+    source-grain block shipped clean beside a declared planning area.
+
+    A declaration is inherited downward only. It never travels sideways.
+    """
+    mixed = {
+        "type": "FeatureCollection",
+        "features": [
+            _polygon_feature({"area_id": "east_village", "geography_version": "pa/2026-08"}),
+            _polygon_feature({"area_id": "undeclared_block"}),
+        ],
+    }
+    findings = _blocking(scan_json_document(mixed))
+    rules = [f.rule for f in findings]
+    assert rules.count("geography.undeclared_grain") == 1
+    assert "features[1]" in next(
+        f.where for f in findings if f.rule == "geography.undeclared_grain"
+    )
+
+
+def test_a_root_declaration_covers_every_feature() -> None:
+    doc = {
+        "geography_version": "planning-areas/2026-08",
+        "type": "FeatureCollection",
+        "features": [
+            _polygon_feature({"area_id": "east_village"}),
+            _polygon_feature({"area_id": "gaslamp"}),
+        ],
+    }
+    assert _blocking(scan_json_document(doc)) == []

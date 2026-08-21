@@ -144,3 +144,37 @@ def test_repository_generated_artifacts_are_clean() -> None:
     root = Path(__file__).resolve().parents[2]
     blocking = _blocking(scan_generated_dir(root / "public" / "generated"))
     assert blocking == [], "\n".join(f.render() for f in blocking)
+
+
+def test_suppression_covers_nested_breakdowns() -> None:
+    """A suppressed cell must not be re-flagged through its own by_type object.
+
+    Caught in review: suppression exempted only the exact node carrying the
+    marker, so the real A-07 shape — a suppressed observation with a nested
+    breakdown — still blocked.
+    """
+    cell = {
+        "neighborhood": "barrio_logan",
+        "month": "2021-09",
+        "total": None,
+        "suppressed": True,
+        "by_type": {"individual": 2, "structure": 1, "vehicle": 0},
+    }
+    assert _blocking(scan_json_document(cell, min_cell=5)) == []
+
+
+def test_integer_month_is_not_a_count() -> None:
+    """Caught in review: a schema encoding month as 3 read as three people."""
+    cell = {"neighborhood": "barrio_logan", "month": 3, "year": 2021, "total": 91}
+    assert _blocking(scan_json_document(cell, min_cell=5)) == []
+
+
+def test_suppression_does_not_leak_to_a_sibling_cell() -> None:
+    """Suppression must cover a cell's children, not the cell next to it."""
+    doc = {
+        "neighborhoods": [
+            {"neighborhood": "a", "month": "2021-09", "total": None, "suppressed": True},
+            {"neighborhood": "b", "month": "2021-09", "total": 2},
+        ]
+    }
+    assert len(_blocking(scan_json_document(doc, min_cell=5))) == 1

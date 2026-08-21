@@ -157,6 +157,13 @@ CELL_NUMERIC_ALLOWLIST: frozenset[str] = frozenset(
         "timeincrement",
         "increment",
         "minimumsustainedperiods",
+        # A cell is identified BY these keys, so their own values are labels,
+        # not observations. A schema encoding month as 3 must not read as a
+        # count of three people.
+        "month",
+        "period",
+        "date",
+        "yearmonth",
     }
 )
 
@@ -285,11 +292,13 @@ def is_cell_context(node: dict[str, Any]) -> bool:
     return any(normalize_key(k) in CELL_CONTEXT_KEYS for k in node)
 
 
+def is_suppressed(node: dict[str, Any]) -> bool:
+    """True when this object declares itself suppressed rather than published."""
+    return any(normalize_key(k) in SUPPRESSION_MARKERS for k in node)
+
+
 def _scan_counts(node: dict[str, Any], where: str, min_cell: int) -> Iterator[Finding]:
     """Flag published cell values small enough to identify a person (R-06)."""
-    normalized = {normalize_key(k): v for k, v in node.items()}
-    if any(marker in normalized for marker in SUPPRESSION_MARKERS):
-        return
     for key, value in node.items():
         norm = normalize_key(key)
         if norm in CELL_NUMERIC_ALLOWLIST:
@@ -307,14 +316,24 @@ def _scan_counts(node: dict[str, Any], where: str, min_cell: int) -> Iterator[Fi
 
 
 def _scan_json(
-    node: Any, where: str, min_cell: int, *, in_geometry: bool = False, in_cell: bool = False
+    node: Any,
+    where: str,
+    min_cell: int,
+    *,
+    in_geometry: bool = False,
+    in_cell: bool = False,
+    suppressed: bool = False,
 ) -> Iterator[Finding]:
     if isinstance(node, dict):
         if not in_geometry and "coordinates" in node and "type" in node:
             yield from _scan_geometry(node, where)
             in_geometry = True
         cell_scope = in_cell or is_cell_context(node)
-        if cell_scope:
+        # Suppression covers the whole cell, nested breakdowns included: an
+        # observation marked suppressed must not be re-flagged through its
+        # own by_type object.
+        cell_suppressed = suppressed or is_suppressed(node)
+        if cell_scope and not cell_suppressed:
             yield from _scan_counts(node, where, min_cell)
         for key, value in node.items():
             child = f"{where}.{key}"
@@ -333,14 +352,24 @@ def _scan_json(
                     f"field name {key!r} is on the deny-list",
                 )
             yield from _scan_json(
-                value, child, min_cell, in_geometry=in_geometry, in_cell=cell_scope
+                value,
+                child,
+                min_cell,
+                in_geometry=in_geometry,
+                in_cell=cell_scope,
+                suppressed=cell_suppressed,
             )
         return
 
     if isinstance(node, list):
         for index, item in enumerate(node):
             yield from _scan_json(
-                item, f"{where}[{index}]", min_cell, in_geometry=in_geometry, in_cell=in_cell
+                item,
+                f"{where}[{index}]",
+                min_cell,
+                in_geometry=in_geometry,
+                in_cell=in_cell,
+                suppressed=suppressed,
             )
         return
 

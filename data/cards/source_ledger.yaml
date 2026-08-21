@@ -1,10 +1,35 @@
 # Still Here SD source ledger (issue #5, A-02).
-# Machine-readable provenance for every raw input. Raw files live in data/raw/
-# (never committed, never deployed); checksums are pinned in
+# Machine-readable provenance for both the shipped demo.v1 lineage and the
+# retained legacy v0 lineage. Raw files live in data/raw/ (never committed,
+# never deployed); exact snapshot checksums are pinned in
 # data/cards/checksums.sha256 and verified by scripts/fetch_raw.sh.
 version: 1
 retrieved_at: "2026-08-21T01:06:45Z"
 retrieved_by: scripts/fetch_raw.sh
+
+artifact_lineages:
+  demo_v1:
+    artifact: public/generated/demo.v1.json
+    required_source_ids:
+      - hackathon_organizer_bundle
+    optional_diagnostic_source_ids:
+      - get_it_done_cd3
+      - parking_meter_activity
+      - noaa_count_day_weather
+    deployment_boundary: >-
+      Only aggregate month, area, and fixed-panel summaries deploy. Raw block
+      identifiers, request records, descriptions, addresses, coordinates, and
+      meter locations never deploy.
+  legacy_v0:
+    artifacts:
+      - public/generated/observations.v0.json
+      - public/generated/quality_report.v0.json
+      - public/generated/manifest.v0.json
+    source_ids:
+      - sdrdl_source
+      - sdrdl_analysis
+      - sd311
+      - rtfh_pitc
 
 sources:
   - id: sdrdl_source
@@ -158,6 +183,145 @@ sources:
         1.66 to 2.03 factors are exactly what DSP adopted in 2017-2018).
       - The HUD national mirror (huduser.gov) is bot-challenged for curl; use
         RTFH files directly.
+
+  - id: hackathon_organizer_bundle
+    name: SD Downtown Homelessness hackathon-provided curated bundle
+    role: demo_v1_primary
+    analytical_question: >-
+      What do verified monthly published totals and raw digitized units on a
+      fixed 261-block panel say about the level and spatial footprint of the
+      same six-area downtown core?
+    publisher: Hackathon organizer; underlying observations collected by the Downtown San Diego Partnership.
+    package_page: null
+    availability: >-
+      Participant-supplied bundle with no public download URL recorded. Place
+      the organizer files in data/raw/hackathon_provided/; the retrieval script
+      intentionally never substitutes a similarly named public dataset.
+    retrieved_at: "2026-08-20; exact local retrieval time was not recorded"
+    files:
+      - raw_path: data/raw/hackathon_provided/Area_Crosswalk.csv
+      - raw_path: data/raw/hackathon_provided/BlockLevel_Counts.csv
+      - raw_path: data/raw/hackathon_provided/BlockLevel_Counts_Panel261.csv
+      - raw_path: data/raw/hackathon_provided/DowntownCounts_Monthly.csv
+      - raw_path: data/raw/hackathon_provided/Methodology_Periods.csv
+    retrieval_method: Manual placement from the organizer-supplied bundle, followed by SHA-256 verification.
+    update_cadence: Fixed hackathon snapshot.
+    license_terms: >-
+      No redistribution license is recorded. Raw files remain ignored and are
+      not published; only aggregate, privacy-reviewed derived output ships.
+    collection_method: >-
+      Monthly visual street sweeps digitized from map images; the monthly
+      component table and block table are separate digitizations of the same
+      underlying maps, not independent sources.
+    intended_use: >-
+      Authoritative demo trend, rolling-origin forecast, fixed-panel spatial
+      sensitivity, and deterministic allocation input basis.
+    time_grain: Monthly observations through 2025, with four unreported 2025 months retained as missing.
+    geo_grain: >-
+      Published area totals and block-level digitized observations. Block IDs
+      and supplied geometries are restricted raw inputs and never deploy.
+    known_limitations:
+      - Visual observations are not a census or deduplicated people.
+      - Published totals use period-specific tent and vehicle occupancy multipliers.
+      - Separate digitizations contain disclosed component mismatches.
+      - Fixed-panel results describe aggregate places, not person movement or causality.
+
+  - id: get_it_done_cd3
+    name: San Diego Get It Done requests submitted in Council District 3
+    role: demo_v1_optional_reporting_bias
+    analytical_question: >-
+      Did aggregate Encampment reporting change around the staged 2023 context,
+      and does the descriptive pattern survive no-parent-root filtering and a
+      matched-calendar comparison?
+    publisher: City of San Diego Performance & Analytics.
+    package_page: https://data.sandiego.gov/datasets/get-it-done-reports/
+    retrieved_at: "2026-08-20; exact local retrieval time was not recorded"
+    files:
+      - raw_path: data/raw/get_it_done/get_it_done_requests_CD3_datasd.csv
+        url: https://seshat.datasd.org/get_it_done_reports/get_it_done_requests_CD3_datasd.csv
+    retrieval_method: curl via scripts/fetch_raw.sh, followed by exact snapshot checksum verification.
+    update_cadence: Daily, mutable upstream export.
+    license_terms: Open Data Commons Public Domain Dedication and License (PDDL).
+    collection_method: Reporter-initiated non-emergency requests and City workflow fields.
+    intended_use: >-
+      Aggregate reporting-process diagnostic only, filtered to exact
+      comm_plan_name DOWNTOWN and date_requested months. Excluded from forecast
+      and allocation.
+    time_grain: Individual request timestamps; only monthly aggregates for 2022-2025 deploy.
+    geo_grain: >-
+      Request records contain coordinates, addresses, free text, and identifiers.
+      Those fields are restricted raw data and never deploy.
+    known_limitations:
+      - Reports are not people, verified abatements, service need, or completed work.
+      - No-parent root rows are a sensitivity, not canonical graph-grouped incidents.
+      - Reporting channel, taxonomy, duplicates, and right-censoring can change over time.
+      - The staged pre/post comparisons are descriptive and non-causal.
+
+  - id: parking_meter_activity
+    name: San Diego parking-meter monthly transactions and location history
+    role: demo_v1_optional_exposure_sensitivity
+    analytical_question: >-
+      Could a broad change in downtown paid-parking activity plausibly explain
+      the contemporaneous Get It Done reporting-pattern shift?
+    publisher: City of San Diego City Treasurer.
+    package_page: https://data.sandiego.gov/datasets/parking-meters-transactions-monthly/
+    location_page: https://data.sandiego.gov/datasets/parking-meters-locations/
+    retrieved_at: "2026-08-20; exact local retrieval time was not recorded"
+    files:
+      - raw_path: data/raw/parking_meters/treas_meters_2022_pole_by_month_datasd.csv
+        url: https://seshat.datasd.org/parking_meters_transactions_monthly/treas_meters_2022_pole_by_month_datasd.csv
+      - raw_path: data/raw/parking_meters/treas_meters_2023_pole_by_month_datasd.csv
+        url: https://seshat.datasd.org/parking_meters_transactions_monthly/treas_meters_2023_pole_by_month_datasd.csv
+      - raw_path: data/raw/parking_meters/treas_meters_2024_pole_by_month_datasd.csv
+        url: https://seshat.datasd.org/parking_meters_transactions_monthly/treas_meters_2024_pole_by_month_datasd.csv
+      - raw_path: data/raw/parking_meters/treas_meters_2025_pole_by_month_datasd.csv
+        url: https://seshat.datasd.org/parking_meters_transactions_monthly/treas_meters_2025_pole_by_month_datasd.csv
+      - raw_path: data/raw/parking_meters/parking_meters_current.csv
+        url: https://seshat.datasd.org/parking_meters_locations/parking_meters_current.csv
+      - raw_path: data/raw/parking_meters/treas_parking_meters_loc_datasd.csv
+        url: https://seshat.datasd.org/parking_meters_locations/treas_parking_meters_loc_datasd.csv
+    retrieval_method: curl via scripts/fetch_raw.sh, followed by exact snapshot checksum verification.
+    update_cadence: Daily, mutable upstream exports.
+    license_terms: Open Data Commons Public Domain Dedication and License (PDDL).
+    collection_method: Monthly transaction totals by meter plus active and historic meter configuration records.
+    intended_use: >-
+      Aggregate paid-parking activity proxy only; fixed-cohort and all-meter
+      changes are descriptive sensitivities excluded from forecast and planning.
+    time_grain: Monthly, 2022-2025 transaction files.
+    geo_grain: >-
+      Meter-level input with precise locations in the active inventory. Only
+      aggregate Downtown transaction summaries deploy.
+    known_limitations:
+      - Transactions are neither unique visitors nor complete trip or footfall counts.
+      - Rates, hours, inventory, payment substitution, events, transit, and the economy can change activity.
+      - Parking-zone Downtown and community-plan DOWNTOWN are not proven identical boundaries.
+
+  - id: noaa_count_day_weather
+    name: NOAA daily summaries for San Diego International Airport USW00023188
+    role: demo_v1_optional_weather_sensitivity
+    analytical_question: >-
+      Were rain or maximum temperature obviously different on the two prepared
+      fixed-panel count dates?
+    publisher: NOAA National Centers for Environmental Information.
+    package_page: https://www.ncei.noaa.gov/access/services/data/v1
+    retrieved_at: "2026-08-20; exact local retrieval time was not recorded"
+    files:
+      - raw_path: data/raw/weather/san_diego_airport_daily_2017_2025.csv
+        url: >-
+          https://www.ncei.noaa.gov/access/services/data/v1?dataset=daily-summaries&stations=USW00023188&startDate=2017-01-01&endDate=2025-12-31&format=csv&units=standard&includeAttributes=false
+    retrieval_method: curl via scripts/fetch_raw.sh, followed by exact snapshot checksum verification.
+    update_cadence: Historical daily series; upstream quality-control revisions remain possible.
+    license_terms: U.S. federal public data; cite NOAA/NCEI and station USW00023188.
+    collection_method: Daily station observations reported through NOAA's Daily Summaries service.
+    intended_use: >-
+      Same-day precipitation and maximum-temperature sensitivity for 2024-01-25
+      versus 2025-01-31 only; excluded from forecast and planning.
+    time_grain: Daily, 2017-2025.
+    geo_grain: Single airport weather station; no block-level inference.
+    known_limitations:
+      - One airport station may not represent block-level downtown conditions.
+      - Same-day weather does not capture prior weather or other environmental conditions.
+      - Similar weather does not make the year-over-year comparison causal.
 
 excluded:
   - id: sdheart

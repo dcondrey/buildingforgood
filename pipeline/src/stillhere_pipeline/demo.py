@@ -29,6 +29,8 @@ from pathlib import Path
 from statistics import median
 from typing import Any
 
+from stillhere_pipeline.contracts import validate_demo_v1
+
 SCHEMA = "stillhere.demo.v1"
 CORE_AREAS = (
     "City Center",
@@ -1969,10 +1971,17 @@ def _footprint_sensitivity(
 
 
 def _annual_panel_contrasts(rows: list[dict[str, str]]) -> dict[str, Any]:
+    """Audit selection against every same-month contrast for the lead component.
+
+    The headline spatial estimand is observed individuals, so this sensitivity
+    must not become ineligible because a different component is missing.  The
+    secondary mixed-unit index has its own missingness boundary and is not used
+    to characterize how unusual the lead result is.
+    """
     by_month: dict[str, dict[str, int | None]] = defaultdict(dict)
     for row in rows:
         month = _month(row["report_month"])
-        value = _raw_units(row)
+        value = None if row["individuals"] == "" else int(row["individuals"])
         by_month[month][row["block_id"]] = value
     contrasts: list[dict[str, Any]] = []
     ineligible: list[dict[str, Any]] = []
@@ -1991,7 +2000,7 @@ def _annual_panel_contrasts(rows: list[dict[str, str]]) -> dict[str, Any]:
                 {
                     "from_month": from_month,
                     "to_month": to_month,
-                    "reason": "At least one component cell is unreported; no zero imputation.",
+                    "reason": "At least one individual cell is unreported; no zero imputation.",
                     "missing_block_rows": missing_values,
                 }
             )
@@ -2009,9 +2018,9 @@ def _annual_panel_contrasts(rows: list[dict[str, str]]) -> dict[str, Any]:
             {
                 "from_month": from_month,
                 "to_month": to_month,
-                "raw_units_change_pct": total_change_pct,
-                "active_blocks_change_pct": active_change_pct,
-                "active_blocks_change": after_active - before_active,
+                "individuals_change_pct": total_change_pct,
+                "individual_active_blocks_change_pct": active_change_pct,
+                "individual_active_blocks_change": after_active - before_active,
                 "direction_divergence_percentage_points": round(
                     active_change_pct - total_change_pct, 1
                 ),
@@ -2027,17 +2036,22 @@ def _annual_panel_contrasts(rows: list[dict[str, str]]) -> dict[str, Any]:
         for row in contrasts
     )
     return {
-        "selection_rule": "Most recent eligible same-month year-over-year panel contrast.",
+        "measure": "Observed individuals and blocks with at least one observed individual.",
+        "selection_rule": (
+            "Most recent complete same-month year-over-year contrast for the lead "
+            "observed-individual component."
+        ),
         "eligible_contrasts": len(contrasts),
         "ineligible_contrasts": ineligible,
         "selected_divergence_rank_descending": divergence_rank,
         "contrasts": contrasts,
         "interpretation": (
-            "The prepared contrast was selected as the most recent eligible annual pair, "
-            "not by maximizing divergence. It has the largest total-down/active-up gap "
-            f"among the {len(contrasts)} complete contrasts. Two otherwise available annual "
-            "pairs are excluded rather than imputing a missing January 2020 tent cell. The "
-            "prepared result is unusually strong rather than a typical year."
+            "The prepared contrast was selected by recency, not by maximizing divergence. "
+            f"All {len(contrasts)} same-month pairs are complete for observed individuals; "
+            f"the prepared pair ranks {divergence_rank} of {len(contrasts)} on the gap "
+            "between individual-block-footprint change and observed-individual count "
+            "change. Missingness in the secondary tent component does not disqualify a "
+            "lead-component sensitivity."
         ),
     }
 
@@ -2361,6 +2375,12 @@ def _forecast(observations: dict[str, Any]) -> dict[str, Any]:
             "promotion_holdout": f"{PROMOTION_START}..{PROMOTION_END}",
             "interval_calibration_window": f"{CALIBRATION_START}..{CALIBRATION_END}",
             "final_audit_window": f"{AUDIT_START}..{AUDIT_END}",
+            "interval_update_rule": (
+                "The residual pool starts with 2024 origins. At each 2025 audit origin, "
+                "it may also use residuals from earlier 2025 targets, never the current "
+                "or a future target. The final planning interval uses the resulting "
+                "2024-plus-2025 residual pool."
+            ),
             "rule": (
                 "Seasonal naive remains the baseline unless the best challenger has "
                 "strictly lower rolling-origin MAE on the 2023 promotion holdout; WAPE "
@@ -2372,8 +2392,8 @@ def _forecast(observations: dict[str, Any]) -> dict[str, Any]:
             ),
             "interval_method": (
                 "Symmetric 80% finite-sample-corrected absolute-residual quantile, "
-                "calibrated on 2024 origins and checked with walk-forward empirical "
-                "coverage on the 2025 audit."
+                "seeded on 2024 origins and sequentially updated after each observed "
+                "2025 audit target for walk-forward empirical coverage."
             ),
         },
         "aggregate": _forecast_series("Six-area downtown core", aggregate_series, target),
@@ -2697,7 +2717,9 @@ def build_demo_document(
             "validation_design": (
                 "Historical one-step-ahead planning scenario with data frozen through "
                 "2025-12. Three deterministic models use rolling origins only: 2023 "
-                "promotion holdout, 2024 interval calibration, then a separate 2025 audit."
+                "promotion holdout, 2024 initial interval calibration, then a 2025 "
+                "sequential audit. The point model stays fixed; the interval residual "
+                "pool updates only after each audit target is observed."
             ),
             "aggregate_model_scorecard": forecast["aggregate"]["model_scorecard"],
             "aggregate_promotion": forecast["aggregate"]["promotion"],
@@ -2773,6 +2795,7 @@ def run_demo(
         parking_dir=parking_dir,
         weather_path=weather_path,
     )
+    validate_demo_v1(document)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n")
     return document

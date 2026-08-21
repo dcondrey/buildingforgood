@@ -18,8 +18,23 @@ export function allocateHours(
   guardEnabled: boolean,
   locks: ReadonlyMap<string, number> = new Map(),
 ): PlanResult {
-  const normalizedBudget = Math.max(0, Math.round(budget));
-  const effectiveFloor = guardEnabled ? Math.max(0, Math.round(floor)) : 0;
+  if (!Number.isFinite(budget) || budget < 0 || !Number.isInteger(budget)) {
+    return {
+      allocations: [],
+      feasible: false,
+      message: "The staff-hour budget must be a nonnegative whole number.",
+    };
+  }
+  if (guardEnabled && (!Number.isFinite(floor) || floor < 0 || !Number.isInteger(floor))) {
+    return {
+      allocations: [],
+      feasible: false,
+      message: "The coverage-continuity floor must be a nonnegative whole number.",
+    };
+  }
+
+  const normalizedBudget = budget;
+  const effectiveFloor = guardEnabled ? floor : 0;
   const unlocked = areas.filter((area) => !locks.has(area.id));
   const lockedTotal = areas.reduce((sum, area) => sum + (locks.get(area.id) ?? 0), 0);
 
@@ -46,6 +61,13 @@ export function allocateHours(
   }
 
   const remaining = normalizedBudget - minimumRequired;
+  if (unlocked.length === 0 && remaining > 0) {
+    return {
+      allocations: [],
+      feasible: false,
+      message: `No feasible plan: every area is locked, leaving ${remaining} unassigned hour${remaining === 1 ? "" : "s"}. Unlock an area or make the locks sum to the budget.`,
+    };
+  }
   const weightTotal = unlocked.reduce((sum, area) => sum + Math.max(0, area.planningLoad), 0);
   const shares = unlocked.map((area, index) => {
     const exact =
@@ -64,11 +86,21 @@ export function allocateHours(
   const unlockedHours = new Map(
     shares.map((share) => [share.area.id, effectiveFloor + share.whole] as const),
   );
+  const allocations = areas.map((area) => ({
+    areaId: area.id,
+    hours: locks.get(area.id) ?? unlockedHours.get(area.id) ?? 0,
+  }));
+  const allocatedTotal = allocations.reduce((sum, allocation) => sum + allocation.hours, 0);
+  if (allocatedTotal !== normalizedBudget) {
+    return {
+      allocations: [],
+      feasible: false,
+      message: `No feasible plan: ${allocatedTotal} of ${normalizedBudget} hours were assigned.`,
+    };
+  }
+
   return {
-    allocations: areas.map((area) => ({
-      areaId: area.id,
-      hours: locks.get(area.id) ?? unlockedHours.get(area.id) ?? 0,
-    })),
+    allocations,
     feasible: true,
     message: guardEnabled
       ? `All ${areas.length} areas retain at least ${effectiveFloor} hours.`

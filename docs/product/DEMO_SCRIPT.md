@@ -66,7 +66,7 @@ if the room is following comfortably.
 ### 1:05–1:40 — Replay a forecast without model theater
 
 **Do:** Move to the forecast. Trace the historical line, point forecast, and
-explicit interval; then point to the selected baseline and held-out error.
+explicit interval; then point to the selected model and held-out error.
 
 **Say:**
 
@@ -80,7 +80,7 @@ explicit interval; then point to the selected baseline and held-out error.
 **Land:** The simplest defensible model wins; there is no random time-series
 split, future-error leakage, or LLM forecast.
 
-### 1:40–2:12 — Generate a coverage-continuity scenario
+### 1:40–2:05 — Generate a coverage-continuity scenario
 
 **Do:** Click **Generate coverage scenario**. Point to the 80/80 total and use
 the **0h audit only**, **4h sensitivity**, and **8h prepared demo** controls.
@@ -95,7 +95,7 @@ the **0h audit only**, **4h sensitivity**, and **8h prepared demo** controls.
 
 **Land:** The policy choice is explicit, adjustable, and testable.
 
-### 2:03–2:28 — Make the tradeoff visible
+### 2:05–2:28 — Make the tradeoff visible
 
 **Do:** Click **Audit without coverage guard**. Point to the areas that lose
 continuity, then click **Restore 8h demo guard**.
@@ -147,9 +147,9 @@ in this order:
 Do not cut the causal/privacy boundary or imply the decline proves progress.
 
 For a more controlled stage reveal, select **Guide demo** before speaking and
-advance with **Next** after each point lands. The guide runs the same four scenes
-and can be stopped with **Stop** or Escape; it is presentation control, not a
-different analytical mode.
+let the evidence result land. It stays on that first beat until you press
+**Next**, then advances through the same four scenes. Stop it with **Stop** or
+Escape; it is presentation control, not a different analytical mode.
 
 ## Offline fallback checklist
 

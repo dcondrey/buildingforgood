@@ -1,5 +1,11 @@
 # Analytical Methods
 
+> **Design-history note.** This file describes the initial candidate plan,
+> including a spatial flow model that was deliberately not shipped. The
+> implemented, audited methods are documented in
+> [`DATA_QUALITY_AUDIT.md`](DATA_QUALITY_AUDIT.md), the generated artifact, and
+> the current README.
+
 The planned approach for preparation, drop testing, forecasting, and planning.
 Milestone gates and the test strategy live in
 [`DEVELOPMENT_PLAN.md`](../../DEVELOPMENT_PLAN.md); resolved thresholds live in

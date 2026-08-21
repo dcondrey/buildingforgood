@@ -42,3 +42,31 @@ time scale, limitations, and permitted use must be explainable.
   phenomena.
 - An aggregate flow model cannot distinguish housing exits, movement, new
   arrivals, or measurement error without additional evidence.
+
+## Shipped demo lineage and reproduction
+
+The shipped `stillhere.demo.v1` artifact uses the five organizer-supplied CSVs
+listed in the ledger as its primary source. The Get It Done Council District 3,
+parking-meter, and NOAA snapshots are optional descriptive diagnostics and are
+excluded from forecasting and allocation. The older SDRDL, closed-2025 311,
+and PIT entries remain in the ledger for the retained v0 lineage; they are not
+inputs to `demo.v1`.
+
+Raw organizer, request, block, meter-location, and weather files are ignored
+and never deploy. To verify an already staged copy of the exact analytical
+snapshot without making a network request, run:
+
+```bash
+./scripts/fetch_raw.sh verify-demo
+```
+
+`./scripts/fetch_raw.sh demo` instead fetches the current public diagnostic
+exports. Because those City/NOAA endpoints are mutable, it deliberately fails
+when retrieved bytes no longer match the pinned snapshot. Audit the source
+change before explicitly re-pinning and regenerating; never silently combine
+snapshots. There is no recorded public substitute for the organizer bundle.
+
+The generator invokes the authoritative `demo.v1` contract and precise-field
+privacy gate before creating or replacing the deployment artifact. Raw-dependent
+analytical tests skip in a clean checkout, while raw-independent contract tests
+validate the committed artifact and decision-critical invariants in CI.

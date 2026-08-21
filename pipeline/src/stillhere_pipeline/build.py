@@ -175,7 +175,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build deployment-safe aggregate artifacts.")
     parser.add_argument("--raw", type=Path, default=Path("data/raw"))
     parser.add_argument("--cards", type=Path, default=Path("data/cards"))
-    parser.add_argument("--out", type=Path, default=Path("public/generated"))
+    parser.add_argument("--out", type=Path, default=Path("data/processed/generated"))
     args = parser.parse_args(argv)
     try:
         summary = run_build(args.raw, args.cards, args.out)

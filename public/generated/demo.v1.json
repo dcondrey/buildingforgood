@@ -10,87 +10,93 @@
       "annual_contrast_sensitivity": {
         "contrasts": [
           {
-            "active_blocks_change": -10,
-            "active_blocks_change_pct": -7.0,
-            "direction_divergence_percentage_points": -16.4,
+            "direction_divergence_percentage_points": -19.7,
             "from_month": "2018-01",
-            "raw_units_change_pct": 9.4,
+            "individual_active_blocks_change": -17,
+            "individual_active_blocks_change_pct": -12.1,
+            "individuals_change_pct": 7.6,
             "selected": false,
             "to_month": "2019-01"
           },
           {
-            "active_blocks_change": -3,
-            "active_blocks_change_pct": -2.4,
-            "direction_divergence_percentage_points": 18.7,
+            "direction_divergence_percentage_points": 4.2,
+            "from_month": "2019-01",
+            "individual_active_blocks_change": 9,
+            "individual_active_blocks_change_pct": 7.3,
+            "individuals_change_pct": 3.1,
+            "selected": false,
+            "to_month": "2020-01"
+          },
+          {
+            "direction_divergence_percentage_points": 17.6,
+            "from_month": "2020-01",
+            "individual_active_blocks_change": -20,
+            "individual_active_blocks_change_pct": -15.0,
+            "individuals_change_pct": -32.6,
+            "selected": false,
+            "to_month": "2021-01"
+          },
+          {
+            "direction_divergence_percentage_points": 31.3,
             "from_month": "2020-02",
-            "raw_units_change_pct": -21.1,
+            "individual_active_blocks_change": -9,
+            "individual_active_blocks_change_pct": -7.5,
+            "individuals_change_pct": -38.8,
             "selected": false,
             "to_month": "2021-02"
           },
           {
-            "active_blocks_change": 21,
-            "active_blocks_change_pct": 17.4,
-            "direction_divergence_percentage_points": -33.4,
+            "direction_divergence_percentage_points": -7.1,
             "from_month": "2021-01",
-            "raw_units_change_pct": 50.8,
+            "individual_active_blocks_change": 20,
+            "individual_active_blocks_change_pct": 17.7,
+            "individuals_change_pct": 24.8,
             "selected": false,
             "to_month": "2022-01"
           },
           {
-            "active_blocks_change": 18,
-            "active_blocks_change_pct": 14.6,
-            "direction_divergence_percentage_points": -47.7,
+            "direction_divergence_percentage_points": -19.6,
             "from_month": "2021-02",
-            "raw_units_change_pct": 62.3,
+            "individual_active_blocks_change": 21,
+            "individual_active_blocks_change_pct": 18.9,
+            "individuals_change_pct": 38.5,
             "selected": false,
             "to_month": "2022-02"
           },
           {
-            "active_blocks_change": -3,
-            "active_blocks_change_pct": -2.1,
-            "direction_divergence_percentage_points": -6.3,
+            "direction_divergence_percentage_points": 3.8,
             "from_month": "2022-01",
-            "raw_units_change_pct": 4.2,
+            "individual_active_blocks_change": -26,
+            "individual_active_blocks_change_pct": -19.5,
+            "individuals_change_pct": -23.3,
             "selected": false,
             "to_month": "2023-01"
           },
           {
-            "active_blocks_change": -18,
-            "active_blocks_change_pct": -12.9,
-            "direction_divergence_percentage_points": 3.3,
+            "direction_divergence_percentage_points": -16.3,
             "from_month": "2023-01",
-            "raw_units_change_pct": -16.2,
+            "individual_active_blocks_change": 4,
+            "individual_active_blocks_change_pct": 3.7,
+            "individuals_change_pct": 20.0,
             "selected": false,
             "to_month": "2024-01"
           },
           {
-            "active_blocks_change": 20,
-            "active_blocks_change_pct": 16.5,
-            "direction_divergence_percentage_points": 30.4,
+            "direction_divergence_percentage_points": 15.0,
             "from_month": "2024-01",
-            "raw_units_change_pct": -13.9,
+            "individual_active_blocks_change": 25,
+            "individual_active_blocks_change_pct": 22.5,
+            "individuals_change_pct": 7.5,
             "selected": true,
             "to_month": "2025-01"
           }
         ],
-        "eligible_contrasts": 7,
-        "ineligible_contrasts": [
-          {
-            "from_month": "2019-01",
-            "missing_block_rows": 1,
-            "reason": "At least one component cell is unreported; no zero imputation.",
-            "to_month": "2020-01"
-          },
-          {
-            "from_month": "2020-01",
-            "missing_block_rows": 1,
-            "reason": "At least one component cell is unreported; no zero imputation.",
-            "to_month": "2021-01"
-          }
-        ],
-        "interpretation": "The prepared contrast was selected as the most recent eligible annual pair, not by maximizing divergence. It has the largest total-down/active-up gap among the 7 complete contrasts. Two otherwise available annual pairs are excluded rather than imputing a missing January 2020 tent cell. The prepared result is unusually strong rather than a typical year.",
-        "selected_divergence_rank_descending": 1,
-        "selection_rule": "Most recent eligible same-month year-over-year panel contrast."
+        "eligible_contrasts": 9,
+        "ineligible_contrasts": [],
+        "interpretation": "The prepared contrast was selected by recency, not by maximizing divergence. All 9 same-month pairs are complete for observed individuals; the prepared pair ranks 3 of 9 on the gap between individual-block-footprint change and observed-individual count change. Missingness in the secondary tent component does not disqualify a lead-component sensitivity.",
+        "measure": "Observed individuals and blocks with at least one observed individual.",
+        "selected_divergence_rank_descending": 3,
+        "selection_rule": "Most recent complete same-month year-over-year contrast for the lead observed-individual component."
       },
       "areas": [
         {
@@ -1320,7 +1326,8 @@
     "selection_rule": {
       "final_audit_window": "2025-01..2025-12",
       "interval_calibration_window": "2024-01..2024-12",
-      "interval_method": "Symmetric 80% finite-sample-corrected absolute-residual quantile, calibrated on 2024 origins and checked with walk-forward empirical coverage on the 2025 audit.",
+      "interval_method": "Symmetric 80% finite-sample-corrected absolute-residual quantile, seeded on 2024 origins and sequentially updated after each observed 2025 audit target for walk-forward empirical coverage.",
+      "interval_update_rule": "The residual pool starts with 2024 origins. At each 2025 audit origin, it may also use residuals from earlier 2025 targets, never the current or a future target. The final planning interval uses the resulting 2024-plus-2025 residual pool.",
       "leakage_control": "No random split: promotion ends before the separately reported 2025 audit. Each origin can read only observations earlier than its target.",
       "models": [
         "local_linear_6_observed",
@@ -4122,9 +4129,9 @@
       "variable_budget_hours": 32
     },
     "annual_contrast_selection": {
-      "eligible_contrasts": 7,
-      "selected_divergence_rank_descending": 1,
-      "selection_rule": "Most recent eligible same-month year-over-year panel contrast."
+      "eligible_contrasts": 9,
+      "selected_divergence_rank_descending": 3,
+      "selection_rule": "Most recent complete same-month year-over-year contrast for the lead observed-individual component."
     },
     "footprint_sensitivity": {
       "balanced_261_panel": {
@@ -4203,6 +4210,6 @@
     "reporting_bias_design": "Optional, allocation-excluded Get It Done reporting diagnostic using exact DOWNTOWN community-plan geography and date_requested.",
     "robustness_design": "A historically verified fixed cohort of downtown paid-parking meters tests broad activity exposure; NOAA compares weather on the two prepared fixed-panel count dates. Neither enters forecasting or allocation.",
     "spatial_estimand": "Raw observed units on the identical 261 blocks; no occupancy inference.",
-    "validation_design": "Historical one-step-ahead planning scenario with data frozen through 2025-12. Three deterministic models use rolling origins only: 2023 promotion holdout, 2024 interval calibration, then a separate 2025 audit."
+    "validation_design": "Historical one-step-ahead planning scenario with data frozen through 2025-12. Three deterministic models use rolling origins only: 2023 promotion holdout, 2024 initial interval calibration, then a 2025 sequential audit. The point model stays fixed; the interval residual pool updates only after each audit target is observed."
   }
 }

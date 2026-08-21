@@ -22,7 +22,7 @@ silently imputed, deleted, or used to manufacture a more favorable result.
 | Balanced-panel area/source-label drift           |                   0 / 0 | Require stable membership                                                  |
 | Common spatial support                           |   261 blocks × 12 dates | Components lead every spatial claim                                        |
 | Crosswalk duplicate or unmapped labels           |                   0 / 0 | No inferred fuzzy joins                                                    |
-| Artifact rebuild                                 |          Byte-identical | SHA-256 `a0e2c3db5cd642dcae72af9ea80016657931a75f51df643e0d663f5569d56741` |
+| Artifact rebuild                                 |          Byte-identical | SHA-256 `a3fc236140c832fcac0b4ee2e2b1bf19d9801f4e72ef62267659b85f78edeb78` |
 
 ## Material anomaly ledger
 
@@ -45,12 +45,13 @@ from the 25 source-flagged material mismatches.
 
 ## Annual-comparison selection
 
-The artifact enumerates every nominal same-month year-over-year pair. Seven are
-eligible without imputation. Two pairs touching January 2020 are ineligible
-because one tent cell is blank. January 2024 to January 2025 is selected because
-it is the latest available pair, both dates use POST2020, and January 2025 is
-the final panel date. It is also the strongest component divergence among the
-seven eligible pairs; that fact is disclosed, not used as a hidden rule.
+The artifact enumerates every nominal same-month year-over-year pair for the
+lead observed-individual component. All nine are complete. January 2024 to
+January 2025 is selected because it is the latest available pair, both dates use
+POST2020, and January 2025 is the final panel date. It ranks third of nine on
+the gap between individual-block-footprint change and observed-individual count
+change. The blank January 2020 tent cell affects the secondary mixed-unit lane,
+not eligibility of this component-aligned selection audit.
 
 ## Separate measurement lanes
 
@@ -87,6 +88,8 @@ seven eligible pairs; that fact is disclosed, not used as a hidden rule.
 | Zippia profile                                  | Reject                        | Wrong organization, proprietary estimates, no relevant outcome                                                                 |
 | Precise ArcGIS 311 points                       | Reject                        | Duplicate GID lineage with higher location/privacy risk                                                                        |
 | sandiegodata-projects GitHub repositories       | Provenance only               | Public DSDP digitization/update lineage, not an independent observation stream                                                 |
+| San Diego planning database                     | Crosswalk candidate           | Census tract/community link tables can validate future joins; they do not extend the downtown outcome series                  |
+| SDRDL homelessness catalog                      | Provenance/historical only    | Mostly the same DSDP lineage plus older PIT/HIC packages with different methods and geography                                  |
 | Unverified indexes or exposed servers           | Reject                        | Weak provenance, unclear authorization, no reproducibility advantage                                                           |
 
 ## Cleaning and privacy rules

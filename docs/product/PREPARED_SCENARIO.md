@@ -1,5 +1,11 @@
 # Prepared Scenario: Next-Shift Outreach Continuity
 
+> **Superseded design record.** This provisional East Village/displacement
+> scenario is preserved for audit history but is not the released demo. The
+> authoritative scenario is the component-first six-area historical replay in
+> [`public/generated/demo.v1.json`](../../public/generated/demo.v1.json), with
+> the current narrative in [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md).
+
 Scenario ID: `stillhere-demo-001`
 
 Status: Provisional pending Track A source and comparability review

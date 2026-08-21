@@ -39,4 +39,28 @@ describe("allocateHours", () => {
       allocateHours(EMBEDDED_DEMO.areas, 80, 8, true).allocations.map((row) => row.hours),
     );
   });
+
+  it("rejects fractional budgets instead of silently rounding them", () => {
+    const result = allocateHours(EMBEDDED_DEMO.areas, 80.5, 8, true);
+    expect(result.feasible).toBe(false);
+    expect(result.allocations).toEqual([]);
+    expect(result.message).toMatch(/whole number/);
+  });
+
+  it("rejects an under-budget plan when every area is locked", () => {
+    const locks = new Map(EMBEDDED_DEMO.areas.map((area) => [area.id, 8]));
+    const result = allocateHours(EMBEDDED_DEMO.areas, 80, 8, true, locks);
+    expect(result.feasible).toBe(false);
+    expect(result.allocations).toEqual([]);
+    expect(result.message).toMatch(/every area is locked/);
+  });
+
+  it("accepts exact-budget locks when every area is locked", () => {
+    const locks = new Map(
+      EMBEDDED_DEMO.areas.map((area, index) => [area.id, index === 0 ? 40 : 8]),
+    );
+    const result = allocateHours(EMBEDDED_DEMO.areas, 80, 8, true, locks);
+    expect(result.feasible).toBe(true);
+    expect(result.allocations.reduce((sum, row) => sum + row.hours, 0)).toBe(80);
+  });
 });

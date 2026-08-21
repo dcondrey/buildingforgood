@@ -136,6 +136,15 @@ export interface DemoData {
     mobilePrePct: number;
     mobilePostPct: number;
     placeboChangePct: number;
+    matchedCalendar?: {
+      rawChangePct: number;
+      uniqueParentChangePct: number;
+      allReportsChangePct: number;
+      sharePrePct: number;
+      sharePostPct: number;
+      shareChangePoints: number;
+      interpretation: string;
+    };
     checkpoints: Array<{
       month: string;
       publishedTotal: number;
@@ -155,6 +164,14 @@ export interface DemoData {
       postPerMeter: number;
       allMeterChangePct: number;
       interpretation: string;
+      matchedCalendar?: {
+        verifiedPoles: number;
+        preMonthlyMean: number;
+        postMonthlyMean: number;
+        changePct: number;
+        allMeterChangePct: number;
+        interpretation: string;
+      };
     };
     weather: {
       station: string;
@@ -366,6 +383,10 @@ function number(value: unknown, fallback: number): number {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+function finite(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
 function normalizeAreaId(value: string): string {
   return value
     .trim()
@@ -514,39 +535,98 @@ export function adaptDemoV1(input: unknown): DemoData | null {
     const duplicateSensitivity = record(biasComparison.raw_vs_parent_sensitivity) ?? {};
     const originSensitivity = record(biasComparison.case_origin_sensitivity) ?? {};
     const placebo = record(biasComparison.placebo_combined_raw) ?? {};
+    const matchedRoot = record(biasComparison.matched_calendar_sensitivity);
     const checkpointBlock = record(reportingBiasRoot.cross_source_checkpoints) ?? {};
-    const checkpoints = array(checkpointBlock.checkpoints)
+    const checkpointInputs = array(checkpointBlock.checkpoints);
+    const checkpoints = checkpointInputs
       .map((item) => {
         const row = record(item);
         const month = text(row?.month, "");
-        if (!month) return null;
+        if (
+          !month ||
+          !finite(row?.dsdp_all_neighborhood_published_total) ||
+          !finite(row?.gid_encampment_raw) ||
+          !finite(row?.gid_encampment_unique_parent) ||
+          !finite(row?.raw_reports_per_published_total_unit)
+        ) {
+          return null;
+        }
         return {
           month: displayMonth(month),
-          publishedTotal: number(row?.dsdp_all_neighborhood_published_total, 0),
-          rawReports: number(row?.gid_encampment_raw, 0),
-          uniqueParents: number(row?.gid_encampment_unique_parent, 0),
-          rawPerPublishedUnit: number(row?.raw_reports_per_published_total_unit, 0),
+          publishedTotal: row.dsdp_all_neighborhood_published_total,
+          rawReports: row.gid_encampment_raw,
+          uniqueParents: row.gid_encampment_unique_parent,
+          rawPerPublishedUnit: row.raw_reports_per_published_total_unit,
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null);
-    reportingBias = {
-      status: text(reportingBiasRoot.status, "descriptive_diagnostic"),
-      rawChangePct: number(rawReports.percent_change, 0),
-      uniqueParentChangePct: number(uniqueParents.percent_change, 0),
-      allReportsChangePct: number(allReports.percent_change, 0),
-      sharePrePct: number(share.pre_pct, 0),
-      sharePostPct: number(share.post_pct, 0),
-      shareChangePoints: number(share.change_percentage_points, 0),
-      duplicatePrePct: number(duplicateSensitivity.pre_duplicate_child_share_pct, 0),
-      duplicatePostPct: number(duplicateSensitivity.post_duplicate_child_share_pct, 0),
-      mobilePrePct: number(originSensitivity.pre_share_pct, 0),
-      mobilePostPct: number(originSensitivity.post_share_pct, 0),
-      placeboChangePct: number(placebo.percent_change, 0),
-      checkpoints,
-      interpretation: text(biasComparison.interpretation, "Descriptive reporting diagnostic.")
-        .replaceAll("reporting-pattern discontinuity", "pre/post reporting-pattern shift")
-        .replaceAll("reporting discontinuity", "pre/post reporting-pattern shift"),
-    };
+    const requiredValues = [
+      rawReports.percent_change,
+      uniqueParents.percent_change,
+      allReports.percent_change,
+      share.pre_pct,
+      share.post_pct,
+      share.change_percentage_points,
+      duplicateSensitivity.pre_duplicate_child_share_pct,
+      duplicateSensitivity.post_duplicate_child_share_pct,
+      originSensitivity.pre_share_pct,
+      originSensitivity.post_share_pct,
+      placebo.percent_change,
+    ];
+    let matchedCalendar: NonNullable<DemoData["reportingBias"]>["matchedCalendar"];
+    if (matchedRoot) {
+      const matchedRaw = record(matchedRoot.encampment_raw) ?? {};
+      const matchedParents = record(matchedRoot.encampment_unique_parent) ?? {};
+      const matchedAll = record(matchedRoot.all_reports) ?? {};
+      const matchedShare = record(matchedRoot.encampment_share) ?? {};
+      const matchedValues = [
+        matchedRaw.percent_change,
+        matchedParents.percent_change,
+        matchedAll.percent_change,
+        matchedShare.pre_pct,
+        matchedShare.post_pct,
+        matchedShare.change_percentage_points,
+      ];
+      if (matchedValues.every(finite)) {
+        matchedCalendar = {
+          rawChangePct: number(matchedRaw.percent_change, 0),
+          uniqueParentChangePct: number(matchedParents.percent_change, 0),
+          allReportsChangePct: number(matchedAll.percent_change, 0),
+          sharePrePct: number(matchedShare.pre_pct, 0),
+          sharePostPct: number(matchedShare.post_pct, 0),
+          shareChangePoints: number(matchedShare.change_percentage_points, 0),
+          interpretation: text(
+            matchedRoot.interpretation,
+            "Matched-calendar reporting sensitivity.",
+          ),
+        };
+      }
+    }
+    if (
+      requiredValues.every(finite) &&
+      checkpointInputs.length > 0 &&
+      checkpoints.length === checkpointInputs.length
+    ) {
+      reportingBias = {
+        status: text(reportingBiasRoot.status, "descriptive_diagnostic"),
+        rawChangePct: number(rawReports.percent_change, 0),
+        uniqueParentChangePct: number(uniqueParents.percent_change, 0),
+        allReportsChangePct: number(allReports.percent_change, 0),
+        sharePrePct: number(share.pre_pct, 0),
+        sharePostPct: number(share.post_pct, 0),
+        shareChangePoints: number(share.change_percentage_points, 0),
+        duplicatePrePct: number(duplicateSensitivity.pre_duplicate_child_share_pct, 0),
+        duplicatePostPct: number(duplicateSensitivity.post_duplicate_child_share_pct, 0),
+        mobilePrePct: number(originSensitivity.pre_share_pct, 0),
+        mobilePostPct: number(originSensitivity.post_share_pct, 0),
+        placeboChangePct: number(placebo.percent_change, 0),
+        matchedCalendar,
+        checkpoints,
+        interpretation: text(biasComparison.interpretation, "Descriptive reporting diagnostic.")
+          .replaceAll("reporting-pattern discontinuity", "pre/post reporting-pattern shift")
+          .replaceAll("reporting discontinuity", "pre/post reporting-pattern shift"),
+      };
+    }
   }
 
   let distributionSensitivity: DemoData["signal"]["distributionSensitivity"];
@@ -664,43 +744,88 @@ export function adaptDemoV1(input: unknown): DemoData | null {
     const parkingComparison = record(parkingRoot.comparison) ?? {};
     const fixedCohort = record(parkingComparison.fixed_cohort) ?? {};
     const allMeters = record(parkingComparison.all_observed_downtown_meters) ?? {};
+    const parkingMatchedRoot = record(parkingComparison.matched_calendar_sensitivity);
     const weatherStation = record(weatherRoot.station) ?? {};
     const weatherComparison = record(weatherRoot.comparison) ?? {};
-    const weatherDates = array(weatherRoot.dates)
+    const weatherInputs = array(weatherRoot.dates);
+    const weatherDates = weatherInputs
       .map((item) => {
         const row = record(item);
         const date = text(row?.date, "");
-        if (!date) return null;
+        if (!date || !finite(row?.precipitation_inches) || !finite(row?.maximum_temperature_f)) {
+          return null;
+        }
         return {
           date,
-          precipitation: number(row?.precipitation_inches, 0),
-          maximumTemperature: number(row?.maximum_temperature_f, 0),
+          precipitation: row.precipitation_inches,
+          maximumTemperature: row.maximum_temperature_f,
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null);
-    robustness = {
-      parking: {
-        verifiedPoles: number(parkingCohort.historically_verified_poles, 0),
-        preMonthlyMean: number(fixedCohort.pre_monthly_mean, 0),
-        postMonthlyMean: number(fixedCohort.post_monthly_mean, 0),
-        changePct: number(fixedCohort.percent_change, 0),
-        prePerMeter: number(fixedCohort.pre_transactions_per_meter_month, 0),
-        postPerMeter: number(fixedCohort.post_transactions_per_meter_month, 0),
-        allMeterChangePct: number(allMeters.percent_change, 0),
-        interpretation: text(
-          parkingComparison.interpretation,
-          "Paid-parking exposure is a descriptive sensitivity only.",
-        ),
-      },
-      weather: {
-        station: `${text(weatherStation.label, "Weather station")} · ${text(weatherStation.id, "")}`,
-        dates: weatherDates,
-        interpretation: text(
-          weatherComparison.interpretation,
-          "Same-day weather is a descriptive sensitivity only.",
-        ),
-      },
-    };
+    const parkingValues = [
+      parkingCohort.historically_verified_poles,
+      fixedCohort.pre_monthly_mean,
+      fixedCohort.post_monthly_mean,
+      fixedCohort.percent_change,
+      fixedCohort.pre_transactions_per_meter_month,
+      fixedCohort.post_transactions_per_meter_month,
+      allMeters.percent_change,
+    ];
+    let matchedCalendar: NonNullable<DemoData["robustness"]>["parking"]["matchedCalendar"];
+    if (parkingMatchedRoot) {
+      const matchedFixed = record(parkingMatchedRoot.fixed_cohort) ?? {};
+      const matchedAll = record(parkingMatchedRoot.all_observed_downtown_meters) ?? {};
+      const matchedValues = [
+        parkingMatchedRoot.historically_verified_poles,
+        matchedFixed.pre_monthly_mean,
+        matchedFixed.post_monthly_mean,
+        matchedFixed.percent_change,
+        matchedAll.percent_change,
+      ];
+      if (matchedValues.every(finite)) {
+        matchedCalendar = {
+          verifiedPoles: number(parkingMatchedRoot.historically_verified_poles, 0),
+          preMonthlyMean: number(matchedFixed.pre_monthly_mean, 0),
+          postMonthlyMean: number(matchedFixed.post_monthly_mean, 0),
+          changePct: number(matchedFixed.percent_change, 0),
+          allMeterChangePct: number(matchedAll.percent_change, 0),
+          interpretation: text(
+            parkingMatchedRoot.interpretation,
+            "Matched-calendar paid-parking sensitivity.",
+          ),
+        };
+      }
+    }
+    if (
+      parkingValues.every(finite) &&
+      weatherInputs.length > 0 &&
+      weatherDates.length === weatherInputs.length
+    ) {
+      robustness = {
+        parking: {
+          verifiedPoles: number(parkingCohort.historically_verified_poles, 0),
+          preMonthlyMean: number(fixedCohort.pre_monthly_mean, 0),
+          postMonthlyMean: number(fixedCohort.post_monthly_mean, 0),
+          changePct: number(fixedCohort.percent_change, 0),
+          prePerMeter: number(fixedCohort.pre_transactions_per_meter_month, 0),
+          postPerMeter: number(fixedCohort.post_transactions_per_meter_month, 0),
+          allMeterChangePct: number(allMeters.percent_change, 0),
+          interpretation: text(
+            parkingComparison.interpretation,
+            "Paid-parking exposure is a descriptive sensitivity only.",
+          ),
+          matchedCalendar,
+        },
+        weather: {
+          station: `${text(weatherStation.label, "Weather station")} · ${text(weatherStation.id, "")}`,
+          dates: weatherDates,
+          interpretation: text(
+            weatherComparison.interpretation,
+            "Same-day weather is a descriptive sensitivity only.",
+          ),
+        },
+      };
+    }
   }
 
   return {

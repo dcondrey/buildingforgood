@@ -234,6 +234,14 @@ describe("generated demo adapter", () => {
       allReportsChangePct: 9.2,
       shareChangePoints: 15.6,
       placeboChangePct: -27.3,
+      matchedCalendar: {
+        rawChangePct: 88.1,
+        uniqueParentChangePct: 96,
+        allReportsChangePct: 40.9,
+        sharePrePct: 42.4,
+        sharePostPct: 56.6,
+        shareChangePoints: 14.2,
+      },
     });
     expect(demo?.reportingBias?.interpretation).toContain("pre/post reporting-pattern shift");
     expect(demo?.reportingBias?.interpretation).not.toContain("discontinuity");
@@ -251,10 +259,27 @@ describe("generated demo adapter", () => {
       postMonthlyMean: 286531.2,
       changePct: -1.7,
       allMeterChangePct: -2.9,
+      matchedCalendar: {
+        verifiedPoles: 1997,
+        preMonthlyMean: 288519.2,
+        postMonthlyMean: 281613.8,
+        changePct: -2.4,
+        allMeterChangePct: -4,
+      },
     });
     expect(demo?.robustness?.weather.dates).toEqual([
       { date: "2024-01-25", precipitation: 0, maximumTemperature: 62 },
       { date: "2025-01-31", precipitation: 0, maximumTemperature: 63 },
     ]);
+  });
+
+  it("fails optional diagnostics closed when required numeric fields are incomplete", () => {
+    const incompleteReporting = structuredClone(artifact);
+    delete incompleteReporting.reporting_bias.comparison.encampment_raw.percent_change;
+    expect(adaptDemoV1(incompleteReporting)?.reportingBias).toBeUndefined();
+
+    const incompleteRobustness = structuredClone(artifact);
+    delete incompleteRobustness.evidence.robustness.count_day_weather.dates[0].precipitation_inches;
+    expect(adaptDemoV1(incompleteRobustness)?.robustness).toBeUndefined();
   });
 });

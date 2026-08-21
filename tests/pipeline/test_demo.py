@@ -185,22 +185,20 @@ def test_like_for_like_component_footprint_is_primary_sensitivity(demo: dict) ->
 
 def test_annual_contrast_is_latest_not_cherry_picked(demo: dict) -> None:
     sensitivity = demo["evidence"]["balanced_panel"]["annual_contrast_sensitivity"]
-    assert sensitivity["eligible_contrasts"] == 7
-    assert sensitivity["selected_divergence_rank_descending"] == 1
-    assert [
-        (row["from_month"], row["to_month"]) for row in sensitivity["ineligible_contrasts"]
-    ] == [
-        ("2019-01", "2020-01"),
-        ("2020-01", "2021-01"),
-    ]
+    assert sensitivity["measure"] == (
+        "Observed individuals and blocks with at least one observed individual."
+    )
+    assert sensitivity["eligible_contrasts"] == 9
+    assert sensitivity["selected_divergence_rank_descending"] == 3
+    assert sensitivity["ineligible_contrasts"] == []
     selected = next(row for row in sensitivity["contrasts"] if row["selected"])
     assert selected == {
         "from_month": "2024-01",
         "to_month": "2025-01",
-        "raw_units_change_pct": -13.9,
-        "active_blocks_change_pct": 16.5,
-        "active_blocks_change": 20,
-        "direction_divergence_percentage_points": 30.4,
+        "individuals_change_pct": 7.5,
+        "individual_active_blocks_change_pct": 22.5,
+        "individual_active_blocks_change": 25,
+        "direction_divergence_percentage_points": 15.0,
         "selected": True,
     }
 

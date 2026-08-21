@@ -1,8 +1,14 @@
 # Decision Configuration
 
-`decision.v1.json` is the shared scenario configuration for pipeline, planner,
-and interface work. It separates fixed demo decisions from provisional values
-that require analytical or operational review.
+> **Superseded design contract.** `decision.v1.json` records the initial East
+> Village/displacement concept and is not consumed by the released interface.
+> The authoritative runtime contract and frozen scenario are
+> `public/generated/demo.v1.json` (`stillhere.demo.v1`). Retain this file only
+> as a transparent design-history record until the integration issue is closed.
+
+`decision.v1.json` was the shared scenario configuration for early pipeline,
+planner, and interface work. It separates fixed demo decisions from provisional
+values that required analytical or operational review.
 
 ## Status rules
 

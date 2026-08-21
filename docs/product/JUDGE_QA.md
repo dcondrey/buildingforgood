@@ -318,11 +318,12 @@ counterfactual, and we do not call it one.
 
 It is the latest available same-month year-over-year pair, both dates use the
 same POST2020 method, and January 2025 is the final panel date. The artifact
-enumerates all seven eligible annual contrasts and two ineligible pairs; the
-latest pair is also the strongest divergence, which we disclose rather than
-hide. The two ineligible pairs touch January 2020's blank tent cell and would
-require imputation. We make no p-value, population effect, or claim that every
-interval behaves this way.
+enumerates all nine annual contrasts for the lead observed-individual
+component. The latest pair ranks third of nine on the gap between
+individual-block-footprint change and observed-individual count change. The
+blank January 2020 tent cell affects only the secondary mixed-unit lane and does
+not disqualify an individual-component contrast. We make no p-value, population
+effect, or claim that every interval behaves this way.
 
 ### Could more blocks show individuals just because enumerators searched harder?
 

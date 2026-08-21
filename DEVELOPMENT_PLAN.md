@@ -1,5 +1,10 @@
 # Still Here SD Development Plan
 
+> **Original design plan, retained for transparency.** The release evolved away
+> from neighborhood displacement classification toward component-aligned
+> fixed-panel evidence and a historical planning replay. See `README.md` and
+> `docs/product/DEMO_SCRIPT.md` for current behavior.
+
 ## Objective
 
 Turn a historical aggregate record into a forward-looking, decision-relevant recommendation. Deliver a reproducible, static web application that lets an outreach coordinator:

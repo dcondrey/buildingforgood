@@ -1,8 +1,14 @@
 # Still Here SD UI Storyboard
 
+> **Historical storyboard.** The implemented product retained the four-step
+> decision flow but replaced the provisional East Village/displacement framing
+> with a component-first, fixed-panel measurement audit. Current screen copy
+> and stage behavior are defined by `app/src/App.tsx` and
+> [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md).
+
 Issue: B-01 / #20
 
-Status: Ready for implementation handoff
+Status: Superseded after implementation
 
 Last updated: 2026-08-20
 

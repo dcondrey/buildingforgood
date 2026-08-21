@@ -12,6 +12,7 @@ export interface PlanningArea {
   latest: number | null;
   delta: number;
   planningLoad: number;
+  auditWape: number | null;
   reason: string;
 }
 
@@ -51,6 +52,60 @@ export interface DemoData {
     activeTo: number;
     activeChange: number;
     activeChangePct: number;
+    components: {
+      individuals: { from: number; to: number; change: number; changePct: number };
+      structures: { from: number; to: number; change: number; changePct: number };
+      vehicles: { from: number; to: number; change: number; changePct: number };
+    };
+    componentDistribution?: {
+      components: Array<{
+        id: "individuals" | "structures" | "vehicles";
+        label: string;
+        thresholds: Array<{
+          minimumUnits: number;
+          fromBlocks: number;
+          toBlocks: number;
+          change: number;
+        }>;
+        hhiFrom: number;
+        hhiTo: number;
+        hhiChangePct: number;
+        effectiveBlocksFrom: number;
+        effectiveBlocksTo: number;
+      }>;
+      derivedEstimate?: {
+        from: number;
+        to: number;
+        change: number;
+        changePct: number;
+        individualsContribution: number;
+        structuresContribution: number;
+        vehiclesContribution: number;
+        formula: string;
+        interpretation: string;
+      };
+      interpretation: string;
+    };
+    distributionSensitivity?: {
+      thresholds: Array<{
+        minimumUnits: number;
+        fromBlocks: number;
+        toBlocks: number;
+        change: number;
+        entered: number;
+        exited: number;
+      }>;
+      singleUnitFrom: number;
+      singleUnitTo: number;
+      singleUnitChange: number;
+      hhiFrom: number;
+      hhiTo: number;
+      hhiChangePct: number;
+      effectiveBlocksFrom: number;
+      effectiveBlocksTo: number;
+      effectiveBlocksChangePct: number;
+      interpretation: string;
+    };
   };
   history: HistoryPoint[];
   forecast: {
@@ -62,6 +117,8 @@ export interface DemoData {
     mae: number;
     coverage: number;
     wape: number;
+    evaluatedPoints: number;
+    intervalPoints: number;
     trainingWindow: string;
     scorecard: ModelScore[];
   };
@@ -146,6 +203,55 @@ export const EMBEDDED_DEMO: DemoData = {
     activeTo: 141,
     activeChange: 20,
     activeChangePct: 16.5,
+    components: {
+      individuals: { from: 510, to: 548, change: 38, changePct: 7.5 },
+      structures: { from: 258, to: 117, change: -141, changePct: -54.7 },
+      vehicles: { from: 10, to: 5, change: -5, changePct: -50 },
+    },
+    componentDistribution: {
+      components: [
+        {
+          id: "individuals",
+          label: "Individuals observed",
+          thresholds: [
+            { minimumUnits: 1, fromBlocks: 111, toBlocks: 136, change: 25 },
+            { minimumUnits: 2, fromBlocks: 78, toBlocks: 94, change: 16 },
+          ],
+          hhiFrom: 0.028466,
+          hhiTo: 0.028231,
+          hhiChangePct: -0.8,
+          effectiveBlocksFrom: 35.1,
+          effectiveBlocksTo: 35.4,
+        },
+        {
+          id: "structures",
+          label: "Tents or structures observed",
+          thresholds: [
+            { minimumUnits: 1, fromBlocks: 47, toBlocks: 29, change: -18 },
+            { minimumUnits: 2, fromBlocks: 35, toBlocks: 19, change: -16 },
+          ],
+          hhiFrom: 0.041584,
+          hhiTo: 0.096501,
+          hhiChangePct: 132,
+          effectiveBlocksFrom: 24,
+          effectiveBlocksTo: 10.4,
+        },
+      ],
+      derivedEstimate: {
+        from: 981.8,
+        to: 762.9,
+        change: -218.9,
+        changePct: -22.3,
+        individualsContribution: 38,
+        structuresContribution: -246.8,
+        vehiclesContribution: -10.2,
+        formula: "individuals + 1.75*tents_structures + 2.03*vehicles",
+        interpretation:
+          "The derived decline is structure-driven and partly offset by more visually observed individuals. It is based on secondary component digitization and must not be equated with unique people or the published total series.",
+      },
+      interpretation:
+        "The like-for-like individual footprint widened at both thresholds while individual concentration was nearly unchanged. Tent observations contracted into fewer blocks and became more concentrated. These are aggregate visual observations, not unique people or linked movements.",
+    },
   },
   history: [
     { period: "Jan 2025", value: 759 },
@@ -170,6 +276,8 @@ export const EMBEDDED_DEMO: DemoData = {
     mae: 62.8,
     coverage: 75,
     wape: 8.6,
+    evaluatedPoints: 8,
+    intervalPoints: 8,
     trainingWindow: "Jan 2021 – Dec 2025",
     scorecard: [
       { model: "Local linear · 6 observed", mae: 119.8, wape: 9.7, coverage: null, selected: true },
@@ -184,6 +292,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 195,
       delta: 9,
       planningLoad: 193,
+      auditWape: 12.9,
       reason: "upper forecast bound + 8h coverage floor",
     },
     {
@@ -192,6 +301,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 32,
       delta: 5,
       planningLoad: 34.7,
+      auditWape: 19.9,
       reason: "upper forecast bound + 8h coverage floor",
     },
     {
@@ -200,6 +310,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 83,
       delta: -63,
       planningLoad: 113.3,
+      auditWape: 34.2,
       reason: "upper forecast bound + 8h coverage floor",
     },
     {
@@ -208,6 +319,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 555,
       delta: -54,
       planningLoad: 591,
+      auditWape: 7.8,
       reason: "upper forecast bound + 8h coverage floor",
     },
     {
@@ -216,6 +328,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 42,
       delta: -6,
       planningLoad: 61.7,
+      auditWape: 22.6,
       reason: "upper forecast bound + 8h coverage floor",
     },
     {
@@ -224,6 +337,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 11,
       delta: 1,
       planningLoad: 24,
+      auditWape: 32.7,
       reason: "upper forecast bound + 8h coverage floor",
     },
   ],
@@ -298,6 +412,12 @@ export function adaptDemoV1(input: unknown): DemoData | null {
   const active = record(panel.active_blocks) ?? {};
   const comparison = record(panel.comparison) ?? {};
   const gross = record(panel.gross_change) ?? {};
+  const components = record(panel.components) ?? {};
+  const individuals = record(components.individuals) ?? {};
+  const structures = record(components.tents_structures) ?? {};
+  const vehicles = record(components.vehicles) ?? {};
+  const distributionRoot = record(panel.distribution_sensitivity);
+  const componentDistributionRoot = record(panel.component_distribution_sensitivity);
   const validity = record(panel.validity_checks) ?? {};
   const backtest = record(aggregate.backtest) ?? {};
   const promotion = record(aggregate.promotion) ?? {};
@@ -330,6 +450,13 @@ export function adaptDemoV1(input: unknown): DemoData | null {
     if (area && row) evidenceByArea.set(normalizeAreaId(area), row);
   }
 
+  const forecastByArea = new Map<string, UnknownRecord>();
+  for (const item of array(forecast.areas)) {
+    const row = record(item);
+    const area = text(row?.area, "");
+    if (area && row) forecastByArea.set(normalizeAreaId(area), row);
+  }
+
   const areas = array(planner.allocations)
     .map((item): PlanningArea | null => {
       const row = record(item);
@@ -338,12 +465,15 @@ export function adaptDemoV1(input: unknown): DemoData | null {
       const id = normalizeAreaId(name);
       const areaEvidence = evidenceByArea.get(id);
       const areaRaw = record(areaEvidence?.raw_observation_units) ?? {};
+      const areaForecast = forecastByArea.get(id);
+      const areaBacktest = record(areaForecast?.backtest) ?? {};
       return {
         id,
         name,
         latest: latestByArea.get(id) ?? null,
         delta: number(areaRaw.change, 0),
         planningLoad: number(row?.planning_load, 1),
+        auditWape: typeof areaBacktest.wape_pct === "number" ? areaBacktest.wape_pct : null,
         reason: text(row?.reason, "upper forecast bound + coverage floor"),
       };
     })
@@ -413,8 +543,116 @@ export function adaptDemoV1(input: unknown): DemoData | null {
       mobilePostPct: number(originSensitivity.post_share_pct, 0),
       placeboChangePct: number(placebo.percent_change, 0),
       checkpoints,
-      interpretation: text(biasComparison.interpretation, "Descriptive reporting diagnostic."),
+      interpretation: text(biasComparison.interpretation, "Descriptive reporting diagnostic.")
+        .replaceAll("reporting-pattern discontinuity", "pre/post reporting-pattern shift")
+        .replaceAll("reporting discontinuity", "pre/post reporting-pattern shift"),
     };
+  }
+
+  let distributionSensitivity: DemoData["signal"]["distributionSensitivity"];
+  if (distributionRoot) {
+    const singleUnits = record(distributionRoot.single_unit_blocks) ?? {};
+    const concentration = record(distributionRoot.concentration) ?? {};
+    const concentrationFrom = record(concentration.from) ?? {};
+    const concentrationTo = record(concentration.to) ?? {};
+    const thresholds = array(distributionRoot.active_block_thresholds)
+      .map((item) => {
+        const row = record(item);
+        const minimumUnits = number(row?.minimum_raw_units, 0);
+        if (minimumUnits <= 0) return null;
+        return {
+          minimumUnits,
+          fromBlocks: number(row?.from_active_blocks, 0),
+          toBlocks: number(row?.to_active_blocks, 0),
+          change: number(row?.change, 0),
+          entered: number(row?.entered_threshold, 0),
+          exited: number(row?.exited_threshold, 0),
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+    distributionSensitivity = {
+      thresholds,
+      singleUnitFrom: number(singleUnits.from, 0),
+      singleUnitTo: number(singleUnits.to, 0),
+      singleUnitChange: number(singleUnits.change, 0),
+      hhiFrom: number(concentrationFrom.hhi, 0),
+      hhiTo: number(concentrationTo.hhi, 0),
+      hhiChangePct: number(concentration.hhi_change_pct, 0),
+      effectiveBlocksFrom: number(concentrationFrom.effective_number_of_blocks, 0),
+      effectiveBlocksTo: number(concentrationTo.effective_number_of_blocks, 0),
+      effectiveBlocksChangePct: number(concentration.effective_blocks_change_pct, 0),
+      interpretation: text(
+        distributionRoot.interpretation,
+        "Threshold and concentration sensitivity are descriptive only.",
+      ),
+    };
+  }
+
+  let componentDistribution: DemoData["signal"]["componentDistribution"];
+  if (componentDistributionRoot) {
+    const derived = record(componentDistributionRoot.post2020_multiplier_decomposition);
+    const contributions = record(derived?.contributions_to_change) ?? {};
+    const componentRows = array(componentDistributionRoot.components)
+      .map((item) => {
+        const row = record(item);
+        const artifactId = text(row?.component, "");
+        const id = artifactId === "tents_structures" ? "structures" : artifactId;
+        if (id !== "individuals" && id !== "structures" && id !== "vehicles") {
+          return null;
+        }
+        const concentration = record(row?.concentration) ?? {};
+        const concentrationFrom = record(concentration.from) ?? {};
+        const concentrationTo = record(concentration.to) ?? {};
+        const thresholds = array(row?.active_block_thresholds)
+          .map((thresholdItem) => {
+            const threshold = record(thresholdItem);
+            const minimumUnits = number(threshold?.minimum_component_units, 0);
+            if (minimumUnits <= 0) return null;
+            return {
+              minimumUnits,
+              fromBlocks: number(threshold?.from_active_blocks, 0),
+              toBlocks: number(threshold?.to_active_blocks, 0),
+              change: number(threshold?.change, 0),
+            };
+          })
+          .filter((threshold): threshold is NonNullable<typeof threshold> => threshold !== null);
+        return {
+          id: id as "individuals" | "structures" | "vehicles",
+          label: text(row?.label, displayModel(id)),
+          thresholds,
+          hhiFrom: number(concentrationFrom.hhi, 0),
+          hhiTo: number(concentrationTo.hhi, 0),
+          hhiChangePct: number(concentration.hhi_change_pct, 0),
+          effectiveBlocksFrom: number(concentrationFrom.effective_number_of_blocks, 0),
+          effectiveBlocksTo: number(concentrationTo.effective_number_of_blocks, 0),
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+    if (componentRows.length) {
+      componentDistribution = {
+        components: componentRows,
+        derivedEstimate: derived
+          ? {
+              from: number(derived.from, 0),
+              to: number(derived.to, 0),
+              change: number(derived.change, 0),
+              changePct: number(derived.change_pct, 0),
+              individualsContribution: number(contributions.individuals, 0),
+              structuresContribution: number(contributions.tents_structures, 0),
+              vehiclesContribution: number(contributions.vehicles, 0),
+              formula: text(derived.formula, "individuals + 1.75*tents_structures + 2.03*vehicles"),
+              interpretation: text(
+                derived.interpretation,
+                "Secondary derived estimate; not unique people.",
+              ),
+            }
+          : undefined,
+        interpretation: text(
+          componentDistributionRoot.interpretation,
+          "Like-for-like component footprints are descriptive aggregate observations.",
+        ),
+      };
+    }
   }
 
   let robustness: DemoData["robustness"];
@@ -504,6 +742,37 @@ export function adaptDemoV1(input: unknown): DemoData | null {
       activeTo: number(active.to, EMBEDDED_DEMO.signal.activeTo),
       activeChange,
       activeChangePct: number(active.change_pct, EMBEDDED_DEMO.signal.activeChangePct),
+      components: {
+        individuals: {
+          from: number(individuals.from, EMBEDDED_DEMO.signal.components.individuals.from),
+          to: number(individuals.to, EMBEDDED_DEMO.signal.components.individuals.to),
+          change: number(individuals.change, EMBEDDED_DEMO.signal.components.individuals.change),
+          changePct:
+            (number(individuals.change, EMBEDDED_DEMO.signal.components.individuals.change) /
+              number(individuals.from, EMBEDDED_DEMO.signal.components.individuals.from)) *
+            100,
+        },
+        structures: {
+          from: number(structures.from, EMBEDDED_DEMO.signal.components.structures.from),
+          to: number(structures.to, EMBEDDED_DEMO.signal.components.structures.to),
+          change: number(structures.change, EMBEDDED_DEMO.signal.components.structures.change),
+          changePct:
+            (number(structures.change, EMBEDDED_DEMO.signal.components.structures.change) /
+              number(structures.from, EMBEDDED_DEMO.signal.components.structures.from)) *
+            100,
+        },
+        vehicles: {
+          from: number(vehicles.from, EMBEDDED_DEMO.signal.components.vehicles.from),
+          to: number(vehicles.to, EMBEDDED_DEMO.signal.components.vehicles.to),
+          change: number(vehicles.change, EMBEDDED_DEMO.signal.components.vehicles.change),
+          changePct:
+            (number(vehicles.change, EMBEDDED_DEMO.signal.components.vehicles.change) /
+              number(vehicles.from, EMBEDDED_DEMO.signal.components.vehicles.from)) *
+            100,
+        },
+      },
+      componentDistribution,
+      distributionSensitivity,
     },
     history: history.length >= 3 ? history : EMBEDDED_DEMO.history,
     forecast: {
@@ -515,6 +784,8 @@ export function adaptDemoV1(input: unknown): DemoData | null {
       mae: number(backtest.mae, EMBEDDED_DEMO.forecast.mae),
       coverage: number(backtest.empirical_coverage_pct, EMBEDDED_DEMO.forecast.coverage),
       wape: number(backtest.wape_pct, EMBEDDED_DEMO.forecast.wape),
+      evaluatedPoints: number(backtest.evaluated_points, EMBEDDED_DEMO.forecast.evaluatedPoints),
+      intervalPoints: number(backtest.interval_points, EMBEDDED_DEMO.forecast.intervalPoints),
       trainingWindow: `${displayMonth(text(training.start_month, "2021-01"))} – ${displayMonth(text(training.end_month, "2025-12"))}`,
       scorecard: scorecard.length ? scorecard : EMBEDDED_DEMO.forecast.scorecard,
     },

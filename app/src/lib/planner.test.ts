@@ -29,4 +29,14 @@ describe("allocateHours", () => {
     expect(result.feasible).toBe(true);
     expect(result.allocations.some((row) => row.hours < 8)).toBe(true);
   });
+
+  it("supports the user-set four-hour continuity sensitivity", () => {
+    const result = allocateHours(EMBEDDED_DEMO.areas, 80, 4, true);
+    expect(result.feasible).toBe(true);
+    expect(result.allocations.reduce((sum, row) => sum + row.hours, 0)).toBe(80);
+    expect(result.allocations.every((row) => row.hours >= 4)).toBe(true);
+    expect(result.allocations.map((row) => row.hours)).not.toEqual(
+      allocateHours(EMBEDDED_DEMO.areas, 80, 8, true).allocations.map((row) => row.hours),
+    );
+  });
 });

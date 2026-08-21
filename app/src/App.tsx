@@ -3,12 +3,12 @@ import "./App.css";
 import { EMBEDDED_DEMO, loadDemoData, type DemoData, type HistoryPoint } from "./lib/demo";
 import { allocateHours, type PlanResult } from "./lib/planner";
 
-const COVERAGE_FLOOR = 8;
+const DEFAULT_COVERAGE_FLOOR = 8;
 
 const GUIDE_STEPS = [
-  "Two rulers: raw units fell while the footprint spread across the exact same 261 blocks.",
-  "Rolling-origin evaluation earns the forecast; the calibrated interval—not only the point—feeds planning.",
-  "A fixed 80-hour budget meets a hard 8-hour floor. Use the audit button to see who loses coverage without it.",
+  "Composition first: observed individuals rose, tents and structures fell, and individual observations reached more of the same 261 blocks.",
+  "Rolling-origin evaluation powers a historical January 2026 one-step-ahead scenario—not a live forecast.",
+  "A fixed 80-hour budget uses a user-set 8-hour continuity floor. Audit 0 or compare 4 hours to see the policy effect.",
   "The final brief carries evidence, uncertainty, constraints, and a human lock into coordinator review.",
 ];
 
@@ -102,12 +102,12 @@ function ForecastChart({ history, data }: { history: HistoryPoint[]; data: DemoD
   return (
     <div className="chart-wrap">
       <svg
-        aria-label={`Observed aggregate values followed by a ${data.targetPeriod} forecast of ${formatNumber(data.point)}, with an ${formatNumber(data.lower)} to ${formatNumber(data.upper)} interval.`}
+        aria-label={`Historical one-step-ahead planning scenario for ${data.targetPeriod}, using data frozen December 2025: point ${formatNumber(data.point)}, with a ${formatNumber(data.lower)} to ${formatNumber(data.upper)} residual interval.`}
         className="forecast-chart"
         role="img"
         viewBox={`0 0 ${width} ${height}`}
       >
-        <title>Observed aggregate signal and next-month forecast interval</title>
+        <title>Historical one-step-ahead planning scenario and residual interval</title>
         {[0, maxValue / 2, maxValue].map((tick) => (
           <g key={tick}>
             <line
@@ -203,7 +203,7 @@ function ForecastChart({ history, data }: { history: HistoryPoint[]; data: DemoD
           y={height - 22}
           textAnchor="middle"
         >
-          {data.targetPeriod.replace(/\s\d{4}$/, "")} forecast
+          {data.targetPeriod.replace(/\s\d{4}$/, "")} scenario
         </text>
         <text
           className="interval-label"
@@ -221,11 +221,11 @@ function ForecastChart({ history, data }: { history: HistoryPoint[]; data: DemoD
         </span>
         <span>
           <i className="legend-forecast" />
-          Forecast
+          Historical scenario
         </span>
         <span>
           <i className="legend-range" />
-          80% interval
+          80% residual band
         </span>
       </div>
     </div>
@@ -260,6 +260,7 @@ function App() {
   const [disclosuresOpen, setDisclosuresOpen] = useState(false);
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [guardEnabled, setGuardEnabled] = useState(true);
+  const [coverageFloor, setCoverageFloor] = useState(DEFAULT_COVERAGE_FLOOR);
   const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
   const [lockValues, setLockValues] = useState<Record<string, number>>({});
   const [planDirty, setPlanDirty] = useState(false);
@@ -268,6 +269,24 @@ function App() {
   const resultHeading = useRef<HTMLHeadingElement>(null);
   const guidePanel = useRef<HTMLDivElement>(null);
   const signal = data.signal;
+  const individualSpatial = signal.componentDistribution?.components.find(
+    (component) => component.id === "individuals",
+  );
+  const structureSpatial = signal.componentDistribution?.components.find(
+    (component) => component.id === "structures",
+  );
+  const individualOne = individualSpatial?.thresholds.find(
+    (threshold) => threshold.minimumUnits === 1,
+  );
+  const individualTwo = individualSpatial?.thresholds.find(
+    (threshold) => threshold.minimumUnits === 2,
+  );
+  const structureOne = structureSpatial?.thresholds.find(
+    (threshold) => threshold.minimumUnits === 1,
+  );
+  const structureTwo = structureSpatial?.thresholds.find(
+    (threshold) => threshold.minimumUnits === 2,
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -326,16 +345,25 @@ function App() {
     );
   }
 
-  function runPlan(nextGuard = guardEnabled, locks = currentLocks()) {
-    const next = allocateHours(data.areas, budget, COVERAGE_FLOOR, nextGuard, locks);
+  function runPlan(nextGuard = guardEnabled, locks = currentLocks(), nextFloor = coverageFloor) {
+    const next = allocateHours(data.areas, budget, nextFloor, nextGuard, locks);
     setPlan(next);
     setPlanDirty(false);
     return next;
   }
 
   function setGuard(nextGuard: boolean) {
+    const nextFloor = nextGuard && coverageFloor === 0 ? DEFAULT_COVERAGE_FLOOR : coverageFloor;
+    if (nextFloor !== coverageFloor) setCoverageFloor(nextFloor);
     setGuardEnabled(nextGuard);
-    runPlan(nextGuard);
+    runPlan(nextGuard, currentLocks(), nextFloor);
+  }
+
+  function setCoveragePolicy(nextFloor: number) {
+    setCoverageFloor(nextFloor);
+    const enabled = nextFloor > 0;
+    setGuardEnabled(enabled);
+    runPlan(enabled, currentLocks(), nextFloor);
   }
 
   function toggleLock(areaId: string) {
@@ -360,13 +388,24 @@ function App() {
     return [
       `STILL HERE SD · NEXT-SHIFT DECISION BRIEF`,
       `Status: READY FOR COORDINATOR REVIEW — not automatic dispatch`,
-      `Evidence: ${titleCase(signal.classification)}. ${signal.fromPeriod} to ${signal.toPeriod}: ${signal.fromValue} → ${signal.toValue} (${formatNumber(signal.changePct, 1)}%).`,
-      `Forecast: ${data.forecast.targetPeriod} ${formatNumber(data.forecast.point)}; 80% interval ${formatNumber(data.forecast.lower)}–${formatNumber(data.forecast.upper)}. ${data.forecast.model}; rolling-origin MAE ${formatNumber(data.forecast.mae)}.`,
-      `Plan: ${budget} staff-hours; coverage guard ${guardEnabled ? `on (${COVERAGE_FLOOR}h minimum)` : "off — audit only"}. ${rows}.`,
+      `Evidence: ${signal.classification === "wider_footprint" ? "Wider observed-individual footprint" : titleCase(signal.classification)}. ${signal.fromPeriod} to ${signal.toPeriod}: observed individuals ${signal.components.individuals.from} → ${signal.components.individuals.to} (+${formatNumber(signal.components.individuals.changePct, 1)}%); tents/structures ${signal.components.structures.from} → ${signal.components.structures.to} (${formatNumber(signal.components.structures.changePct, 1)}%).${individualOne && individualTwo ? ` Blocks with ≥1 observed individual ${individualOne.fromBlocks} → ${individualOne.toBlocks}; blocks with ≥2 ${individualTwo.fromBlocks} → ${individualTwo.toBlocks}.` : ` Active mixed-component blocks ${signal.activeFrom} → ${signal.activeTo} (+${formatNumber(signal.activeChangePct, 1)}%).`} The mixed-unit index is secondary, not a person count.${individualSpatial ? ` Individual HHI was nearly unchanged (${individualSpatial.hhiFrom.toFixed(6)} → ${individualSpatial.hhiTo.toFixed(6)}).` : ""}`,
+      `Historical one-step-ahead planning scenario (data frozen Dec 2025): ${data.forecast.targetPeriod} ${formatNumber(data.forecast.point)}; historical 80% residual interval ${formatNumber(data.forecast.lower)}–${formatNumber(data.forecast.upper)}. ${data.forecast.model}; rolling-origin MAE ${formatNumber(data.forecast.mae)}; empirical coverage ${formatNumber(data.forecast.coverage)}% across ${data.forecast.intervalPoints} folds. Not a live future forecast or a guaranteed probability interval.`,
+      `Illustrative coverage-continuity scenario for human review: ${budget} staff-hours; user-set guard ${guardEnabled ? `on (${coverageFloor}h demo-policy minimum)` : "off — audit only"}. ${rows}. Area forecasts are noisier than the aggregate (held-out WAPE ranges ${formatNumber(Math.min(...data.areas.flatMap((area) => (area.auditWape === null ? [] : [area.auditWape]))), 1)}%–${formatNumber(Math.max(...data.areas.flatMap((area) => (area.auditWape === null ? [] : [area.auditWape]))), 1)}%).`,
       `Review triggers: new month, budget or boundary change, wider interval, infeasible floor, or local knowledge conflict.`,
       `Boundary: aggregate place-level evidence only. This does not track people, establish causality, or authorize enforcement.`,
     ].join("\n");
-  }, [allocationById, budget, data, guardEnabled, lockedIds, signal]);
+  }, [
+    allocationById,
+    budget,
+    coverageFloor,
+    data,
+    guardEnabled,
+    individualOne,
+    individualSpatial,
+    individualTwo,
+    lockedIds,
+    signal,
+  ]);
 
   async function copyBrief() {
     try {
@@ -390,11 +429,13 @@ function App() {
       revealDrop(false);
       window.setTimeout(() => scrollTo("forecast"), 650);
     } else if (guideIndex === 1) {
-      runPlan(true, new Map());
+      setCoverageFloor(DEFAULT_COVERAGE_FLOOR);
+      runPlan(true, new Map(), DEFAULT_COVERAGE_FLOOR);
       setGuardEnabled(true);
       scrollTo("planner");
     } else if (guideIndex === 2) {
-      const restored = runPlan(true, new Map());
+      setCoverageFloor(DEFAULT_COVERAGE_FLOOR);
+      const restored = runPlan(true, new Map(), DEFAULT_COVERAGE_FLOOR);
       setGuardEnabled(true);
       const first = data.areas[0];
       const firstHours = restored.allocations.find((row) => row.areaId === first.id)?.hours ?? 0;
@@ -409,7 +450,12 @@ function App() {
     window.setTimeout(() => guidePanel.current?.focus(), 50);
   }
 
-  const classificationLabel = titleCase(signal.classification);
+  const classificationLabel =
+    signal.classification === "wider_footprint"
+      ? individualSpatial
+        ? "Wider Observed-Individual Footprint"
+        : "Wider Low-Intensity Footprint"
+      : titleCase(signal.classification);
 
   return (
     <>
@@ -537,28 +583,49 @@ function App() {
               <em>One decision.</em>
             </h1>
             <p className="hero-lede">
-              The count went down. The footprint spread. Which result should change tomorrow’s
-              outreach plan?
+              Observed individuals rose. Tents and structures fell. Individual observations reached
+              more blocks. Which result should change tomorrow’s outreach plan?
             </p>
             <div
-              className="two-rulers"
-              aria-label={`Raw observation units fell ${Math.abs(signal.changePct)} percent while active blocks rose ${signal.activeChangePct} percent`}
+              className="composition-lead"
+              aria-label="Observed composition and active-block footprint comparison"
             >
               <div>
-                <span>Raw observation units</span>
-                <strong>{formatNumber(signal.changePct, 1)}%</strong>
+                <span>Observed individuals</span>
+                <strong>+{formatNumber(signal.components.individuals.changePct, 1)}%</strong>
                 <small>
-                  {signal.fromValue} → {signal.toValue}
+                  {signal.components.individuals.from} → {signal.components.individuals.to}
                 </small>
               </div>
               <div>
-                <span>Active blocks</span>
-                <strong>+{formatNumber(signal.activeChangePct, 1)}%</strong>
+                <span>Tents / structures</span>
+                <strong>{formatNumber(signal.components.structures.changePct, 1)}%</strong>
                 <small>
-                  {signal.activeFrom} → {signal.activeTo}
+                  {signal.components.structures.from} → {signal.components.structures.to}
                 </small>
               </div>
-              <p>Same month. Same method. Same {signal.panelSize} blocks.</p>
+              <div>
+                <span>Vehicles</span>
+                <strong>{formatNumber(signal.components.vehicles.changePct, 1)}%</strong>
+                <small>
+                  {signal.components.vehicles.from} → {signal.components.vehicles.to}
+                </small>
+              </div>
+              <div>
+                <span>{individualOne ? "Blocks with individuals" : "Active blocks"}</span>
+                <strong>
+                  +
+                  {individualOne
+                    ? formatNumber((individualOne.change / individualOne.fromBlocks) * 100, 1)
+                    : formatNumber(signal.activeChangePct, 1)}
+                  %
+                </strong>
+                <small>
+                  {individualOne?.fromBlocks ?? signal.activeFrom} →{" "}
+                  {individualOne?.toBlocks ?? signal.activeTo}
+                </small>
+              </div>
+              <p>Same month · same method · same {signal.panelSize} blocks</p>
             </div>
           </div>
           <div aria-label="Prepared scenario summary" className="hero-decision">
@@ -579,7 +646,7 @@ function App() {
             <span>01</span> Test the drop
           </a>
           <a href="#forecast">
-            <span>02</span> Forecast range
+            <span>02</span> Historical scenario
           </a>
           <a href="#planner">
             <span>03</span> Plan the shift
@@ -595,30 +662,55 @@ function App() {
             <p className="eyebrow">Evidence gate</p>
             <h2 id="drop-title">Test the drop</h2>
             <p>
-              Is the apparent decline supported by comparable evidence—or does the aggregate need
-              appear to shift?
+              Which observed components changed, and did each component’s own block footprint change
+              on the exact same panel?
             </p>
           </div>
 
-          <div className="metric-grid initial-metrics">
+          <div className="metric-grid composition-metrics">
             <Metric
-              label="Apparent change"
-              value={`${formatNumber(signal.fromValue)} → ${formatNumber(signal.toValue)}`}
-              detail={`${formatNumber(signal.changePct, 1)}% in ${signal.toPeriod}`}
-              tone="amber"
-            />
-            <Metric
-              label="Active footprint"
-              value={`${formatNumber(signal.activeFrom)} → ${formatNumber(signal.activeTo)}`}
-              detail={`+${formatNumber(signal.activeChangePct, 1)}% active blocks`}
+              label="Observed individuals"
+              value={`${signal.components.individuals.from} → ${signal.components.individuals.to}`}
+              detail={`+${formatNumber(signal.components.individuals.changePct, 1)}%`}
               tone="teal"
             />
             <Metric
-              label="Stable panel"
-              value={`${formatNumber(signal.panelSize)} blocks`}
-              detail="identical footprint before and after"
+              label="Tents / structures"
+              value={`${signal.components.structures.from} → ${signal.components.structures.to}`}
+              detail={`${formatNumber(signal.components.structures.changePct, 1)}%`}
+              tone="amber"
+            />
+            <Metric
+              label="Vehicles"
+              value={`${signal.components.vehicles.from} → ${signal.components.vehicles.to}`}
+              detail={`${formatNumber(signal.components.vehicles.changePct, 1)}%`}
+            />
+            <Metric
+              label={individualOne ? "Blocks with ≥1 individual" : "Active footprint"}
+              value={`${formatNumber(individualOne?.fromBlocks ?? signal.activeFrom)} → ${formatNumber(individualOne?.toBlocks ?? signal.activeTo)}`}
+              detail={
+                individualOne
+                  ? `+${individualOne.change} blocks · like-for-like`
+                  : `+${formatNumber(signal.activeChangePct, 1)}% active blocks`
+              }
+              tone="teal"
             />
           </div>
+          <p className="mixed-index-note">
+            <strong>Secondary mixed-component context:</strong> all active blocks{" "}
+            {signal.activeFrom}
+            {" → "}
+            {signal.activeTo} (+{formatNumber(signal.activeChangePct, 1)}%); mixed-unit index{" "}
+            {signal.fromValue} → {signal.toValue} ({formatNumber(signal.changePct, 1)}%). The index
+            arithmetically sums unlike observation units—individuals, structures, and vehicles—and
+            is not a count of unique people or an estimated person total. Panel fixed at{" "}
+            {signal.panelSize} blocks.
+          </p>
+          <p className="comparison-defense">
+            <CheckIcon /> This is the latest available same-month year-over-year pair in the
+            supplied panel: January 2025 is its final date, both months use the POST2020 method, and
+            the exact same {signal.panelSize} blocks are compared.
+          </p>
 
           {!dropRevealed ? (
             <div className="reveal-action">
@@ -643,19 +735,192 @@ function App() {
                     {classificationLabel}
                   </h3>
                   <p>
-                    The fixed-footprint total fell while observations appeared on more blocks.
-                    Preserve broad coverage and ask a human to review.
+                    {individualSpatial
+                      ? "Individual observations reached more blocks with similar concentration; tent observations collapsed into fewer blocks."
+                      : "Observed activity reached more blocks while the mixed-unit intensity became more concentrated."}{" "}
+                    This is not a unique-person count or evidence of movement.
                   </p>
                 </div>
                 <span className="confidence-chip">Human review required</span>
               </div>
 
+              {individualSpatial &&
+                individualOne &&
+                individualTwo &&
+                structureOne &&
+                structureTwo && (
+                  <div
+                    className="component-proof"
+                    aria-label="Like-for-like observed individual and tent footprint sensitivity"
+                  >
+                    <div className="distribution-heading">
+                      <div>
+                        <span className="eyebrow">
+                          Primary spatial test · like compared with like
+                        </span>
+                        <strong>Individuals reached more blocks at both thresholds</strong>
+                      </div>
+                      <span>Same 261-block panel</span>
+                    </div>
+                    <div className="component-thresholds">
+                      {[
+                        { label: "Individual blocks ≥1", value: individualOne, tone: "up" },
+                        { label: "Individual blocks ≥2", value: individualTwo, tone: "up" },
+                        { label: "Tent blocks ≥1", value: structureOne, tone: "down" },
+                        { label: "Tent blocks ≥2", value: structureTwo, tone: "down" },
+                      ].map((item) => (
+                        <div
+                          className={`component-threshold component-${item.tone}`}
+                          key={item.label}
+                        >
+                          <small>{item.label}</small>
+                          <strong>
+                            {item.value.fromBlocks} → {item.value.toBlocks}
+                          </strong>
+                          <span>
+                            {item.value.change > 0 ? "+" : ""}
+                            {item.value.change} blocks
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {structureSpatial && (
+                      <div className="component-concentration">
+                        <span>
+                          <strong>Individuals: similar concentration</strong>
+                          HHI {individualSpatial.hhiFrom.toFixed(6)} →{" "}
+                          {individualSpatial.hhiTo.toFixed(6)} · effective blocks{" "}
+                          {formatNumber(individualSpatial.effectiveBlocksFrom, 1)} →{" "}
+                          {formatNumber(individualSpatial.effectiveBlocksTo, 1)}
+                        </span>
+                        <span>
+                          <strong>Tents: sharper concentration</strong>
+                          HHI {structureSpatial.hhiFrom.toFixed(6)} →{" "}
+                          {structureSpatial.hhiTo.toFixed(6)} · effective blocks{" "}
+                          {formatNumber(structureSpatial.effectiveBlocksFrom, 1)} →{" "}
+                          {formatNumber(structureSpatial.effectiveBlocksTo, 1)}
+                        </span>
+                      </div>
+                    )}
+                    {signal.componentDistribution?.derivedEstimate && (
+                      <div className="derived-bridge">
+                        <div>
+                          <span className="eyebrow">Why the adjusted estimate can fall</span>
+                          <strong>
+                            {formatNumber(signal.componentDistribution.derivedEstimate.from, 1)} →{" "}
+                            {formatNumber(signal.componentDistribution.derivedEstimate.to, 1)}{" "}
+                            <em>
+                              (
+                              {formatNumber(
+                                signal.componentDistribution.derivedEstimate.changePct,
+                                1,
+                              )}
+                              %)
+                            </em>
+                          </strong>
+                          <small>Secondary POST2020 multiplier-derived estimate</small>
+                        </div>
+                        <div className="decomposition-values">
+                          <span>
+                            Individuals{" "}
+                            <strong>
+                              +
+                              {formatNumber(
+                                signal.componentDistribution.derivedEstimate
+                                  .individualsContribution,
+                                1,
+                              )}
+                            </strong>
+                          </span>
+                          <span>
+                            Structures{" "}
+                            <strong>
+                              {formatNumber(
+                                signal.componentDistribution.derivedEstimate.structuresContribution,
+                                1,
+                              )}
+                            </strong>
+                          </span>
+                          <span>
+                            Vehicles{" "}
+                            <strong>
+                              {formatNumber(
+                                signal.componentDistribution.derivedEstimate.vehiclesContribution,
+                                1,
+                              )}
+                            </strong>
+                          </span>
+                        </div>
+                        <p>
+                          The derived decline is structure-driven and partly offset by more observed
+                          individuals. Components were digitized from maps; this is not a
+                          unique-person count or the published total series.
+                        </p>
+                      </div>
+                    )}
+                    <p>{signal.componentDistribution?.interpretation}</p>
+                  </div>
+                )}
+
+              {signal.distributionSensitivity && (
+                <div
+                  className="distribution-proof distribution-secondary"
+                  aria-label="Secondary mixed-unit active-block threshold and concentration sensitivity"
+                >
+                  <div className="distribution-heading">
+                    <div>
+                      <span className="eyebrow">Secondary mixed-unit sensitivity</span>
+                      <strong>Mixed threshold dependence and composition-driven HHI</strong>
+                    </div>
+                    <span>Not a person count</span>
+                  </div>
+                  <div className="threshold-row">
+                    {signal.distributionSensitivity.thresholds.map((threshold) => (
+                      <div key={threshold.minimumUnits}>
+                        <small>
+                          Active blocks ≥{threshold.minimumUnits} unit
+                          {threshold.minimumUnits > 1 ? "s" : ""}
+                        </small>
+                        <strong>
+                          {threshold.fromBlocks} → {threshold.toBlocks}
+                        </strong>
+                        <span className={threshold.change > 0 ? "delta-up" : "threshold-flat"}>
+                          {threshold.change > 0 ? "+" : ""}
+                          {threshold.change} · {threshold.entered} entered / {threshold.exited}{" "}
+                          exited
+                        </span>
+                      </div>
+                    ))}
+                    <div className="concentration-result">
+                      <small>Intensity concentration</small>
+                      <strong>
+                        HHI +{formatNumber(signal.distributionSensitivity.hhiChangePct, 1)}%
+                      </strong>
+                      <span>
+                        effective blocks{" "}
+                        {formatNumber(signal.distributionSensitivity.effectiveBlocksFrom, 1)} →{" "}
+                        {formatNumber(signal.distributionSensitivity.effectiveBlocksTo, 1)}
+                      </span>
+                    </div>
+                  </div>
+                  <p>
+                    Single-unit blocks grew {signal.distributionSensitivity.singleUnitFrom} →{" "}
+                    {signal.distributionSensitivity.singleUnitTo} (+
+                    {signal.distributionSensitivity.singleUnitChange}), but do not alone explain the
+                    +{signal.activeChange} at ≥1 because ≥2 still rises. HHI{" "}
+                    {signal.distributionSensitivity.hhiFrom.toFixed(6)} →{" "}
+                    {signal.distributionSensitivity.hhiTo.toFixed(6)} is composition-driven; this
+                    secondary mixed index does not establish uniform spread or track movement.
+                  </p>
+                </div>
+              )}
+
               <div className="evidence-grid">
                 <div className="churn-card">
                   <div className="card-heading">
                     <div>
-                      <span className="eyebrow">What net change hides</span>
-                      <h4>Churn inside the stable panel</h4>
+                      <span className="eyebrow">Secondary mixed-unit index</span>
+                      <h4>Index churn inside the stable panel</h4>
                     </div>
                     <span className="formula">
                       +{signal.grossIncreases} − {signal.grossDecreases} = {signal.change}
@@ -689,8 +954,9 @@ function App() {
                     </div>
                   </div>
                   <p className="method-note">
-                    <CheckIcon /> The footprint is fixed at {signal.panelSize} blocks, preventing
-                    boundary churn from impersonating improvement.
+                    <CheckIcon /> Individuals, tents/structures, and vehicles each count as one raw
+                    unit here. This is not a person estimate; the footprint is fixed at{" "}
+                    {signal.panelSize} blocks.
                   </p>
                 </div>
 
@@ -714,7 +980,7 @@ function App() {
                     ))}
                   </div>
                   <p className="map-caption">
-                    Raw-unit change by area · not a person map · not to scale
+                    Mixed-unit raw-index change · not a person map · not to scale
                   </p>
                 </div>
               </div>
@@ -723,8 +989,9 @@ function App() {
                 <div>
                   <span className="evidence-icon evidence-for">+</span>
                   <p>
-                    <strong>Evidence for</strong>Raw units declined while active blocks increased on
-                    the exact same fixed panel.
+                    <strong>Evidence for</strong>Observed individuals increased while structures
+                    fell; individual observations reached more fixed-panel blocks at both tested
+                    thresholds.
                   </p>
                 </div>
                 <div>
@@ -914,14 +1181,15 @@ function App() {
           <div className="section-number">02</div>
           <div className="section-intro split-intro">
             <div>
-              <p className="eyebrow">One-month planning signal</p>
-              <h2 id="forecast-title">Forecast the range, not certainty</h2>
+              <p className="eyebrow">Historical replay · data frozen December 2025</p>
+              <h2 id="forecast-title">Replay the January 2026 one-step-ahead scenario</h2>
               <p>
-                The upper interval becomes the planner’s conservative reference. It never predicts a
-                person or live service demand.
+                This historical planning scenario demonstrates the workflow; it is not a live future
+                forecast. Its historical residual-band upper bound becomes the allocation scenario’s
+                conservative reference.
               </p>
             </div>
-            <span className="wide-warning">Wide interval · reserve continuity</span>
+            <span className="wide-warning">Historical 80% residual band · not live</span>
           </div>
 
           <div className="forecast-layout">
@@ -930,10 +1198,10 @@ function App() {
                 <div>
                   <span className="eyebrow">{data.forecast.targetPeriod}</span>
                   <strong>{formatNumber(data.forecast.point)}</strong>
-                  <small>point forecast</small>
+                  <small>historical scenario point</small>
                 </div>
                 <div>
-                  <span className="eyebrow">80% interval</span>
+                  <span className="eyebrow">Historical 80% residual band</span>
                   <strong>
                     {formatNumber(data.forecast.lower)}–{formatNumber(data.forecast.upper)}
                   </strong>
@@ -974,6 +1242,7 @@ function App() {
                 <span>
                   <small>Interval coverage</small>
                   <strong>{formatNumber(data.forecast.coverage)}%</strong>
+                  <small>{data.forecast.intervalPoints} held-out folds</small>
                 </span>
               </div>
               <div className="scorecard-table-wrap">
@@ -1015,10 +1284,12 @@ function App() {
           </div>
 
           <details className="data-table-disclosure">
-            <summary>View accessible forecast values & method</summary>
+            <summary>View accessible scenario values & method</summary>
             <div className="table-scroll">
               <table>
-                <caption>Observed history and forecast values shown in the chart</caption>
+                <caption>
+                  Observed history and historical one-step-ahead scenario shown in the chart
+                </caption>
                 <thead>
                   <tr>
                     <th>Period</th>
@@ -1040,7 +1311,7 @@ function App() {
                   ))}
                   <tr>
                     <th>{data.forecast.targetPeriod}</th>
-                    <td>Forecast</td>
+                    <td>Historical scenario</td>
                     <td>{formatNumber(data.forecast.point)}</td>
                     <td>{formatNumber(data.forecast.lower)}</td>
                     <td>{formatNumber(data.forecast.upper)}</td>
@@ -1050,8 +1321,11 @@ function App() {
             </div>
             <p>
               <strong>Training:</strong> {data.forecast.trainingWindow}. Rolling-origin evaluation;
-              no interpolation across missing targets. The selected forecast’s upper bound feeds
-              planning load.
+              no interpolation across missing targets. Data are frozen at December 2025; the
+              historical scenario’s upper bound feeds only this demonstration allocation. The
+              residual band achieved {formatNumber(data.forecast.coverage)}% empirical coverage
+              across {data.forecast.intervalPoints} folds; it is not a guaranteed 80% probability
+              statement.
             </p>
           </details>
         </section>
@@ -1063,8 +1337,8 @@ function App() {
               <p className="eyebrow">Constrained allocation</p>
               <h2 id="planner-title">Plan {budget} staff-hours</h2>
               <p>
-                Distribute a fixed budget using upper-range planning load, then make the fairness
-                constraint visible.
+                Distribute a fixed budget using the historical scenario’s upper range, then make the
+                user-set coverage-continuity policy visible.
               </p>
             </div>
             <div className={`guard-status ${guardEnabled ? "guard-on" : "guard-off"}`}>
@@ -1072,9 +1346,34 @@ function App() {
               <div>
                 <small>Coverage guard</small>
                 <strong>
-                  {guardEnabled ? `ON · ${COVERAGE_FLOOR}h floor` : "OFF · AUDIT ONLY"}
+                  {guardEnabled ? `ON · ${coverageFloor}h floor` : "OFF · AUDIT ONLY"}
                 </strong>
               </div>
+            </div>
+          </div>
+
+          <div className="coverage-policy" aria-label="Coverage-continuity floor sensitivity">
+            <div>
+              <span className="eyebrow">User-set demo policy · not learned or optimized</span>
+              <strong>Minimum continuity per included area</strong>
+            </div>
+            <div className="floor-options">
+              {[0, 4, 8].map((floor) => (
+                <button
+                  aria-pressed={
+                    floor === 0 ? !guardEnabled : guardEnabled && coverageFloor === floor
+                  }
+                  className={`floor-option ${floor === 0 ? (!guardEnabled ? "active" : "") : guardEnabled && coverageFloor === floor ? "active" : ""}`}
+                  key={floor}
+                  onClick={() => setCoveragePolicy(floor)}
+                  type="button"
+                >
+                  <strong>{floor}h</strong>
+                  <span>
+                    {floor === 0 ? "audit only" : floor === 8 ? "prepared demo" : "sensitivity"}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -1087,12 +1386,12 @@ function App() {
                 </span>
                 <b>=</b>
                 <span>
-                  {data.areas.length * COVERAGE_FLOOR}
-                  <small>fairness floors</small>
+                  {data.areas.length * coverageFloor}
+                  <small>continuity floors</small>
                 </span>
                 <b>+</b>
                 <span>
-                  {Math.max(0, budget - data.areas.length * COVERAGE_FLOOR)}
+                  {Math.max(0, budget - data.areas.length * coverageFloor)}
                   <small>signal-weighted</small>
                 </span>
               </div>
@@ -1101,7 +1400,7 @@ function App() {
                 onClick={() => runPlan()}
                 type="button"
               >
-                <SparkIcon /> Generate fair plan
+                <SparkIcon /> Generate coverage scenario
               </button>
             </div>
           ) : !plan.feasible ? (
@@ -1128,7 +1427,9 @@ function App() {
                     onClick={() => setGuard(!guardEnabled)}
                     type="button"
                   >
-                    {guardEnabled ? "Audit without coverage guard" : "Restore recommended guard"}
+                    {guardEnabled
+                      ? "Audit without coverage guard"
+                      : `Restore ${coverageFloor || DEFAULT_COVERAGE_FLOOR}h demo guard`}
                   </button>
                   <button
                     className="button button-quiet"
@@ -1146,20 +1447,38 @@ function App() {
 
               {!guardEnabled && (
                 <div className="audit-banner" role="status">
-                  <strong>Audit view—not a recommendation.</strong> Areas below {COVERAGE_FLOOR}{" "}
-                  hours are at risk of losing continuity.
+                  <strong>Audit view—not a recommendation.</strong>{" "}
+                  {coverageFloor > 0
+                    ? `Areas below the selected ${coverageFloor}h floor are at risk of losing continuity.`
+                    : "The zero-floor scenario removes the continuity protection for comparison."}
                 </div>
               )}
+
+              <div className="area-accuracy-warning" role="note">
+                <strong>Illustrative and human-review-only.</strong> Aggregate audit WAPE is{" "}
+                {formatNumber(data.forecast.wape, 1)}%, but small-area forecasts are noisier: Cortez{" "}
+                {formatNumber(
+                  data.areas.find((area) => area.id === "cortez")?.auditWape ?? 34.2,
+                  1,
+                )}
+                % and Marina{" "}
+                {formatNumber(
+                  data.areas.find((area) => area.id === "marina")?.auditWape ?? 32.7,
+                  1,
+                )}
+                %. The aggregate score does not imply equal area accuracy; a coordinator must review
+                every assignment.
+              </div>
 
               <div
                 className="allocation-list"
                 role="list"
-                aria-label="Suggested staff-hour allocation"
+                aria-label="Illustrative staff-hour allocation"
               >
                 {data.areas.map((area) => {
                   const hours = allocationById.get(area.id) ?? 0;
                   const locked = lockedIds.has(area.id);
-                  const belowFloor = hours < COVERAGE_FLOOR;
+                  const belowFloor = hours < coverageFloor;
                   return (
                     <article
                       className={`allocation-row ${belowFloor ? "below-floor" : ""}`}
@@ -1168,7 +1487,10 @@ function App() {
                     >
                       <div className="area-name">
                         <strong>{area.name}</strong>
-                        <span>{area.reason}</span>
+                        <span>
+                          Historical upper bound {formatNumber(area.planningLoad, 1)} · remaining
+                          hours weighted after user-set floor
+                        </span>
                       </div>
                       <div aria-hidden="true" className="allocation-bar-track">
                         <i style={{ width: `${(hours / maxHours) * 100}%` }} />
@@ -1203,7 +1525,11 @@ function App() {
                       <span
                         className={`constraint-chip ${belowFloor ? "constraint-fail" : "constraint-pass"}`}
                       >
-                        {belowFloor ? "Below floor" : `${COVERAGE_FLOOR}h floor met`}
+                        {!guardEnabled
+                          ? "Guard off"
+                          : belowFloor
+                            ? "Below floor"
+                            : `${coverageFloor}h floor met`}
                       </span>
                     </article>
                   );
@@ -1263,26 +1589,36 @@ function App() {
             <div className="brief-summary">
               <div>
                 <span>What changed</span>
-                <strong>{formatNumber(signal.changePct, 1)}% apparent decline</strong>
+                <strong>
+                  Individuals +{formatNumber(signal.components.individuals.changePct, 1)}% ·
+                  structures {formatNumber(signal.components.structures.changePct, 1)}%
+                </strong>
               </div>
               <div>
                 <span>What may be hidden</span>
-                <strong>Active blocks +{signal.activeChange}</strong>
+                <strong>
+                  Active blocks +{signal.activeChange}
+                  {signal.distributionSensitivity
+                    ? ` · HHI +${formatNumber(signal.distributionSensitivity.hhiChangePct, 1)}%`
+                    : ""}
+                </strong>
               </div>
               <div>
-                <span>Forecast range</span>
+                <span>Historical Jan 2026 range</span>
                 <strong>
                   {formatNumber(data.forecast.lower)}–{formatNumber(data.forecast.upper)}
                 </strong>
               </div>
               <div>
-                <span>Suggested capacity</span>
+                <span>Illustrative capacity</span>
                 <strong>{plan?.feasible ? `${planTotal} staff-hours` : "Run planner"}</strong>
               </div>
               <div>
-                <span>Fairness rule</span>
+                <span>Coverage-continuity policy</span>
                 <strong>
-                  {guardEnabled ? `${COVERAGE_FLOOR}h minimum retained` : "Guard off · audit only"}
+                  {guardEnabled
+                    ? `${coverageFloor}h demo-policy minimum`
+                    : "Guard off · audit only"}
                 </strong>
               </div>
               <div>

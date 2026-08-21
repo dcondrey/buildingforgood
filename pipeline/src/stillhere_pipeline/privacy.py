@@ -176,7 +176,9 @@ CELL_NUMERIC_ALLOWLIST: frozenset[str] = frozenset(
 
 #: Sibling markers that make a small count legitimate, because it is already
 #: declared as suppressed rather than published.
-SUPPRESSION_MARKERS: frozenset[str] = frozenset({"suppressed", "issuppressed", "redacted"})
+SUPPRESSION_MARKERS: frozenset[str] = frozenset(
+    {"suppressed", "issuppressed", "redacted", "isredacted"}
+)
 
 #: Geometry types the product is allowed to publish. Aggregate areas only.
 ALLOWED_GEOMETRY_TYPES: frozenset[str] = frozenset({"Polygon", "MultiPolygon"})
@@ -299,6 +301,23 @@ def is_cell_context(node: dict[str, Any]) -> bool:
     return any(normalize_key(k) in CELL_CONTEXT_KEYS for k in node)
 
 
+def is_numeric_breakdown(node: dict[str, Any]) -> bool:
+    """True when this object is a pure value breakdown, like ``by_type``.
+
+    Cell scope descends only into these. Propagating it into *every*
+    descendant meant an unrelated config sub-object nested inside a cell
+    produced false blocks on its revision numbers and sort indices. A
+    breakdown holds only numbers, so it is the shape that actually carries
+    published cell values; a mixed-type object is something else.
+    """
+    if not node:
+        return False
+    return all(
+        value is None or (isinstance(value, (int, float)) and not isinstance(value, bool))
+        for value in node.values()
+    )
+
+
 #: Values that count as an affirmative suppression declaration. Anything
 #: else — False, None, 0, "no" — means the cell is published.
 SUPPRESSION_TRUE_VALUES: frozenset[str] = frozenset({"true", "yes", "1", "suppressed", "redacted"})
@@ -380,12 +399,17 @@ def _scan_json(
                     child,
                     f"field name {key!r} is on the deny-list",
                 )
+            # Cell scope descends into breakdowns and lists, not into
+            # arbitrary nested objects.
+            descend_cell = cell_scope and (
+                not isinstance(value, dict) or is_numeric_breakdown(value)
+            )
             yield from _scan_json(
                 value,
                 child,
                 min_cell,
                 in_geometry=in_geometry,
-                in_cell=cell_scope,
+                in_cell=descend_cell,
                 suppressed=cell_suppressed,
             )
         return

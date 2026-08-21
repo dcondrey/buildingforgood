@@ -234,3 +234,28 @@ def test_integer_encoded_suppression_is_accepted() -> None:
     assert _blocking(scan_json_document(cell, min_cell=5)) == []
     published = {"neighborhood": "a", "month": "2021-09", "total": 3, "suppressed": 0}
     assert _blocking(scan_json_document(published, min_cell=5))
+
+
+def test_cell_scope_descends_into_breakdowns_not_arbitrary_objects() -> None:
+    """Caught in review: cell scope propagated to every descendant.
+
+    An unrelated config sub-object nested inside a cell produced false blocks
+    on its revision numbers and sort indices. Scope now descends only into
+    pure numeric breakdowns, which is the shape that carries published cell
+    values.
+    """
+    cell = {
+        "neighborhood": "barrio_logan",
+        "month": "2021-09",
+        "total": 91,
+        "by_type": {"individual": 2, "structure": 1, "vehicle": 0},
+        "render_config": {"revision": 3, "sort_index": 1, "enabled": True},
+    }
+    flagged = {f.where.rsplit(".", 1)[-1] for f in _blocking(scan_json_document(cell, min_cell=5))}
+    assert flagged == {"individual", "structure"}
+
+
+def test_is_redacted_is_recognised_like_is_suppressed() -> None:
+    """Caught in review: `issuppressed` was a marker but `isredacted` was not."""
+    cell = {"neighborhood": "a", "month": "2021-09", "total": 3, "is_redacted": True}
+    assert _blocking(scan_json_document(cell, min_cell=5)) == []

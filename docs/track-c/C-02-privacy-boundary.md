@@ -41,6 +41,12 @@ The numeric allow-list is **deliberately narrow**. Unambiguously temporal or str
 
 **Live finding, handed to Track A (#6):** `public/generated/observations.v0.json` in PR #41 contains 306 unsuppressed small cells, including `barrio_logan 2021-09 structure=1` — one structure, one neighbourhood, one month. Once #41 merges, the privacy scan fails the build until suppression is applied at aggregation time.
 
+### The limit of this rule, and the durable fix
+
+The small-cell rule infers whether an integer is a person count from the *shape* of the document, because nothing in the artifact declares it. That inference went through five rounds of review, and every round found a real hole: name-based detection missed 306 real cells; exempting every context key to fix a false positive reopened the same false negative; suppression by key presence let `suppressed: false` through; scope propagation over-blocked on nested config. Each fix was correct and each one moved the error to a new place, because deciding "is this integer a person" from structure alone is not decidable.
+
+**The durable fix belongs in the artifact contract, not in this scanner.** If `#4` declares which fields are counts — a `count_fields` list, or a per-field type in the schema — the rule becomes a lookup instead of an inference, and this entire class of bug disappears. Handed to Track D. Until then the scan stays as a structural backstop that fails closed, which is the right posture for a privacy gate but not a substitute for a declared schema.
+
 **Open follow-up:** suppressed cells must not be recoverable by subtraction from a published total. That is a pipeline aggregation concern (Track A, #6) as much as a scan concern, and is not yet enforced.
 
 ### 6. Publication layout
@@ -68,4 +74,5 @@ The fixture set found a real bug on first run: the key deny-list fired on `coord
 
 - **Track A (#6):** counts below the threshold must be emitted as suppressed at aggregation time; the scan is the backstop, not the mechanism. Subtraction-recovery of suppressed cells is unsolved.
 - **Track A (#8) / Track C (#16):** suppression must surface in the UI as a data-quality state, per R-06.
+- **Track D (#4), the important one:** declare count fields in the artifact contract so the small-cell rule can look them up instead of inferring them from document shape. See "the limit of this rule" above.
 - **Track D:** `scripts/verify.sh` gained one additive block. Flagged for the Track D owner as a cross-track touch — it is the only way to satisfy the "runs in local verification and CI" criterion.

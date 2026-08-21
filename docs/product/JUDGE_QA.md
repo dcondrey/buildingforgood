@@ -1,6 +1,6 @@
 # Judge Q&A
 
-Short answers for the questions most likely to follow the three-minute demo.
+Short answers for the questions most likely to follow the five-minute demo.
 Lead with the first sentence; add technical detail only when invited.
 
 ## Product and impact

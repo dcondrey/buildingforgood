@@ -145,7 +145,7 @@ failed quality gate.
 - [x] Essential interactions pass automated accessibility and keyboard checks (App.test.tsx axe passes over the deployed shell; manual smoke test still owed by a person).
 - [x] Deployed and offline builds produce the same scenario and recommendation (hash-identical artifact across public/generated, app/dist, and the deployed site).
 - [x] High-severity red-team and usability findings are resolved or block release (C-01 §3: none open).
-- [ ] The three-minute script and fallback media are verified on the presentation device.
+- [ ] The five-minute script and fallback media are verified on the presentation device.
 - [ ] Deferred work has an owner, rationale, and follow-up issue.
 
 ## Status update template

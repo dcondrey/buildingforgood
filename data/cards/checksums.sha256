@@ -20,3 +20,5 @@ f6e4f0196176a23740545355e9e7acf937e0ff06ea982db6ce12e9ac1ee2a7d6  data/raw/parki
 6ab5bff6453ea4e9e5a297ca158e7cbfe9226505abba229de0e4c87c610edab6  data/raw/parking_meters/treas_meters_2025_pole_by_month_datasd.csv
 aa6121bc042d94c7c97764227f7cbbbb43ecdb68245b1b626d7a0a29027bea37  data/raw/parking_meters/treas_parking_meters_loc_datasd.csv
 b080cd42f7a69ec20984fcfdad1917cb154bb4dde7e3dcc5e8f1aa1b7aa6ad30  data/raw/weather/san_diego_airport_daily_2017_2025.csv
+# public post-freeze monitoring source (reference only; never a demo_v1 input)
+bfa71981b1e37ba178284d5678c2bd18ca4e65626a25a42101f08e3f8eb47dc6  data/raw/dsdp_public_reports/June-2026-Unsheltered-Sleep-Count.pdf

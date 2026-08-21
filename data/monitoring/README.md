@@ -28,6 +28,15 @@ The DSDP dashboard labels 1,092 as “Q1 2026,” while the source PDF places th
 value in April and supplies no January–March observation. The table follows the
 PDF and therefore cannot validate the demo's January 2026 forecast scenario.
 
+Provenance behind that confusion (personal communication, J. Nations, SDRDL,
+2026-08-21 — partial and from memory by her own description): DSDP moved to an
+irregular quarterly cadence in late 2025; 2026 counts were run dually on paper
+and a piloted application; at least one 2026 count was redone with differing
+results; and methodology discussions are ongoing. The 2026 count months
+themselves are contested (March vs the PDF's April label). These checkpoints
+record what DSDP published, not settled count dates; expect revisions when
+DSDP/SDRDL publish a reconciliation, and re-pin rather than overwrite.
+
 ## RTFH annual checkpoints
 
 `rtfh_annual_checkpoints.csv` transcribes the publisher-computed City of San

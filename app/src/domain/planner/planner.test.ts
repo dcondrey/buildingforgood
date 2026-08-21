@@ -184,6 +184,30 @@ describe("locks and human overrides", () => {
       PlannerInputError,
     );
   });
+
+  it("declares a lock below the coverage guarantee infeasible", () => {
+    const plan = buildPlan(SIX_AREAS, POLICY, [{ area_id: "gaslamp", hours: 0 }]);
+    expect(plan.status).toBe("infeasible");
+    expect(plan.infeasible_reasons.join(" ")).toMatch(/lock.*below.*coverage guarantee/i);
+    expect(plan.constraint_notes).not.toContain("Every included area received at least 6 hours.");
+  });
+
+  it("rejects duplicate, excluded, and off-increment locks", () => {
+    expect(() =>
+      buildPlan(SIX_AREAS, POLICY, [
+        { area_id: "gaslamp", hours: 10 },
+        { area_id: "gaslamp", hours: 12 },
+      ]),
+    ).toThrow(/duplicate lock/i);
+    expect(() =>
+      buildPlan([...SIX_AREAS, area("excluded", 10, 5, { included: false })], POLICY, [
+        { area_id: "excluded", hours: 6 },
+      ]),
+    ).toThrow(/excluded area/i);
+    expect(() => buildPlan(SIX_AREAS, POLICY, [{ area_id: "gaslamp", hours: 6.5 }])).toThrow(
+      /whole 1-hour increments/i,
+    );
+  });
 });
 
 describe("uncertainty and continuity reserves", () => {
@@ -278,6 +302,30 @@ describe("determinism and input validation", () => {
     expect(() => buildPlan(SIX_AREAS, { ...POLICY, time_increment_hours: 0 })).toThrow(
       PlannerInputError,
     );
+  });
+
+  it("rejects a non-finite increment", () => {
+    expect(() => buildPlan(SIX_AREAS, { ...POLICY, time_increment_hours: Infinity })).toThrow(
+      /finite number/i,
+    );
+  });
+
+  it("declares rounded guarantees infeasible before they can exceed the budget", () => {
+    const plan = buildPlan([area("a", 10), area("b", 10)], {
+      ...POLICY,
+      budget_hours: 1.2,
+      time_increment_hours: 1,
+      minimum_coverage_floor_hours: 0.6,
+      continuity_reserve_hours: 0,
+    });
+    expect(plan.status).toBe("infeasible");
+    expect(plan.total_allocated_hours).toBe(0);
+  });
+
+  it("declares an empty included set infeasible", () => {
+    const plan = buildPlan([area("excluded", 10, 5, { included: false })], POLICY);
+    expect(plan.status).toBe("infeasible");
+    expect(plan.infeasible_reasons.join(" ")).toMatch(/no areas are included/i);
   });
 
   it("handles a zero-load forecast by splitting evenly rather than dividing by zero", () => {

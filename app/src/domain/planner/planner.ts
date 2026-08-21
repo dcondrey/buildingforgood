@@ -81,6 +81,7 @@ function requireFinite(value: number, name: string): number {
 
 function validate(areas: AreaPlanningInput[], policy: PlannerPolicy, locks: AreaLock[]): void {
   requireFinite(policy.budget_hours, "budget_hours");
+  requireFinite(policy.time_increment_hours, "time_increment_hours");
   requireFinite(policy.minimum_coverage_floor_hours, "minimum_coverage_floor_hours");
   requireFinite(policy.continuity_reserve_hours, "continuity_reserve_hours");
   requireFinite(policy.uncertainty_weight, "uncertainty_weight");
@@ -112,11 +113,26 @@ function validate(areas: AreaPlanningInput[], policy: PlannerPolicy, locks: Area
     }
   }
 
+  const lockedAreas = new Set<string>();
   for (const lock of locks) {
     requireFinite(lock.hours, `lock ${lock.area_id}`);
     if (lock.hours < 0) throw new PlannerInputError(`lock ${lock.area_id} must not be negative`);
     if (!seen.has(lock.area_id)) {
       throw new PlannerInputError(`lock references unknown area ${lock.area_id}`);
+    }
+    if (lockedAreas.has(lock.area_id)) {
+      throw new PlannerInputError(`duplicate lock for area ${lock.area_id}`);
+    }
+    lockedAreas.add(lock.area_id);
+    const area = areas.find((candidate) => candidate.area_id === lock.area_id);
+    if (!area?.included) {
+      throw new PlannerInputError(`lock references excluded area ${lock.area_id}`);
+    }
+    const lockUnits = lock.hours / policy.time_increment_hours;
+    if (Math.abs(lockUnits - Math.round(lockUnits)) > 1e-9) {
+      throw new PlannerInputError(
+        `lock ${lock.area_id} must use whole ${policy.time_increment_hours}-hour increments`,
+      );
     }
   }
 }
@@ -210,6 +226,10 @@ export function buildPlan(
   const lockedHours = lockedIncluded.reduce((sum, a) => sum + (lockByArea.get(a.area_id) ?? 0), 0);
   const remainingHours = policy.budget_hours - lockedHours;
 
+  if (included.length === 0) {
+    infeasibleReasons.push("No areas are included, so there is nowhere to allocate the budget.");
+  }
+
   if (remainingHours < 0) {
     infeasibleReasons.push(
       `Locked assignments total ${lockedHours} hours, which exceeds the ${policy.budget_hours}-hour budget. ` +
@@ -218,20 +238,36 @@ export function buildPlan(
   }
 
   const minimumHours = new Map<string, { floor: number; continuity: number }>();
-  for (const area of openIncluded) {
+  for (const area of included) {
     const continuity =
       area.drop_test === "possible_displacement" ? policy.continuity_reserve_hours : 0;
     minimumHours.set(area.area_id, { floor: policy.minimum_coverage_floor_hours, continuity });
   }
-  const guaranteedHours = [...minimumHours.values()].reduce(
-    (s, m) => s + m.floor + m.continuity,
-    0,
-  );
 
-  if (remainingHours >= 0 && guaranteedHours > remainingHours) {
-    const shortfall = guaranteedHours - remainingHours;
+  for (const area of lockedIncluded) {
+    const minimum = minimumHours.get(area.area_id);
+    const required = (minimum?.floor ?? 0) + (minimum?.continuity ?? 0);
+    const locked = lockByArea.get(area.area_id) ?? 0;
+    if (locked < required) {
+      infeasibleReasons.push(
+        `The ${locked}-hour lock for ${area.label} is below its ${required}-hour coverage ` +
+          "guarantee. Raise or release the lock; a human lock cannot silently disable the floor.",
+      );
+    }
+  }
+
+  const guaranteedUnits = openIncluded.map((a) => {
+    const m = minimumHours.get(a.area_id);
+    return Math.ceil(((m?.floor ?? 0) + (m?.continuity ?? 0)) / increment - 1e-9);
+  });
+  const guaranteedUnitTotal = guaranteedUnits.reduce((s, u) => s + u, 0);
+  const roundedGuaranteedHours = guaranteedUnitTotal * increment;
+
+  if (remainingHours >= 0 && roundedGuaranteedHours > remainingHours + 1e-9) {
+    const shortfall = roundedGuaranteedHours - remainingHours;
     infeasibleReasons.push(
-      `The ${openIncluded.length} unlocked areas require ${guaranteedHours} hours to meet the ` +
+      `The ${openIncluded.length} unlocked areas require ${roundedGuaranteedHours} allocatable ` +
+        `hours to meet the ` +
         `${policy.minimum_coverage_floor_hours}-hour coverage floor and continuity reserves, but only ` +
         `${remainingHours} hours remain. Shortfall: ${shortfall} hours. ` +
         `Raise the budget or exclude an area. The planner does not lower the floor by itself.`,
@@ -272,11 +308,6 @@ export function buildPlan(
     );
   }
 
-  const guaranteedUnits = openIncluded.map((a) => {
-    const m = minimumHours.get(a.area_id);
-    return Math.ceil(((m?.floor ?? 0) + (m?.continuity ?? 0)) / increment - 1e-9);
-  });
-  const guaranteedUnitTotal = guaranteedUnits.reduce((s, u) => s + u, 0);
   const discretionaryUnits = Math.max(0, totalUnits - guaranteedUnitTotal);
 
   const weights = openIncluded.map((a) => relativeLoad(a, policy));
@@ -305,13 +336,14 @@ export function buildPlan(
 
   for (const area of lockedIncluded) {
     const hours = lockByArea.get(area.area_id) ?? 0;
+    const minimum = minimumHours.get(area.area_id);
     allocatedTotal += hours;
     allocations.push({
       area_id: area.area_id,
       label: area.label,
       allocated_hours: hours,
-      floor_hours: 0,
-      continuity_reserve_hours: 0,
+      floor_hours: minimum?.floor ?? 0,
+      continuity_reserve_hours: minimum?.continuity ?? 0,
       relative_load: relativeLoad(area, policy),
       unguarded_hours: hours,
       unmet_hours: 0,

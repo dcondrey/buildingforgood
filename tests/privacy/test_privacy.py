@@ -563,3 +563,21 @@ def test_uncertifiable_rows_say_so_rather_than_passing_quietly() -> None:
     }
     findings = scan_json_document(row, min_cell=5)
     assert any(f.rule == "recovery.not_certified" for f in findings)
+
+
+def test_recoverability_only_examines_actual_breakdowns() -> None:
+    """Caught in review: any sibling dict was checked against the total.
+
+    A cell carrying an unrelated dict with integers and a null would be
+    partitioned against a total it has nothing to do with, raising a false
+    recovery block. A breakdown holds nothing but numbers and withheld slots.
+    """
+    row = {
+        "neighborhood": "a",
+        "month": "2021-09",
+        "total": 44,
+        "by_type": {"individual": 38, "structure": None, "vehicle": None},
+        "render_meta": {"label": "East Village", "revision": 3, "note": None},
+    }
+    findings = _blocking(scan_json_document(row, min_cell=5))
+    assert [f for f in findings if f.rule.startswith("recovery.")] == []

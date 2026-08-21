@@ -678,7 +678,17 @@ def _scan_recoverability(node: Any, where: str, min_cell: int) -> Iterator[Findi
         total = node.get("total")
         if isinstance(total, int) and not isinstance(total, bool) and not is_suppressed(node):
             for key, value in node.items():
-                if not isinstance(value, dict):
+                # Only a breakdown partitions the total. An unrelated sibling
+                # dict that merely happens to hold integers and a null would
+                # otherwise be checked against a total it has nothing to do
+                # with, producing a false recovery finding. A breakdown holds
+                # nothing but numbers and withheld slots.
+                if not isinstance(value, dict) or not value:
+                    continue
+                if not all(
+                    v is None or (isinstance(v, int) and not isinstance(v, bool))
+                    for v in value.values()
+                ):
                     continue
                 numbers = [
                     v for v in value.values() if isinstance(v, int) and not isinstance(v, bool)

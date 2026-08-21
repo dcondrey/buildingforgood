@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import io
 import json
 from pathlib import Path
 from typing import Any
@@ -59,7 +60,9 @@ def _verify_and_read(path: Path, repo_relative: str, pins: dict[str, str]) -> by
 
 
 def _read_csv(payload: bytes) -> list[dict[str, str]]:
-    return list(csv.DictReader(payload.decode("utf-8").splitlines()))
+    # StringIO, not splitlines(): the csv module must see real newlines so
+    # quoted fields with embedded line breaks survive intact.
+    return list(csv.DictReader(io.StringIO(payload.decode("utf-8"))))
 
 
 def _write_json(path: Path, doc: dict[str, Any]) -> None:
@@ -67,8 +70,18 @@ def _write_json(path: Path, doc: dict[str, Any]) -> None:
 
 
 def run_build(raw_dir: Path, cards_dir: Path, out_dir: Path) -> dict[str, Any]:
-    ledger = yaml.safe_load((cards_dir / "source_ledger.yaml").read_text())
-    retrieved_at = str(ledger["retrieved_at"])
+    try:
+        ledger = yaml.safe_load((cards_dir / "source_ledger.yaml").read_text())
+    except yaml.YAMLError as error:
+        raise BuildError(f"source ledger is not valid YAML: {error}") from None
+    retrieved_at = ledger.get("retrieved_at") if isinstance(ledger, dict) else None
+    if not isinstance(retrieved_at, str) or not retrieved_at:
+        # An unquoted YAML timestamp parses as a datetime and would silently
+        # change the manifest byte format; fail closed and ask for a string.
+        raise BuildError(
+            "source ledger retrieved_at must be a non-empty quoted string, "
+            f"got {type(retrieved_at).__name__}"
+        )
 
     pins = _load_pinned_checksums(cards_dir)
     counts_rel = f"data/raw/{SOURCE_ID}/counts.csv"
@@ -80,7 +93,12 @@ def run_build(raw_dir: Path, cards_dir: Path, out_dir: Path) -> dict[str, Any]:
     series = aggregate_observations(normalization.records)
     if not series:
         raise BuildError("no valid records survived normalization")
-    mismatches = cross_check_file_totals(normalization.records, _read_csv(files_payload))
+    files_rows = _read_csv(files_payload)
+    mismatches = cross_check_file_totals(normalization.records, files_rows)
+    counted_ids = {record.file_id for record in normalization.records}
+    maps_without_counts = sorted(
+        {row.get("file_id", "") for row in files_rows} - counted_ids - {""}
+    )
 
     observed_months = sorted({record.month for record in normalization.records})
     observations_doc: dict[str, Any] = {
@@ -108,6 +126,7 @@ def run_build(raw_dir: Path, cards_dir: Path, out_dir: Path) -> dict[str, Any]:
         normalization=normalization,
         series=series,
         file_total_mismatches=mismatches,
+        source_maps_without_counts=maps_without_counts,
         source_id=SOURCE_ID,
         retrieved_at=retrieved_at,
     )

@@ -7,7 +7,7 @@
       "month": "2017-04"
     },
     {
-      "description": "east_village_south appears from 2017-04 and co-occurs with east_village thereafter. Era-consistent East Village totals across the split require summing both areas after 2017-04.",
+      "description": "east_village_south appears from 2017-04 and generally co-occurs with east_village, with gaps (no extracted counts 2018-03 through 2018-06; see source_maps_without_counts). Era-consistent East Village totals across the split require summing both areas after 2017-04.",
       "id": "east_village_south_split",
       "kind": "boundary",
       "month": "2017-04"

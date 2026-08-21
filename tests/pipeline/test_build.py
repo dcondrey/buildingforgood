@@ -86,6 +86,44 @@ class TestRunBuild:
         with pytest.raises(BuildError, match="no pinned checksum"):
             build(tmp_path)
 
+    def test_unquoted_ledger_timestamp_fails_closed(self, tmp_path: Path) -> None:
+        write_fixture_tree(tmp_path)
+        ledger = tmp_path / "data" / "cards" / "source_ledger.yaml"
+        ledger.write_text("retrieved_at: 2026-08-21T01:06:45Z\n")
+        with pytest.raises(BuildError, match="retrieved_at"):
+            build(tmp_path)
+
+    def test_missing_ledger_timestamp_fails_closed(self, tmp_path: Path) -> None:
+        write_fixture_tree(tmp_path)
+        (tmp_path / "data" / "cards" / "source_ledger.yaml").write_text("version: 1\n")
+        with pytest.raises(BuildError, match="retrieved_at"):
+            build(tmp_path)
+
+    def test_fractional_reported_total_not_in_mismatches(self, tmp_path: Path) -> None:
+        files = "file_id,total_count\nf1,9\nf2,884.6\n"
+        write_fixture_tree(tmp_path, files=files)
+        build(tmp_path)
+        quality = json.loads((tmp_path / "out" / "quality_report.v0.json").read_text())
+        assert [m["file_id"] for m in quality["file_total_mismatches"]] == ["f1"]
+
+    def test_source_maps_without_counts_reported(self, tmp_path: Path) -> None:
+        files = FILES_CSV + "f9,4\n"
+        write_fixture_tree(tmp_path, files=files)
+        build(tmp_path)
+        quality = json.loads((tmp_path / "out" / "quality_report.v0.json").read_text())
+        assert quality["source_maps_without_counts"] == ["f9"]
+
+    def test_embedded_newline_in_quoted_field_survives(self, tmp_path: Path) -> None:
+        counts = (
+            "file_id,neighborhood,date,count,type,x,y\n"
+            'f1,east_village,2018-01-24,5,Individual,1.0,"2.0\nnote"\n'
+        )
+        write_fixture_tree(tmp_path, counts=counts)
+        summary = build(tmp_path)
+        assert summary["invalid_rows"] == 0
+        observations = json.loads((tmp_path / "out" / "observations.v0.json").read_text())
+        assert observations["neighborhoods"][0]["observations"][0]["total"] == 5
+
     def test_artifacts_never_carry_precise_locations(self, tmp_path: Path) -> None:
         write_fixture_tree(tmp_path)
         build(tmp_path)

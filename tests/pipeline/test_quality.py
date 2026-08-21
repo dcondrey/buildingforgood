@@ -42,6 +42,18 @@ class TestCrossCheckFileTotals:
         result = normalize_records([raw_row()])
         assert cross_check_file_totals(result.records, [{"file_id": "f1", "total_count": ""}]) == []
 
+    def test_fractional_reported_total_is_skipped_not_truncated(self) -> None:
+        result = normalize_records([raw_row(count="145")])
+        rows = [{"file_id": "f1", "total_count": "884.6"}]
+        assert cross_check_file_totals(result.records, rows) == []
+
+    def test_integral_float_reported_total_still_compares(self) -> None:
+        result = normalize_records([raw_row(count="5")])
+        rows = [{"file_id": "f1", "total_count": "9.0"}]
+        assert cross_check_file_totals(result.records, rows) == [
+            {"file_id": "f1", "computed": 5, "reported": 9, "delta": -4}
+        ]
+
 
 class TestBuildQualityReport:
     def test_report_carries_all_sections(self) -> None:
@@ -51,6 +63,7 @@ class TestBuildQualityReport:
             normalization=result,
             series=series,
             file_total_mismatches=[],
+            source_maps_without_counts=["f9"],
             source_id="sdrdl_source",
             retrieved_at="2026-08-21T01:06:45Z",
         )
@@ -65,4 +78,5 @@ class TestBuildQualityReport:
         ]
         assert report["comparability_events"] == COMPARABILITY_EVENTS
         assert "missing_months_global" in report
+        assert report["source_maps_without_counts"] == ["f9"]
         assert report["day_of_month_reliable"] is False

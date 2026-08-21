@@ -34,9 +34,10 @@ COMPARABILITY_EVENTS: list[dict[str, Any]] = [
         "month": "2017-04",
         "kind": "boundary",
         "description": (
-            "east_village_south appears from 2017-04 and co-occurs with east_village "
-            "thereafter. Era-consistent East Village totals across the split require "
-            "summing both areas after 2017-04."
+            "east_village_south appears from 2017-04 and generally co-occurs with "
+            "east_village, with gaps (no extracted counts 2018-03 through 2018-06; "
+            "see source_maps_without_counts). Era-consistent East Village totals "
+            "across the split require summing both areas after 2017-04."
         ),
     },
     {
@@ -94,9 +95,15 @@ def cross_check_file_totals(
         file_id = row.get("file_id", "")
         raw_total = row.get("total_count", "")
         try:
-            reported = int(float(raw_total))
-        except ValueError:
+            reported_value = float(raw_total)
+        except (TypeError, ValueError):
             continue
+        if not reported_value.is_integer():
+            # Fractional published totals are multiplier-era values (the
+            # occupancy_multiplier_break event), not raw hand-sums; they carry
+            # no comparable arithmetic claim and are skipped, never truncated.
+            continue
+        reported = int(reported_value)
         if file_id in computed and computed[file_id] != reported:
             mismatches.append(
                 {
@@ -113,6 +120,7 @@ def build_quality_report(
     normalization: NormalizationResult,
     series: list[NeighborhoodSeries],
     file_total_mismatches: list[dict[str, Any]],
+    source_maps_without_counts: list[str],
     source_id: str,
     retrieved_at: str,
 ) -> dict[str, Any]:
@@ -134,6 +142,7 @@ def build_quality_report(
             s.neighborhood: s.observed_gap_months for s in series if s.observed_gap_months
         },
         "file_total_mismatches": file_total_mismatches,
+        "source_maps_without_counts": source_maps_without_counts,
         "comparability_events": COMPARABILITY_EVENTS,
         "day_of_month_reliable": False,
     }

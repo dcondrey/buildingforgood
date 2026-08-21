@@ -101,6 +101,24 @@ class TestNormalizeRecords:
         assert result.records == []
         assert result.invalid_rows[0].reason.startswith("count")
 
+    def test_rejects_non_finite_counts(self) -> None:
+        for bad in ("nan", "inf", "-inf"):
+            result = normalize_records([raw_row(count=bad)])
+            assert result.records == [], bad
+            assert result.invalid_rows[0].reason.startswith("count"), bad
+
+    def test_extra_overflow_columns_do_not_crash(self) -> None:
+        row: dict = {**raw_row(), None: ["overflow", "fields"]}
+        result = normalize_records([row])
+        assert len(result.records) == 1
+        assert result.invalid_rows == []
+
+    def test_short_row_with_none_values_is_invalid_not_a_crash(self) -> None:
+        row: dict = {**raw_row(), "count": None}
+        result = normalize_records([row])
+        assert result.records == []
+        assert result.invalid_rows[0].reason.startswith("count")
+
     def test_invalid_rows_carry_row_number_for_traceability(self) -> None:
         result = normalize_records([raw_row(), raw_row(neighborhood="atlantis")])
         assert len(result.records) == 1

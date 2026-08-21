@@ -8,6 +8,7 @@ transformation is silent.
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import dataclass
 from typing import Literal
@@ -107,8 +108,10 @@ def normalize_month(raw: str) -> str:
 def _normalize_count(raw: str) -> int:
     try:
         value = float(raw)
-    except ValueError:
+    except (TypeError, ValueError):
         raise NormalizationError(f"count is not numeric: {raw!r}") from None
+    if not math.isfinite(value):
+        raise NormalizationError(f"count is not finite: {raw!r}")
     if value < 0:
         raise NormalizationError(f"count is negative: {raw!r}")
     if value != int(value):
@@ -129,12 +132,15 @@ def normalize_records(rows: list[dict[str, str]]) -> NormalizationResult:
     duplicates = 0
 
     for row_number, row in enumerate(rows, start=1):
-        key = tuple(f"{k}={row[k]}" for k in sorted(row))
-        if key in seen:
-            duplicates += 1
-            continue
-        seen.add(key)
         try:
+            # Robust to malformed shapes: csv.DictReader puts overflow fields
+            # under a None key and fills short rows with None values, so keys
+            # sort by their string form and values stringify.
+            key = tuple(f"{k!s}={row[k]!s}" for k in sorted(row, key=str))
+            if key in seen:
+                duplicates += 1
+                continue
+            seen.add(key)
             records.append(
                 NormalizedRecord(
                     neighborhood=normalize_label(row["neighborhood"]),
@@ -151,5 +157,7 @@ def normalize_records(rows: list[dict[str, str]]) -> NormalizationResult:
             invalid.append(InvalidRow(row_number=row_number, reason=str(error)))
         except KeyError as error:
             invalid.append(InvalidRow(row_number=row_number, reason=f"missing column: {error}"))
+        except TypeError as error:
+            invalid.append(InvalidRow(row_number=row_number, reason=f"malformed row: {error}"))
 
     return NormalizationResult(records=records, invalid_rows=invalid, duplicates_dropped=duplicates)

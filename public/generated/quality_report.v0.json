@@ -7,7 +7,7 @@
       "month": "2017-04"
     },
     {
-      "description": "east_village_south appears from 2017-04 and co-occurs with east_village thereafter. Era-consistent East Village totals across the split require summing both areas after 2017-04.",
+      "description": "east_village_south appears from 2017-04 and generally co-occurs with east_village, with gaps (no extracted counts 2018-03 through 2018-06; see source_maps_without_counts). Era-consistent East Village totals across the split require summing both areas after 2017-04.",
       "id": "east_village_south_split",
       "kind": "boundary",
       "month": "2017-04"
@@ -53,12 +53,6 @@
       "delta": 4,
       "file_id": "//w7IfgJX8pn96inuCWjsvZPCx/Fyh6xEmLMxg==",
       "reported": 38
-    },
-    {
-      "computed": 136,
-      "delta": -443,
-      "file_id": "/DwvKJJ8ywLriqvibK26S5X7lz8+u3uzrnSy4Q==",
-      "reported": 579
     },
     {
       "computed": 547,
@@ -113,12 +107,6 @@
       "delta": -1,
       "file_id": "47iPdT9QueBSuf97VVe2+B8+A+/8Z+nRaD8mxw==",
       "reported": 64
-    },
-    {
-      "computed": 139,
-      "delta": -362,
-      "file_id": "5sA/pLjVPgx+k1XI32ciHWD/WplvaGQV/iVnDg==",
-      "reported": 501
     },
     {
       "computed": 47,
@@ -193,18 +181,6 @@
       "reported": 39
     },
     {
-      "computed": 139,
-      "delta": -384,
-      "file_id": "HvMNizHSkf+09Wph5ifeWBIVUtKikABTMEFWvA==",
-      "reported": 523
-    },
-    {
-      "computed": 145,
-      "delta": -739,
-      "file_id": "IG88NnfeJ4QDsKIx/JvjhYelOCq7C/xfsPl5Ww==",
-      "reported": 884
-    },
-    {
       "computed": 148,
       "delta": -1,
       "file_id": "Ip9aGEtU3adeSmGE5/3Lk2qxnga0e7hFTSBzaQ==",
@@ -227,12 +203,6 @@
       "delta": -2,
       "file_id": "JzXhYw+tbzolRgoMTGAztZadafFEEI+bnJsW7A==",
       "reported": 415
-    },
-    {
-      "computed": 57,
-      "delta": -3,
-      "file_id": "Lb0Ul3TsAgG11b0qIaVpvrzwmEWbl6VTreAnFA==",
-      "reported": 60
     },
     {
       "computed": 34,
@@ -313,12 +283,6 @@
       "reported": 41
     },
     {
-      "computed": 171,
-      "delta": -596,
-      "file_id": "U5zfvzN6qtG6gIyk/WMJ6R2uKnxHbV5w3q0LlA==",
-      "reported": 767
-    },
-    {
       "computed": 622,
       "delta": -7,
       "file_id": "UBhRpzN2Rrxiysl/eBTB+WmHMC0fu0Nu5RQlnw==",
@@ -349,12 +313,6 @@
       "reported": 56
     },
     {
-      "computed": 39,
-      "delta": -6,
-      "file_id": "YcUkDunqbH0nvZg93dkOQ59PY0rNp8djsygSCA==",
-      "reported": 45
-    },
-    {
       "computed": 98,
       "delta": -4,
       "file_id": "Z/6HW8pcLXgOn6jZoVAR8UDL3m16wOqYVEiNQw==",
@@ -365,12 +323,6 @@
       "delta": -12,
       "file_id": "ZtJ+3se8q8Ji2oNPZ61/fpbTqpYMdwZWGGtAww==",
       "reported": 366
-    },
-    {
-      "computed": 132,
-      "delta": -516,
-      "file_id": "amDRx5rGcd7HFtmg4QfnUMfvnWidiAHfqCWmKg==",
-      "reported": 648
     },
     {
       "computed": 439,
@@ -475,30 +427,6 @@
       "reported": 44
     },
     {
-      "computed": 136,
-      "delta": -323,
-      "file_id": "kXKj0ubmpMn6yO4NzBoIt3FqSyvamLZNsDdvfg==",
-      "reported": 459
-    },
-    {
-      "computed": 180,
-      "delta": -554,
-      "file_id": "klsyRgBIXtthQ8cABsPefwyAFXeRBZRUphV/Sg==",
-      "reported": 734
-    },
-    {
-      "computed": 107,
-      "delta": -387,
-      "file_id": "mPkmBnJ3tXwfZyeBe58Fw6Tz1Sj3KaZ7/IIgQw==",
-      "reported": 494
-    },
-    {
-      "computed": 141,
-      "delta": -452,
-      "file_id": "mQqNcjmIfz3Ld8T+iOOSi6+b7zjQi14nz5Z9bw==",
-      "reported": 593
-    },
-    {
       "computed": 55,
       "delta": -2,
       "file_id": "nvGQyVxocCGBvYakiu3Ch4dHh8YPRiiwbxbAlg==",
@@ -511,18 +439,6 @@
       "reported": 34
     },
     {
-      "computed": 39,
-      "delta": -8,
-      "file_id": "o/6P1KILcF7EG4kI9y8BQZiT4JU8Z2Mi3d/8Sw==",
-      "reported": 47
-    },
-    {
-      "computed": 42,
-      "delta": -6,
-      "file_id": "o1zTidgfdBQkb2LLRCpFXU5UqHBN5+gRjiPzXA==",
-      "reported": 48
-    },
-    {
       "computed": 55,
       "delta": -1,
       "file_id": "smdqcfbLZsoFLxyP+upFzpeYDFkKVjbxlK4FrQ==",
@@ -533,12 +449,6 @@
       "delta": -628,
       "file_id": "t8EtI8uAi7sxVJjagzru75c1a3n/oM3Shq2E6w==",
       "reported": 781
-    },
-    {
-      "computed": 154,
-      "delta": -508,
-      "file_id": "tHVyLAZMyUzScCHLdlgT3qehNtdN3Us+XEEC3g==",
-      "reported": 662
     },
     {
       "computed": 594,
@@ -559,22 +469,10 @@
       "reported": 472
     },
     {
-      "computed": 93,
-      "delta": -381,
-      "file_id": "vacoxNwHeTO+BXx4Xwj/vNZWd3UvHmIz4y4gHw==",
-      "reported": 474
-    },
-    {
       "computed": 54,
       "delta": -1,
       "file_id": "w66YbjFTkyNbWPuGou+cCV6rtaDSeWOLcORyJg==",
       "reported": 55
-    },
-    {
-      "computed": 59,
-      "delta": -10,
-      "file_id": "xroeuvvqYi/U4Ni5QsKFP3mjDwPCj5nIeNDUuA==",
-      "reported": 69
     },
     {
       "computed": 91,
@@ -681,5 +579,11 @@
   "source": {
     "retrieved_at": "2026-08-21T01:06:45Z",
     "source_id": "sdrdl_source"
-  }
+  },
+  "source_maps_without_counts": [
+    "CFtkDn7T3Iafj4TSUryB8YuxnlBdqnts1Qe0WQ==",
+    "MN587n4YJvRmJErdtEXjF6/0N6fHJA46B7YzBA==",
+    "NMU9zqDPqHXZrJxlsyTleC9qtYfRSfeKYx63mg==",
+    "x2yLvI5I1d3xMqtuGu2BLj2UqzrUg5f41qUlEQ=="
+  ]
 }

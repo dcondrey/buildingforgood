@@ -27,17 +27,27 @@ def _require(doc: dict[str, Any], field: str, kind: type | tuple[type, ...]) -> 
     value = doc[field]
     if not isinstance(value, kind):
         raise ContractViolation(f"field {field} has wrong type: {type(value).__name__}")
+    kinds = kind if isinstance(kind, tuple) else (kind,)
+    if isinstance(value, bool) and bool not in kinds:
+        # bool is an int subclass in Python; a count field holding True is a
+        # contract violation, not a 1.
+        raise ContractViolation(f"field {field} has wrong type: bool")
     return value
 
 
 def assert_no_precise_fields(node: Any, path: str = "$") -> None:
-    """Recursively reject any deny-listed key anywhere in the artifact."""
+    """Recursively reject any deny-listed key anywhere in the artifact.
+
+    Key matching is case-insensitive ("Lat" and "X" are as precise as "lat"
+    and "x"), and tuples are walked like lists so pre-serialization structures
+    cannot smuggle a precise field past the gate.
+    """
     if isinstance(node, dict):
         for key, value in node.items():
-            if key in PRECISE_FIELD_DENY_LIST:
+            if isinstance(key, str) and key.lower() in PRECISE_FIELD_DENY_LIST:
                 raise ContractViolation(f"precise-location field {key!r} at {path}")
             assert_no_precise_fields(value, f"{path}.{key}")
-    elif isinstance(node, list):
+    elif isinstance(node, list | tuple):
         for index, item in enumerate(node):
             assert_no_precise_fields(item, f"{path}[{index}]")
 

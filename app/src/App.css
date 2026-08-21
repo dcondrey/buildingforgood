@@ -1175,6 +1175,99 @@ main {
   grid-template-rows: repeat(3, 3.3rem);
   margin-top: 1.25rem;
 }
+.area-map-svg {
+  background: linear-gradient(135deg, rgba(110, 195, 202, 0.08), transparent 72%);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: block;
+  height: auto;
+  margin-top: 1.25rem;
+  overflow: visible;
+  padding: 0.45rem;
+  width: 100%;
+}
+.map-area {
+  transition:
+    filter 180ms ease,
+    transform 180ms ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.map-area rect {
+  fill: rgba(110, 195, 202, 0.11);
+  stroke: rgba(110, 195, 202, 0.3);
+  stroke-width: 0.8;
+  transition:
+    fill 180ms ease,
+    stroke 180ms ease;
+}
+.map-area:hover {
+  filter: drop-shadow(0 0 5px rgba(110, 195, 202, 0.45));
+  transform: scale(1.02);
+}
+.map-area:hover rect {
+  fill: rgba(110, 195, 202, 0.22);
+  stroke: var(--teal-bright);
+}
+.map-down rect {
+  fill: rgba(240, 173, 78, 0.13);
+  stroke: rgba(240, 173, 78, 0.38);
+}
+.map-down:hover rect {
+  fill: rgba(240, 173, 78, 0.24);
+  stroke: var(--amber-bright);
+}
+.map-name,
+.map-value,
+.map-edge {
+  fill: var(--muted);
+  font-family: var(--mono);
+  font-size: 4.5px;
+  pointer-events: none;
+}
+.map-value {
+  fill: var(--teal-bright);
+  font-size: 6.5px;
+  font-weight: 700;
+}
+.map-down .map-value {
+  fill: var(--amber-bright);
+}
+.map-edge {
+  fill: var(--faint);
+  font-size: 3.5px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.map-legend {
+  align-items: center;
+  color: var(--faint);
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  gap: 0.8rem 1rem;
+  justify-content: flex-end;
+  margin-top: 0.65rem;
+  text-transform: uppercase;
+}
+.map-legend span {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+}
+.map-legend i {
+  border-radius: 2px;
+  display: inline-block;
+  height: 0.55rem;
+  width: 0.9rem;
+}
+.map-legend-up {
+  background: var(--teal);
+}
+.map-legend-down {
+  background: var(--amber);
+}
 .area-cell {
   background: linear-gradient(135deg, rgba(110, 195, 202, 0.11), rgba(110, 195, 202, 0.03));
   border: 1px solid rgba(110, 195, 202, 0.22);
@@ -2872,4 +2965,23 @@ main {
     padding-bottom: 5rem;
     padding-top: 5rem;
   }
+}
+
+.plan-map {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+}
+.plan-map .area-map-svg {
+  margin-inline: auto;
+  max-width: 480px;
+}
+.plan-map-heading p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0.35rem 0 0;
+}
+.plan-map .map-caption {
+  text-align: center;
 }

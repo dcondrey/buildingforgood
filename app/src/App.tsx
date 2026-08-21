@@ -4,12 +4,13 @@ import { EMBEDDED_DEMO, loadDemoData, type DemoData, type HistoryPoint } from ".
 import { allocateHours, type PlanResult } from "./lib/planner";
 
 const DEFAULT_COVERAGE_FLOOR = 8;
+const MAX_BUDGET_HOURS = 400;
 
 const GUIDE_STEPS = [
-  "Composition first: observed individuals rose, tents and structures fell, and individual observations reached more of the same 261 blocks.",
-  "Rolling-origin evaluation powers a historical January 2026 one-step-ahead scenario—not a live forecast.",
-  "A fixed 80-hour budget uses a user-set 8-hour continuity floor. Audit 0 or compare 4 hours to see the policy effect.",
-  "The final brief carries evidence, uncertainty, constraints, and a human lock into coordinator review.",
+  "The headline estimate fell, but that hides what changed: outreach workers saw more people, on more blocks. What dropped was tents.",
+  "Next, a forecast rehearsal. Using only data through December 2025, the tool predicts January 2026 and shows how far off similar forecasts have been.",
+  "Then the plan: 80 staff-hours split across six neighborhoods. Every area keeps a guaranteed minimum you choose; the rest goes where more people are expected.",
+  "Finally, a human takes over. The coordinator can lock or change any line, and the written brief carries every caveat along with the numbers.",
 ];
 
 function formatNumber(value: number, digits = 0): string {
@@ -64,6 +65,87 @@ function CheckIcon() {
     <Icon>
       <path d="m5 12 4 4L19 6" />
     </Icon>
+  );
+}
+
+// Simplified relative positions of the six downtown neighborhoods (harbor to the
+// west/left, I-5 to the east). Deliberately schematic: aggregate area values only,
+// no block geometry or precise locations ship with the app.
+const AREA_MAP_LAYOUT: Record<string, { x: number; y: number; w: number; h: number }> = {
+  columbia: { x: 10, y: 16, w: 53, h: 54 },
+  cortez: { x: 65, y: 2, w: 53, h: 36 },
+  city_center: { x: 65, y: 40, w: 53, h: 45 },
+  east_village: { x: 120, y: 2, w: 78, h: 108 },
+  marina: { x: 10, y: 72, w: 53, h: 76 },
+  gaslamp: { x: 65, y: 87, w: 53, h: 61 },
+};
+
+function AreaMap({
+  areas,
+  ariaLabel,
+  valueFor,
+}: {
+  areas: DemoData["areas"];
+  ariaLabel: string;
+  valueFor: (area: DemoData["areas"][number]) => {
+    text: string;
+    tone: "up" | "down" | "neutral";
+  };
+}) {
+  if (!areas.every((area) => AREA_MAP_LAYOUT[area.id])) {
+    return (
+      <div aria-label={ariaLabel} className="area-map" role="img">
+        {areas.map((area) => {
+          const value = valueFor(area);
+          return (
+            <div className="area-cell" key={area.id}>
+              <span>{area.name}</span>
+              <strong
+                className={
+                  value.tone === "up" ? "delta-up" : value.tone === "down" ? "delta-down" : ""
+                }
+              >
+                {value.text}
+              </strong>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  return (
+    <svg aria-label={ariaLabel} className="area-map-svg" role="img" viewBox="0 0 200 150">
+      <title>{ariaLabel}</title>
+      {areas.map((area) => {
+        const cell = AREA_MAP_LAYOUT[area.id];
+        const value = valueFor(area);
+        return (
+          <g className={`map-area map-${value.tone}`} key={area.id}>
+            <rect height={cell.h} rx="7" width={cell.w} x={cell.x} y={cell.y} />
+            <text
+              className="map-name"
+              textAnchor="middle"
+              x={cell.x + cell.w / 2}
+              y={cell.y + cell.h / 2 - 3}
+            >
+              {area.name}
+            </text>
+            <text
+              className="map-value"
+              textAnchor="middle"
+              x={cell.x + cell.w / 2}
+              y={cell.y + cell.h / 2 + 12}
+            >
+              {value.text}
+            </text>
+            <title>{`${area.name}: ${value.text}`}</title>
+          </g>
+        );
+      })}
+      <text className="map-edge" textAnchor="middle" transform="rotate(-90 4 112)" x="4" y="112">
+        San Diego Bay
+      </text>
+    </svg>
   );
 }
 
@@ -225,11 +307,11 @@ function ForecastChart({ history, data }: { history: HistoryPoint[]; data: DemoD
         </span>
         <span>
           <i className="legend-forecast" />
-          Historical scenario
+          Forecast (rehearsal)
         </span>
         <span>
           <i className="legend-range" />
-          80% residual band
+          Likely range, from past errors
         </span>
       </div>
     </div>
@@ -260,7 +342,7 @@ function EvidenceChain({ data }: { data: DemoData }) {
   const steps = [
     {
       label: "Verified source",
-      detail: data.source.artifact,
+      detail: data.source.artifact.split("/").pop() ?? data.source.artifact,
       tone: "teal",
     },
     {
@@ -348,6 +430,9 @@ function App() {
         setData(loaded);
         setBudget(loaded.scenario.defaultBudget);
       })
+      .catch(() => {
+        // Aborted fetches (e.g. unmount) fall back to the embedded snapshot already set.
+      })
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, []);
@@ -384,7 +469,7 @@ function App() {
 
   const planTotal = plan?.allocations.reduce((sum, row) => sum + row.hours, 0) ?? 0;
   const maxHours = Math.max(1, ...Array.from(allocationById.values()));
-  const budgetValid = Number.isInteger(budget) && budget >= 0;
+  const budgetValid = Number.isInteger(budget) && budget >= 0 && budget <= MAX_BUDGET_HOURS;
   const planReady = Boolean(
     plan?.feasible && !planDirty && guardEnabled && budgetValid && planTotal === budget,
   );
@@ -544,8 +629,8 @@ function App() {
   const classificationLabel =
     signal.classification === "wider_footprint"
       ? individualSpatial
-        ? "Wider Observed-Individual Footprint"
-        : "Wider Low-Intensity Footprint"
+        ? "People were seen in more places, not fewer"
+        : "Field activity spread across more blocks"
       : titleCase(signal.classification);
 
   return (
@@ -579,7 +664,7 @@ function App() {
                 aria-describedby="budget-help"
                 id="budget-hours"
                 inputMode="numeric"
-                max="400"
+                max={MAX_BUDGET_HOURS}
                 min="0"
                 step="1"
                 onChange={(event) => {
@@ -688,27 +773,29 @@ function App() {
               Prepared decision · {data.scenario.focusArea} · {data.scenario.period}
             </p>
             <h1 id="hero-title">
-              Two rulers.
+              Fewer tents,
               <br />
-              <em>One decision.</em>
+              <em>or fewer people?</em>
             </h1>
             <p className="hero-lede">
-              Observed individuals rose. Tents and structures fell. Individual observations reached
-              more blocks. Which result should change tomorrow’s outreach plan?
+              Downtown San Diego’s unsheltered estimate fell 22% in a year, but the drop came from
+              tents, not people. On the exact same 261 blocks, outreach workers actually saw more
+              people than the year before. This tool shows what really changed, how much is
+              uncertain, and helps plan where the next outreach shift should go.
             </p>
             <div
               className="composition-lead"
               aria-label="Observed composition and active-block footprint comparison"
             >
               <div>
-                <span>Observed individuals</span>
+                <span>People seen in the field</span>
                 <strong>+{formatNumber(signal.components.individuals.changePct, 1)}%</strong>
                 <small>
                   {signal.components.individuals.from} → {signal.components.individuals.to}
                 </small>
               </div>
               <div>
-                <span>Tents / structures</span>
+                <span>Tents & structures</span>
                 <strong>{formatNumber(signal.components.structures.changePct, 1)}%</strong>
                 <small>
                   {signal.components.structures.from} → {signal.components.structures.to}
@@ -722,7 +809,7 @@ function App() {
                 </small>
               </div>
               <div>
-                <span>{individualOne ? "Blocks with individuals" : "Active blocks"}</span>
+                <span>{individualOne ? "Blocks where people were seen" : "Active blocks"}</span>
                 <strong>
                   +
                   {individualOne
@@ -739,10 +826,10 @@ function App() {
             </div>
           </div>
           <div aria-label="Prepared scenario summary" className="hero-decision">
-            <span className="eyebrow">Question for the coordinator</span>
+            <span className="eyebrow">The decision at hand</span>
             <p>
-              Given the evidence and <strong>{budget} staff-hours</strong>, where should outreach
-              continuity be reviewed next?
+              There are <strong>{budget} staff-hours</strong> for next week’s outreach shifts. Which
+              neighborhoods should get them?
             </p>
             <div className="provisional-note">
               <span>{data.scenario.status === "ready" ? "✓ Prepared" : "◇ Provisional"}</span>{" "}
@@ -757,7 +844,7 @@ function App() {
             <span>01</span> Test the drop
           </a>
           <a href="#forecast">
-            <span>02</span> Historical scenario
+            <span>02</span> Check the forecast
           </a>
           <a href="#planner">
             <span>03</span> Plan the shift
@@ -772,23 +859,24 @@ function App() {
             01
           </div>
           <div className="section-intro">
-            <p className="eyebrow">Evidence gate</p>
+            <p className="eyebrow">What actually changed</p>
             <h2 id="drop-title">Test the drop</h2>
             <p>
-              Which observed components changed, and did each component’s own block footprint change
-              on the exact same panel?
+              The falling estimate is built from three things counted in the field: people, tents,
+              and vehicles. Compare each one on the same {signal.panelSize} blocks, one January to
+              the next, and see which of them actually dropped.
             </p>
           </div>
 
           <div className="metric-grid composition-metrics">
             <Metric
-              label="Observed individuals"
+              label="People seen in the field"
               value={`${signal.components.individuals.from} → ${signal.components.individuals.to}`}
               detail={`+${formatNumber(signal.components.individuals.changePct, 1)}%`}
               tone="teal"
             />
             <Metric
-              label="Tents / structures"
+              label="Tents & structures"
               value={`${signal.components.structures.from} → ${signal.components.structures.to}`}
               detail={`${formatNumber(signal.components.structures.changePct, 1)}%`}
               tone="amber"
@@ -799,7 +887,7 @@ function App() {
               detail={`${formatNumber(signal.components.vehicles.changePct, 1)}%`}
             />
             <Metric
-              label={individualOne ? "Blocks with ≥1 individual" : "Active footprint"}
+              label={individualOne ? "Blocks with at least one person" : "Active footprint"}
               value={`${formatNumber(individualOne?.fromBlocks ?? signal.activeFrom)} → ${formatNumber(individualOne?.toBlocks ?? signal.activeTo)}`}
               detail={
                 individualOne
@@ -840,7 +928,7 @@ function App() {
               >
                 <SparkIcon /> Test the drop
               </button>
-              <span>Runs deterministic checks on the local generated artifact</span>
+              <span>Same result every run · bundled local data · no AI in the loop</span>
             </div>
           ) : (
             <div aria-live="polite" className="evidence-result reveal" id="evidence-result">
@@ -849,15 +937,15 @@ function App() {
                   <ArrowDownIcon />
                 </div>
                 <div>
-                  <p className="eyebrow">Balanced-panel conclusion</p>
+                  <p className="eyebrow">What the same-blocks comparison shows</p>
                   <h3 ref={resultHeading} tabIndex={-1}>
                     {classificationLabel}
                   </h3>
                   <p>
                     {individualSpatial
-                      ? "Individual observations reached more blocks with similar concentration; tent observations collapsed into fewer blocks."
-                      : "Observed activity reached more blocks while the mixed-unit intensity became more concentrated."}{" "}
-                    This is not a unique-person count or evidence of movement.
+                      ? "People were seen on more blocks than last year, spread about as evenly as before. Tents disappeared from many blocks and bunched up in fewer."
+                      : "Field activity reached more blocks while becoming more concentrated where it remained."}{" "}
+                    These are on-site observations: they cannot say who moved where, or why.
                   </p>
                 </div>
                 <span className="confidence-chip">Human review required</span>
@@ -874,19 +962,17 @@ function App() {
                   >
                     <div className="distribution-heading">
                       <div>
-                        <span className="eyebrow">
-                          Primary spatial test · like compared with like
-                        </span>
-                        <strong>Individuals reached more blocks at both thresholds</strong>
+                        <span className="eyebrow">The key check · same blocks, one year apart</span>
+                        <strong>People were seen on more blocks, however strictly you count</strong>
                       </div>
-                      <span>Same 261-block panel</span>
+                      <span>Same 261 blocks both years</span>
                     </div>
                     <div className="component-thresholds">
                       {[
-                        { label: "Individual blocks ≥1", value: individualOne, tone: "up" },
-                        { label: "Individual blocks ≥2", value: individualTwo, tone: "up" },
-                        { label: "Tent blocks ≥1", value: structureOne, tone: "down" },
-                        { label: "Tent blocks ≥2", value: structureTwo, tone: "down" },
+                        { label: "Blocks with ≥1 person seen", value: individualOne, tone: "up" },
+                        { label: "Blocks with ≥2 people seen", value: individualTwo, tone: "up" },
+                        { label: "Blocks with ≥1 tent", value: structureOne, tone: "down" },
+                        { label: "Blocks with ≥2 tents", value: structureTwo, tone: "down" },
                       ].map((item) => (
                         <div
                           className={`component-threshold component-${item.tone}`}
@@ -1094,23 +1180,25 @@ function App() {
                       </div>
                       <span className="formula positive">Active blocks +{signal.activeChange}</span>
                     </div>
-                    <div
-                      className="area-map"
-                      aria-label="Relative area view, not to scale"
-                      role="img"
-                    >
-                      {data.areas.map((area) => (
-                        <div className={`area-cell area-${area.id}`} key={area.id}>
-                          <span>{area.name}</span>
-                          <strong className={area.delta > 0 ? "delta-up" : "delta-down"}>
-                            {area.delta > 0 ? "+" : ""}
-                            {area.delta}
-                          </strong>
-                        </div>
-                      ))}
+                    <AreaMap
+                      areas={data.areas}
+                      ariaLabel="Schematic map of the six downtown neighborhoods showing the change in raw field observations"
+                      valueFor={(area) => ({
+                        text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                        tone: area.delta > 0 ? "up" : "down",
+                      })}
+                    />
+                    <div className="map-legend" aria-label="Map legend">
+                      <span>
+                        <i className="map-legend-up" /> More observed units
+                      </span>
+                      <span>
+                        <i className="map-legend-down" /> Fewer observed units
+                      </span>
                     </div>
                     <p className="map-caption">
-                      Mixed-unit raw-index change · not a person map · not to scale
+                      Change in raw field observations by neighborhood · schematic, not to scale ·
+                      not a count of people
                     </p>
                   </div>
                 </div>
@@ -1438,15 +1526,16 @@ function App() {
           </div>
           <div className="section-intro split-intro">
             <div>
-              <p className="eyebrow">Historical replay · data frozen December 2025</p>
-              <h2 id="forecast-title">Replay the January 2026 one-step-ahead scenario</h2>
+              <p className="eyebrow">Forecast rehearsal · only past data used</p>
+              <h2 id="forecast-title">Could we have predicted January 2026?</h2>
               <p>
-                This historical planning scenario demonstrates the workflow; it is not a live future
-                forecast. Its historical residual-band upper bound becomes the allocation scenario’s
-                conservative reference.
+                Using only data available in December 2025, the tool forecasts the next month, then
+                grades itself: how far off were forecasts like this in the past? The plan below uses
+                the high end of that error range, so uncertainty buys extra coverage instead of
+                being ignored.
               </p>
             </div>
-            <span className="wide-warning">Historical 80% residual band · not live</span>
+            <span className="wide-warning">A rehearsal on past data · not a live forecast</span>
           </div>
 
           <div className="forecast-layout">
@@ -1455,14 +1544,14 @@ function App() {
                 <div>
                   <span className="eyebrow">{data.forecast.targetPeriod}</span>
                   <strong>{formatNumber(data.forecast.point)}</strong>
-                  <small>historical scenario point</small>
+                  <small>best single guess</small>
                 </div>
                 <div>
-                  <span className="eyebrow">Historical 80% residual band</span>
+                  <span className="eyebrow">Likely range, from past errors</span>
                   <strong>
                     {formatNumber(data.forecast.lower)}–{formatNumber(data.forecast.upper)}
                   </strong>
-                  <small>planning range</small>
+                  <small>the plan uses the high end</small>
                 </div>
               </div>
               <ForecastChart data={data.forecast} history={data.history} />
@@ -1593,19 +1682,20 @@ function App() {
           </div>
           <div className="section-intro split-intro planner-intro">
             <div>
-              <p className="eyebrow">Constrained allocation</p>
+              <p className="eyebrow">The staffing plan</p>
               <h2 id="planner-title">Plan {budget} staff-hours</h2>
               <p>
-                Distribute a fixed budget using the historical scenario’s upper range, then make the
-                user-set coverage-continuity policy visible.
+                Split the hours across the six neighborhoods. First, every area gets a minimum you
+                choose, so no place goes unvisited. Whatever remains goes where the forecast expects
+                the most people.
               </p>
             </div>
             <div className={`guard-status ${guardEnabled ? "guard-on" : "guard-off"}`}>
               <span>{guardEnabled ? "✓" : "!"}</span>
               <div>
-                <small>Coverage guard</small>
+                <small>Guaranteed minimum</small>
                 <strong>
-                  {guardEnabled ? `ON · ${coverageFloor}h floor` : "OFF · AUDIT ONLY"}
+                  {guardEnabled ? `ON · ${coverageFloor}h per area` : "OFF · COMPARISON ONLY"}
                 </strong>
               </div>
             </div>
@@ -1613,8 +1703,8 @@ function App() {
 
           <div className="coverage-policy" aria-label="Coverage-continuity floor sensitivity">
             <div>
-              <span className="eyebrow">User-set demo policy · not learned or optimized</span>
-              <strong>Minimum continuity per included area</strong>
+              <span className="eyebrow">You set this · the tool never picks it</span>
+              <strong>Guaranteed minimum hours for every neighborhood</strong>
             </div>
             <div className="floor-options">
               {[0, 4, 8].map((floor) => (
@@ -1628,9 +1718,7 @@ function App() {
                   type="button"
                 >
                   <strong>{floor}h</strong>
-                  <span>
-                    {floor === 0 ? "audit only" : floor === 8 ? "prepared demo" : "sensitivity"}
-                  </span>
+                  <span>{floor === 0 ? "no minimum" : floor === 8 ? "default" : "compare"}</span>
                 </button>
               ))}
             </div>
@@ -1638,8 +1726,8 @@ function App() {
           <p aria-live="polite" className="policy-lens">
             <strong>Policy lens:</strong>{" "}
             {coverageFloor === 0
-              ? "audit mode removes the continuity floor; allocations are not a recommendation."
-              : `${data.areas.length * coverageFloor} of ${budget} hours are reserved for continuity before forecast weighting.`}
+              ? "with no minimum, hours follow the forecast alone. Use this to see which neighborhoods would be left with almost nothing; it is a comparison view, not a recommendation."
+              : `${data.areas.length * coverageFloor} of ${budget} hours are set aside first (${coverageFloor} per neighborhood); the rest follows the forecast.`}
           </p>
 
           {!plan ? (
@@ -1652,21 +1740,27 @@ function App() {
                 <b>=</b>
                 <span>
                   {data.areas.length * coverageFloor}
-                  <small>continuity floors</small>
+                  <small>guaranteed minimums</small>
                 </span>
                 <b>+</b>
                 <span>
                   {Math.max(0, budget - data.areas.length * coverageFloor)}
-                  <small>signal-weighted</small>
+                  <small>follow the forecast</small>
                 </span>
               </div>
               <button
                 className="button button-primary button-large"
+                disabled={!budgetValid}
                 onClick={() => runPlan()}
                 type="button"
               >
                 <SparkIcon /> Generate coverage scenario
               </button>
+              {!budgetValid && (
+                <p className="budget-invalid" role="status">
+                  Enter a whole number of hours between 0 and {MAX_BUDGET_HOURS} to generate a plan.
+                </p>
+              )}
             </div>
           ) : !plan.feasible ? (
             <div className="infeasible" role="alert">
@@ -1693,8 +1787,8 @@ function App() {
                     type="button"
                   >
                     {guardEnabled
-                      ? "Audit without coverage guard"
-                      : `Restore ${coverageFloor || DEFAULT_COVERAGE_FLOOR}h demo guard`}
+                      ? "Compare with no minimum"
+                      : `Restore the ${coverageFloor || DEFAULT_COVERAGE_FLOOR}h minimum`}
                   </button>
                   <button
                     className="button button-quiet"
@@ -1712,10 +1806,10 @@ function App() {
 
               {!guardEnabled && (
                 <div className="audit-banner" role="status">
-                  <strong>Audit view—not a recommendation.</strong>{" "}
+                  <strong>Comparison view, not a recommendation.</strong>{" "}
                   {coverageFloor > 0
-                    ? `Areas below the selected ${coverageFloor}h floor are at risk of losing continuity.`
-                    : "The zero-floor scenario removes the continuity protection for comparison."}
+                    ? `With no minimum enforced, areas below ${coverageFloor}h would lose their guaranteed visit.`
+                    : "This shows what happens with no guaranteed minimum: some neighborhoods get almost nothing."}
                 </div>
               )}
 
@@ -1747,8 +1841,8 @@ function App() {
                       <div className="area-name">
                         <strong>{area.name}</strong>
                         <span>
-                          Historical upper bound {formatNumber(area.planningLoad, 1)} · remaining
-                          hours weighted after user-set floor
+                          Planning for up to {formatNumber(area.planningLoad, 1)} observations ·
+                          minimum hours plus a share of the rest
                         </span>
                       </div>
                       <div aria-hidden="true" className="allocation-bar-track">
@@ -1785,14 +1879,38 @@ function App() {
                         className={`constraint-chip ${belowFloor ? "constraint-fail" : "constraint-pass"}`}
                       >
                         {!guardEnabled
-                          ? "Guard off"
+                          ? "No minimum"
                           : belowFloor
-                            ? "Below floor"
-                            : `${coverageFloor}h floor met`}
+                            ? "Below minimum"
+                            : `${coverageFloor}h minimum met`}
                       </span>
                     </article>
                   );
                 })}
+              </div>
+
+              <div className="plan-map">
+                <div className="plan-map-heading">
+                  <span className="eyebrow">The plan on the map</span>
+                  <p>
+                    Every neighborhood keeps its guaranteed minimum; the extra hours go where the
+                    forecast expects the most people.
+                  </p>
+                </div>
+                <AreaMap
+                  areas={data.areas}
+                  ariaLabel="Schematic map of the six downtown neighborhoods showing planned staff-hours"
+                  valueFor={(area) => {
+                    const hours = allocationById.get(area.id) ?? 0;
+                    return {
+                      text: `${hours}h`,
+                      tone: guardEnabled && hours < coverageFloor ? "down" : "neutral",
+                    };
+                  }}
+                />
+                <p className="map-caption">
+                  Planned staff-hours by neighborhood · schematic, not to scale
+                </p>
               </div>
 
               <div className="plan-footer">
@@ -1811,7 +1929,12 @@ function App() {
                   </strong>
                 </div>
                 {planDirty && (
-                  <button className="button button-primary" onClick={() => runPlan()} type="button">
+                  <button
+                    className="button button-primary"
+                    disabled={!budgetValid}
+                    onClick={() => runPlan()}
+                    type="button"
+                  >
                     Recompute unlocked hours
                   </button>
                 )}
@@ -1830,18 +1953,18 @@ function App() {
           </div>
           <div className="section-intro split-intro">
             <div>
-              <p className="eyebrow">Human accountability</p>
+              <p className="eyebrow">You decide</p>
               <h2 id="review-title">Review before the next shift</h2>
               <p>
-                The system prepares a brief. A coordinator—not the model—decides what local context
-                changes.
+                The tool writes the plan up with its caveats attached. A coordinator decides what
+                local context changes.
               </p>
             </div>
             <span className={`review-status ${planReady ? "review-ready" : ""}`}>
               {planReady
                 ? "Ready for coordinator review"
                 : plan?.feasible && !guardEnabled
-                  ? "Audit only · restore a coverage guard"
+                  ? "Comparison view · restore a minimum to continue"
                   : plan?.feasible && planTotal !== budget
                     ? "Budget mismatch · cannot copy"
                     : planDirty
@@ -1883,7 +2006,7 @@ function App() {
                 <strong>
                   {guardEnabled
                     ? `${coverageFloor}h demo-policy minimum`
-                    : "Guard off · audit only"}
+                    : "No minimum · comparison only"}
                 </strong>
               </div>
               <div>
@@ -1964,7 +2087,6 @@ function App() {
           className="guide-panel"
           role="dialog"
           aria-labelledby="guide-title"
-          aria-modal="true"
           aria-live="polite"
           ref={guidePanel}
           tabIndex={-1}
@@ -1973,7 +2095,7 @@ function App() {
             <span style={{ width: `${((guideIndex + 1) / GUIDE_STEPS.length) * 100}%` }} />
           </div>
           <h2 className="eyebrow" id="guide-title">
-            Decision beat {guideIndex + 1}/{GUIDE_STEPS.length} · Arrow right to advance
+            Step {guideIndex + 1} of {GUIDE_STEPS.length} · press → to continue
           </h2>
           <p>{GUIDE_STEPS[guideIndex]}</p>
           <div>

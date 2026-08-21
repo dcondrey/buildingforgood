@@ -103,7 +103,7 @@ export function allocateHours(
     allocations,
     feasible: true,
     message: guardEnabled
-      ? `All ${areas.length} areas retain at least ${effectiveFloor} hours.`
-      : "Audit view: hours follow planning load without a minimum coverage floor.",
+      ? `Every one of the ${areas.length} neighborhoods keeps at least ${effectiveFloor} hours.`
+      : "No minimum applied: hours follow the forecast alone.",
   };
 }

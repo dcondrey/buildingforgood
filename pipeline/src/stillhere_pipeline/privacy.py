@@ -1,0 +1,1076 @@
+"""Deployable-data privacy boundary (issue #7).
+
+Nothing that could locate or identify a person may reach the static
+deployment. This module is the structural enforcement of that promise: it
+scans generated artifacts and the production bundle, and fails the build on
+any violation rather than relying on reviewer attention.
+
+Four rule families, in the order they were derived:
+
+1. **Forbidden keys** — coordinate, address, parcel, and record-identifier
+   field names, matched on a normalized key so ``Latitude``, ``lat_deg`` and
+   ``geo-lat`` all resolve to the same rule.
+2. **Forbidden value patterns** — street addresses, coordinate pairs, and
+   plus codes appearing inside otherwise innocent string fields.
+3. **Coordinate geometry** — the hard case. The product ships an aggregate
+   spatial view, so boundary polygons are *legitimate* coordinates. Numbers
+   are therefore permitted only inside a ``geometry`` of type ``Polygon`` or
+   ``MultiPolygon``; ``Point``, ``MultiPoint`` and ``LineString`` geometries
+   are refused outright, as is any bare coordinate-shaped number elsewhere.
+   A deny-list without this exemption either blocks the map or is theatre.
+4. **Small-cell suppression** — added by the C-01 red-team review (finding
+   R-06). Aggregation is not anonymization: a neighbourhood-month count of
+   one is a person. Counts below the threshold must be published as
+   suppressed, never as a number.
+
+The scan is intentionally noisy about ambiguity. A finding at ``BLOCK``
+severity fails the build; ``WARN`` is reported and does not.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import re
+import sys
+from collections.abc import Iterator, Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+# --- Rule data -------------------------------------------------------------
+
+#: Field names that may never appear in a deployable artifact, normalized to
+#: lowercase alphanumerics (so ``geo-lat``, ``geoLat`` and ``geo_lat`` match).
+FORBIDDEN_KEYS: frozenset[str] = frozenset(
+    {
+        # coordinates
+        "lat",
+        "latdeg",
+        "latitude",
+        "lon",
+        "lng",
+        "long",
+        "londeg",
+        "longitude",
+        "geolat",
+        "geolon",
+        "easting",
+        "northing",
+        "pointx",
+        "pointy",
+        "geox",
+        "geoy",
+        "coords",
+        "coordinate",
+        "coordinates",
+        "latlng",
+        "latlon",
+        "geohash",
+        "pluscode",
+        "what3words",
+        "utm",
+        "mgrs",
+        # addresses and parcels
+        "address",
+        "address1",
+        "address2",
+        "streetaddress",
+        "fulladdress",
+        "addr",
+        "street",
+        "streetname",
+        "housenumber",
+        "blockaddress",
+        "crossstreet",
+        "apn",
+        "parcel",
+        "parcelid",
+        "parcelnumber",
+        "zipplus4",
+        # person and record identifiers
+        "personid",
+        "clientid",
+        "individualid",
+        "hmisid",
+        "caseid",
+        "clientkey",
+        "rawrecordid",
+        "sourcerecordid",
+        "servicerequestid",
+        "incidentid",
+        "ssn",
+        "dob",
+        "dateofbirth",
+        "firstname",
+        "lastname",
+        "fullname",
+        "phone",
+        "phonenumber",
+        "email",
+        "emailaddress",
+        # source-grain identifiers and bounding-street labels. From the real
+        # hackathon bundle: block-level records carry a block id and the four
+        # streets that bound the block, which together locate a block as
+        # precisely as a coordinate would.
+        "blockid",
+        "blocknumber",
+        "stnorth",
+        "steast",
+        "stsouth",
+        "stwest",
+        "boundingstreets",
+        "crossstreets",
+        "sourceneighborhood",
+        # site-level identifiers
+        "pointid",
+        "siteid",
+        "campid",
+        "encampmentid",
+        "tentid",
+        "structureid",
+    }
+)
+
+#: Substrings that make a key forbidden regardless of surrounding tokens.
+FORBIDDEN_KEY_SUBSTRINGS: tuple[str, ...] = (
+    "latitude",
+    "longitude",
+    "geohash",
+    "pluscode",
+    "streetaddress",
+)
+
+#: Keys that mark an object as a *cell* — one area, one period. Any small
+#: integer inside such an object is a published cell value, whatever it is
+#: named. Detecting cells by context rather than by guessing count-field
+#: names is deliberate: the first version of this rule looked for names like
+#: ``count`` and ``observed``, and missed 306 real small cells in the A-07
+#: artifact because that schema names them ``total``, ``individual``,
+#: ``structure`` and ``vehicle``. Context is stable; field names are not.
+CELL_CONTEXT_KEYS: frozenset[str] = frozenset(
+    {"month", "period", "date", "yearmonth", "neighborhood", "areaid", "area", "observations"}
+)
+
+#: Keys inside a cell whose small integers are structural, not observations.
+CELL_NUMERIC_ALLOWLIST: frozenset[str] = frozenset(
+    {
+        "schemaversion",
+        "version",
+        "year",
+        "day",
+        "quarter",
+        "index",
+        "rank",
+        "horizonperiods",
+        "periods",
+        "months",
+        "seasonalperiods",
+        "weight",
+        "timeincrement",
+        "increment",
+        "minimumsustainedperiods",
+        # Structural fields that legitimately sit inside a cell. Kept
+        # deliberately narrow: `order`, `sequence` and `priority` were here
+        # and have been removed, because each is a plausible name for a real
+        # count ({"priority": 2} meaning two flagged individuals), and an
+        # allow-list entry is an exemption. Narrow exemptions, not scanning.
+        "revision",
+        "sortindex",
+        # Unambiguously temporal. A schema encoding month as 3 is naming a
+        # period, not counting three people.
+        "month",
+        "period",
+        "date",
+        "yearmonth",
+    }
+)
+# Deliberately NARROW. `area`, `areaid`, `neighborhood` and `observations`
+# are cell-context keys but are NOT exempt, because an integer under those
+# names is genuinely ambiguous: `{"observations": 3}` is as likely a count as
+# a label. An earlier version unioned CELL_CONTEXT_KEYS in wholesale and
+# recreated exactly the name-based false negative this rule was rewritten to
+# eliminate. A privacy gate resolves ambiguity by blocking, so an integer
+# identifier will fail the scan and should be published as a string — which
+# the real observations artifact already does (`"neighborhood": "barrio_logan"`).
+
+#: Sibling markers that make a small count legitimate, because it is already
+#: declared as suppressed rather than published.
+SUPPRESSION_MARKERS: frozenset[str] = frozenset(
+    {"suppressed", "issuppressed", "redacted", "isredacted"}
+)
+
+#: Geometry types the product is allowed to publish. Aggregate areas only.
+ALLOWED_GEOMETRY_TYPES: frozenset[str] = frozenset({"Polygon", "MultiPolygon"})
+
+#: Keys by which a document declares the aggregate geography it publishes.
+#: Polygon type alone is NOT proof of aggregation: the real source bundle
+#: ships 382 block polygons, which are legitimate raw geography but sit far
+#: below the planning-area grain and become identifying once joined to the
+#: block-keyed count table. A file carrying geometry must therefore name the
+#: approved, versioned geography it was dissolved to.
+GEOGRAPHY_DECLARATION_KEYS: frozenset[str] = frozenset(
+    {"geographyversion", "approvedgeography", "planningareaversion"}
+)
+
+#: Above this many polygon features in one document, the file is source-grain
+#: geography rather than a planning-area set, whatever it declares.
+MAX_AGGREGATE_FEATURES = 60
+
+#: San Diego bounding box. A decimal number inside the longitude span is very
+#: nearly unambiguous; the latitude span overlaps plausible counts and metrics,
+#: so latitude alone is only a warning unless a longitude accompanies it.
+SD_LON_RANGE: tuple[float, float] = (-117.7, -116.5)
+SD_LAT_RANGE: tuple[float, float] = (32.4, 33.6)
+
+#: Minimum decimal places before a number is treated as coordinate-shaped.
+COORDINATE_DECIMALS = 3
+
+STREET_ADDRESS_RE = re.compile(
+    r"\b\d{1,6}\s+(?:[NSEW]\.?\s+)?[A-Za-z][\w.'-]*(?:\s+[A-Za-z][\w.'-]*){0,3}\s+"
+    r"(?:St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Road|Dr|Drive|Ln|Lane|Ct|Court|"
+    r"Pl|Place|Way|Ter|Terrace|Pkwy|Parkway|Hwy|Highway|Cir|Circle)\b\.?",
+    re.IGNORECASE,
+)
+COORD_PAIR_RE = re.compile(r"-?\d{1,3}\.\d{3,}\s*,\s*-?\d{1,3}\.\d{3,}")
+PLUS_CODE_RE = re.compile(r"\b[23456789CFGHJMPQRVWX]{4,8}\+[23456789CFGHJMPQRVWX]{2,3}\b")
+
+#: Raw-data extensions that must never be published, whatever they contain.
+FORBIDDEN_PUBLISHED_SUFFIXES: frozenset[str] = frozenset(
+    {".csv", ".tsv", ".xlsx", ".xls", ".shp", ".dbf", ".parquet", ".db", ".sqlite"}
+)
+
+#: Text assets in the production bundle that are worth scanning.
+BUNDLE_SUFFIXES: frozenset[str] = frozenset(
+    {".js", ".mjs", ".cjs", ".css", ".html", ".map", ".json", ".geojson", ".svg", ".md"}
+)
+GENERATED_JSON_SUFFIXES: frozenset[str] = frozenset({".json", ".geojson"})
+GENERATED_TEXT_SUFFIXES: frozenset[str] = frozenset({".md"})
+BUNDLE_COORDINATE_KEYS: frozenset[str] = frozenset(
+    {"x", "y", "lat", "latitude", "lon", "lng", "long", "longitude"}
+)
+BUNDLE_NUMERIC_FIELD_RE = re.compile(
+    r"[\"']?([A-Za-z_][A-Za-z0-9_-]{0,40})[\"']?\s*:\s*(-?\d{1,3}\.\d{3,})"
+)
+BUNDLE_FIELD_RE = re.compile(r"[\"']?([A-Za-z_][A-Za-z0-9_-]{2,40})[\"']?\s*:\s*(?!![01]\b)")
+
+
+# --- Findings --------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Finding:
+    """One privacy rule violation, located precisely enough to fix."""
+
+    severity: str  # "BLOCK" or "WARN"
+    rule: str
+    where: str
+    detail: str
+
+    def render(self) -> str:
+        return f"[{self.severity}] {self.rule}\n    at {self.where}\n    {self.detail}"
+
+
+def normalize_key(key: str) -> str:
+    """Reduce a field name to lowercase alphanumerics for rule matching."""
+    return re.sub(r"[^a-z0-9]", "", key.lower())
+
+
+def _decimal_places(value: float) -> int:
+    text = repr(float(value))
+    if "e" in text or "E" in text or "." not in text:
+        return 0
+    return len(text.split(".", 1)[1].rstrip("0"))
+
+
+def _looks_like_longitude(value: float) -> bool:
+    return (
+        SD_LON_RANGE[0] <= value <= SD_LON_RANGE[1]
+        and _decimal_places(value) >= COORDINATE_DECIMALS
+    )
+
+
+def _looks_like_latitude(value: float) -> bool:
+    return (
+        SD_LAT_RANGE[0] <= value <= SD_LAT_RANGE[1]
+        and _decimal_places(value) >= COORDINATE_DECIMALS
+    )
+
+
+# --- JSON traversal --------------------------------------------------------
+
+
+def _scan_string(value: str, where: str) -> Iterator[Finding]:
+    if STREET_ADDRESS_RE.search(value):
+        yield Finding("BLOCK", "value.street_address", where, f"street address in {value!r}")
+    if COORD_PAIR_RE.search(value):
+        yield Finding("BLOCK", "value.coordinate_pair", where, f"coordinate pair in {value!r}")
+    if PLUS_CODE_RE.search(value):
+        yield Finding("BLOCK", "value.plus_code", where, f"plus code in {value!r}")
+
+
+def _scan_geometry(node: dict[str, Any], where: str) -> Iterator[Finding]:
+    """Check a GeoJSON-shaped geometry object and consume its coordinates."""
+    geometry_type = node.get("type")
+    if not isinstance(geometry_type, str) or geometry_type not in ALLOWED_GEOMETRY_TYPES:
+        yield Finding(
+            "BLOCK",
+            "geometry.type_not_aggregate",
+            where,
+            f"geometry type {geometry_type!r} is not an aggregate area; "
+            f"only {sorted(ALLOWED_GEOMETRY_TYPES)} may be published",
+        )
+        return
+    coords = node.get("coordinates")
+    max_precision = _max_coordinate_precision(coords)
+    if max_precision > 6:
+        yield Finding(
+            "WARN",
+            "geometry.excess_precision",
+            f"{where}.coordinates",
+            f"boundary vertices carry {max_precision} decimal places; "
+            "6 (~0.1 m) is already beyond what an aggregate boundary needs",
+        )
+
+
+def _max_coordinate_precision(node: Any) -> int:
+    if isinstance(node, (int, float)) and not isinstance(node, bool):
+        return _decimal_places(float(node))
+    if isinstance(node, list):
+        return max((_max_coordinate_precision(item) for item in node), default=0)
+    return 0
+
+
+def is_cell_context(node: dict[str, Any]) -> bool:
+    """True when this object identifies one area and/or one period."""
+    return any(normalize_key(k) in CELL_CONTEXT_KEYS for k in node)
+
+
+#: Values that count as an affirmative suppression declaration. Anything
+#: else — False, None, 0, "no" — means the cell is published.
+SUPPRESSION_TRUE_VALUES: frozenset[str] = frozenset({"true", "yes", "1", "suppressed", "redacted"})
+
+
+def is_suppressed(node: dict[str, Any]) -> bool:
+    """True when this object affirmatively declares itself suppressed.
+
+    Presence of the key is not enough. ``{"suppressed": false}`` is a common
+    explicit encoding for *published*, and treating it as suppressed would
+    exempt the cell — and, since suppression propagates, every breakdown
+    under it — from the rule this module exists to enforce. A privacy gate
+    fails closed: only an affirmative value suppresses.
+    """
+    for key, value in node.items():
+        if normalize_key(key) not in SUPPRESSION_MARKERS:
+            continue
+        if value is True or value == 1:
+            # `1` covers pandas- and SQL-derived JSON, which serializes
+            # booleans as integers. `0` and `False` stay unsuppressed.
+            return True
+        if isinstance(value, str) and value.strip().lower() in SUPPRESSION_TRUE_VALUES:
+            return True
+    return False
+
+
+def _scan_counts(node: dict[str, Any], where: str, min_cell: int) -> Iterator[Finding]:
+    """Flag published cell values small enough to identify a person (R-06)."""
+    for key, value in node.items():
+        norm = normalize_key(key)
+        if norm in CELL_NUMERIC_ALLOWLIST:
+            continue
+        if isinstance(value, bool) or not isinstance(value, int):
+            continue
+        if 0 < value < min_cell:
+            yield Finding(
+                "BLOCK",
+                "smallcell.unsuppressed_count",
+                f"{where}.{key}",
+                f"published value {value} in an area/period cell is below the small-cell "
+                f"threshold of {min_cell}; publish it as suppressed instead of as a number. "
+                "If this is an identifier rather than an observation, publish it as a string.",
+            )
+
+
+def _scan_json(
+    node: Any,
+    where: str,
+    min_cell: int,
+    *,
+    in_geometry: bool = False,
+    in_cell: bool = False,
+    suppressed: bool = False,
+    in_list: bool = False,
+) -> Iterator[Finding]:
+    if isinstance(node, dict):
+        # A geometry approval covers its own ``coordinates`` payload and
+        # nothing else. Letting it cover the whole object exempted siblings
+        # from the numeric coordinate check, so a raw longitude parked next
+        # to an approved polygon escaped entirely. Same mirror-image flaw as
+        # cell scope and suppression: scope must follow the thing it approved.
+        geometry_here = False
+        if not in_geometry and "coordinates" in node and "type" in node:
+            yield from _scan_geometry(node, where)
+            geometry_here = True
+        cell_scope = in_cell or is_cell_context(node)
+        # Suppression covers the whole cell, nested breakdowns included, so an
+        # observation marked suppressed is not re-flagged through its own
+        # by_type object. It must NOT cross into a separate record: a node
+        # that names its own area or period, or that sits as a list element,
+        # is a different cell and re-evaluates its own markers. Inheriting
+        # across that boundary let a suppressed 2021-09 cell silently exempt
+        # an unsuppressed 2021-08 count nested under it. Narrowing what
+        # inherits suppression only ever scans more, which is the safe
+        # direction; narrowing what gets scanned is what caused the last bug.
+        own_record = is_cell_context(node) or in_list
+        cell_suppressed = is_suppressed(node) if own_record else (suppressed or is_suppressed(node))
+        if cell_scope and not cell_suppressed:
+            yield from _scan_counts(node, where, min_cell)
+        for key, value in node.items():
+            child = f"{where}.{key}"
+            norm = normalize_key(key)
+            # ``coordinates`` is the payload of a geometry we have already
+            # approved as an aggregate area, so the key deny-list must not
+            # fire on it there. Everywhere else it stays forbidden.
+            exempt = (in_geometry or geometry_here) and norm == "coordinates"
+            if not exempt and (
+                norm in FORBIDDEN_KEYS or any(s in norm for s in FORBIDDEN_KEY_SUBSTRINGS)
+            ):
+                yield Finding(
+                    "BLOCK",
+                    "key.forbidden_field",
+                    child,
+                    f"field name {key!r} is on the deny-list",
+                )
+            # Cell scope propagates to EVERY descendant, unconditionally.
+            # An earlier version gated this on the child being a pure numeric
+            # breakdown, to stop false blocks on a config object nested in a
+            # cell. That silently exempted a breakdown containing a further
+            # breakdown -- by_type: {individual: 2, by_severity: {...}} -- so
+            # real small counts were never scanned at any depth below it.
+            # Over-blocking is the acceptable error direction here; a silent
+            # miss is not. Noise is reduced by naming structural keys in
+            # CELL_NUMERIC_ALLOWLIST, never by narrowing what gets scanned.
+            child_geometry = in_geometry or (geometry_here and norm == "coordinates")
+            yield from _scan_json(
+                value,
+                child,
+                min_cell,
+                in_geometry=child_geometry,
+                in_cell=cell_scope,
+                suppressed=cell_suppressed,
+            )
+        return
+
+    if isinstance(node, list):
+        for index, item in enumerate(node):
+            yield from _scan_json(
+                item,
+                f"{where}[{index}]",
+                min_cell,
+                in_geometry=in_geometry,
+                in_cell=in_cell,
+                suppressed=suppressed,
+                in_list=True,
+            )
+        return
+
+    if isinstance(node, str):
+        yield from _scan_string(node, where)
+        return
+
+    if isinstance(node, (int, float)) and not isinstance(node, bool):
+        if in_geometry:
+            return
+        value = float(node)
+        if _looks_like_longitude(value):
+            yield Finding(
+                "BLOCK",
+                "value.longitude_like",
+                where,
+                f"{value} falls in the San Diego longitude span with "
+                f"{_decimal_places(value)} decimal places",
+            )
+        elif _looks_like_latitude(value):
+            yield Finding(
+                "WARN",
+                "value.latitude_like",
+                where,
+                f"{value} falls in the San Diego latitude span with "
+                f"{_decimal_places(value)} decimal places; confirm it is not a coordinate",
+            )
+
+
+def _declares_here(node: dict[str, Any], approved_geographies: frozenset[str]) -> bool:
+    """True when this exact object carries a geography declaration."""
+    return any(
+        normalize_key(key) in GEOGRAPHY_DECLARATION_KEYS
+        and isinstance(value, str)
+        and value in approved_geographies
+        for key, value in node.items()
+    )
+
+
+class _GeometryCounter:
+    """Counts geometries during the single declaration walk."""
+
+    def __init__(self) -> None:
+        self.total = 0
+
+
+def _walk_geography(
+    node: Any,
+    where: str,
+    declared: bool,
+    counter: _GeometryCounter,
+    approved_geographies: frozenset[str],
+) -> Iterator[Finding]:
+    """Check every geometry against a declaration that actually covers it.
+
+    A declaration is inherited DOWNWARD only. A root-level
+    ``geography_version`` covers the whole file, and a feature's own
+    ``properties`` declaration covers that feature. It never travels sideways
+    to a sibling: one declared feature must not exempt an undeclared,
+    source-grain feature sitting next to it.
+
+    This is the same "scope follows the thing it approved" rule already
+    applied to cell scope, suppression, and geometry approval. An earlier
+    version checked declarations across the entire document at once, which
+    let a single declared feature launder every other feature in the file.
+    """
+    if isinstance(node, dict):
+        declared_here = declared or _declares_here(node, approved_geographies)
+        properties = node.get("properties")
+        if isinstance(properties, dict) and _declares_here(properties, approved_geographies):
+            declared_here = True
+
+        if "coordinates" in node and "type" in node:
+            counter.total += 1
+        if "coordinates" in node and "type" in node and not declared_here:
+            yield Finding(
+                "BLOCK",
+                "geography.undeclared_grain",
+                where,
+                "geometry published without naming an approved aggregate geography; "
+                "declare geography_version on this feature or at the document root, and "
+                "dissolve source blocks to canonical planning areas before publication",
+            )
+        for key, value in node.items():
+            yield from _walk_geography(
+                value, f"{where}.{key}", declared_here, counter, approved_geographies
+            )
+        return
+
+    if isinstance(node, list):
+        for index, item in enumerate(node):
+            yield from _walk_geography(
+                item, f"{where}[{index}]", declared, counter, approved_geographies
+            )
+
+
+def scan_geography_grain(
+    document: Any,
+    where: str = "$",
+    approved_geographies: frozenset[str] = frozenset(),
+) -> list[Finding]:
+    """Refuse geometry that is not declared, versioned, aggregate geography.
+
+    Polygon type alone is not proof of aggregation. The real source bundle
+    ships 382 block polygons: legitimate raw geography, far below the
+    planning-area publication grain, and identifying once joined to the
+    block-keyed count table. Requested by Track D on #7.
+    """
+    # One traversal, not two. An earlier version counted geometries in a
+    # separate recursive pass, which doubled the walk over the 382-polygon
+    # source bundles this rule exists for.
+    counter = _GeometryCounter()
+    findings = list(
+        _walk_geography(
+            document,
+            where,
+            declared=False,
+            counter=counter,
+            approved_geographies=approved_geographies,
+        )
+    )
+    geometry_count = counter.total
+    if geometry_count == 0:
+        return []
+    if geometry_count > MAX_AGGREGATE_FEATURES:
+        findings.append(
+            Finding(
+                "BLOCK",
+                "geography.source_grain_feature_count",
+                where,
+                f"{geometry_count} geometry features exceed the aggregate ceiling of "
+                f"{MAX_AGGREGATE_FEATURES}; this is source-grain geography, not planning areas",
+            )
+        )
+    return findings
+
+
+#: Enumeration guard, sized on the feasible SET rather than the remainder.
+#: The number of ways to split a remainder R into k positive parts is
+#: C(R-1, k-1), so k=2 stays linear no matter how large R is while k=5 blows
+#: up quickly. Capping on the raw remainder instead made the scan decline to
+#: check rows it could have certified in microseconds.
+MAX_FEASIBLE_ASSIGNMENTS = 200_000
+MAX_SUPPRESSED_CELLS = 8
+
+
+def _compositions(remainder: int, count: int) -> list[tuple[int, ...]]:
+    """Every way to split ``remainder`` into ``count`` strictly positive parts."""
+    if count == 1:
+        return [(remainder,)] if remainder >= 1 else []
+    results: list[tuple[int, ...]] = []
+    for first in range(1, remainder - count + 2):
+        for rest in _compositions(remainder - first, count - 1):
+            results.append((first, *rest))
+    return results
+
+
+def _feasible_assignments(
+    remainder: int, count: int, min_cell: int, smallest_published: int | None
+) -> list[tuple[int, ...]]:
+    """Assignments the emitter policy could actually have produced.
+
+    This must mirror `docs/policy/small-cell-suppression.md`, and the
+    direction of any error matters. An attacker knows the policy, so a
+    feasible set WIDER than the policy models a weaker attacker and under-
+    reports leaks. An earlier version enumerated every positive composition
+    and called that conservative. It was the opposite: for a remainder of 10
+    across two withheld cells with a smallest published cell of 6, the policy
+    pins the answer at {4, 6} while the unconstrained set offers five
+    multisets and reports nothing.
+
+    Policy branches, in the emitter's terms:
+
+    - Every withheld value is small (branch 2), or
+    - for exactly two withheld cells, one is small and the other is the
+      complementary partner (branch 3), which is at least the threshold and
+      no larger than the smallest published nonzero cell, since the partner
+      is chosen as the next-smallest nonzero value.
+    """
+    candidates = _compositions(remainder, count)
+    all_small = [c for c in candidates if all(0 < v < min_cell for v in c)]
+    if count != 2:
+        return all_small
+
+    upper = smallest_published if smallest_published is not None else remainder
+    partner_family = [
+        c
+        for c in candidates
+        if sum(1 for v in c if 0 < v < min_cell) == 1 and any(min_cell <= v <= upper for v in c)
+    ]
+    merged = {c: None for c in all_small + partner_family}
+    return list(merged)
+
+
+def analyze_recoverability(
+    total: int,
+    published: list[int],
+    suppressed_count: int,
+    where: str,
+    min_cell: int = 5,
+) -> list[Finding]:
+    """Flag withheld cells that arithmetic can still recover.
+
+    Suppressing a value does not hide it if the published total and the
+    published siblings pin it down. Two rounds of this were live in the real
+    artifact: a lone withheld cell is recoverable by plain subtraction, and
+    a remainder of 2 split across two withheld cells pins both at exactly 1.
+
+    A presence check cannot see either. This enumerates every assignment the
+    emitter policy could have produced and reports a leak when the attacker
+    is left with no ambiguity.
+    """
+    if suppressed_count <= 0:
+        return []
+    remainder = total - sum(published)
+    if remainder < suppressed_count:
+        return []
+    estimated = math.comb(remainder - 1, suppressed_count - 1)
+    if estimated > MAX_FEASIBLE_ASSIGNMENTS or suppressed_count > MAX_SUPPRESSED_CELLS:
+        return [
+            Finding(
+                "WARN",
+                "recovery.not_certified",
+                where,
+                f"{estimated} possible assignments of remainder {remainder} across "
+                f"{suppressed_count} withheld cells is too many to enumerate; "
+                "recoverability was NOT checked here",
+            )
+        ]
+
+    nonzero_published = [v for v in published if v > 0]
+    feasible = _feasible_assignments(
+        remainder,
+        suppressed_count,
+        min_cell,
+        min(nonzero_published) if nonzero_published else None,
+    )
+    if not feasible:
+        # No assignment this policy could have produced explains the row, so
+        # the row does not match the policy at all. Fail closed and say so.
+        return [
+            Finding(
+                "BLOCK",
+                "recovery.policy_inconsistent",
+                where,
+                f"no suppression the policy permits produces a remainder of {remainder} across "
+                f"{suppressed_count} withheld cells; the row does not match the written policy",
+            )
+        ]
+    if len(feasible) == 1:
+        return [
+            Finding(
+                "BLOCK",
+                "recovery.exact",
+                where,
+                f"the withheld cells are exactly recoverable as {feasible[0]} from the published "
+                f"total {total} and its published siblings; suppress the whole row instead",
+            )
+        ]
+
+    findings: list[Finding] = []
+    for index in range(suppressed_count):
+        values = {assignment[index] for assignment in feasible}
+        if len(values) == 1:
+            findings.append(
+                Finding(
+                    "BLOCK",
+                    "recovery.pinned_cell",
+                    where,
+                    f"withheld cell {index} is pinned at {values.pop()} across every assignment "
+                    "consistent with the published total; suppress the whole row instead",
+                )
+            )
+    multisets = {tuple(sorted(assignment)) for assignment in feasible}
+    if len(multisets) == 1:
+        findings.append(
+            Finding(
+                "BLOCK",
+                "recovery.unique_multiset",
+                where,
+                f"the withheld values are known to be exactly {sorted(multisets.pop())} even if "
+                "their order is not; suppress the whole row instead",
+            )
+        )
+    return findings
+
+
+def _scan_recoverability(node: Any, where: str, min_cell: int) -> Iterator[Finding]:
+    if isinstance(node, dict):
+        total = node.get("total")
+        if isinstance(total, int) and not isinstance(total, bool) and not is_suppressed(node):
+            for key, value in node.items():
+                # Only a breakdown partitions the total. An unrelated sibling
+                # dict that merely happens to hold integers and a null would
+                # otherwise be checked against a total it has nothing to do
+                # with, producing a false recovery finding. A breakdown holds
+                # nothing but numbers and withheld slots.
+                if not isinstance(value, dict) or not value:
+                    continue
+                if not all(
+                    v is None or (isinstance(v, int) and not isinstance(v, bool))
+                    for v in value.values()
+                ):
+                    continue
+                numbers = [
+                    v for v in value.values() if isinstance(v, int) and not isinstance(v, bool)
+                ]
+                withheld = sum(1 for v in value.values() if v is None)
+                if withheld:
+                    yield from analyze_recoverability(
+                        total, numbers, withheld, f"{where}.{key}", min_cell
+                    )
+        for key, value in node.items():
+            yield from _scan_recoverability(value, f"{where}.{key}", min_cell)
+        return
+    if isinstance(node, list):
+        for index, item in enumerate(node):
+            yield from _scan_recoverability(item, f"{where}[{index}]", min_cell)
+
+
+def scan_json_document(
+    document: Any,
+    where: str = "$",
+    min_cell: int = 5,
+    approved_geographies: frozenset[str] = frozenset(),
+) -> list[Finding]:
+    """Scan one parsed JSON document and return every finding."""
+    findings = scan_geography_grain(document, where, approved_geographies)
+    findings.extend(_scan_json(document, where, min_cell))
+    findings.extend(_scan_recoverability(document, where, min_cell))
+    return findings
+
+
+# --- File and directory scans ---------------------------------------------
+
+
+def scan_generated_dir(
+    directory: Path,
+    min_cell: int = 5,
+    approved_geographies: frozenset[str] = frozenset(),
+) -> list[Finding]:
+    """Scan every published artifact under ``public/generated`` (or equivalent)."""
+    findings: list[Finding] = []
+    if not directory.is_dir():
+        return [
+            Finding(
+                "WARN",
+                "scan.directory_missing",
+                str(directory),
+                "generated-artifact directory does not exist yet; nothing published to check",
+            )
+        ]
+    for path in sorted(p for p in directory.rglob("*") if p.is_file()):
+        if path.suffix.lower() in FORBIDDEN_PUBLISHED_SUFFIXES:
+            findings.append(
+                Finding(
+                    "BLOCK",
+                    "publish.raw_file_type",
+                    str(path),
+                    f"{path.suffix} files are raw or tabular sources and must not be deployed",
+                )
+            )
+            continue
+        suffix = path.suffix.lower()
+        if suffix not in GENERATED_JSON_SUFFIXES | GENERATED_TEXT_SUFFIXES:
+            findings.append(
+                Finding(
+                    "BLOCK",
+                    "publish.unsupported_generated_type",
+                    str(path),
+                    f"{suffix or '<no extension>'} is not an approved generated-artifact type; "
+                    "publish structured data as JSON/GeoJSON so the privacy gate can parse it",
+                )
+            )
+            continue
+        if suffix in GENERATED_TEXT_SUFFIXES:
+            try:
+                text = path.read_text(encoding="utf-8", errors="ignore")
+            except OSError as error:
+                findings.append(
+                    Finding("BLOCK", "scan.unreadable_artifact", str(path), f"cannot read: {error}")
+                )
+                continue
+            findings.extend(_scan_deployable_text(text, str(path)))
+            continue
+        try:
+            document = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            findings.append(
+                Finding("BLOCK", "scan.unreadable_artifact", str(path), f"cannot parse: {error}")
+            )
+            continue
+        findings.extend(
+            scan_json_document(
+                document,
+                where=str(path),
+                min_cell=min_cell,
+                approved_geographies=approved_geographies,
+            )
+        )
+    return findings
+
+
+def _scan_deployable_text(text: str, where: str) -> list[Finding]:
+    """Scan one text asset, including source-map source and copied public files."""
+    findings: list[Finding] = []
+    for match in COORD_PAIR_RE.finditer(text):
+        findings.append(
+            Finding(
+                "BLOCK",
+                "bundle.coordinate_pair",
+                where,
+                f"coordinate pair {match.group(0)!r} embedded in the deployable asset",
+            )
+        )
+    for match in STREET_ADDRESS_RE.finditer(text):
+        findings.append(
+            Finding(
+                "BLOCK",
+                "bundle.street_address",
+                where,
+                f"street address {match.group(0)!r} embedded in the deployable asset",
+            )
+        )
+    for match in PLUS_CODE_RE.finditer(text):
+        findings.append(
+            Finding(
+                "BLOCK",
+                "bundle.plus_code",
+                where,
+                f"plus code {match.group(0)!r} embedded in the deployable asset",
+            )
+        )
+    for match in BUNDLE_FIELD_RE.finditer(text):
+        norm = normalize_key(match.group(1))
+        if norm in FORBIDDEN_KEYS or any(s in norm for s in FORBIDDEN_KEY_SUBSTRINGS):
+            findings.append(
+                Finding(
+                    "BLOCK",
+                    "bundle.forbidden_field",
+                    where,
+                    f"deny-listed field {match.group(1)!r} embedded in the deployable asset",
+                )
+            )
+    for match in BUNDLE_NUMERIC_FIELD_RE.finditer(text):
+        norm = normalize_key(match.group(1))
+        if norm not in BUNDLE_COORDINATE_KEYS:
+            continue
+        value = float(match.group(2))
+        longitude_key = norm in {"x", "lon", "lng", "long", "longitude"}
+        latitude_key = norm in {"y", "lat", "latitude"}
+        if (longitude_key and _looks_like_longitude(value)) or (
+            latitude_key and _looks_like_latitude(value)
+        ):
+            findings.append(
+                Finding(
+                    "BLOCK",
+                    "bundle.coordinate_field",
+                    where,
+                    f"coordinate-shaped field {match.group(1)!r}: {value} embedded in the "
+                    "deployable asset",
+                )
+            )
+    return findings
+
+
+def scan_bundle_dir(directory: Path) -> list[Finding]:
+    """Scan the built production bundle, source maps included."""
+    findings: list[Finding] = []
+    if not directory.is_dir():
+        return [
+            Finding(
+                "WARN",
+                "scan.bundle_missing",
+                str(directory),
+                "production bundle not built; run the app build before release verification",
+            )
+        ]
+    for path in sorted(p for p in directory.rglob("*") if p.is_file()):
+        if path.suffix.lower() in FORBIDDEN_PUBLISHED_SUFFIXES:
+            findings.append(
+                Finding(
+                    "BLOCK",
+                    "publish.raw_file_type",
+                    str(path),
+                    f"{path.suffix} file present in the production bundle",
+                )
+            )
+            continue
+        if path.suffix.lower() not in BUNDLE_SUFFIXES:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError as error:
+            findings.append(
+                Finding("BLOCK", "scan.unreadable_bundle", str(path), f"cannot read: {error}")
+            )
+            continue
+        findings.extend(_scan_deployable_text(text, str(path)))
+    return findings
+
+
+def _approved_geographies(root: Path) -> frozenset[str]:
+    """Read the one geography version the decision contract has actually fixed."""
+    path = root / "config" / "decision.v1.json"
+    try:
+        contract = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return frozenset()
+    geography = contract.get("geography") if isinstance(contract, dict) else None
+    if not isinstance(geography, dict) or geography.get("status") != "fixed":
+        return frozenset()
+    version = geography.get("version")
+    return frozenset({version}) if isinstance(version, str) and version else frozenset()
+
+
+def scan_publication_layout(root: Path) -> list[Finding]:
+    """Confirm raw and processed data cannot be published by directory layout."""
+    findings: list[Finding] = []
+    public_dir = root / "public"
+    for name in ("raw", "processed"):
+        stray = public_dir / "data" / name
+        if stray.exists():
+            findings.append(
+                Finding(
+                    "BLOCK",
+                    "layout.raw_inside_public",
+                    str(stray),
+                    f"data/{name} must live outside the published directory",
+                )
+            )
+    for name in ("raw", "processed"):
+        gitignore = root / "data" / name / ".gitignore"
+        if (root / "data" / name).is_dir() and not gitignore.is_file():
+            findings.append(
+                Finding(
+                    "WARN",
+                    "layout.unignored_data_dir",
+                    str(root / "data" / name),
+                    f"data/{name} has no .gitignore; source files can be committed by accident",
+                )
+            )
+    return findings
+
+
+# --- CLI -------------------------------------------------------------------
+
+
+def run_scan(root: Path, generated: Path, bundle: Path, min_cell: int) -> list[Finding]:
+    findings = scan_publication_layout(root)
+    findings.extend(scan_generated_dir(generated, min_cell, _approved_geographies(root)))
+    findings.extend(scan_bundle_dir(bundle))
+    return findings
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="python -m stillhere_pipeline.privacy",
+        description="Fail the build if deployable data could locate or identify a person (#7).",
+    )
+    parser.add_argument("--root", type=Path, default=Path("."))
+    parser.add_argument("--generated", type=Path, default=None)
+    parser.add_argument("--bundle", type=Path, default=None)
+    parser.add_argument("--min-cell", type=int, default=5)
+    parser.add_argument(
+        "--require-bundle",
+        action="store_true",
+        help="treat a missing production bundle as a failure (use in release verification)",
+    )
+    args = parser.parse_args(argv)
+
+    root: Path = args.root
+    generated: Path = args.generated or root / "public" / "generated"
+    bundle: Path = args.bundle or root / "app" / "dist"
+
+    findings = run_scan(root, generated, bundle, args.min_cell)
+    blocking = [f for f in findings if f.severity == "BLOCK"]
+    warnings = [f for f in findings if f.severity == "WARN"]
+
+    if args.require_bundle:
+        missing = [f for f in warnings if f.rule == "scan.bundle_missing"]
+        blocking.extend(missing)
+        warnings = [f for f in warnings if f.rule != "scan.bundle_missing"]
+
+    for finding in warnings:
+        print(finding.render(), file=sys.stderr)
+    for finding in blocking:
+        print(finding.render(), file=sys.stderr)
+
+    print(
+        f"privacy scan: {len(blocking)} blocking, {len(warnings)} warning "
+        f"(generated={generated}, bundle={bundle}, min_cell={args.min_cell})"
+    )
+    if blocking:
+        print("PRIVACY SCAN FAILED", file=sys.stderr)
+        return 1
+    print("PRIVACY SCAN PASSED")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

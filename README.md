@@ -94,7 +94,7 @@ displacement, or service eligibility.
 
 | Conventional dashboard | Still Here SD |
 |---|---|
-| Reports where counts rose or fell | Tests whether a decline is supported, displaced, or uncertain |
+| Reports where counts rose or fell | Tests whether an apparent decline is supported, coincides with nearby aggregate increases, or is unresolved |
 | Shows a trend line | Backtests the forecast and displays uncertainty |
 | Treats all observations as comparable | Surfaces missing months and methodology breaks |
 | Ranks areas by a single score | Explains multiple evidence signals and disagreements |
@@ -173,6 +173,7 @@ a drop classification, forecast, or outreach allocation.
 ## Working pitch
 
 > Most dashboards show where homelessness was counted. Still Here SD asks
-> whether an apparent improvement is supported, displaced, or simply
-> uncertain; forecasts where outreach continuity may be needed next; and
-> builds a transparent plan that refuses to hide who could be left behind.
+> whether an apparent improvement is supported by comparable evidence,
+> coincides with nearby aggregate increases, or is simply uncertain; forecasts
+> where outreach continuity may be needed next; and builds a transparent plan
+> that refuses to hide what it cannot cover.

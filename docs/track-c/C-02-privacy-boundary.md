@@ -1,0 +1,114 @@
+# C-02 — Deployable-data privacy boundary
+
+**Issue:** [#7](https://github.com/dcondrey/buildingforgood/issues/7) · **Track:** [C](https://github.com/dcondrey/buildingforgood/issues/30) · **Milestone:** M1
+**Implementation:** `pipeline/src/stillhere_pipeline/privacy.py`
+**Tests:** `tests/privacy/test_privacy.py`, fixtures in `tests/privacy/fixtures/{pass,fail}/`
+**Runs as:** `python -m stillhere_pipeline.privacy --root .` — wired into `scripts/verify.sh` step 2 of 3, so it runs locally and in CI via `.github/workflows/verify.yml`.
+
+## The promise
+
+Nothing that could locate or identify a person reaches the static deployment. This is enforced structurally — a failing scan exits non-zero and fails the build — rather than by reviewer attention.
+
+## Rules
+
+### 1. Forbidden field names
+Keys are normalized to lowercase alphanumerics before matching, so `Latitude`, `geo-lat`, `geoLat` and `LAT_DEG` all resolve to the same rule. Four groups: coordinates (`lat`, `lon`, `geohash`, `easting`, `pluscode`, …), addresses and parcels (`address`, `street`, `housenumber`, `apn`, `parcel_id`, …), person and record identifiers (`person_id`, `hmis_id`, `case_id`, `ssn`, `dob`, `phone`, `email`, …), and site identifiers (`point_id`, `camp_id`, `encampment_id`, …). Severity **BLOCK**.
+
+### 2. Forbidden value patterns
+Street addresses, `lat, lon` pairs, and Open Location plus codes found inside otherwise innocent string fields — the leak that survives a key-only deny-list because it hides in a `note` or `label`. Severity **BLOCK**.
+
+### 3. Coordinate geometry — the hard case
+The product ships an aggregate spatial view, so boundary polygons are legitimate coordinates. A naive deny-list either blocks the map or is theatre. The rule:
+
+- Coordinates are permitted **only** inside a `geometry` object whose `type` is `Polygon` or `MultiPolygon`.
+- `Point`, `MultiPoint` and `LineString` geometries are refused outright — those are the shapes that locate a person. Severity **BLOCK**.
+- Any coordinate-shaped number **outside** an approved geometry is caught by the numeric heuristic below.
+- Boundary vertices carrying more than 6 decimal places raise a **WARN**: not a leak, but beyond what an aggregate boundary needs.
+
+### 4. Numeric heuristic (San Diego bounding box)
+A decimal number with ≥3 decimal places inside longitude `-117.7 … -116.5` is treated as a longitude leak (**BLOCK**) — the span is negative and narrow, so a count or metric essentially cannot land there. The latitude span `32.4 … 33.6` overlaps plausible counts, so latitude alone is a **WARN** asking for confirmation. This asymmetry is deliberate: one side is unambiguous, the other is not, and pretending otherwise would either miss leaks or drown the build in false positives.
+
+### 5. Small-cell suppression — added by the red-team review
+**Aggregation is not anonymization.** A neighbourhood-month count of one is a person, and combined with local knowledge it identifies them. This rule came out of C-01 finding **R-06**; the original plan's control was field-based only and would have passed a count of 1.
+
+Detection is **context-based, not name-based**: any object carrying an area and/or period key (`neighborhood`, `area_id`, `month`, `period`, `date`) is a cell, and every integer inside it — and inside its children — is a published cell value. An integer `0 < v < min_cell` is a **BLOCK**. Default threshold is 5, configurable via `--min-cell`. Zero is permitted.
+
+The escape hatch is to publish the cell as suppressed. A sibling `suppressed`/`redacted` marker clears the rule, but only with an **affirmative** value (`true`, `yes`, `1`, `"suppressed"`, `"redacted"`); `false`, `0` and `"no"` mean published, since a privacy gate must fail closed. Suppression covers the whole cell including nested breakdowns, and does not leak to a sibling cell. Per R-06 the suppression must be visible in the UI as a data-quality state, never rendered as a zero.
+
+The numeric allow-list is **deliberately narrow**. Unambiguously temporal or structural names (`month`, `year`, `quarter`, `schema_version`, `time_increment`, …) are labels, not observations. Ambiguous names are not exempt: `area`, `area_id`, `neighborhood` and `observations` mark a cell, but an integer under them could equally be a label or a count. An earlier version exempted every cell-context key wholesale to avoid a false positive on `{"area": 3}`, and in doing so let `{"observations": 3}` publish undetected — recreating the exact name-based false negative the rule was rewritten to eliminate. Ambiguity now blocks, and the finding says so: publish an integer identifier as a string instead, which the real observations artifact already does.
+
+**Why context and not names.** The first version of this rule looked for field names like `count`, `observed` and `individuals`. Run against the real A-07 artifact (PR #41) it passed clean while that artifact published **306 cells below the threshold**, because the schema names its counts `total`, `individual`, `structure` and `vehicle`. Field names are a guess about someone else's schema; an area-plus-period object is a stable structural fact. `fixtures/fail/small_cell_nested_by_type.json` mirrors the real shape so this cannot regress.
+
+**Live finding, handed to Track A (#6):** `public/generated/observations.v0.json` in PR #41 contains 306 unsuppressed small cells, including `barrio_logan 2021-09 structure=1` — one structure, one neighbourhood, one month. Once #41 merges, the privacy scan fails the build until suppression is applied at aggregation time.
+
+### The limit of this rule, and the durable fix
+
+The small-cell rule infers whether an integer is a person count from the *shape* of the document, because nothing in the artifact declares it. That inference went through six rounds of review, and every round found a real hole:
+
+1. Name-based detection (`count`, `observed`) missed 306 real cells in the A-07 artifact, which names them `total`, `individual`, `structure`, `vehicle`.
+2. Exempting every cell-context key, to fix a false positive on `{"area": 3}`, reopened the same false negative for `{"observations": 3}`.
+3. Treating a `suppressed` key as suppression regardless of value let `{"suppressed": false}` bypass the rule, and because suppression propagates, it exempted the whole subtree.
+4. Rejecting integer-encoded booleans blocked correctly-redacted data from pandas- and SQL-derived JSON.
+5. Gating scope propagation on "is this child a pure numeric breakdown", to silence a false positive on a nested config object, silently exempted a breakdown containing a further breakdown — so real small counts were never scanned at any depth below it.
+
+6. Suppression propagated to every descendant, so a suppressed `2021-09` cell silently exempted an unsuppressed `2021-08` count nested beneath it.
+
+Round 5 is the one worth naming. **It traded a fail-closed property for a cosmetic fix**, converting a noisy-but-safe gate into a quiet one with a silent miss, in a file whose own docstring says it fails closed. Over-blocking is the acceptable error direction here. Noise gets handled by naming structural keys in the allow-list, never by narrowing what gets scanned.
+
+### The one pattern behind most of these
+
+Three of the six were the same mirror-image flaw: **a scope flag propagating past the thing it was approved for.** Cell scope, suppression, and geometry approval each set a boolean and then passed it to every descendant unconditionally.
+
+- Cell scope propagating too little missed nested breakdowns.
+- Suppression propagating too far exempted a different month's cell.
+- Geometry approval propagating too far exempted a raw longitude parked beside an approved polygon. That third one was found by auditing the other two rather than by review, which is the only reason it is not a seventh round.
+- The geography *declaration* check then hit both ends of the same axis in consecutive rounds. Checking only the document root blocked legitimate per-feature GeoJSON declarations; recursing the whole document let one declared feature exempt every undeclared source-grain feature beside it. Having already written this rule down did not stop me making the same mistake a fourth time, which is the honest argument for the declared-contract fix below rather than for more careful traversal code.
+
+The rule that resolves all three: **scope follows the thing it approved, and a separate record re-evaluates.** A node naming its own area or period, or sitting as a list element, is a separate record. A geometry approval covers its own `coordinates` key and nothing else. When the direction of an error is unclear, narrow what *inherits an exemption*, never what *gets scanned*.
+
+Each fix was correct and each one moved the error somewhere new, because deciding "is this integer a person" from structure alone is not decidable.
+
+**The durable fix belongs in the artifact contract, not in this scanner.** If `#4` declares which fields are counts — a `count_fields` list, or a per-field type in the schema — the rule becomes a lookup instead of an inference, and this entire class of bug disappears. Handed to Track D. Until then the scan stays as a structural backstop that fails closed, which is the right posture for a privacy gate but not a substitute for a declared schema.
+
+### Recoverability is now enforced, and how that got found
+
+**Suppressing a value does not hide it if arithmetic can put it back.** This started as an open follow-up and is now a scan rule, after two rounds of the same mistake:
+
+1. A lone withheld cell is recoverable by plain subtraction from the published total. Handed to the emitter as complementary suppression.
+2. **A remainder of 2 split across two withheld cells pins both at exactly 1.** No complementary partner fires when two cells are already small, so the first emitter fix did not cover it.
+
+Round 2 matters because of how it was missed. Track C ran a recovery attack over all 708 published rows of the first emitter artifact, found zero, and certified it. That attack only tested the lone-null vector, so it returned zero while **7 rows were exactly recoverable**, including `cortez 2018-02 structure=1 vehicle=1` — a single-person cell fully reconstructed — and 20 more leaked their value multiset. Track A found it in an adversarial pass afterwards. The check passed; the check was weaker than the claim it was used to support.
+
+`analyze_recoverability` now enumerates every assignment the emitter policy could have produced and blocks on three conditions: `recovery.exact` when one assignment remains, `recovery.pinned_cell` when any position holds the same value across all of them, and `recovery.unique_multiset` when the values are known even if their order is not. The enumeration guard is sized on the feasible set `C(R-1, k-1)` rather than the raw remainder, so `k=2` stays linear at any magnitude, and a row it declines to certify emits `recovery.not_certified` rather than passing quietly.
+
+Validated against a known-bad and a known-good artifact, which is the discipline that was missing the first time: 10 findings on the first-cut emitter output, 0 on the corrected one.
+
+**Still not enforced:** recovery across files or across rollup levels. Track A pinned the artifact key surface with a test so that adding a neighborhood, downtown, or annual total fails the suite and forces the suppression design to extend to it.
+
+### 6. Publication layout
+Raw and tabular file types (`.csv`, `.xlsx`, `.shp`, `.parquet`, `.sqlite`, …) are **BLOCK** anywhere under the generated directory or the production bundle, whatever they contain. `data/raw` and `data/processed` appearing inside `public/` is **BLOCK**. A data directory with no `.gitignore` is a **WARN**.
+
+### 7. Production bundle and source maps
+`app/dist` is scanned as text — `.js`, `.mjs`, `.css`, `.html`, and `.map` — for embedded coordinate pairs, street addresses, and deny-listed field names appearing as object keys. Source maps are included deliberately: they are the most common way raw data survives a build unnoticed. A missing bundle is a **WARN** during development and can be promoted to a failure for release verification with `--require-bundle`.
+
+## Test design
+
+`fixtures/pass/` must scan clean; `fixtures/fail/` must each produce at least one blocking finding. Adding a newly-imagined leak shape is a one-file change, and a rule that silently stops working fails loudly. `test_repository_generated_artifacts_are_clean` scans the real `public/generated/` on every run, so this is a live gate and not only a fixture exercise.
+
+The fixture set found a real bug on first run: the key deny-list fired on `coordinates` inside an approved polygon, which would have blocked the aggregate map. Fixed by exempting that key only while inside an already-approved geometry.
+
+## Acceptance criteria status
+
+- [x] Deployable artifacts contain aggregate geography only — enforced by rules 1–4, live-gated by `test_repository_generated_artifacts_are_clean`.
+- [x] Known coordinate, address, and identifier leak fixtures fail the check — 6 negative fixtures, 21 tests passing.
+- [x] The privacy scan runs in local verification and CI — `scripts/verify.sh` step 2/3, which CI invokes.
+- [x] The production bundle and source maps do not embed raw records — rule 7. Becomes a hard gate at release with `--require-bundle`.
+
+**Not yet closable.** The criteria are met against the placeholder artifact. #7 declares dependencies on #4 (artifact contracts) and #6 (aggregation), and the scan has only ever seen a hand-written placeholder. Re-verify against real pipeline output before closing, and add fixtures for any field shape the real source introduces.
+
+## Handoffs
+
+- **Track A (#6):** counts below the threshold must be emitted as suppressed at aggregation time; the scan is the backstop, not the mechanism. Subtraction-recovery of suppressed cells is unsolved.
+- **Track A (#8) / Track C (#16):** suppression must surface in the UI as a data-quality state, per R-06.
+- **Track D (#4), the important one:** declare count fields in the artifact contract so the small-cell rule can look them up instead of inferring them from document shape. See "the limit of this rule" above.
+- **Track D:** `scripts/verify.sh` gained one additive block. Flagged for the Track D owner as a cross-track touch — it is the only way to satisfy the "runs in local verification and CI" criterion.

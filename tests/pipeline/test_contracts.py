@@ -159,6 +159,7 @@ class TestContractDeclaration:
             {"field": "suppressed", "affirmative": [False]},
             {"field": "suppressed", "affirmative": [1]},
             {"field": "suppressed", "affirmative": [""]},
+            {"field": "suppressed", "affirmative": []},
         ],
     )
     def test_suppression_marker_must_match_the_implemented_encoding(self, marker: dict) -> None:

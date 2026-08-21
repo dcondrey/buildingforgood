@@ -50,8 +50,11 @@ The observations artifact DECLARES its count semantics so no consumer infers
 them from shape: a top-level `contract` block carries `count_fields` (the
 exact count-bearing paths), `small_cell_threshold`, and `suppression_marker`
 (field name plus affirmative encodings). The validator rejects an artifact
-whose declaration drifts from this policy; the scanner may consume the
-declaration as a lookup and keep shape-inference only as a backstop.
+whose declaration drifts from this policy in ANY field, marker included; the
+scanner may consume the declaration as a lookup and keep shape-inference only
+as a backstop. Applicability: the declared count paths exist on published
+rows (null when suppressed); whole-row-suppressed rows carry the declared
+marker instead of the paths.
 
 ## Disclosure
 

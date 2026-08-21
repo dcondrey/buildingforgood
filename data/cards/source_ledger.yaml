@@ -32,8 +32,11 @@ artifact_lineages:
       - rtfh_pitc
   public_monitoring:
     artifact: data/monitoring/dsdp_public_checkpoints.csv
+    additional_artifacts:
+      - data/monitoring/rtfh_annual_checkpoints.csv
     required_source_ids:
       - dsdp_public_monthly_reports
+      - rtfh_public_monitoring
     excluded_from:
       - demo_v1_training
       - demo_v1_forecast_selection
@@ -189,15 +192,12 @@ sources:
       an explicit tract-to-neighborhood crosswalk (versioned with the geography
       definition from issue #2) is required before use.
     coverage: 2025 count; earlier years available as separate files on the same page.
-    successor_candidates: >-
-      Reviewed 2026-08-21 on the same reports-data page: a 2026 PIT
-      census-tract XLSX (direct successor to the pinned 2025 file; pin,
-      hash, and re-run the agreement check before adoption) and monthly
-      countywide HMIS report PDFs (candidate countywide checkpoints for the
-      public_monitoring lane; countywide HMIS activity is not a downtown
-      observation and must never enter the forecast or planner). Neither is
-      ingested; this note records the discovery so adoption is a deliberate,
-      pinned decision.
+    successor_note: >-
+      The 2026 successor file and RTFH's monthly HMIS reports were adopted
+      into the public_monitoring lane on 2026-08-21 as the separate
+      rtfh_public_monitoring source. This 2025 card and its pinned file remain
+      the frozen demo.v1 agreement input; the 2026 file never replaces it
+      without a new model-version decision.
     known_limitations:
       - Single-night snapshot; undercount by design.
       - RTFH's own multiplier methodology changed over the years (its 1.75 and
@@ -405,6 +405,59 @@ sources:
         The live archive and Unhoused Care HTML contained unrelated injected
         content when reviewed on 2026-08-21. Only allowlisted publisher PDFs
         may be ingested, and every fetched file must match a reviewed hash.
+
+  - id: rtfh_public_monitoring
+    name: RTFH public post-freeze checkpoints (2026 PITC by census tract; monthly HMIS reports)
+    role: post_freeze_monitoring
+    analytical_question: >-
+      Does the independent annual count's direction, and the countywide HMIS
+      reporting cadence, remain consistent with the frozen downtown series
+      after the 2025-12 analytical freeze?
+    publisher: Regional Task Force on Homelessness (CoC CA-601).
+    package_page: https://www.rtfhsd.org/reports-data/
+    retrieved_at: "2026-08-21"
+    files:
+      - raw_path: data/raw/rtfh_pitc/2026-PITC-Unsheltered-Census-Tract-per-City.xlsx
+        url: https://www.rtfhsd.org/wp-content/uploads/2026/05/2026-PITC-Unsheltered-Census-Tract-per-City.xlsx
+      - raw_path: data/raw/rtfh_public_reports/HMIS-Data-Newsletter-July-2026.pdf
+        url: https://www.rtfhsd.org/wp-content/uploads/2026/08/HMIS-Data-Newsletter-July-2026.pdf
+    derived_files:
+      - path: data/monitoring/rtfh_annual_checkpoints.csv
+        derivation: >-
+          City-of-San-Diego and countywide unsheltered totals read directly
+          from the 2025 (already-pinned demo input) and 2026 PITC workbooks'
+          publisher-computed total rows. No tract-level values are copied out;
+          the tract-to-neighborhood crosswalk gate in the rtfh_pitc card still
+          applies to any finer use.
+    retrieval_method: >-
+      ./scripts/fetch_raw.sh monitoring downloads the allowlisted files and
+      verifies pinned SHA-256 digests. rtfhsd.org resets bare curl transfers;
+      the fetch helper sends a browser user agent.
+    update_cadence: PITC annual; HMIS data reports monthly.
+    license_terms: >-
+      No stated license (public agency reports). Attribute RTFH; retain raw
+      files as ignored audit snapshots and publish only aggregate transcribed
+      totals with citations.
+    collection_method: >-
+      PITC is the HUD-mandated annual point-in-time street count. The monthly
+      data reports summarize deduplicated countywide HMIS activity.
+    intended_use: >-
+      Post-freeze monitoring checkpoints only: annual independent direction
+      agreement at city/county grain, and a countywide monthly HMIS cadence
+      reference. Excluded from demo.v1 training, forecast selection, and the
+      planner.
+    time_grain: Annual single-night snapshot (PITC); calendar month (HMIS reports).
+    geo_grain: >-
+      City and county totals only in the derived table. Census-tract detail
+      stays raw-only behind the crosswalk gate; HMIS reports are countywide.
+    coverage: 2026 PITC (January 2026 count); HMIS reports monthly, July 2026 pinned.
+    known_limitations:
+      - Different universes and clocks than the downtown visual counts; a
+        single-night January snapshot cannot validate monthly downtown values.
+      - City-of-San-Diego geography is far larger than the six-area core.
+      - HMIS activity measures service engagement, not street population.
+      - Direction agreement is context, not independent validation of any
+        specific downtown figure.
 
   - id: sdhc_city_program_dashboard
     name: SDHC and City of San Diego Homeless Services Programs Overview

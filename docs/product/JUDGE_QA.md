@@ -507,3 +507,49 @@ No code, data, assets, or schemas were reused. We carried forward only proven
 presentation discipline: a self-contained offline demo, a claim traveling with
 its evidence and limits, and a fallback that does not depend on a network. Still
 Here SD's analytical and application code was written for this hackathon.
+
+## Workspace, scenarios, and the assumption explorer
+
+### You said you cannot prove displacement — then you built a sweep simulator?
+
+We built the opposite: an assumption explorer. It never predicts where anyone
+goes. The facilitator states the assumption — what share of a cleared area's
+planning load shifts to adjacent areas rather than being resolved — and the
+tool computes that assumption's consequences for load and staffing, labeled
+"assumed, not observed" on every surface and in the copied brief. The April
+2026 City Auditor report says the data cannot determine geographic movement;
+we cite it in the product. What the explorer demonstrates is that no slider
+setting makes the need smaller without assuming it away in the open. It audits
+the most reached-for intervention instead of endorsing or predicting it.
+
+### Where does the displaced load go, and why those neighbors?
+
+Proportionally to adjacent areas by their current planning load, using an
+area-level adjacency table that matches the drawn neighborhood boundaries.
+That is an explicit modeling convention, not an inference — the point is
+transparency of consequences under a stated assumption, and the convention is
+unit-tested to conserve load exactly at 100% displacement.
+
+### What is the map workspace versus the story page?
+
+Two lenses on one state. The story page is the analytical argument in order;
+the workspace is the operations view — one map with switchable layers
+(planned hours, observed change, unmet load) and an inspector with the plan
+controls, a per-area dossier, saved scenarios, and the brief. The same plan,
+locks, scenarios, and assumptions travel between them. The layered map exists
+because comparing "where people were seen" with "where hours go" on one
+geography is the core planning question.
+
+### Where are saved scenarios stored? Is that a privacy surface?
+
+In the viewer's own browser only, and only policy settings — budget, floor,
+guard, locks. No derived numbers, no observations, nothing server-side, and
+nothing person-level exists anywhere in the product to store. Loading a
+scenario recomputes the plan deterministically from the frozen artifact.
+
+### Why does the app open with a plan already computed?
+
+Because it is a tool, not a slideshow. The opening plan is the deterministic
+default policy — 80 assumed hours, 8-hour floor — clearly labeled and fully
+editable. Nothing about it is a recommendation; it is the starting state a
+coordinator would adjust.

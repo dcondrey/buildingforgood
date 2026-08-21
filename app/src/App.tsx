@@ -1716,8 +1716,8 @@ function App() {
           <p aria-live="polite" className="policy-lens">
             <strong>Policy lens:</strong>{" "}
             {coverageFloor === 0
-              ? "audit mode removes the continuity floor; allocations are not a recommendation."
-              : `${data.areas.length * coverageFloor} of ${budget} hours are reserved for continuity before forecast weighting.`}
+              ? "with no minimum, hours follow the forecast alone. Use this to see which neighborhoods would be left with almost nothing; it is a comparison view, not a recommendation."
+              : `${data.areas.length * coverageFloor} of ${budget} hours are set aside first (${coverageFloor} per neighborhood); the rest follows the forecast.`}
           </p>
 
           {!plan ? (
@@ -1730,12 +1730,12 @@ function App() {
                 <b>=</b>
                 <span>
                   {data.areas.length * coverageFloor}
-                  <small>continuity floors</small>
+                  <small>guaranteed minimums</small>
                 </span>
                 <b>+</b>
                 <span>
                   {Math.max(0, budget - data.areas.length * coverageFloor)}
-                  <small>signal-weighted</small>
+                  <small>follow the forecast</small>
                 </span>
               </div>
               <button
@@ -1825,8 +1825,8 @@ function App() {
                       <div className="area-name">
                         <strong>{area.name}</strong>
                         <span>
-                          Historical upper bound {formatNumber(area.planningLoad, 1)} · remaining
-                          hours weighted after user-set floor
+                          Planning for up to {formatNumber(area.planningLoad, 1)} observations ·
+                          minimum hours plus a share of the rest
                         </span>
                       </div>
                       <div aria-hidden="true" className="allocation-bar-track">
@@ -2075,7 +2075,7 @@ function App() {
             <span style={{ width: `${((guideIndex + 1) / GUIDE_STEPS.length) * 100}%` }} />
           </div>
           <h2 className="eyebrow" id="guide-title">
-            Decision beat {guideIndex + 1}/{GUIDE_STEPS.length} · Arrow right to advance
+            Step {guideIndex + 1} of {GUIDE_STEPS.length} · press → to continue
           </h2>
           <p>{GUIDE_STEPS[guideIndex]}</p>
           <div>

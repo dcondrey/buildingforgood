@@ -251,6 +251,20 @@ def test_promotion_requires_strict_holdout_improvement() -> None:
     assert _promote_model(scores) == ("challenger_a", True)
 
 
+def test_ineligible_candidates_do_not_prevent_baseline_output() -> None:
+    # A challenger without an evaluable holdout score (mae None) is skipped
+    # rather than blocking selection, and an all-ineligible field retains the
+    # registered baseline (#10 acceptance criterion 2).
+    scores = [
+        {"model": "seasonal_naive_12m", "mae": 10.0},
+        {"model": "challenger_a", "mae": None},
+        {"model": "challenger_b", "mae": 9.0},
+    ]
+    assert _promote_model(scores) == ("challenger_b", True)
+    scores[2]["mae"] = None
+    assert _promote_model(scores) == ("seasonal_naive_12m", False)
+
+
 def test_conformal_radius_uses_finite_sample_corrected_rank() -> None:
     # n=4 and level=.8 => ceil(5*.8)=4, so the maximum residual is used.
     assert _conformal_radius([1.0, 4.0, 2.0, 3.0], 0.8) == 4.0

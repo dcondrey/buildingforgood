@@ -15,7 +15,15 @@ fi
 .venv/bin/mypy --config-file pipeline/pyproject.toml pipeline/src
 .venv/bin/pytest tests -q
 
-echo "== [2/3] app: format, lint, tests, production build =="
+# Artifacts are a build product, never committed (C-02 boundary follow-up):
+# fetch the pinned inputs and rebuild deterministically BEFORE the app build,
+# so the bundle ships real artifacts and the privacy scan has real content to
+# judge. A verify run that scanned an empty generated directory would be
+# green with nothing to catch.
+echo "== [2/4] artifacts: fetch pinned inputs, deterministic rebuild =="
+./scripts/build_artifacts.sh
+
+echo "== [3/4] app: format, lint, tests, production build =="
 if [ ! -d app/node_modules ]; then
   npm ci --prefix app
 fi
@@ -30,7 +38,7 @@ npm --prefix app run build
 # normal verify: the directory was simply absent and the check degraded to a
 # warning. --require-bundle turns that absence into a failure so the gate
 # cannot pass by never having built.
-echo "== [3/3] privacy: deployable-data boundary (issue #7) =="
+echo "== [4/4] privacy: deployable-data boundary (issue #7) =="
 .venv/bin/python -m stillhere_pipeline.privacy --root . --require-bundle
 
 echo ""

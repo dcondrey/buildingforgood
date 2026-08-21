@@ -6,3 +6,9 @@ __pycache__/
 
 # OS
 .DS_Store
+
+# Pipeline artifacts are a build product (scripts/build_artifacts.sh), never
+# committed: a committed artifact is a permanent copy no scan can retract.
+public/generated/observations.v0.json
+public/generated/quality_report.v0.json
+public/generated/manifest.v0.json

@@ -20,5 +20,10 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
-      - name: Verify (format, lint, types, tests, build)
+      - name: Cache pinned raw build inputs
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: data/raw/sdrdl_source
+          key: sdrdl-${{ hashFiles('data/cards/checksums.sha256') }}
+      - name: Verify (format, lint, types, tests, artifacts, build)
         run: ./scripts/verify.sh

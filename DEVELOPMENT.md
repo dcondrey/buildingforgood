@@ -27,6 +27,11 @@ python3 -m venv .venv
 ./scripts/verify.sh
 ```
 
+Verify fetches the two pinned pipeline inputs (about 3 MB, checksum-verified)
+and rebuilds the generated artifacts deterministically before the app build,
+so the deployed bundle and the privacy scan always see real, current
+artifacts. Generated artifacts are never committed.
+
 Runs, in order: ruff format check, ruff lint, mypy, pytest (pipeline), then
 prettier check, oxlint, vitest, and the production build (app). CI
 (`.github/workflows/verify.yml`) runs the same script on every push and PR.

@@ -1,0 +1,13 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "area_id": "east_village", "label": "East Village" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-117.1520, 32.7100], [-117.1440, 32.7100], [-117.1440, 32.7160], [-117.1520, 32.7160], [-117.1520, 32.7100]]]
+      }
+    }
+  ]
+}

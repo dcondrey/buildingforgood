@@ -5,7 +5,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "== [1/2] pipeline: format, lint, types, tests =="
+echo "== [1/3] pipeline: format, lint, types, tests =="
 if [ ! -d .venv ]; then
   python3 -m venv .venv
 fi
@@ -15,7 +15,10 @@ fi
 .venv/bin/mypy --config-file pipeline/pyproject.toml pipeline/src
 .venv/bin/pytest tests -q
 
-echo "== [2/2] app: format, lint, tests, production build =="
+echo "== [2/3] privacy: deployable-data boundary (issue #7) =="
+.venv/bin/python -m stillhere_pipeline.privacy --root .
+
+echo "== [3/3] app: format, lint, tests, production build =="
 if [ ! -d app/node_modules ]; then
   npm ci --prefix app
 fi

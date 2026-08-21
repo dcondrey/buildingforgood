@@ -215,20 +215,14 @@ Done when:
 
 ## Critical path
 
-```text
-next-shift decision question + schemas + source ledger
-        ↓
-aggregate, privacy-safe data artifact
-        ↓
-drop test + baseline forecast
-        ↓
-complete UI vertical slice
-        ↓
-fairness-constrained planner
-        ↓
-accessibility/privacy/reliability pass
-        ↓
-deployment and rehearsal
+```mermaid
+flowchart TD
+    A[Next-shift decision question + schemas + source ledger] --> B[Aggregate, privacy-safe data artifact]
+    B --> C[Drop test + baseline forecast]
+    C --> D[Complete UI vertical slice]
+    D --> E[Fairness-constrained planner]
+    E --> F[Accessibility, privacy, and reliability pass]
+    F --> G[Deployment and rehearsal]
 ```
 
 Map animation, additional sources, alternative models, exports, and presentation effects are off the critical path.

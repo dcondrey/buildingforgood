@@ -1,0 +1,226 @@
+{
+  "schema_version": "decision-contract/v1",
+  "scenario_id": "stillhere-demo-001",
+  "scenario_status": "provisional",
+  "last_updated": "2026-08-20",
+  "decision": {
+    "owner_role": "outreach_or_community_services_coordinator",
+    "question": "How should the available outreach hours be distributed across the prepared downtown planning areas for the next shift?",
+    "decision_horizon": {
+      "value": 7,
+      "unit": "day",
+      "label": "next scheduled outreach shift",
+      "status": "fixed"
+    },
+    "default_budget": {
+      "value": 80,
+      "unit": "staff_hour",
+      "user_editable": true,
+      "minimum": 0,
+      "status": "fixed"
+    },
+    "output": "next_shift_decision_brief"
+  },
+  "observations": {
+    "subject": "aggregate_unsheltered_observation",
+    "time_grain": "month",
+    "geography_grain": "published_downtown_planning_area",
+    "precise_locations_publishable": false,
+    "individual_records_publishable": false,
+    "complaint_volume_permitted_uses": [
+      "source_disagreement_diagnostic",
+      "reporting_bias_diagnostic"
+    ],
+    "complaint_volume_excluded_uses": [
+      "person_count",
+      "service_need",
+      "planning_load",
+      "allocation_target"
+    ]
+  },
+  "geography": {
+    "version": "downtown-demo/pending-source-audit",
+    "status": "unresolved",
+    "candidate_focus_area": {
+      "id": "east_village",
+      "label": "East Village",
+      "status": "provisional",
+      "combine_split_source_labels": false
+    },
+    "candidate_area_labels": [
+      "east_village",
+      "east_village_south",
+      "gaslamp",
+      "sherman_heights",
+      "barrio_logan",
+      "golden_hill",
+      "cortez_hill"
+    ],
+    "adjacency_version": null,
+    "blocking_issue_numbers": [
+      18,
+      33,
+      34
+    ],
+    "resolution_rule": "Publish a versioned area list and adjacency table after source naming, boundary, and coverage review."
+  },
+  "prepared_period": {
+    "observation_month": null,
+    "status": "unresolved",
+    "blocking_issue_numbers": [
+      34
+    ],
+    "selection_rule": "Choose a comparable, data-backed apparent decline with sufficient recent history and visible adjacent evidence."
+  },
+  "drop_test": {
+    "allowed_results": [
+      "likely_improvement",
+      "possible_displacement",
+      "insufficient_evidence"
+    ],
+    "comparison_window_periods": {
+      "value": 3,
+      "status": "provisional",
+      "review_issue_number": 35
+    },
+    "minimum_sustained_periods": {
+      "value": 2,
+      "status": "provisional",
+      "review_issue_number": 35
+    },
+    "minimum_recent_completeness_ratio": {
+      "value": 0.8,
+      "status": "provisional",
+      "review_issue_number": 35
+    },
+    "possible_displacement_minimum_matched_share": {
+      "value": 0.5,
+      "status": "provisional",
+      "review_issue_number": 35
+    },
+    "force_insufficient_evidence_when": [
+      "selected_period_is_incomplete",
+      "comparison_crosses_unreconciled_method_break",
+      "geography_version_is_unresolved",
+      "evidence_is_not_deterministic_under_documented_rules"
+    ],
+    "causal_claims_permitted": false,
+    "individual_movement_claims_permitted": false
+  },
+  "forecast": {
+    "horizon_periods": {
+      "value": 1,
+      "unit": "month",
+      "status": "provisional",
+      "review_issue_number": 36
+    },
+    "baseline_model": "seasonal_naive",
+    "seasonal_periods": {
+      "value": 12,
+      "status": "provisional",
+      "review_issue_number": 36
+    },
+    "minimum_training_periods": {
+      "value": 24,
+      "status": "provisional",
+      "review_issue_number": 36
+    },
+    "evaluation": {
+      "split_method": "rolling_origin",
+      "point_metric": "mean_absolute_error",
+      "interval_metric": "empirical_coverage",
+      "candidate_promotion_rule": "held_out_improvement_over_baseline_required"
+    },
+    "no_eligible_model_result": "insufficient_forecast_evidence"
+  },
+  "planner": {
+    "allocation_unit": "staff_hour",
+    "time_increment": {
+      "value": 1,
+      "unit": "staff_hour",
+      "status": "fixed"
+    },
+    "minimum_coverage_floor": {
+      "value": 8,
+      "unit": "staff_hour_per_included_area",
+      "status": "provisional",
+      "review_issue_number": 14
+    },
+    "uncertainty_policy": {
+      "planning_reference": "upper_prediction_bound",
+      "status": "provisional",
+      "review_issue_number": 14
+    },
+    "possible_displacement_continuity_reserve": {
+      "value": 4,
+      "unit": "staff_hour",
+      "status": "provisional",
+      "review_issue_number": 14
+    },
+    "travel_burden_policy": {
+      "value": "equal_until_validated_aggregate_bands_exist",
+      "live_routing_required": false,
+      "status": "provisional",
+      "review_issue_number": 14
+    },
+    "rounding_method": "deterministic_largest_remainder",
+    "constraints": [
+      "allocated_hours_are_nonnegative",
+      "allocated_hours_equal_available_budget",
+      "minimum_coverage_floor_is_satisfied_or_result_is_infeasible",
+      "human_locks_are_preserved",
+      "complaint_volume_never_changes_planning_load_or_allocation"
+    ],
+    "infeasible_result": "return_no_plan_with_reasons"
+  },
+  "review_triggers": [
+    "new_monthly_observation",
+    "available_budget_changed",
+    "missing_or_incomparable_area",
+    "forecast_interval_warning",
+    "fairness_floor_infeasible",
+    "local_operational_knowledge_conflicts",
+    "source_boundary_or_method_revision"
+  ],
+  "language_boundaries": {
+    "permitted_examples": [
+      "Aggregate changes are consistent with possible displacement.",
+      "The available evidence is insufficient.",
+      "This forecast has a wide uncertainty interval."
+    ],
+    "prohibited_claim_types": [
+      "identified_people_moved_between_areas",
+      "policy_caused_observed_decline",
+      "area_needs_enforcement",
+      "live_shelter_capacity_or_eligibility",
+      "automatic_operational_authorization"
+    ]
+  },
+  "release_blockers": [
+    {
+      "field": "geography.version",
+      "reason": "Area labels and adjacency require source and boundary audit.",
+      "owner_track": "A"
+    },
+    {
+      "field": "prepared_period.observation_month",
+      "reason": "The exact comparable apparent-decline period must be selected from validated data.",
+      "owner_track": "A"
+    },
+    {
+      "field": "drop_test.*.provisional",
+      "reason": "Evidence thresholds require the A-04 scenario review.",
+      "owner_track": "A"
+    },
+    {
+      "field": "forecast.*.provisional",
+      "reason": "Forecast settings require the A-05 evaluation scorecard and history audit.",
+      "owner_track": "A"
+    },
+    {
+      "field": "planner.*.provisional",
+      "reason": "Planner defaults require feasibility and safeguard review.",
+      "owner_track": "C"
+    }
+  ]
+}

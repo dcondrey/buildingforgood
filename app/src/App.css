@@ -111,16 +111,20 @@
   display: grid;
 }
 .brand-lockup strong {
-  font-family: var(--serif);
-  font-size: 1.16rem;
-  line-height: 1.1;
+  font-family: var(--display);
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
 }
 .brand-lockup strong span {
   color: var(--amber);
 }
 .brand-lockup small {
   color: var(--muted);
+  font-family: var(--sans);
   font-size: 0.7rem;
+  letter-spacing: 0.01em;
 }
 
 .decision-controls {

@@ -43,6 +43,27 @@ maximum of 1.01 units. Published totals are integers while tent/vehicle
 components use decimal multipliers, so these are expected rounding, distinct
 from the 25 source-flagged material mismatches.
 
+## Gap-sensitivity check (added 2026-08-21)
+
+The four missing core-total months (Jul, Aug, Oct, Nov 2025) cannot overturn
+either headline conclusion:
+
+- The Jan 2024 → Jan 2025 like-for-like comparison touches no gap month by
+  construction.
+- Forecast bracketing: assume each missing month, had it existed, lay anywhere
+  between its adjacent observed months (Jul/Aug within Jun 653–Sep 722;
+  Oct/Nov within Sep 722–Dec 918). A recent-3-observed window recomputed over
+  the recovered months then yields a January 2026 point anywhere in
+  [787.3, 918.0], which sits entirely inside the shipped 769.0–996.1
+  residual interval. The stated assumption is monotone bounding between
+  neighbors; an unobserved excursion outside its neighbors (Dec 2025 itself
+  exceeded Sep by 27%) is not covered, which is one reason recovering the
+  actual publications remains worthwhile (see `data/monitoring/`).
+
+The digitized source package was last issued 2024-11-26, so the 2025 gaps are
+plausibly digitization lag rather than uncollected counts; recovery via
+DSDP's own pinned report PDFs is tracked in the monitoring lane.
+
 ## Annual-comparison selection
 
 The artifact enumerates every nominal same-month year-over-year pair for the

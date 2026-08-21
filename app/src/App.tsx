@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import "./App.css";
-import { DIGITIZATION_AUDIT } from "./data/digitizationAudit";
+import { DIGITIZATION_AGREEMENT, DIGITIZATION_AUDIT } from "./data/digitizationAudit";
 import { EMBEDDED_DEMO, loadDemoData, type DemoData, type HistoryPoint } from "./lib/demo";
 import { applyIntervention } from "./lib/intervention";
 import { allocateHours, type PlanResult } from "./lib/planner";
@@ -111,7 +111,7 @@ function buildGuideSteps(data: DemoData): GuideStep[] {
       id: "audit",
       title: "The ruler gets audited too",
       targetId: "digitization-audit",
-      body: "Even the measuring instrument gets checked: computer vision reads the scanned field sheets behind the published counts — fully offline — and the recovered City Center totals reconcile through the published multipliers: 152 plus 14 tents times 1.75 is 176.5, published 177. The OCR engine is swappable, so EyePop's hosted abilities drop in with one flag. Vision that audits the instrument, never the people.",
+      body: "Even the measuring instrument gets checked: computer vision reads the scanned field sheets behind the published counts — fully offline — and it catches its own mistakes. Read at one scan resolution, the City Center handwritten total comes back 157; read at another, 152, which is what the sheet shows, and 152 plus 14 tents times 1.75 is 176.5, published 177. Two full readings agree on 97.5 percent of recovered values; the gap is the instrument's own error bar, surfaced instead of hidden. The OCR engine is swappable, so EyePop's hosted abilities drop in with one flag. Vision that audits the instrument, never the people.",
     },
     {
       id: "brief",
@@ -2859,6 +2859,16 @@ function App() {
                       <li>
                         New held-out data materially weakens forecast error or interval coverage.
                       </li>
+                      <li>
+                        Digitization error measured by the field-sheet audit (two readings currently
+                        disagree on{" "}
+                        {(
+                          100 -
+                          (DIGITIZATION_AGREEMENT.summary.agreement_share ?? 0) * 100
+                        ).toFixed(1)}
+                        % of recovered values) grows large enough to account for the downtown change
+                        being interpreted.
+                      </li>
                     </ul>
                   </aside>
                 </details>
@@ -3141,7 +3151,9 @@ function App() {
                 <span className="selected-chip">
                   {DIGITIZATION_AUDIT.engine === "local"
                     ? "Engine: Apple Vision · offline"
-                    : "Engine: EyePop.ai · hosted"}
+                    : DIGITIZATION_AUDIT.engine === "eyepop-vlm"
+                      ? "Engine: EyePop.ai VLM · hosted"
+                      : "Engine: EyePop.ai OCR · hosted"}
                 </span>
               </div>
               <p>
@@ -3151,12 +3163,13 @@ function App() {
                 counted but withheld.
               </p>
               <p className="digitization-audit-finding">
-                <strong>Recovered and reconciled:</strong> the City Center sheet&apos;s handwritten
-                totals (152 observed individuals, 14 tents) reconcile through the published
-                multipliers to the published area total: 152 + 14 × 1.75 = 176.5 ≈ 177. Reading
-                handwriting is unstable across scan resolutions — surfacing that uncertainty is the
-                audit&apos;s job, so recovered values are candidates for human verification, never
-                counts.
+                <strong>Recovered, misread, and caught:</strong> the shipped 200-DPI pass reads the
+                City Center sheet&apos;s handwritten total as 157 (page 4 below); the same engine
+                re-rastered at 300 DPI reads 152, which is what the sheet shows. The sheet
+                reconciles through the published multipliers to the published area total: 152 + 14 ×
+                1.75 = 176.5 ≈ 177. Handwriting recognition is unstable across scan resolutions —
+                surfacing that instability is the audit&apos;s job, and it is why recovered values
+                are candidates for human verification, never counts.
               </p>
               <details className="digitization-audit-pages">
                 <summary>Per-page recovery across {DIGITIZATION_AUDIT.pages.length} pages</summary>
@@ -3191,9 +3204,61 @@ function App() {
                   </tbody>
                 </table>
               </details>
+              <div className="digitization-audit-head">
+                <div>
+                  <span className="eyebrow">Do two readings agree? · cross-check</span>
+                  <strong>Reading-vs-reading agreement</strong>
+                </div>
+                <span className="selected-chip">
+                  {DIGITIZATION_AGREEMENT.runs
+                    .map(
+                      (run) =>
+                        `${run.engine === "local" ? "Apple Vision" : run.engine} · ${run.dpi} DPI`,
+                    )
+                    .join(" vs ")}
+                </span>
+              </div>
+              <p className="digitization-audit-finding">
+                Two full readings of the same pinned report — the shipped 200-DPI pass and a 300-DPI
+                re-raster — agree on {DIGITIZATION_AGREEMENT.summary.shared_total} of the{" "}
+                {DIGITIZATION_AGREEMENT.summary.first_total} and{" "}
+                {DIGITIZATION_AGREEMENT.summary.second_total} area-scale values they each recovered
+                ({((DIGITIZATION_AGREEMENT.summary.agreement_share ?? 0) * 100).toFixed(1)}%). The
+                disagreements are the City Center misread above plus a handful of single-token
+                differences. Same engine read twice is a floor on digitization instability, not an
+                independent second opinion; the engine-vs-engine version of this card — Apple Vision
+                against EyePop&apos;s hosted OCR or its image-contents VLM reading — is one
+                comparison run away once a key lands.
+              </p>
+              <details className="digitization-audit-pages">
+                <summary>
+                  Per-page agreement across {DIGITIZATION_AGREEMENT.summary.pages_compared} pages
+                </summary>
+                <table>
+                  <caption>Values recovered by both readings, and by only one, per page</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Page</th>
+                      <th scope="col">Shared</th>
+                      <th scope="col">Only 200 DPI</th>
+                      <th scope="col">Only 300 DPI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {DIGITIZATION_AGREEMENT.pages.map((page) => (
+                      <tr key={page.page}>
+                        <td>{page.page}</td>
+                        <td>{page.shared}</td>
+                        <td>{page.only_in_first}</td>
+                        <td>{page.only_in_second}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </details>
               <p className="digitization-audit-boundary">
                 {DIGITIZATION_AUDIT.boundary} The OCR engine is swappable; EyePop.ai&apos;s hosted
-                abilities are a drop-in replacement.
+                abilities are a drop-in replacement. {DIGITIZATION_AGREEMENT.boundary}
               </p>
             </div>
           </section>

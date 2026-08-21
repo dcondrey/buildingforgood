@@ -1,5 +1,8 @@
-// Generated from data/monitoring/digitization_audit.json (do not edit by hand;
-// re-run stillhere_pipeline.eyepop_audit and copy the result).
+// Generated from data/monitoring/digitization_audit.json and
+// digitization_audit_agreement.json (do not edit by hand; re-run
+// stillhere_pipeline.eyepop_audit and copy the results). The committed
+// 200-DPI audit card is quoted by docs and must not be regenerated casually;
+// the 300-DPI card behind the agreement lives in data/monitoring/.
 export interface AuditPage {
   page: number;
   integer_tokens: number;
@@ -109,5 +112,161 @@ export const DIGITIZATION_AUDIT: DigitizationAudit = {
   ],
   source_pdf: "data/raw/dsdp_public_reports/June-2026-Unsheltered-Sleep-Count.pdf",
   status: "experimental",
+  value_threshold: 12,
+};
+
+// Generated from data/monitoring/digitization_audit_agreement.json (do not
+// edit by hand; re-run stillhere_pipeline.eyepop_audit --compare and copy).
+export interface AgreementRun {
+  engine: string;
+  dpi: number;
+}
+
+export interface AgreementPage {
+  page: number;
+  shared_values: number[];
+  shared: number;
+  only_in_first: number;
+  only_in_second: number;
+}
+
+export interface DigitizationAgreement {
+  kind: string;
+  status: string;
+  engines: string[];
+  runs: AgreementRun[];
+  source_pdfs: string[];
+  value_threshold: number;
+  pages: AgreementPage[];
+  summary: {
+    pages_compared: number;
+    shared_total: number;
+    first_total: number;
+    second_total: number;
+    agreement_share: number | null;
+  };
+  boundary: string;
+}
+
+export const DIGITIZATION_AGREEMENT: DigitizationAgreement = {
+  boundary:
+    "Agreement summary over two page-level, privacy-filtered digitization-audit cards. It writes only values already present in a filtered card; independent-engine agreement is evidence about the digitization lineage, never a model input.",
+  engines: ["local", "local"],
+  kind: "digitization_audit_agreement",
+  pages: [
+    {
+      only_in_first: 5,
+      only_in_second: 5,
+      page: 1,
+      shared: 281,
+      shared_values: [
+        13, 14, 14, 16, 17, 17, 17, 19, 21, 22, 23, 24, 24, 27, 29, 29, 30, 31, 32, 32, 33, 34, 37,
+        37, 38, 39, 40, 40, 40, 41, 41, 42, 42, 43, 43, 44, 45, 47, 47, 48, 48, 49, 49, 50, 50, 52,
+        53, 54, 56, 57, 58, 59, 60, 60, 61, 61, 63, 63, 64, 65, 68, 69, 73, 74, 75, 75, 76, 77, 77,
+        82, 83, 84, 84, 86, 96, 100, 101, 104, 111, 111, 114, 119, 121, 124, 125, 129, 132, 133,
+        141, 147, 148, 154, 158, 161, 176, 177, 179, 193, 194, 195, 196, 202, 209, 215, 232, 238,
+        248, 253, 262, 264, 297, 304, 311, 313, 401, 405, 405, 408, 409, 413, 434, 435, 445, 453,
+        485, 486, 502, 513, 514, 529, 538, 543, 545, 555, 555, 559, 568, 569, 571, 581, 582, 585,
+        593, 595, 597, 606, 614, 622, 623, 627, 629, 630, 634, 636, 639, 644, 656, 657, 662, 667,
+        672, 672, 677, 678, 679, 685, 695, 714, 714, 717, 719, 720, 721, 721, 725, 732, 744, 744,
+        756, 759, 765, 770, 776, 787, 789, 791, 799, 799, 800, 800, 804, 806, 809, 809, 810, 811,
+        812, 821, 826, 838, 841, 842, 843, 843, 843, 844, 845, 846, 847, 856, 860, 862, 865, 868,
+        875, 875, 880, 882, 884, 887, 887, 892, 898, 902, 904, 926, 941, 946, 955, 961, 961, 964,
+        980, 984, 986, 995, 1004, 1012, 1019, 1024, 1026, 1027, 1058, 1063, 1073, 1092, 1100, 1105,
+        1140, 1148, 1156, 1156, 1157, 1160, 1162, 1172, 1253, 1286, 1294, 1324, 1335, 1370, 1384,
+        1386, 1409, 1444, 1453, 1474, 1515, 1556, 1565, 1609, 1622, 1718, 1723, 1810, 1839, 1939,
+        2025, 2026, 2104,
+      ],
+    },
+    {
+      only_in_first: 0,
+      only_in_second: 1,
+      page: 2,
+      shared: 1,
+      shared_values: [19],
+    },
+    {
+      only_in_first: 0,
+      only_in_second: 0,
+      page: 3,
+      shared: 2,
+      shared_values: [28, 91],
+    },
+    {
+      only_in_first: 1,
+      only_in_second: 1,
+      page: 4,
+      shared: 1,
+      shared_values: [14],
+    },
+    {
+      only_in_first: 0,
+      only_in_second: 0,
+      page: 5,
+      shared: 1,
+      shared_values: [50],
+    },
+    {
+      only_in_first: 0,
+      only_in_second: 0,
+      page: 6,
+      shared: 1,
+      shared_values: [48],
+    },
+    {
+      only_in_first: 0,
+      only_in_second: 0,
+      page: 7,
+      shared: 0,
+      shared_values: [],
+    },
+    {
+      only_in_first: 0,
+      only_in_second: 0,
+      page: 8,
+      shared: 0,
+      shared_values: [],
+    },
+    {
+      only_in_first: 0,
+      only_in_second: 0,
+      page: 9,
+      shared: 1,
+      shared_values: [15],
+    },
+    {
+      only_in_first: 0,
+      only_in_second: 0,
+      page: 10,
+      shared: 0,
+      shared_values: [],
+    },
+    {
+      only_in_first: 2,
+      only_in_second: 0,
+      page: 11,
+      shared: 1,
+      shared_values: [24],
+    },
+  ],
+  runs: [
+    {
+      dpi: 200,
+      engine: "local",
+    },
+    {
+      dpi: 300,
+      engine: "local",
+    },
+  ],
+  source_pdfs: ["data/raw/dsdp_public_reports/June-2026-Unsheltered-Sleep-Count.pdf"],
+  status: "experimental",
+  summary: {
+    agreement_share: 0.975,
+    first_total: 297,
+    pages_compared: 11,
+    second_total: 296,
+    shared_total: 289,
+  },
   value_threshold: 12,
 };

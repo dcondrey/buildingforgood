@@ -33,6 +33,21 @@
       "month": "2021-05"
     }
   ],
+  "contract": {
+    "count_fields": [
+      "total",
+      "by_type.individual",
+      "by_type.structure",
+      "by_type.vehicle"
+    ],
+    "small_cell_threshold": 5,
+    "suppression_marker": {
+      "affirmative": [
+        true
+      ],
+      "field": "suppressed"
+    }
+  },
   "missing_months_global": [
     "2014-08",
     "2014-09",

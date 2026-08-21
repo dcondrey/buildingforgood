@@ -52,9 +52,47 @@ def assert_no_precise_fields(node: Any, path: str = "$") -> None:
             assert_no_precise_fields(item, f"{path}[{index}]")
 
 
+# The count-bearing paths in an observation row. The artifact DECLARES these
+# (issue #4 slice) so the privacy scanner's small-cell rule is a lookup, not
+# shape-inference; this constant is the single source the emitter writes and
+# the validator checks against.
+OBSERVATION_COUNT_FIELDS = (
+    "total",
+    "by_type.individual",
+    "by_type.structure",
+    "by_type.vehicle",
+)
+
+
+def _validate_contract_block(doc: dict[str, Any]) -> None:
+    from stillhere_pipeline.suppress import SMALL_CELL_THRESHOLD
+
+    contract = _require(doc, "contract", dict)
+    count_fields = _require(contract, "count_fields", list)
+    if sorted(count_fields) != sorted(OBSERVATION_COUNT_FIELDS):
+        raise ContractViolation(
+            "contract count_fields must declare exactly the count-bearing paths: "
+            f"expected {sorted(OBSERVATION_COUNT_FIELDS)}, got {sorted(count_fields)}"
+        )
+    threshold = _require(contract, "small_cell_threshold", int)
+    if threshold != SMALL_CELL_THRESHOLD:
+        raise ContractViolation(
+            f"contract small_cell_threshold {threshold} does not match the policy "
+            f"threshold {SMALL_CELL_THRESHOLD}"
+        )
+    marker = _require(contract, "suppression_marker", dict)
+    _require(marker, "field", str)
+    affirmative = marker.get("affirmative")
+    if not isinstance(affirmative, list) or not affirmative:
+        raise ContractViolation(
+            "suppression_marker must declare a non-empty affirmative encoding list"
+        )
+
+
 def validate_observations_v0(doc: dict[str, Any]) -> None:
     if _require(doc, "schema", str) != "observations.v0":
         raise ContractViolation("schema must be observations.v0")
+    _validate_contract_block(doc)
     source = _require(doc, "source", dict)
     _require(source, "source_id", str)
     _require(source, "retrieved_at", str)

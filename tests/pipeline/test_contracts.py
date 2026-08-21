@@ -15,9 +15,23 @@ from stillhere_pipeline.contracts import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
+def valid_contract_block() -> dict:
+    return {
+        "count_fields": [
+            "total",
+            "by_type.individual",
+            "by_type.structure",
+            "by_type.vehicle",
+        ],
+        "small_cell_threshold": 5,
+        "suppression_marker": {"field": "suppressed", "affirmative": [True]},
+    }
+
+
 def valid_observations() -> dict:
     return {
         "schema": "observations.v0",
+        "contract": valid_contract_block(),
         "source": {"source_id": "sdrdl_source", "retrieved_at": "2026-08-21T01:06:45Z"},
         "months_observed": ["2018-01"],
         "missing_months_global": [],
@@ -101,6 +115,35 @@ class TestObservationsValidatorRejects:
         doc = valid_observations()
         doc["neighborhoods"][0]["observations"][0]["by_type"] = {"individual": "many"}
         with pytest.raises(ContractViolation, match="by_type value"):
+            validate_observations_v0(doc)
+
+
+class TestContractDeclaration:
+    """Issue #4 slice: the artifact declares which fields are counts, so the
+    privacy scanner's small-cell rule is a lookup, never shape-inference."""
+
+    def test_missing_contract_block_rejected(self) -> None:
+        doc = valid_observations()
+        del doc["contract"]
+        with pytest.raises(ContractViolation, match="contract"):
+            validate_observations_v0(doc)
+
+    def test_count_fields_must_cover_every_count_path(self) -> None:
+        doc = valid_observations()
+        doc["contract"]["count_fields"] = ["total"]
+        with pytest.raises(ContractViolation, match="count_fields"):
+            validate_observations_v0(doc)
+
+    def test_threshold_must_match_the_policy(self) -> None:
+        doc = valid_observations()
+        doc["contract"]["small_cell_threshold"] = 3
+        with pytest.raises(ContractViolation, match="small_cell_threshold"):
+            validate_observations_v0(doc)
+
+    def test_suppression_marker_declares_field_and_affirmative_encoding(self) -> None:
+        doc = valid_observations()
+        doc["contract"]["suppression_marker"] = {"field": "suppressed"}
+        with pytest.raises(ContractViolation, match="affirmative"):
             validate_observations_v0(doc)
 
 

@@ -44,6 +44,15 @@ it and the scanner imports it.)
    nonzero cell). If any cell's value, or the value multiset, is unique
    across the feasible set, the whole row suppresses (branch 1 shape).
 
+## Contract declaration (issue #4 slice)
+
+The observations artifact DECLARES its count semantics so no consumer infers
+them from shape: a top-level `contract` block carries `count_fields` (the
+exact count-bearing paths), `small_cell_threshold`, and `suppression_marker`
+(field name plus affirmative encodings). The validator rejects an artifact
+whose declaration drifts from this policy; the scanner may consume the
+declaration as a lookup and keep shape-inference only as a backstop.
+
 ## Disclosure
 
 Suppression is disclosed, never silent: published rows list withheld types in

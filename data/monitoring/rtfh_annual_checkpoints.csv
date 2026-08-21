@@ -1,0 +1,5 @@
+count_year,geography,series,value,unit,value_status,model_eligible,source_id
+2025,City of San Diego,pitc_unsheltered_total,3354,unsheltered_clients,publisher_reported,false,rtfh_public_monitoring
+2025,San Diego County,pitc_unsheltered_total,5714,unsheltered_clients,publisher_reported,false,rtfh_public_monitoring
+2026,City of San Diego,pitc_unsheltered_total,3132,unsheltered_clients,publisher_reported,false,rtfh_public_monitoring
+2026,San Diego County,pitc_unsheltered_total,5108,unsheltered_clients,publisher_reported,false,rtfh_public_monitoring

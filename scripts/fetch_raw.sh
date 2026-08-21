@@ -47,13 +47,20 @@ LEGACY_STABLE_FILES=(
 )
 MONITORING_FILES=(
   data/raw/dsdp_public_reports/June-2026-Unsheltered-Sleep-Count.pdf
+  data/raw/rtfh_pitc/2026-PITC-Unsheltered-Census-Tract-per-City.xlsx
+  data/raw/rtfh_public_reports/HMIS-Data-Newsletter-July-2026.pdf
 )
+RTFH_PITC_2026='https://www.rtfhsd.org/wp-content/uploads/2026/05/2026-PITC-Unsheltered-Census-Tract-per-City.xlsx'
+RTFH_HMIS_JULY_2026='https://www.rtfhsd.org/wp-content/uploads/2026/08/HMIS-Data-Newsletter-July-2026.pdf'
 
 fetch() {
   local out=$1 url=$2
   mkdir -p "$(dirname "$out")"
   echo "fetching $out"
-  curl -fSL --retry 3 --silent --show-error -o "$out" "$url"
+  # A browser user agent is required: rtfhsd.org resets bare curl transfers.
+  curl -fSL --retry 3 --silent --show-error \
+    -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0 Safari/537.36" \
+    -o "$out" "$url"
 }
 
 require_organizer_bundle() {
@@ -120,6 +127,8 @@ verify_monitoring() {
 
 fetch_monitoring() {
   fetch "${MONITORING_FILES[0]}" "$DSDP_JUNE_2026"
+  fetch "${MONITORING_FILES[1]}" "$RTFH_PITC_2026"
+  fetch "${MONITORING_FILES[2]}" "$RTFH_HMIS_JULY_2026"
   verify_monitoring
 }
 

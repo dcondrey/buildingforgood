@@ -28,6 +28,27 @@ The DSDP dashboard labels 1,092 as “Q1 2026,” while the source PDF places th
 value in April and supplies no January–March observation. The table follows the
 PDF and therefore cannot validate the demo's January 2026 forecast scenario.
 
+## RTFH annual checkpoints
+
+`rtfh_annual_checkpoints.csv` transcribes the publisher-computed City of San
+Diego and countywide unsheltered totals from RTFH's PITC census-tract
+workbooks (2025 is the already-pinned demo agreement input; 2026 is pinned as
+a post-freeze monitoring source):
+
+| Count year | City of San Diego | Countywide |
+| --- | ---: | ---: |
+| 2025 | 3,354 | 5,714 |
+| 2026 | 3,132 | 5,108 |
+
+The 2026 decline (−6.6% city, −10.6% county) is directionally consistent with
+the 2026 DSDP downtown checkpoints above, but these are different universes,
+methods, and clocks: a single January night citywide versus monthly downtown
+visual sweeps. Direction agreement is context, never validation of a specific
+downtown figure. Tract-level detail stays raw-only behind the ledger's
+tract-to-neighborhood crosswalk gate. RTFH's monthly countywide HMIS data
+reports (July 2026 pinned) are cadence references only; HMIS activity measures
+service engagement, not street population.
+
 ## Update protocol
 
 1. Use `./scripts/fetch_raw.sh monitoring` to fetch the allowlisted publisher

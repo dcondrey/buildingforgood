@@ -3,6 +3,18 @@
 > **The estimate fell. Direct observations rose.** One headline can hide a
 > measurement-composition shift.
 
+**[Open the live demo →](https://dcondrey.github.io/buildingforgood/)** ·
+works offline once loaded ·
+[3-minute script](docs/product/DEMO_SCRIPT.md) ·
+[judge Q&A](docs/product/JUDGE_QA.md)
+
+![Planned staff-hours on the six-neighborhood map, with East Village selected and its allocation detail open](docs/img/plan-map.png)
+
+The map draws the real downtown neighborhood boundaries, dissolved from the
+organizer block grid to area level; every area is keyboard-selectable and opens
+a per-area evidence and allocation dossier. Aggregate outlines only; no
+block-level geometry or observation location ships.
+
 Still Here SD is a measurement-aware forecasting and outreach-planning tool
 built for the 2026 Building for Good Hackathon in San Diego. It helps a human
 coordinator answer a deceptively difficult question:
@@ -70,9 +82,12 @@ The three-minute walkthrough is in
 and ethics answers are in
 [`docs/product/JUDGE_QA.md`](docs/product/JUDGE_QA.md).
 
-Use **Guide demo** for a four-beat, keyboard-safe walkthrough with a deliberate
-**Next** reveal, or drive the four decision scenes manually. The guide never
-changes the underlying analysis; it stages the same local artifact.
+Use **Guide demo** for a hands-on, self-narrating tour: eight steps ask you to
+work the real controls and notice when you have, with **Do it for me** on every
+task, **Play** for hands-free playback on an unattended screen, and arrow-key
+navigation. Stopping it never leaves the guard-off comparison view on screen.
+The guide never changes the underlying analysis; it stages the same local
+artifact.
 
 ## The three-minute story
 

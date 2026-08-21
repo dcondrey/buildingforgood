@@ -64,6 +64,25 @@ npm --prefix app run preview
       selection is announced (the panel is a live region).
 - [ ] Selecting the same area again clears the selection.
 - [ ] The selected area is distinguishable with the OS display in greyscale.
+- [ ] The **What-if** budget slider is reachable by `Tab`, adjusts with the
+      arrow keys, and the announced plan total tracks the value; dragging it
+      below the floors' total announces the infeasibility alert.
+
+### 5c. Guide demo (added 2026-08-21 with the hands-on guide rework)
+
+- [ ] **Guide demo** opens the panel and moves focus to it; the step title,
+      narration, and task are announced (the panel is a live region).
+- [ ] `→` and `Enter` advance, `←` goes back, without touching the panel's
+      buttons; `Esc` closes it.
+- [ ] Completing a step's task with the real control (e.g. activating **Test
+      the drop**) advances the guide by itself; returning via **Back** does not
+      bounce forward again.
+- [ ] **Play** is announced as a pressed toggle; hands-free playback halts on
+      **Pause**, `Esc`, or any activation outside the panel.
+- [ ] Stopping the guide while the 0h comparison view is showing restores the
+      coverage minimum; the guard status reads ON again.
+- [ ] The spotlight outline follows the narrated section and remains visible
+      with the OS display in greyscale.
 
 ### 6. Colour and motion
 

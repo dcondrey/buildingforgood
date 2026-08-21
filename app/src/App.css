@@ -32,7 +32,7 @@
   color: var(--muted);
   display: block;
   font-family: var(--mono);
-  font-size: 0.67rem;
+  font-size: 0.71rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -123,7 +123,7 @@
 .brand-lockup small {
   color: var(--muted);
   font-family: var(--sans);
-  font-size: 0.7rem;
+  font-size: 0.725rem;
   letter-spacing: 0.01em;
 }
 
@@ -169,7 +169,7 @@
 }
 .budget-input-wrap span {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.735rem;
 }
 
 .button {
@@ -261,7 +261,7 @@
 .disclosure-drawer dt {
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
 }
 .disclosure-drawer dd {
@@ -272,7 +272,7 @@
 .disclosure-drawer code {
   color: var(--teal-bright);
   font-family: var(--mono);
-  font-size: 0.74rem;
+  font-size: 0.745rem;
 }
 .drawer-close {
   background: transparent;
@@ -315,7 +315,7 @@ main {
   color: var(--green);
   display: inline-flex;
   font-family: var(--mono);
-  font-size: 0.68rem;
+  font-size: 0.715rem;
   gap: 0.5rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -332,7 +332,7 @@ main {
 .kicker {
   color: var(--amber);
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: 0.735rem;
   letter-spacing: 0.08em;
   margin: 2rem 0 0.65rem;
   text-transform: uppercase;
@@ -381,7 +381,7 @@ main {
 .composition-lead span,
 .composition-lead small {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.735rem;
 }
 .composition-lead strong {
   color: var(--amber-bright);
@@ -395,7 +395,7 @@ main {
 .composition-lead p {
   color: var(--faint);
   font-family: var(--mono);
-  font-size: 0.63rem;
+  font-size: 0.69rem;
   grid-column: 1 / -1;
   margin: 0.8rem 0 0;
   text-transform: uppercase;
@@ -479,7 +479,7 @@ main {
   color: var(--muted);
   display: inline-flex;
   font-family: var(--mono);
-  font-size: 0.58rem;
+  font-size: 0.665rem;
   height: 1.55rem;
   justify-content: center;
   margin-right: 0.45rem;
@@ -501,13 +501,13 @@ main {
 }
 .chain-copy strong {
   color: var(--ink-soft);
-  font-size: 0.66rem;
+  font-size: 0.705rem;
   line-height: 1.2;
 }
 .chain-copy small {
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 0.52rem;
+  font-size: 0.635rem;
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
@@ -553,7 +553,7 @@ main {
 .step-nav span {
   color: var(--amber);
   font-family: var(--mono);
-  font-size: 0.66rem;
+  font-size: 0.705rem;
 }
 
 .decision-section {
@@ -628,21 +628,21 @@ main {
   border: 1px solid var(--line);
   border-radius: 9px;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.725rem;
   margin: 0.7rem 0 0;
   padding: 0.65rem 0.8rem;
 }
 .mixed-index-note strong {
   color: var(--amber-bright);
   font-family: var(--mono);
-  font-size: 0.63rem;
+  font-size: 0.69rem;
   text-transform: uppercase;
 }
 .comparison-defense {
   align-items: flex-start;
   color: var(--muted);
   display: flex;
-  font-size: 0.68rem;
+  font-size: 0.715rem;
   gap: 0.45rem;
   line-height: 1.5;
   margin: 0.55rem 0 0;
@@ -680,7 +680,7 @@ main {
 .evidence-details > summary small {
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 0.58rem;
+  font-size: 0.665rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -762,7 +762,7 @@ main {
   color: var(--muted);
   display: block;
   font-family: var(--mono);
-  font-size: 0.66rem;
+  font-size: 0.705rem;
   letter-spacing: 0.1em;
   line-height: 1.35;
   text-transform: uppercase;
@@ -800,7 +800,7 @@ main {
 .reveal-action > span {
   color: var(--faint);
   font-family: var(--mono);
-  font-size: 0.67rem;
+  font-size: 0.71rem;
 }
 .reveal {
   animation: reveal-up 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -849,7 +849,7 @@ main {
   border-radius: 999px;
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   padding: 0.45rem 0.7rem;
   text-transform: uppercase;
   white-space: nowrap;
@@ -883,7 +883,7 @@ main {
 .component-threshold small,
 .component-threshold span {
   color: var(--muted);
-  font-size: 0.58rem;
+  font-size: 0.665rem;
 }
 .component-threshold strong {
   align-self: end;
@@ -912,14 +912,14 @@ main {
   color: var(--muted);
   display: grid;
   font-family: var(--mono);
-  font-size: 0.6rem;
+  font-size: 0.675rem;
   line-height: 1.45;
   padding: 0.65rem;
 }
 .component-concentration strong {
   color: var(--ink-soft);
   font-family: var(--sans);
-  font-size: 0.66rem;
+  font-size: 0.705rem;
 }
 .derived-bridge {
   align-items: center;
@@ -942,13 +942,13 @@ main {
 }
 .derived-bridge > div:first-child > strong em {
   color: var(--amber-bright);
-  font-size: 0.72rem;
+  font-size: 0.735rem;
   font-style: normal;
 }
 .derived-bridge > div:first-child > small,
 .derived-bridge > p {
   color: var(--muted);
-  font-size: 0.58rem;
+  font-size: 0.665rem;
 }
 .decomposition-values {
   display: grid;
@@ -958,7 +958,7 @@ main {
   border-left: 1px solid var(--line);
   color: var(--muted);
   display: grid;
-  font-size: 0.58rem;
+  font-size: 0.665rem;
   padding: 0.35rem 0.6rem;
 }
 .decomposition-values strong {
@@ -973,7 +973,7 @@ main {
 }
 .component-proof > p {
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.705rem;
   line-height: 1.5;
   margin: 0.75rem 0 0;
 }
@@ -1009,7 +1009,7 @@ main {
   border-radius: 999px;
   color: var(--amber-bright);
   font-family: var(--mono);
-  font-size: 0.58rem;
+  font-size: 0.665rem;
   padding: 0.35rem 0.55rem;
   text-transform: uppercase;
   white-space: nowrap;
@@ -1037,7 +1037,7 @@ main {
 .threshold-row small,
 .threshold-row span {
   color: var(--muted);
-  font-size: 0.57rem;
+  font-size: 0.66rem;
 }
 .threshold-row strong {
   align-self: end;
@@ -1059,7 +1059,7 @@ main {
 }
 .distribution-proof > p {
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.705rem;
   line-height: 1.5;
   margin: 0.75rem 0 0;
 }
@@ -1116,7 +1116,7 @@ main {
 .formula {
   color: var(--amber-bright);
   font-family: var(--mono);
-  font-size: 0.73rem;
+  font-size: 0.74rem;
   white-space: nowrap;
 }
 .formula.positive {
@@ -1194,11 +1194,13 @@ main {
   transform-origin: center;
 }
 .map-area path {
-  fill: rgba(110, 195, 202, 0.11);
+  fill: var(--teal-bright);
+  fill-opacity: 0.11;
   stroke: rgba(110, 195, 202, 0.3);
   stroke-width: 0.8;
   transition:
     fill 180ms ease,
+    fill-opacity 300ms ease,
     stroke 180ms ease;
 }
 .map-area:hover {
@@ -1206,16 +1208,21 @@ main {
   transform: scale(1.02);
 }
 .map-area:hover path {
-  fill: rgba(110, 195, 202, 0.22);
   stroke: var(--teal-bright);
 }
 .map-down path {
-  fill: rgba(240, 173, 78, 0.13);
+  fill: var(--amber-bright);
+  fill-opacity: 0.13;
   stroke: rgba(240, 173, 78, 0.38);
 }
 .map-down:hover path {
-  fill: rgba(240, 173, 78, 0.24);
   stroke: var(--amber-bright);
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-area,
+  .map-area path {
+    transition: none;
+  }
 }
 .map-name,
 .map-value,
@@ -1245,7 +1252,7 @@ main {
   display: flex;
   flex-wrap: wrap;
   font-family: var(--mono);
-  font-size: 0.58rem;
+  font-size: 0.665rem;
   gap: 0.8rem 1rem;
   justify-content: flex-end;
   margin-top: 0.65rem;
@@ -1286,12 +1293,11 @@ main {
   stroke-width: 1.6;
 }
 .map-area.map-selected path {
-  fill: rgba(110, 195, 202, 0.28);
+  fill-opacity: 0.42 !important;
   stroke: var(--teal-bright);
   stroke-width: 1.4;
 }
 .map-area.map-down.map-selected path {
-  fill: rgba(240, 173, 78, 0.3);
   stroke: var(--amber-bright);
 }
 .map-area.map-selected .map-name {
@@ -1328,7 +1334,7 @@ main {
 .map-detail .map-detail-kicker {
   color: var(--amber);
   font-family: var(--mono);
-  font-size: 0.58rem;
+  font-size: 0.665rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1340,7 +1346,7 @@ main {
 }
 .map-detail dt {
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.705rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
@@ -1354,13 +1360,13 @@ main {
   color: var(--muted);
   display: block;
   font-family: var(--sans);
-  font-size: 0.68rem;
+  font-size: 0.715rem;
   margin-top: 0.1rem;
 }
 .map-detail .map-detail-note {
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.735rem;
   line-height: 1.55;
   margin: 0.85rem 0 0;
   padding-top: 0.7rem;
@@ -1397,14 +1403,14 @@ main {
 }
 .area-cell span {
   color: var(--ink-soft);
-  font-size: 0.64rem;
+  font-size: 0.695rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .area-cell strong {
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: 0.735rem;
 }
 .area-city_center {
   grid-column: 1 / 3;
@@ -1439,7 +1445,7 @@ main {
 .map-caption {
   color: var(--faint);
   font-family: var(--mono);
-  font-size: 0.59rem;
+  font-size: 0.67rem;
   margin: 0.65rem 0 0;
   text-align: right;
   text-transform: uppercase;
@@ -1468,7 +1474,7 @@ main {
 }
 .evidence-balance p {
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.745rem;
   margin: 0;
 }
 .evidence-balance p strong {
@@ -1502,7 +1508,7 @@ main {
   border-radius: 999px;
   color: var(--red);
   font-family: var(--mono);
-  font-size: 0.56rem;
+  font-size: 0.655rem;
   padding: 0.35rem 0.5rem;
   text-transform: uppercase;
   white-space: nowrap;
@@ -1510,7 +1516,7 @@ main {
 .challenge-card p,
 .challenge-card li {
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.725rem;
   line-height: 1.5;
 }
 .challenge-card p {
@@ -1541,7 +1547,7 @@ main {
   display: flex;
   flex: none;
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: 0.735rem;
   height: 1.55rem;
   justify-content: center;
   width: 1.55rem;
@@ -1582,7 +1588,7 @@ main {
 .bias-diagnostic > summary small {
   color: var(--teal);
   font-family: var(--mono);
-  font-size: 0.58rem;
+  font-size: 0.665rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1593,7 +1599,7 @@ main {
   border-radius: 999px;
   color: var(--teal-bright);
   font-family: var(--mono);
-  font-size: 0.58rem;
+  font-size: 0.665rem;
   font-weight: 650;
   padding: 0.35rem 0.55rem;
   text-transform: uppercase;
@@ -1637,7 +1643,7 @@ main {
 }
 .matched-calendar > p {
   color: var(--muted);
-  font-size: 0.64rem;
+  font-size: 0.695rem;
   line-height: 1.45;
   margin: 0.65rem 0 0;
 }
@@ -1666,7 +1672,7 @@ main {
 }
 .bias-metrics span {
   color: var(--muted);
-  font-size: 0.62rem;
+  font-size: 0.685rem;
 }
 .bias-metrics strong {
   align-self: end;
@@ -1689,7 +1695,7 @@ main {
 }
 .checkpoint-block > div:first-child p {
   color: var(--amber-bright);
-  font-size: 0.72rem;
+  font-size: 0.735rem;
   margin: 0.35rem 0 0;
 }
 .checkpoint-list {
@@ -1706,7 +1712,7 @@ main {
 .checkpoint-list span,
 .checkpoint-list small {
   color: var(--muted);
-  font-size: 0.58rem;
+  font-size: 0.665rem;
 }
 .checkpoint-list strong {
   color: var(--amber-bright);
@@ -1727,7 +1733,7 @@ main {
 }
 .robustness-section-title > strong {
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.705rem;
   font-weight: 550;
 }
 .robustness-grid {
@@ -1753,7 +1759,7 @@ main {
 }
 .robustness-title > small {
   color: var(--faint);
-  font-size: 0.55rem;
+  font-size: 0.65rem;
 }
 .parking-result,
 .weather-dates {
@@ -1771,7 +1777,7 @@ main {
 .parking-result small,
 .weather-dates small {
   color: var(--muted);
-  font-size: 0.56rem;
+  font-size: 0.655rem;
 }
 .parking-result strong,
 .weather-dates strong {
@@ -1789,13 +1795,13 @@ main {
 }
 .robustness-card > p {
   color: var(--ink-soft);
-  font-size: 0.68rem;
+  font-size: 0.715rem;
   margin: 0.75rem 0 0.35rem;
 }
 .robustness-caveat {
   color: var(--faint);
   display: block;
-  font-size: 0.58rem;
+  font-size: 0.665rem;
   line-height: 1.45;
 }
 .bias-interpretation {
@@ -1815,7 +1821,7 @@ main {
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--muted);
-  font-size: 0.62rem;
+  font-size: 0.685rem;
   padding: 0.35rem 0.55rem;
 }
 .sensitivity-row code {
@@ -1825,7 +1831,7 @@ main {
 .bias-exclusion {
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.715rem;
   margin: 1rem 0 0;
   padding-top: 0.8rem;
 }
@@ -1837,7 +1843,7 @@ main {
   border: 1px dashed var(--line-strong);
   border-radius: 10px;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.715rem;
   line-height: 1.5;
   margin: 1rem 0 0;
   padding: 0.8rem;
@@ -1882,7 +1888,7 @@ main {
 }
 .chart-summary small {
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.715rem;
 }
 .chart-wrap {
   overflow: hidden;
@@ -1960,7 +1966,7 @@ main {
   align-items: center;
   color: var(--muted);
   display: flex;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   gap: 0.35rem;
 }
 .chart-legend i {
@@ -1987,7 +1993,7 @@ main {
 }
 .model-rule {
   color: var(--muted);
-  font-size: 0.73rem;
+  font-size: 0.74rem;
   line-height: 1.55;
   margin: 1.1rem 0;
 }
@@ -2007,7 +2013,7 @@ main {
 }
 .model-audit small {
   color: var(--muted);
-  font-size: 0.57rem;
+  font-size: 0.66rem;
   text-transform: uppercase;
 }
 .model-audit strong {
@@ -2022,7 +2028,7 @@ main {
 .scorecard-table,
 .data-table-disclosure table {
   border-collapse: collapse;
-  font-size: 0.72rem;
+  font-size: 0.735rem;
   width: 100%;
 }
 .scorecard-table th,
@@ -2042,7 +2048,7 @@ main {
 .data-table-disclosure thead th {
   color: var(--faint);
   font-family: var(--mono);
-  font-size: 0.59rem;
+  font-size: 0.67rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -2054,7 +2060,7 @@ main {
   color: var(--green);
   display: block;
   font-family: var(--mono);
-  font-size: 0.56rem;
+  font-size: 0.655rem;
   text-transform: uppercase;
 }
 .selected-model {
@@ -2067,7 +2073,7 @@ main {
   align-items: flex-start;
   color: var(--muted);
   display: flex;
-  font-size: 0.7rem;
+  font-size: 0.725rem;
   gap: 0.5rem;
   margin-top: 1.1rem;
 }
@@ -2098,7 +2104,7 @@ main {
 }
 .data-table-disclosure > p {
   color: var(--muted);
-  font-size: 0.73rem;
+  font-size: 0.74rem;
   margin: 0;
   padding: 0 1rem 1rem;
 }
@@ -2132,7 +2138,7 @@ main {
   border-left: 2px solid var(--amber);
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 0.64rem;
+  font-size: 0.695rem;
   line-height: 1.45;
   margin: 0.7rem 0 0;
   padding: 0.55rem 0.7rem;
@@ -2169,7 +2175,7 @@ main {
   font-size: 0.76rem;
 }
 .floor-option span {
-  font-size: 0.55rem;
+  font-size: 0.65rem;
 }
 .floor-option.active {
   background: var(--green-dim);
@@ -2199,11 +2205,11 @@ main {
 }
 .guard-status small {
   color: var(--muted);
-  font-size: 0.63rem;
+  font-size: 0.69rem;
 }
 .guard-status strong {
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: 0.725rem;
 }
 .guard-on {
   background: var(--green-dim);
@@ -2242,7 +2248,7 @@ main {
 .constraint-equation small {
   color: var(--muted);
   font-family: inherit;
-  font-size: 0.6rem;
+  font-size: 0.675rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -2306,14 +2312,14 @@ main {
   background: var(--red-dim);
   border-bottom: 1px solid rgba(255, 123, 108, 0.25);
   color: var(--red);
-  font-size: 0.74rem;
+  font-size: 0.745rem;
   padding: 0.7rem 1.2rem;
 }
 .area-accuracy-warning {
   background: var(--amber-dim);
   border-bottom: 1px solid rgba(240, 173, 78, 0.22);
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.725rem;
   line-height: 1.5;
   padding: 0.7rem 1.2rem;
 }
@@ -2323,6 +2329,68 @@ main {
 .allocation-list {
   padding: 0 1.2rem;
 }
+.chart-crosshair {
+  stroke: rgba(242, 237, 226, 0.22);
+  stroke-dasharray: 3 3;
+  stroke-width: 1;
+}
+.chart-hover-dot {
+  fill: none;
+  stroke: var(--amber-bright);
+  stroke-width: 1.5;
+}
+.chart-tooltip-box {
+  fill: rgba(7, 10, 13, 0.94);
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+.chart-tooltip-label {
+  fill: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.chart-tooltip-value {
+  fill: var(--amber-bright);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.whatif-control {
+  background: rgba(110, 195, 202, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+}
+.whatif-row {
+  align-items: center;
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 0.6rem;
+}
+.whatif-row input[type="range"] {
+  accent-color: var(--teal-bright);
+  flex: 1;
+  min-height: 1.5rem;
+}
+.whatif-row output {
+  color: var(--teal-bright);
+  font-family: var(--mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  min-width: 4ch;
+  text-align: right;
+}
+.whatif-control p {
+  color: var(--muted);
+  font-size: 0.735rem;
+  line-height: 1.55;
+  margin: 0.55rem 0 0;
+}
+
 .allocation-row {
   align-items: center;
   border-bottom: 1px solid var(--line);
@@ -2348,7 +2416,7 @@ main {
 }
 .area-name span {
   color: var(--muted);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2394,14 +2462,14 @@ main {
 }
 .hours-input > span:last-child {
   color: var(--muted);
-  font-size: 0.67rem;
+  font-size: 0.71rem;
 }
 .lock-control {
   align-items: center;
   color: var(--muted);
   cursor: pointer;
   display: flex;
-  font-size: 0.69rem;
+  font-size: 0.72rem;
   gap: 0.35rem;
   min-height: 2.75rem;
 }
@@ -2413,7 +2481,7 @@ main {
 .constraint-chip {
   border-radius: 999px;
   font-family: var(--mono);
-  font-size: 0.58rem;
+  font-size: 0.665rem;
   padding: 0.35rem 0.5rem;
   text-align: center;
   white-space: nowrap;
@@ -2484,7 +2552,7 @@ main {
 }
 .brief-summary span {
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.715rem;
 }
 .brief-summary strong {
   align-self: end;
@@ -2503,13 +2571,13 @@ main {
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--ink-soft);
-  font-size: 0.68rem;
+  font-size: 0.715rem;
   padding: 0.4rem 0.65rem;
 }
 .review-triggers > p {
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.735rem;
   margin: 1.3rem 0 0;
   padding-top: 1rem;
 }
@@ -2526,7 +2594,7 @@ main {
 }
 .limitations-row p {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.735rem;
   margin: 0;
   padding: 0 1rem 1rem;
 }
@@ -2543,7 +2611,7 @@ main {
 }
 .brief-action p {
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.745rem;
   margin: 0.25rem 0 0;
 }
 .copy-status {
@@ -2554,7 +2622,7 @@ main {
 .brief-preview pre {
   color: var(--ink-soft);
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: 0.725rem;
   margin: 0;
   overflow-x: auto;
   padding: 0 1rem 1rem;
@@ -2577,7 +2645,7 @@ main {
 .footer span,
 .footer p {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.735rem;
 }
 
 .guide-panel {
@@ -2613,16 +2681,44 @@ main {
   height: 100%;
   transition: width 250ms ease;
 }
+.guide-panel h2 {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  margin: 0.3rem 0 0;
+}
+.guide-step-count {
+  margin: 0.45rem 0 0;
+}
 .guide-panel p {
   font-family: var(--serif);
-  font-size: 1.15rem;
-  line-height: 1.4;
+  font-size: 1.05rem;
+  line-height: 1.45;
   margin: 0.55rem 0 1rem;
 }
-.guide-panel > div:last-child {
+.guide-task {
+  align-items: center;
+  border-left: 3px solid var(--amber);
+  display: flex;
+  gap: 0.5rem;
+  padding-left: 0.7rem;
+}
+.guide-panel p.guide-task {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+}
+.guide-task .icon {
+  flex: none;
+  stroke: var(--teal-bright);
+}
+.guide-actions {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+}
+.guide-spotlight {
+  border-radius: 22px;
+  outline: 2px solid var(--amber);
+  outline-offset: 10px;
 }
 
 @keyframes reveal-up {
@@ -2714,7 +2810,7 @@ main {
     display: none;
   }
   .step-nav a span {
-    font-size: 0.72rem;
+    font-size: 0.735rem;
   }
   .hero {
     grid-template-columns: 1fr;
@@ -3037,7 +3133,7 @@ main {
     font-size: 1.75rem;
   }
   .constraint-equation small {
-    font-size: 0.5rem;
+    font-size: 0.625rem;
   }
   .plan-toolbar > div {
     align-items: stretch;

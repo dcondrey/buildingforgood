@@ -6,3 +6,6 @@ __pycache__/
 
 # OS
 .DS_Store
+
+# Local browser-automation scratch (Playwright MCP page snapshots)
+.playwright-mcp/

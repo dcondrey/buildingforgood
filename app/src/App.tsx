@@ -6,15 +6,97 @@ import { allocateHours, type PlanResult } from "./lib/planner";
 const DEFAULT_COVERAGE_FLOOR = 8;
 const MAX_BUDGET_HOURS = 400;
 
-const GUIDE_STEPS = [
-  "The headline estimate fell, but that hides what changed: outreach workers saw more people, on more blocks. What dropped was tents.",
-  "Next, a forecast rehearsal. Using only data through December 2025, the tool predicts January 2026 and shows how far off similar forecasts have been.",
-  "Then the plan: an assumed 80 staff-hours split across six neighborhoods. Every area keeps a guaranteed minimum you choose; the rest goes where more people are expected.",
-  "Finally, a human takes over. The coordinator can lock or change any line, and the written brief carries every caveat along with the numbers.",
-];
-
 function formatNumber(value: number, digits = 0): string {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: digits }).format(value);
+}
+
+// The guide is hands-on onboarding, not a slideshow: each step asks the
+// viewer to work the real control, watches the app state to see that they
+// did, and only performs the action itself if they ask ("Do it for me") or
+// hands-free playback is on. Copy interpolates the loaded artifact so the
+// numbers on the panel always match the numbers on screen, including in the
+// embedded offline fallback.
+type GuideStep = {
+  id: "reveal" | "evidence" | "forecast" | "generate" | "compare" | "restore" | "lock" | "brief";
+  title: string;
+  body: string;
+  targetId: string;
+  /** The action the viewer is asked to take; absent on read-only steps. */
+  task?: string;
+};
+
+function buildGuideSteps(data: DemoData): GuideStep[] {
+  const individuals = data.signal.components.individuals;
+  const structures = data.signal.components.structures;
+  const individualSpatial = data.signal.componentDistribution?.components.find(
+    (component) => component.id === "individuals",
+  );
+  const individualOne = individualSpatial?.thresholds.find(
+    (threshold) => threshold.minimumUnits === 1,
+  );
+  const forecast = data.forecast;
+  const firstArea = data.areas[0]?.name ?? "the first area";
+  return [
+    {
+      id: "reveal",
+      title: "Start with the question",
+      targetId: "drop-test",
+      task: "Press “Test the drop”.",
+      body: "A coordinator's real question: the headline estimate fell, so is that good news? Open the evidence behind the drop before treating it as an answer.",
+    },
+    {
+      id: "evidence",
+      title: "Read what actually moved",
+      targetId: "evidence-result",
+      body:
+        `The parts moved in opposite directions: observed individuals rose from ${formatNumber(individuals.from)} to ${formatNumber(individuals.to)} (+${formatNumber(individuals.changePct, 1)}%) while tents and structures fell from ${formatNumber(structures.from)} to ${formatNumber(structures.to)}.` +
+        (individualOne
+          ? ` People were seen in more places, not fewer: blocks with at least one observed individual went from ${formatNumber(individualOne.fromBlocks)} to ${formatNumber(individualOne.toBlocks)}.`
+          : "") +
+        " What dropped was tents. Audit the ruler before it becomes a coverage policy.",
+    },
+    {
+      id: "forecast",
+      title: "A forecast rehearsal, not a prophecy",
+      targetId: "forecast",
+      body: `Everything here is frozen at December 2025. Three simple models compete on rolling held-out months, and the winner projects ${formatNumber(forecast.point, 1)} for ${forecast.targetPeriod} with a historical 80% residual band of ${formatNumber(forecast.lower)}–${formatNumber(forecast.upper, 1)}. That band covered only ${formatNumber(forecast.coverage)}% of past checks — the miss stays on screen instead of becoming false confidence.`,
+    },
+    {
+      id: "generate",
+      title: "Turn it into a staffing plan",
+      targetId: "planner",
+      task: "Press “Generate coverage scenario”.",
+      body: `${data.scenario.defaultBudget} assumed staff-hours go across the six neighborhoods: every area first keeps the guaranteed minimum you set, and the rest follows where more people are expected. The tool proposes; it never dispatches.`,
+    },
+    {
+      id: "compare",
+      title: "See what the minimum protects",
+      targetId: "planner",
+      task: "Select the “0h · no minimum” floor.",
+      body: "With no minimum, hours follow the forecast alone and some neighborhoods are left with almost nothing. That view is an audit of the tradeoff, never a recommendation.",
+    },
+    {
+      id: "restore",
+      title: "Never leave the audit view on",
+      targetId: "planner",
+      task: `Select the “${DEFAULT_COVERAGE_FLOOR}h · default” floor to restore the minimum.`,
+      body: "Restoring the minimum guarantees every neighborhood keeps a visit. The floor is a visible policy you chose, not something the model learned.",
+    },
+    {
+      id: "lock",
+      title: "Override it like a coordinator",
+      targetId: "planner",
+      task: `Lock a neighborhood (try ${firstArea}), then press “Recompute unlocked hours”.`,
+      body: "Local knowledge outranks the model. A locked line is preserved exactly and disclosed in the brief; recomputing rebalances only the unlocked hours and never silently repairs your choice.",
+    },
+    {
+      id: "brief",
+      title: "Leave with the brief",
+      targetId: "review",
+      task: "Press “Copy decision brief”.",
+      body: "The brief carries the evidence, the uncertainty, the policy settings, and your overrides. Aggregate places only: nothing here tracks people, infers movement, or dispatches staff automatically. You decide which ruler governs the next shift.",
+    },
+  ];
 }
 
 function formatDate(value: string): string {
@@ -118,6 +200,7 @@ function AreaMap({
   valueFor: (area: DemoData["areas"][number]) => {
     text: string;
     tone: "up" | "down" | "neutral" | "missing";
+    intensity?: number;
   };
   selectedId?: string | null;
   onSelect?: (areaId: string) => void;
@@ -182,7 +265,14 @@ function AreaMap({
             role={interactive ? "button" : undefined}
             tabIndex={interactive ? 0 : undefined}
           >
-            <path d={cell.outline} />
+            <path
+              d={cell.outline}
+              style={
+                value.intensity === undefined || value.tone === "missing"
+                  ? undefined
+                  : { fillOpacity: 0.08 + Math.min(1, Math.max(0, value.intensity)) * 0.34 }
+              }
+            />
             <text className="map-name" textAnchor="middle" x={cell.label.x} y={cell.label.y}>
               {area.name}
             </text>
@@ -281,6 +371,10 @@ function MapValueTable({
 }
 
 function ForecastChart({ history, data }: { history: HistoryPoint[]; data: DemoData["forecast"] }) {
+  // Hover crosshair for sighted mouse users; index into history, or -1 for the
+  // scenario point. Keyboard and screen-reader users get the same values from
+  // the svg label and per-point titles, so nothing here is focusable.
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const width = 760;
   const height = 300;
   const margin = { top: 24, right: 46, bottom: 54, left: 52 };
@@ -402,6 +496,89 @@ function ForecastChart({ history, data }: { history: HistoryPoint[]; data: DemoD
           ),
         )}
         <circle className="forecast-point" cx={forecastX} cy={y(data.point)} r="6" />
+
+        {(() => {
+          const hovered =
+            hoverIndex === null
+              ? null
+              : hoverIndex === -1
+                ? {
+                    px: forecastX,
+                    py: y(data.point),
+                    label: `${data.targetPeriod} scenario`,
+                    value: `${formatNumber(data.point)} (${formatNumber(data.lower)}–${formatNumber(data.upper)})`,
+                  }
+                : history[hoverIndex].value === null
+                  ? {
+                      px: x(hoverIndex),
+                      py: y(0),
+                      label: history[hoverIndex].period,
+                      value: "not reported",
+                    }
+                  : {
+                      px: x(hoverIndex),
+                      py: y(history[hoverIndex].value),
+                      label: history[hoverIndex].period,
+                      value: formatNumber(history[hoverIndex].value),
+                    };
+          if (!hovered) return null;
+          const boxWidth = Math.max(88, (hovered.label.length + hovered.value.length) * 5.4);
+          const boxX = Math.min(
+            width - margin.right - boxWidth,
+            Math.max(margin.left, hovered.px - boxWidth / 2),
+          );
+          // Flip below the point when it sits near the top, so the box never
+          // covers the interval label.
+          const boxY = hovered.py < 96 ? hovered.py + 14 : hovered.py - 46;
+          return (
+            <g aria-hidden="true" className="chart-hover" pointerEvents="none">
+              <line
+                className="chart-crosshair"
+                x1={hovered.px}
+                x2={hovered.px}
+                y1={margin.top}
+                y2={margin.top + chartHeight}
+              />
+              <circle className="chart-hover-dot" cx={hovered.px} cy={hovered.py} r="7" />
+              <rect
+                className="chart-tooltip-box"
+                height={34}
+                rx={7}
+                width={boxWidth}
+                x={boxX}
+                y={boxY}
+              />
+              <text className="chart-tooltip-label" x={boxX + 8} y={boxY + 14}>
+                {hovered.label}
+              </text>
+              <text className="chart-tooltip-value" x={boxX + 8} y={boxY + 28}>
+                {hovered.value}
+              </text>
+            </g>
+          );
+        })()}
+
+        {history.map((point, index) => (
+          <rect
+            fill="transparent"
+            height={chartHeight}
+            key={`hit-${point.period}`}
+            onMouseEnter={() => setHoverIndex(index)}
+            onMouseLeave={() => setHoverIndex(null)}
+            width={chartWidth / Math.max(1, totalPoints - 1)}
+            x={x(index) - chartWidth / Math.max(1, totalPoints - 1) / 2}
+            y={margin.top}
+          />
+        ))}
+        <rect
+          fill="transparent"
+          height={chartHeight}
+          onMouseEnter={() => setHoverIndex(-1)}
+          onMouseLeave={() => setHoverIndex(null)}
+          width={chartWidth / Math.max(1, totalPoints - 1)}
+          x={forecastX - chartWidth / Math.max(1, totalPoints - 1) / 2}
+          y={margin.top}
+        />
 
         {history.map((point, index) => (
           <text
@@ -525,12 +702,22 @@ function App() {
   const [planDirty, setPlanDirty] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
   const [guideIndex, setGuideIndex] = useState<number | null>(null);
+  const [guideAuto, setGuideAuto] = useState(false);
   const [projectorMode, setProjectorMode] = useState(false);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const resultHeading = useRef<HTMLHeadingElement>(null);
   const guidePanel = useRef<HTMLDivElement>(null);
   const guideIndexRef = useRef<number | null>(null);
-  const advanceGuideRef = useRef<() => void>(() => undefined);
+  // Latest guide handlers for the stable document-level keyboard listener.
+  const guideControlsRef = useRef({
+    advance: () => undefined as void,
+    retreat: () => undefined as void,
+    stop: () => undefined as void,
+  });
+  // Whether the current step's task was already satisfied when the step was
+  // entered, so revisiting a finished step (Back) does not instantly bounce
+  // forward again.
+  const guideEntryCompleteRef = useRef(false);
 
   useEffect(() => {
     guideIndexRef.current = guideIndex;
@@ -573,7 +760,7 @@ function App() {
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (event.key === "Escape") {
-        setGuideIndex(null);
+        if (guideIndexRef.current !== null) guideControlsRef.current.stop();
         return;
       }
       const target = event.target as HTMLElement;
@@ -582,12 +769,12 @@ function App() {
         setProjectorMode((mode) => !mode);
         return;
       }
-      if (
-        guideIndexRef.current !== null &&
-        !isControl &&
-        (event.key === "ArrowRight" || event.key === "Enter")
-      ) {
-        advanceGuideRef.current();
+      if (guideIndexRef.current !== null && !isControl) {
+        if (event.key === "ArrowRight" || event.key === "Enter") {
+          guideControlsRef.current.advance();
+        } else if (event.key === "ArrowLeft") {
+          guideControlsRef.current.retreat();
+        }
       }
     };
     document.addEventListener("keydown", onKey);
@@ -658,12 +845,31 @@ function App() {
     );
   }
 
-  function runPlan(nextGuard = guardEnabled, locks = currentLocks(), nextFloor = coverageFloor) {
-    const next = allocateHours(data.areas, budget, nextFloor, nextGuard, locks);
+  function runPlan(
+    nextGuard = guardEnabled,
+    locks = currentLocks(),
+    nextFloor = coverageFloor,
+    nextBudget = budget,
+  ) {
+    const next = allocateHours(data.areas, nextBudget, nextFloor, nextGuard, locks);
     setPlan(next);
     setPlanDirty(false);
     setCopyStatus("");
     return next;
+  }
+
+  // Live what-if: while a plan is on screen, a budget change recomputes it in
+  // place under the same floors and locks instead of blanking it.
+  function setBudgetHours(next: number) {
+    setBudget(next);
+    setCopyStatus("");
+    const valid = Number.isInteger(next) && next >= 0 && next <= MAX_BUDGET_HOURS;
+    if (plan && valid) {
+      runPlan(guardEnabled, currentLocks(), coverageFloor, next);
+    } else {
+      setPlan(null);
+      setPlanDirty(false);
+    }
   }
 
   function setGuard(nextGuard: boolean) {
@@ -734,55 +940,161 @@ function App() {
     }
   }
 
-  function beginGuide() {
-    setGuideIndex(0);
-    if (budget !== data.scenario.defaultBudget) {
-      setBudget(data.scenario.defaultBudget);
-      setPlan(null);
-      setPlanDirty(false);
-      setCopyStatus("");
+  const guideSteps = useMemo(() => buildGuideSteps(data), [data]);
+
+  // Whether the viewer has completed the step's task with the app's own
+  // controls. Read-only steps never self-complete; they advance on Next.
+  function stepComplete(index: number): boolean {
+    switch (guideSteps[index]?.id) {
+      case "reveal":
+        return dropRevealed;
+      case "generate":
+        return Boolean(plan?.feasible);
+      case "compare":
+        return plan !== null && !guardEnabled;
+      case "restore":
+        return Boolean(plan) && guardEnabled && coverageFloor > 0;
+      case "lock":
+        return Boolean(plan) && lockedIds.size > 0 && !planDirty;
+      case "brief":
+        return copyStatus !== "";
+      default:
+        return false;
     }
-    revealDrop(false);
+  }
+
+  // "Do it for me": perform the step's task exactly as the on-screen control
+  // would, so watching the guide never diverges from using the tool.
+  function performStep(index: number) {
+    const floor = guardEnabled && coverageFloor > 0 ? coverageFloor : DEFAULT_COVERAGE_FLOOR;
+    switch (guideSteps[index]?.id) {
+      case "reveal":
+        revealDrop(false);
+        break;
+      case "generate":
+        setCoverageFloor(floor);
+        setGuardEnabled(true);
+        runPlan(true, currentLocks(), floor);
+        break;
+      case "compare":
+        setCoveragePolicy(0);
+        break;
+      case "restore":
+        setCoveragePolicy(DEFAULT_COVERAGE_FLOOR);
+        break;
+      case "lock": {
+        setCoverageFloor(floor);
+        setGuardEnabled(true);
+        const base = runPlan(true, new Map(), floor);
+        const first = data.areas[0];
+        if (first && base.feasible) {
+          const hours = base.allocations.find((row) => row.areaId === first.id)?.hours ?? 0;
+          setLockedIds(new Set([first.id]));
+          setLockValues({ [first.id]: hours });
+          runPlan(true, new Map([[first.id, hours]]), floor);
+        }
+        break;
+      }
+      case "brief":
+        void copyBrief();
+        break;
+      default:
+        break;
+    }
+  }
+
+  function goToStep(index: number, focusPanel = true) {
+    const step = guideSteps[index];
+    if (!step) return;
+    guideEntryCompleteRef.current = stepComplete(index);
+    setGuideIndex(index);
     window.setTimeout(() => {
-      scrollTo("evidence-result");
-      guidePanel.current?.focus();
+      scrollTo(step.targetId);
+      if (focusPanel) guidePanel.current?.focus();
     }, 80);
   }
 
+  function beginGuide() {
+    goToStep(0);
+  }
+
+  // Next doubles as "Do it for me" on an unfinished task step, so hands-off
+  // viewers can still see every beat of the flow.
   function advanceGuide() {
     if (guideIndex === null) return;
-    const next = guideIndex + 1;
-    if (guideIndex === 0) {
-      scrollTo("forecast");
-    } else if (guideIndex === 1) {
-      setCoverageFloor(DEFAULT_COVERAGE_FLOOR);
-      setLockedIds(new Set());
-      setLockValues({});
-      runPlan(true, new Map(), DEFAULT_COVERAGE_FLOOR);
-      setGuardEnabled(true);
-      scrollTo("planner");
-    } else if (guideIndex === 2) {
-      setCoverageFloor(DEFAULT_COVERAGE_FLOOR);
-      const restored = runPlan(true, new Map(), DEFAULT_COVERAGE_FLOOR);
-      setGuardEnabled(true);
-      const first = data.areas[0];
-      const firstHours = restored.allocations.find((row) => row.areaId === first.id)?.hours ?? 0;
-      setLockedIds(new Set([first.id]));
-      setLockValues({ [first.id]: firstHours });
-      scrollTo("review");
-    } else {
-      setGuideIndex(null);
+    const step = guideSteps[guideIndex];
+    if (step.task && !stepComplete(guideIndex)) performStep(guideIndex);
+    if (guideIndex >= guideSteps.length - 1) {
+      stopGuide();
       return;
     }
-    setGuideIndex(next);
-    window.setTimeout(() => guidePanel.current?.focus(), 50);
+    goToStep(guideIndex + 1);
+  }
+
+  function retreatGuide() {
+    if (guideIndex === null || guideIndex === 0) return;
+    goToStep(guideIndex - 1);
+  }
+
+  // Stopping never strands the comparison (guard-off) view as the final plan;
+  // the demo script's rule is enforced here rather than remembered.
+  function stopGuide() {
+    setGuideAuto(false);
+    setGuideIndex(null);
+    if (plan && !guardEnabled) setCoveragePolicy(DEFAULT_COVERAGE_FLOOR);
   }
 
   useEffect(() => {
-    advanceGuideRef.current = advanceGuide;
-    // The ref intentionally tracks the latest callback; the keyboard listener remains stable.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanceGuide]);
+    guideControlsRef.current = { advance: advanceGuide, retreat: retreatGuide, stop: stopGuide };
+  });
+
+  // Auto-advance shortly after the viewer completes the current task
+  // themselves. Steps that were already complete on entry (e.g. revisited via
+  // Back) wait for an explicit Next instead of bouncing forward.
+  useEffect(() => {
+    if (guideIndex === null || guideIndex >= guideSteps.length - 1) return;
+    const step = guideSteps[guideIndex];
+    if (!step.task || guideEntryCompleteRef.current || !stepComplete(guideIndex)) return;
+    const timer = window.setTimeout(() => goToStep(guideIndex + 1, false), 900);
+    return () => window.clearTimeout(timer);
+  });
+
+  // Hands-free playback for an unattended screen: each step lingers long
+  // enough to read, performs its own task, and stops on the final step. Any
+  // click outside the panel or manual navigation pauses it.
+  useEffect(() => {
+    if (!guideAuto || guideIndex === null) return;
+    const step = guideSteps[guideIndex];
+    const duration = Math.min(5000 + step.body.length * 45, 24000);
+    const timer = window.setTimeout(() => {
+      if (step.task && !stepComplete(guideIndex)) performStep(guideIndex);
+      if (guideIndex >= guideSteps.length - 1) {
+        setGuideAuto(false);
+      } else {
+        goToStep(guideIndex + 1, false);
+      }
+    }, duration);
+    return () => window.clearTimeout(timer);
+  });
+
+  useEffect(() => {
+    if (!guideAuto) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (guidePanel.current?.contains(event.target as Node)) return;
+      setGuideAuto(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [guideAuto]);
+
+  // Spotlight the section the current step talks about.
+  useEffect(() => {
+    if (guideIndex === null) return;
+    const element = document.getElementById(guideSteps[guideIndex].targetId);
+    if (!element) return;
+    element.classList.add("guide-spotlight");
+    return () => element.classList.remove("guide-spotlight");
+  }, [guideIndex, guideSteps]);
 
   const classificationLabel =
     signal.classification === "wider_footprint"
@@ -825,12 +1137,7 @@ function App() {
                 max={MAX_BUDGET_HOURS}
                 min="0"
                 step="1"
-                onChange={(event) => {
-                  setBudget(Number(event.target.value));
-                  setPlan(null);
-                  setPlanDirty(false);
-                  setCopyStatus("");
-                }}
+                onChange={(event) => setBudgetHours(Number(event.target.value))}
                 type="number"
                 value={budget}
               />
@@ -1352,14 +1659,18 @@ function App() {
                           ariaLabel="Map of the six downtown neighborhoods showing the change in raw field observations; select a neighborhood for detail"
                           onSelect={toggleAreaSelection}
                           selectedId={selectedAreaId}
-                          valueFor={(area) =>
-                            area.latest === null
-                              ? { text: "no data", tone: "missing" }
-                              : {
-                                  text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
-                                  tone: area.delta > 0 ? "up" : "down",
-                                }
-                          }
+                          valueFor={(area) => {
+                            if (area.latest === null) return { text: "no data", tone: "missing" };
+                            const maxDelta = Math.max(
+                              1,
+                              ...data.areas.map((row) => Math.abs(row.delta)),
+                            );
+                            return {
+                              text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                              tone: area.delta > 0 ? "up" : "down",
+                              intensity: Math.abs(area.delta) / maxDelta,
+                            };
+                          }}
                         />
                         <div className="map-legend" aria-label="Map legend">
                           <span>
@@ -1969,6 +2280,34 @@ function App() {
               : `${data.areas.length * coverageFloor} of ${budget} hours are set aside first (${coverageFloor} per neighborhood); the rest follows the forecast.`}
           </p>
 
+          {plan && (
+            <div className="whatif-control">
+              <label htmlFor="whatif-budget">
+                <span className="eyebrow">What-if · drag to stress-test the budget</span>
+              </label>
+              <div className="whatif-row">
+                <input
+                  aria-describedby="whatif-help"
+                  id="whatif-budget"
+                  max={MAX_BUDGET_HOURS}
+                  min="0"
+                  onChange={(event) => setBudgetHours(Number(event.target.value))}
+                  step="1"
+                  type="range"
+                  value={budgetValid ? budget : 0}
+                />
+                <output aria-live="off" htmlFor="whatif-budget">
+                  {budget}h
+                </output>
+              </div>
+              <p id="whatif-help">
+                Recomputes live under the same floors and locks. Watch the map and bars; when the
+                budget cannot cover the floors and locks, the tool says so instead of silently
+                repairing the plan.
+              </p>
+            </div>
+          )}
+
           {!plan ? (
             <div className="planner-start">
               <div className="constraint-equation">
@@ -2156,6 +2495,7 @@ function App() {
                         return {
                           text: `${hours}h${belowFloor ? " !" : ""}`,
                           tone: belowFloor ? "down" : "neutral",
+                          intensity: hours / maxHours,
                         };
                       }}
                     />
@@ -2417,22 +2757,62 @@ function App() {
           tabIndex={-1}
         >
           <div className="guide-progress">
-            <span style={{ width: `${((guideIndex + 1) / GUIDE_STEPS.length) * 100}%` }} />
+            <span style={{ width: `${((guideIndex + 1) / guideSteps.length) * 100}%` }} />
           </div>
-          <h2 className="eyebrow" id="guide-title">
-            Step {guideIndex + 1} of {GUIDE_STEPS.length} · press → to continue
-          </h2>
-          <p>{GUIDE_STEPS[guideIndex]}</p>
-          <div>
-            <button
-              className="button button-quiet"
-              onClick={() => setGuideIndex(null)}
-              type="button"
-            >
+          <p className="eyebrow guide-step-count">
+            Step {guideIndex + 1} of {guideSteps.length} · ← → keys · Esc stops
+          </p>
+          <h2 id="guide-title">{guideSteps[guideIndex].title}</h2>
+          <p>{guideSteps[guideIndex].body}</p>
+          {guideSteps[guideIndex].task && (
+            <p className="guide-task">
+              {stepComplete(guideIndex) ? (
+                <>
+                  <CheckIcon /> Done — press Next to continue.
+                </>
+              ) : (
+                <>
+                  <strong>Your turn:</strong> {guideSteps[guideIndex].task}
+                </>
+              )}
+            </p>
+          )}
+          <div className="guide-actions">
+            <button className="button button-quiet" onClick={stopGuide} type="button">
               Stop
             </button>
-            <button className="button button-primary" onClick={advanceGuide} type="button">
-              {guideIndex === GUIDE_STEPS.length - 1 ? "Finish" : "Next"}
+            <button
+              aria-pressed={guideAuto}
+              className="button button-quiet"
+              onClick={() => setGuideAuto((auto) => !auto)}
+              type="button"
+            >
+              {guideAuto ? "Pause" : "Play"}
+            </button>
+            <button
+              className="button button-quiet"
+              disabled={guideIndex === 0}
+              onClick={() => {
+                setGuideAuto(false);
+                retreatGuide();
+              }}
+              type="button"
+            >
+              Back
+            </button>
+            <button
+              className="button button-primary"
+              onClick={() => {
+                setGuideAuto(false);
+                advanceGuide();
+              }}
+              type="button"
+            >
+              {guideIndex === guideSteps.length - 1
+                ? "Finish"
+                : guideSteps[guideIndex].task && !stepComplete(guideIndex)
+                  ? "Do it for me"
+                  : "Next"}
             </button>
           </div>
         </div>

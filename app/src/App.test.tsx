@@ -29,6 +29,13 @@ beforeEach(() => {
   );
   // jsdom implements neither smooth scrolling nor scrollIntoView.
   Element.prototype.scrollIntoView = () => undefined;
+  // jsdom has no matchMedia; the shell only reads prefers-reduced-motion.
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  }));
 });
 
 afterEach(() => {
@@ -130,6 +137,21 @@ describe("aggregate spatial view (#13)", () => {
     expect(screen.queryAllByRole("heading", { level: 5, name: "East Village" }).length).toBe(0);
   });
 
+  it("live-replans on budget change while a plan is on screen, and reports infeasibility", async () => {
+    const user = userEvent.setup();
+    await renderOffline();
+    await user.click(screen.getByRole("button", { name: /Generate coverage scenario/ }));
+    await screen.findByText(/80\/80 hours allocated\./);
+    const slider = screen.getByLabelText(/What-if · drag to stress-test the budget/);
+    fireEvent.change(slider, { target: { value: "100" } });
+    expect(await screen.findByText(/100\/100 hours allocated\./)).toBeDefined();
+    fireEvent.change(slider, { target: { value: "40" } });
+    expect(await screen.findByRole("heading", { name: "No feasible plan" })).toBeDefined();
+    expect(screen.getByLabelText(/What-if · drag to stress-test the budget/)).toBeDefined();
+    fireEvent.change(slider, { target: { value: "80" } });
+    expect(await screen.findByText(/80\/80 hours allocated\./)).toBeDefined();
+  });
+
   it("selects a map area with the keyboard", async () => {
     const user = userEvent.setup();
     await renderOffline();
@@ -140,6 +162,76 @@ describe("aggregate spatial view (#13)", () => {
     fireEvent.keyDown(areaButton, { key: " " });
     expect(areaButton.getAttribute("aria-pressed")).toBe("false");
   });
+});
+
+describe("guided onboarding", () => {
+  async function beginGuide(user: ReturnType<typeof userEvent.setup>) {
+    await renderOffline();
+    await user.click(screen.getByRole("button", { name: /Guide demo/ }));
+    return screen.getByRole("dialog");
+  }
+
+  it("asks for the real control, detects completion, and advances on its own", async () => {
+    const user = userEvent.setup();
+    const panel = await beginGuide(user);
+    expect(within(panel).getByText(/Step 1 of 8/)).toBeDefined();
+    expect(panel.textContent).toContain("Your turn:");
+    expect(panel.textContent).toContain("Test the drop");
+    await user.click(screen.getByRole("button", { name: /Test the drop/ }));
+    await waitFor(
+      () => expect(screen.getByRole("dialog").textContent).toContain("Read what actually moved"),
+      { timeout: 2500 },
+    );
+    expect(screen.getByRole("dialog").textContent).toContain("510");
+    expect(screen.getByRole("dialog").textContent).toContain("548");
+  });
+
+  it("performs the task itself on Do it for me, and Back does not bounce forward", async () => {
+    const user = userEvent.setup();
+    const panel = await beginGuide(user);
+    await user.click(within(panel).getByRole("button", { name: "Do it for me" }));
+    expect(screen.getByRole("dialog").textContent).toContain("Read what actually moved");
+    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Back" }));
+    const revisited = screen.getByRole("dialog");
+    expect(revisited.textContent).toContain("Step 1 of 8");
+    expect(revisited.textContent).toContain("Done — press Next to continue.");
+    // The completed task must wait for an explicit Next instead of auto-advancing.
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 8");
+  });
+
+  it("advances with the arrow keys", async () => {
+    const user = userEvent.setup();
+    await beginGuide(user);
+    fireEvent.keyDown(document.body, { key: "ArrowRight" });
+    expect(screen.getByRole("dialog").textContent).toContain("Step 2 of 8");
+    fireEvent.keyDown(document.body, { key: "ArrowLeft" });
+    expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 8");
+  });
+
+  it("never strands the guard-off comparison view when stopped", async () => {
+    const user = userEvent.setup();
+    await beginGuide(user);
+    const next = () =>
+      user.click(
+        within(screen.getByRole("dialog")).getByRole("button", { name: /Next|Do it for me/ }),
+      );
+    await next(); // reveal the drop test
+    await next(); // evidence (read-only)
+    await next(); // forecast (read-only)
+    await next(); // generate the plan
+    await next(); // switch to the 0h comparison floor
+    expect(screen.getByText("OFF · COMPARISON ONLY")).toBeDefined();
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(await screen.findByText(/ON · 8h per area/)).toBeDefined();
+  });
+
+  it("has no axe violations with the guide panel open", async () => {
+    const user = userEvent.setup();
+    await beginGuide(user);
+    expect(await violationsFor(document.body)).toEqual([]);
+  }, 30000);
 });
 
 describe("keyboard access (#12, #16)", () => {

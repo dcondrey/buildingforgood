@@ -2812,6 +2812,183 @@ summary {
   border-radius: 6px;
 }
 
+/* Map workspace view */
+.view-toggle {
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  display: inline-flex;
+  overflow: hidden;
+}
+.view-toggle button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.735rem;
+  font-weight: 650;
+  min-height: 2.45rem;
+  padding: 0.5rem 0.85rem;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.view-toggle button + button {
+  border-left: 1px solid var(--line);
+}
+.view-toggle button.active {
+  background: var(--amber-dim);
+  color: var(--amber-bright);
+}
+.workspace {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) minmax(24rem, 30rem);
+  margin: 0 auto;
+  max-width: 96rem;
+  padding: 1.5rem 2rem 2.5rem;
+}
+.ws-stage {
+  min-width: 0;
+}
+.ws-stage-head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  justify-content: space-between;
+}
+.ws-stage-head .plan-state {
+  border-left: 0;
+  padding: 0;
+}
+.ws-layers {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  display: inline-flex;
+  overflow: hidden;
+}
+.ws-layers button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.705rem;
+  font-weight: 650;
+  padding: 0.55rem 0.85rem;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ws-layers button + button {
+  border-left: 1px solid var(--line);
+}
+.ws-layers button.active {
+  background: rgba(110, 195, 202, 0.12);
+  color: var(--teal-bright);
+}
+.ws-stage .area-map-svg {
+  margin-top: 1rem;
+}
+.ws-stage .map-caption {
+  margin-top: 0.5rem;
+}
+.ws-table {
+  margin-top: 0.6rem;
+}
+.ws-table > summary {
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.705rem;
+}
+.ws-inspector {
+  align-self: start;
+  backdrop-filter: blur(18px);
+  background: rgba(19, 24, 28, 0.94);
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 7.5rem);
+  overflow: hidden;
+  position: sticky;
+  top: 6.25rem;
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .ws-inspector {
+    background: var(--panel-solid);
+  }
+}
+.ws-tabs {
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  flex: none;
+  grid-template-columns: repeat(4, 1fr);
+}
+.ws-tabs button {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.735rem;
+  font-weight: 650;
+  padding: 0.8rem 0.5rem;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ws-tabs button.active {
+  border-bottom-color: var(--amber);
+  color: var(--ink-soft);
+}
+.ws-body {
+  overflow-y: auto;
+  padding: 0.5rem 1rem 1.25rem;
+}
+.ws-recompute {
+  margin-top: 0.9rem;
+}
+/* The inspector is ~28rem wide at any viewport, so the reused planner blocks
+   stack instead of laying out for a full-width section. */
+.ws-body .coverage-policy {
+  display: block;
+}
+.ws-body .coverage-policy .floor-options {
+  margin-top: 0.7rem;
+}
+.ws-body .plan-toolbar {
+  align-items: stretch;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.ws-body .plan-toolbar .button {
+  white-space: nowrap;
+}
+.ws-body .allocation-row,
+.ws-body .allocation-list.with-compare .allocation-row {
+  grid-template-columns: minmax(0, 1fr) 4.2rem 4.6rem auto;
+  min-height: auto;
+  row-gap: 0.5rem;
+}
+.ws-body .allocation-bar-track {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.ws-body .compare-delta {
+  grid-column: 1 / -1;
+}
+.ws-body .area-name span {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+@media (max-width: 1080px) {
+  .workspace {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  .ws-inspector {
+    max-height: none;
+    position: static;
+  }
+}
 /* Intervention assumption explorer */
 .intervention-banner {
   align-items: center;

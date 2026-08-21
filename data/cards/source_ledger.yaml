@@ -189,6 +189,15 @@ sources:
       an explicit tract-to-neighborhood crosswalk (versioned with the geography
       definition from issue #2) is required before use.
     coverage: 2025 count; earlier years available as separate files on the same page.
+    successor_candidates: >-
+      Reviewed 2026-08-21 on the same reports-data page: a 2026 PIT
+      census-tract XLSX (direct successor to the pinned 2025 file; pin,
+      hash, and re-run the agreement check before adoption) and monthly
+      countywide HMIS report PDFs (candidate countywide checkpoints for the
+      public_monitoring lane; countywide HMIS activity is not a downtown
+      observation and must never enter the forecast or planner). Neither is
+      ingested; this note records the discovery so adoption is a deliberate,
+      pinned decision.
     known_limitations:
       - Single-night snapshot; undercount by design.
       - RTFH's own multiplier methodology changed over the years (its 1.75 and

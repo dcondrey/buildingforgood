@@ -103,6 +103,21 @@ Generate press.
       including "assumed, not observed"; **Clear assumption** restores the
       observed-load plan.
 
+### 5e. Map workspace view (added 2026-08-21)
+
+- [ ] The **Story / Map workspace** toggle is reachable, announces pressed
+      state, and switching preserves the plan, locks, scenarios, and any
+      active assumption.
+- [ ] The three layer buttons (Planned hours, Observed change, Unmet load)
+      announce pressed state; the map's accessible name changes with the
+      layer, and each layer's table equivalent matches the map.
+- [ ] Selecting a neighborhood with the keyboard opens the Area dossier tab;
+      all dossier values are announced with their labels.
+- [ ] The four inspector tabs are reachable in order and announce pressed
+      state; controls inside each tab behave identically to the story view.
+- [ ] Escape and the guide still behave: **Guide demo** switches to the story
+      view and runs there.
+
 ### 6. Colour and motion
 
 - [ ] Set the OS display to greyscale. Every state is still distinguishable: infeasible, floor-dominant, locked, suppressed.

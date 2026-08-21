@@ -32,7 +32,15 @@
   0 warning over the rebuilt bundle.
 - 2026-08-21: fallback media captured from the verified build via browser
   automation into `docs/testing/media/` (22.5s browser-playable walkthrough
-  plus the four stills: drop result, forecast, guarded plan, decision brief).
+  plus the four stills: drop result, forecast, guarded plan, decision brief);
+  recaptured the same day after the mid-work opening landed.
+- 2026-08-21 (afternoon): service worker updated to v2 after a live staleness
+  incident (Chrome pinned a returning visitor to a previous deploy; #69). The
+  offline path was re-driven against the deployed site under the v2 worker:
+  the update activated over v1 on an ordinary visit, v1 caches were purged,
+  and an offline reload rendered the full app from cache with the generated
+  artifact, not the embedded fallback. The on-device airplane-mode run remains
+  a human gate.
 
 ## Still required before presenting
 

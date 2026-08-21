@@ -18,11 +18,30 @@ from stillhere_pipeline.privacy import (
     normalize_key,
     scan_bundle_dir,
     scan_generated_dir,
-    scan_json_document,
     scan_publication_layout,
+)
+from stillhere_pipeline.privacy import (
+    scan_json_document as _scan_json_document,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
+APPROVED_GEOGRAPHIES = frozenset(
+    {
+        "downtown-demo/2026-08",
+        "downtown-planning-areas/2026-08",
+        "planning-areas/2026-08",
+        "pa/2026-08",
+    }
+)
+
+
+def scan_json_document(document: object, where: str = "$", min_cell: int = 5) -> list[Finding]:
+    return _scan_json_document(
+        document,
+        where=where,
+        min_cell=min_cell,
+        approved_geographies=APPROVED_GEOGRAPHIES,
+    )
 
 
 def _blocking(findings: list[Finding]) -> list[Finding]:
@@ -117,6 +136,20 @@ def test_generated_dir_reports_unparsable_artifacts(tmp_path: Path) -> None:
     assert _blocking(scan_generated_dir(tmp_path))
 
 
+def test_generated_dir_rejects_unscannable_file_types(tmp_path: Path) -> None:
+    (tmp_path / "leak.txt").write_text("1425 Island Avenue", encoding="utf-8")
+    rules = {f.rule for f in _blocking(scan_generated_dir(tmp_path))}
+    assert "publish.unsupported_generated_type" in rules
+
+
+def test_generated_dir_parses_geojson_instead_of_skipping_it(tmp_path: Path) -> None:
+    (tmp_path / "leak.geojson").write_text(
+        json.dumps({"type": "Point", "coordinates": [-117.14832, 32.71234]}),
+        encoding="utf-8",
+    )
+    assert _blocking(scan_generated_dir(tmp_path))
+
+
 def test_bundle_scan_catches_embedded_coordinates_and_fields(tmp_path: Path) -> None:
     (tmp_path / "index.js").write_text(
         'const a={"latitude":1};const b="32.71234, -117.14832";', encoding="utf-8"
@@ -145,6 +178,12 @@ def test_bundle_scan_catches_a_realistic_leaked_source_map(tmp_path: Path) -> No
     findings = [f for f in scan_bundle_dir(tmp_path) if f.severity == "BLOCK"]
     fields = {f.detail.split("'")[1] for f in findings if f.rule == "bundle.forbidden_field"}
     assert {"lat", "lon", "address", "block_id"} <= fields
+
+
+def test_bundle_scan_catches_keyed_xy_coordinates(tmp_path: Path) -> None:
+    (tmp_path / "index.js").write_text("const point={x:-117.14832,y:32.71234};", encoding="utf-8")
+    rules = {f.rule for f in _blocking(scan_bundle_dir(tmp_path))}
+    assert "bundle.coordinate_field" in rules
 
 
 def test_bundle_scan_ignores_minified_schema_flags(tmp_path: Path) -> None:
@@ -416,6 +455,16 @@ def test_geometry_must_declare_an_approved_aggregate_geography() -> None:
 
     declared = {"geography_version": "planning-areas/2026-08", **undeclared}
     assert _blocking(scan_json_document(declared)) == []
+
+
+def test_source_grain_cannot_self_approve_with_an_arbitrary_version() -> None:
+    source_grain = {
+        "geography_version": "raw-blocks/v1",
+        "type": "Polygon",
+        "coordinates": [[[-117.152, 32.710], [-117.151, 32.711], [-117.152, 32.710]]],
+    }
+    rules = {f.rule for f in _blocking(scan_json_document(source_grain))}
+    assert "geography.undeclared_grain" in rules
 
 
 def test_too_many_features_is_source_grain_whatever_it_declares() -> None:

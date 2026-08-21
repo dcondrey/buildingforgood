@@ -242,7 +242,18 @@ FORBIDDEN_PUBLISHED_SUFFIXES: frozenset[str] = frozenset(
 )
 
 #: Text assets in the production bundle that are worth scanning.
-BUNDLE_SUFFIXES: frozenset[str] = frozenset({".js", ".mjs", ".cjs", ".css", ".html", ".map"})
+BUNDLE_SUFFIXES: frozenset[str] = frozenset(
+    {".js", ".mjs", ".cjs", ".css", ".html", ".map", ".json", ".geojson", ".svg", ".md"}
+)
+GENERATED_JSON_SUFFIXES: frozenset[str] = frozenset({".json", ".geojson"})
+GENERATED_TEXT_SUFFIXES: frozenset[str] = frozenset({".md"})
+BUNDLE_COORDINATE_KEYS: frozenset[str] = frozenset(
+    {"x", "y", "lat", "latitude", "lon", "lng", "long", "longitude"}
+)
+BUNDLE_NUMERIC_FIELD_RE = re.compile(
+    r"[\"']?([A-Za-z_][A-Za-z0-9_-]{0,40})[\"']?\s*:\s*(-?\d{1,3}\.\d{3,})"
+)
+BUNDLE_FIELD_RE = re.compile(r"[\"']?([A-Za-z_][A-Za-z0-9_-]{2,40})[\"']?\s*:\s*(?!![01]\b)")
 
 
 # --- Findings --------------------------------------------------------------
@@ -490,10 +501,13 @@ def _scan_json(
             )
 
 
-def _declares_here(node: dict[str, Any]) -> bool:
+def _declares_here(node: dict[str, Any], approved_geographies: frozenset[str]) -> bool:
     """True when this exact object carries a geography declaration."""
     return any(
-        normalize_key(key) in GEOGRAPHY_DECLARATION_KEYS and value for key, value in node.items()
+        normalize_key(key) in GEOGRAPHY_DECLARATION_KEYS
+        and isinstance(value, str)
+        and value in approved_geographies
+        for key, value in node.items()
     )
 
 
@@ -505,7 +519,11 @@ class _GeometryCounter:
 
 
 def _walk_geography(
-    node: Any, where: str, declared: bool, counter: _GeometryCounter
+    node: Any,
+    where: str,
+    declared: bool,
+    counter: _GeometryCounter,
+    approved_geographies: frozenset[str],
 ) -> Iterator[Finding]:
     """Check every geometry against a declaration that actually covers it.
 
@@ -521,9 +539,9 @@ def _walk_geography(
     let a single declared feature launder every other feature in the file.
     """
     if isinstance(node, dict):
-        declared_here = declared or _declares_here(node)
+        declared_here = declared or _declares_here(node, approved_geographies)
         properties = node.get("properties")
-        if isinstance(properties, dict) and _declares_here(properties):
+        if isinstance(properties, dict) and _declares_here(properties, approved_geographies):
             declared_here = True
 
         if "coordinates" in node and "type" in node:
@@ -538,15 +556,23 @@ def _walk_geography(
                 "dissolve source blocks to canonical planning areas before publication",
             )
         for key, value in node.items():
-            yield from _walk_geography(value, f"{where}.{key}", declared_here, counter)
+            yield from _walk_geography(
+                value, f"{where}.{key}", declared_here, counter, approved_geographies
+            )
         return
 
     if isinstance(node, list):
         for index, item in enumerate(node):
-            yield from _walk_geography(item, f"{where}[{index}]", declared, counter)
+            yield from _walk_geography(
+                item, f"{where}[{index}]", declared, counter, approved_geographies
+            )
 
 
-def scan_geography_grain(document: Any, where: str = "$") -> list[Finding]:
+def scan_geography_grain(
+    document: Any,
+    where: str = "$",
+    approved_geographies: frozenset[str] = frozenset(),
+) -> list[Finding]:
     """Refuse geometry that is not declared, versioned, aggregate geography.
 
     Polygon type alone is not proof of aggregation. The real source bundle
@@ -558,7 +584,15 @@ def scan_geography_grain(document: Any, where: str = "$") -> list[Finding]:
     # separate recursive pass, which doubled the walk over the 382-polygon
     # source bundles this rule exists for.
     counter = _GeometryCounter()
-    findings = list(_walk_geography(document, where, declared=False, counter=counter))
+    findings = list(
+        _walk_geography(
+            document,
+            where,
+            declared=False,
+            counter=counter,
+            approved_geographies=approved_geographies,
+        )
+    )
     geometry_count = counter.total
     if geometry_count == 0:
         return []
@@ -758,9 +792,14 @@ def _scan_recoverability(node: Any, where: str, min_cell: int) -> Iterator[Findi
             yield from _scan_recoverability(item, f"{where}[{index}]", min_cell)
 
 
-def scan_json_document(document: Any, where: str = "$", min_cell: int = 5) -> list[Finding]:
+def scan_json_document(
+    document: Any,
+    where: str = "$",
+    min_cell: int = 5,
+    approved_geographies: frozenset[str] = frozenset(),
+) -> list[Finding]:
     """Scan one parsed JSON document and return every finding."""
-    findings = scan_geography_grain(document, where)
+    findings = scan_geography_grain(document, where, approved_geographies)
     findings.extend(_scan_json(document, where, min_cell))
     findings.extend(_scan_recoverability(document, where, min_cell))
     return findings
@@ -769,7 +808,11 @@ def scan_json_document(document: Any, where: str = "$", min_cell: int = 5) -> li
 # --- File and directory scans ---------------------------------------------
 
 
-def scan_generated_dir(directory: Path, min_cell: int = 5) -> list[Finding]:
+def scan_generated_dir(
+    directory: Path,
+    min_cell: int = 5,
+    approved_geographies: frozenset[str] = frozenset(),
+) -> list[Finding]:
     """Scan every published artifact under ``public/generated`` (or equivalent)."""
     findings: list[Finding] = []
     if not directory.is_dir():
@@ -792,7 +835,27 @@ def scan_generated_dir(directory: Path, min_cell: int = 5) -> list[Finding]:
                 )
             )
             continue
-        if path.suffix.lower() != ".json":
+        suffix = path.suffix.lower()
+        if suffix not in GENERATED_JSON_SUFFIXES | GENERATED_TEXT_SUFFIXES:
+            findings.append(
+                Finding(
+                    "BLOCK",
+                    "publish.unsupported_generated_type",
+                    str(path),
+                    f"{suffix or '<no extension>'} is not an approved generated-artifact type; "
+                    "publish structured data as JSON/GeoJSON so the privacy gate can parse it",
+                )
+            )
+            continue
+        if suffix in GENERATED_TEXT_SUFFIXES:
+            try:
+                text = path.read_text(encoding="utf-8", errors="ignore")
+            except OSError as error:
+                findings.append(
+                    Finding("BLOCK", "scan.unreadable_artifact", str(path), f"cannot read: {error}")
+                )
+                continue
+            findings.extend(_scan_deployable_text(text, str(path)))
             continue
         try:
             document = json.loads(path.read_text(encoding="utf-8"))
@@ -801,7 +864,77 @@ def scan_generated_dir(directory: Path, min_cell: int = 5) -> list[Finding]:
                 Finding("BLOCK", "scan.unreadable_artifact", str(path), f"cannot parse: {error}")
             )
             continue
-        findings.extend(scan_json_document(document, where=str(path), min_cell=min_cell))
+        findings.extend(
+            scan_json_document(
+                document,
+                where=str(path),
+                min_cell=min_cell,
+                approved_geographies=approved_geographies,
+            )
+        )
+    return findings
+
+
+def _scan_deployable_text(text: str, where: str) -> list[Finding]:
+    """Scan one text asset, including source-map source and copied public files."""
+    findings: list[Finding] = []
+    for match in COORD_PAIR_RE.finditer(text):
+        findings.append(
+            Finding(
+                "BLOCK",
+                "bundle.coordinate_pair",
+                where,
+                f"coordinate pair {match.group(0)!r} embedded in the deployable asset",
+            )
+        )
+    for match in STREET_ADDRESS_RE.finditer(text):
+        findings.append(
+            Finding(
+                "BLOCK",
+                "bundle.street_address",
+                where,
+                f"street address {match.group(0)!r} embedded in the deployable asset",
+            )
+        )
+    for match in PLUS_CODE_RE.finditer(text):
+        findings.append(
+            Finding(
+                "BLOCK",
+                "bundle.plus_code",
+                where,
+                f"plus code {match.group(0)!r} embedded in the deployable asset",
+            )
+        )
+    for match in BUNDLE_FIELD_RE.finditer(text):
+        norm = normalize_key(match.group(1))
+        if norm in FORBIDDEN_KEYS or any(s in norm for s in FORBIDDEN_KEY_SUBSTRINGS):
+            findings.append(
+                Finding(
+                    "BLOCK",
+                    "bundle.forbidden_field",
+                    where,
+                    f"deny-listed field {match.group(1)!r} embedded in the deployable asset",
+                )
+            )
+    for match in BUNDLE_NUMERIC_FIELD_RE.finditer(text):
+        norm = normalize_key(match.group(1))
+        if norm not in BUNDLE_COORDINATE_KEYS:
+            continue
+        value = float(match.group(2))
+        longitude_key = norm in {"x", "lon", "lng", "long", "longitude"}
+        latitude_key = norm in {"y", "lat", "latitude"}
+        if (longitude_key and _looks_like_longitude(value)) or (
+            latitude_key and _looks_like_latitude(value)
+        ):
+            findings.append(
+                Finding(
+                    "BLOCK",
+                    "bundle.coordinate_field",
+                    where,
+                    f"coordinate-shaped field {match.group(1)!r}: {value} embedded in the "
+                    "deployable asset",
+                )
+            )
     return findings
 
 
@@ -837,50 +970,22 @@ def scan_bundle_dir(directory: Path) -> list[Finding]:
                 Finding("BLOCK", "scan.unreadable_bundle", str(path), f"cannot read: {error}")
             )
             continue
-        for match in COORD_PAIR_RE.finditer(text):
-            findings.append(
-                Finding(
-                    "BLOCK",
-                    "bundle.coordinate_pair",
-                    str(path),
-                    f"coordinate pair {match.group(0)!r} embedded in the bundle",
-                )
-            )
-        for match in STREET_ADDRESS_RE.finditer(text):
-            findings.append(
-                Finding(
-                    "BLOCK",
-                    "bundle.street_address",
-                    str(path),
-                    f"street address {match.group(0)!r} embedded in the bundle",
-                )
-            )
-        # Both quoted and UNQUOTED keys. A source map embeds the original
-        # source in sourcesContent, where object keys are written bare
-        # (`lat: 32.7`), so a quoted-key-only pattern reads a leaked map as
-        # clean. Found by auditing what the source-map check actually caught
-        # rather than trusting that it ran.
-        for match in re.finditer(
-            # A deny-listed key matters only when it carries something that
-            # could be data. `!0` and `!1` are how minifiers write true and
-            # false; React ships a table of HTML input types containing
-            # `email:!0`, and flagging that made the bundle check fail on
-            # every build. Only that exact form is excluded: a bare 0 or 1
-            # can still be a real value.
-            r"[\"']?([A-Za-z_][A-Za-z0-9_-]{2,40})[\"']?\s*:\s*(?!![01]\b)",
-            text,
-        ):
-            norm = normalize_key(match.group(1))
-            if norm in FORBIDDEN_KEYS or any(s in norm for s in FORBIDDEN_KEY_SUBSTRINGS):
-                findings.append(
-                    Finding(
-                        "BLOCK",
-                        "bundle.forbidden_field",
-                        str(path),
-                        f"deny-listed field {match.group(1)!r} embedded in the bundle",
-                    )
-                )
+        findings.extend(_scan_deployable_text(text, str(path)))
     return findings
+
+
+def _approved_geographies(root: Path) -> frozenset[str]:
+    """Read the one geography version the decision contract has actually fixed."""
+    path = root / "config" / "decision.v1.json"
+    try:
+        contract = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return frozenset()
+    geography = contract.get("geography") if isinstance(contract, dict) else None
+    if not isinstance(geography, dict) or geography.get("status") != "fixed":
+        return frozenset()
+    version = geography.get("version")
+    return frozenset({version}) if isinstance(version, str) and version else frozenset()
 
 
 def scan_publication_layout(root: Path) -> list[Finding]:
@@ -917,7 +1022,7 @@ def scan_publication_layout(root: Path) -> list[Finding]:
 
 def run_scan(root: Path, generated: Path, bundle: Path, min_cell: int) -> list[Finding]:
     findings = scan_publication_layout(root)
-    findings.extend(scan_generated_dir(generated, min_cell))
+    findings.extend(scan_generated_dir(generated, min_cell, _approved_geographies(root)))
     findings.extend(scan_bundle_dir(bundle))
     return findings
 

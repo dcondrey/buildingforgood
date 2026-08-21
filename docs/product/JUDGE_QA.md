@@ -136,6 +136,58 @@ It starts with each area's historical upper bound, applies a visible user-set
 budget proportionally, and uses deterministic largest-remainder rounding to
 conserve whole hours exactly. The result is illustrative and human-review-only.
 
+### Where does the 80-hour budget come from?
+
+It is a stated demo assumption, editable in the header—not staffing data.
+Staff-hour capacity is not published in any dataset we used, and it is not in
+the obvious administrative sources either: HUD-mandated HMIS street outreach
+projects record client-level activity (contacts, date of engagement,
+current-living-situation assessments, project entries and exits); CoC Annual
+Performance Reports and System Performance Measures summarize that activity;
+and California's Homeless Data Integration System (HDIS, which aggregates the
+state's 44 CoC HMIS datasets) feeds the Cal ICH System Performance Measures
+published on California Open Data, statewide and by CoC. The street outreach
+measure there is an outcome count: for the San Diego CoC (CA-601), successful
+placements from street outreach projects (measure M6) rose from 2,929 in 2020
+to 6,014 in 2025. All of these measure encounters, people served, or
+outcomes—not worker schedules. Downtown business improvement
+districts also publish outreach summaries; the Downtown San Diego Partnership,
+whose Clean & Safe program produced the counts this project analyzes, fields
+its own outreach team.
+
+Capacity modeling from such data is an established practice, not our
+invention: Community Solutions' Built for Zero program uses by-name data
+across 100+ communities to model real-time caseloads and the system capacity
+and staffing needed to reach functional zero, and the Homelessness Policy
+Research Institute at USC publishes studies built on administrative street
+outreach data comparing contact frequency, caseload ratios, and retention.
+
+In that practice, outreach capacity is quantified three ways:
+
+- **Caseload ratio** — active clients per full-time-equivalent outreach
+  worker, typically targeted around 1:15 to 1:30 for intensive case management
+  and higher for broad canvassing.
+- **Encounter volume** — total monthly contacts logged before formal
+  engagement.
+- **Geographic coverage** — the density of unsheltered individuals in a
+  designated zone relative to the outreach teams assigned there.
+
+The demo maps onto each. The 80-hour budget is roughly two FTEs of weekly
+street time and would in practice be derived from FTE counts and a caseload
+target, taken from the provider's scheduling records (the outreach provider or
+the Regional Task Force on Homelessness, the region's CoC lead). The closest
+public hours figure we located is facility-level, via SDHC public records:
+the downtown Homelessness Response Center's contracted operating schedule is
+Monday–Friday 8 AM–5 PM and Saturday 8 AM–2 PM (SDHC Agreement HHI-24-23 with
+PATH; operations transitioned to the Downtown San Diego Partnership under
+HHI-25-51 in mid-2025)—again facility operations, not street outreach
+staff-hours. HMIS or HDIS
+encounter volumes are the natural cross-check on planned coverage. And the
+planner's allocation weight—each area's upper-bound expected observations—is a
+simplified geographic-coverage ratio, with the user-set floor guaranteeing
+that no zone's coverage drops to zero. The planner accepts any whole-hour
+budget, so replacing 80 with a derived number changes no code.
+
 ### Why an 8-hour minimum?
 
 It is a transparent, configurable continuity policy for the demo—not a
@@ -148,7 +200,12 @@ community stakeholders.
 No. Eight hours is a prepared demo-policy guard, not a learned, optimal, or
 ethically sufficient threshold. The app exposes 0-, 4-, and 8-hour sensitivity
 so continuity is an explicit policy choice. It does not claim equal outcomes,
-equal need, or that geography substitutes for protected-group analysis.
+equal need, or that geography substitutes for protected-group analysis. The
+data that analysis needs does exist at CoC scale—HDIS publishes annual counts
+of people served by age, race, gender, veteran status, and disability status
+for the San Diego CoC on California Open Data—but joining it to block-level
+visual observations would require person-level inference this product refuses,
+so it stays out of the demo deliberately, not for lack of a source.
 
 ### What if the floor is infeasible?
 
@@ -225,6 +282,14 @@ and HCAI's homelessness identification rule changes before 2023. Separately,
 the exact St. Vincent de Paul Village Family Health Center (`306374018`)
 reports 2,916 to 3,409 patients from 2022 to 2024. These show health-system and
 service load, not downtown prevalence, causality, or planner demand.
+
+A second signal came from public records rather than a portal: SDHC's response
+to records request 25-52 (its NextRequest portal) includes the downtown
+Homelessness Response Center's activity reports, which log total walk-ins per
+month from provider internal records—between 1,278 and 2,245 per month across
+FY24, and 1,410 to 1,837 in July–January of FY25. Walk-ins measure
+help-seeking at one facility, so like 311 volume they stay out of the forecast
+and planner; they are cited only as service-load context.
 
 ### Is there external evidence that operational flags miss people?
 

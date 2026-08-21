@@ -9,7 +9,7 @@ const MAX_BUDGET_HOURS = 400;
 const GUIDE_STEPS = [
   "The headline estimate fell, but that hides what changed: outreach workers saw more people, on more blocks. What dropped was tents.",
   "Next, a forecast rehearsal. Using only data through December 2025, the tool predicts January 2026 and shows how far off similar forecasts have been.",
-  "Then the plan: 80 staff-hours split across six neighborhoods. Every area keeps a guaranteed minimum you choose; the rest goes where more people are expected.",
+  "Then the plan: an assumed 80 staff-hours split across six neighborhoods. Every area keeps a guaranteed minimum you choose; the rest goes where more people are expected.",
   "Finally, a human takes over. The coordinator can lock or change any line, and the written brief carries every caveat along with the numbers.",
 ];
 
@@ -828,8 +828,12 @@ function App() {
           <div aria-label="Prepared scenario summary" className="hero-decision">
             <span className="eyebrow">The decision at hand</span>
             <p>
-              There are <strong>{budget} staff-hours</strong> for next week’s outreach shifts. Which
-              neighborhoods should get them?
+              Suppose <strong>{budget} staff-hours</strong> are available for next week’s outreach
+              shifts. Which neighborhoods should get them?
+            </p>
+            <p className="capacity-note">
+              The hours are an editable assumption, not staffing data. A real deployment would use
+              the provider’s own schedule.
             </p>
             <div className="provisional-note">
               <span>{data.scenario.status === "ready" ? "✓ Prepared" : "◇ Provisional"}</span>{" "}

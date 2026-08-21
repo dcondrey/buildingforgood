@@ -217,6 +217,12 @@ housing exits, movement, new arrivals, or measurement error.
   also include final 2022–2024 filings for the exact St. Vincent de Paul Village
   Family Health Center. Both are context only—not unique-patient counts,
   downtown street-count validation, or planner inputs.
+- Cal ICH's [CA System Performance Measures](https://data.ca.gov/dataset/ca-system-performance-measures-statewide-and-by-coc)
+  (HDIS-derived, statewide and by CoC) quantify street outreach by outcomes,
+  not staffing: San Diego CoC successful placements from street outreach
+  (measure M6) rose from 2,929 in 2020 to 6,014 in 2025. Annual, countywide
+  figures; context for the capacity discussion only—never a forecast or
+  planner input.
 - An [SSA administrative-data study](https://www.ssa.gov/policy/docs/ssb/v81n2/v81n2p1.html)
   provides methodological precedent for auditing operational indicators: text
   mining alone identified 20.1% of its 810,326 applicants classified as
@@ -226,15 +232,15 @@ housing exits, movement, new arrivals, or measurement error.
   documents the public digitization and update lineage behind these count
   files. It supports provenance, not independent validation of the same maps.
 
-| Conventional dashboard | Still Here SD |
-|---|---|
-| Reports where counts rose or fell | Tests whether an apparent decline is supported, coincides with nearby aggregate increases, or is unresolved |
-| Shows a trend line | Backtests the forecast and displays uncertainty |
-| Treats all observations as comparable | Surfaces missing months and methodology breaks |
-| Ranks areas by a single score | Explains multiple evidence signals and disagreements |
-| Stops at description | Connects evidence to a constrained planning decision |
-| Mentions fairness in documentation | Makes fairness a visible, testable allocation constraint |
-| Encourages trust in the interface | Gives users reasons to question and override the result |
+| Conventional dashboard                | Still Here SD                                                                                               |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Reports where counts rose or fell     | Tests whether an apparent decline is supported, coincides with nearby aggregate increases, or is unresolved |
+| Shows a trend line                    | Backtests the forecast and displays uncertainty                                                             |
+| Treats all observations as comparable | Surfaces missing months and methodology breaks                                                              |
+| Ranks areas by a single score         | Explains multiple evidence signals and disagreements                                                        |
+| Stops at description                  | Connects evidence to a constrained planning decision                                                        |
+| Mentions fairness in documentation    | Makes fairness a visible, testable allocation constraint                                                    |
+| Encourages trust in the interface     | Gives users reasons to question and override the result                                                     |
 
 ## Responsible-use boundary
 

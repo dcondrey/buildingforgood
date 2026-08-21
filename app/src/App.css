@@ -1175,6 +1175,70 @@ main {
   grid-template-rows: repeat(3, 3.3rem);
   margin-top: 1.25rem;
 }
+.area-map-svg {
+  background: linear-gradient(135deg, rgba(110, 195, 202, 0.08), transparent 72%);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: block;
+  height: auto;
+  margin-top: 1.25rem;
+  overflow: visible;
+  padding: 0.45rem;
+  width: 100%;
+}
+.map-area {
+  transition:
+    filter 180ms ease,
+    transform 180ms ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.map-area rect {
+  fill: rgba(110, 195, 202, 0.11);
+  stroke: rgba(110, 195, 202, 0.3);
+  stroke-width: 0.8;
+  transition:
+    fill 180ms ease,
+    stroke 180ms ease;
+}
+.map-area:hover {
+  filter: drop-shadow(0 0 5px rgba(110, 195, 202, 0.45));
+  transform: scale(1.02);
+}
+.map-area:hover rect {
+  fill: rgba(110, 195, 202, 0.22);
+  stroke: var(--teal-bright);
+}
+.map-down rect {
+  fill: rgba(240, 173, 78, 0.13);
+  stroke: rgba(240, 173, 78, 0.38);
+}
+.map-down:hover rect {
+  fill: rgba(240, 173, 78, 0.24);
+  stroke: var(--amber-bright);
+}
+.map-name,
+.map-value,
+.map-edge {
+  fill: var(--muted);
+  font-family: var(--mono);
+  font-size: 4.5px;
+  pointer-events: none;
+}
+.map-value {
+  fill: var(--teal-bright);
+  font-size: 6.5px;
+  font-weight: 700;
+}
+.map-down .map-value {
+  fill: var(--amber-bright);
+}
+.map-edge {
+  fill: var(--faint);
+  font-size: 3.5px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
 .area-cell {
   background: linear-gradient(135deg, rgba(110, 195, 202, 0.11), rgba(110, 195, 202, 0.03));
   border: 1px solid rgba(110, 195, 202, 0.22);

@@ -2966,3 +2966,22 @@ main {
     padding-top: 5rem;
   }
 }
+
+.plan-map {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+}
+.plan-map .area-map-svg {
+  margin-inline: auto;
+  max-width: 480px;
+}
+.plan-map-heading p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0.35rem 0 0;
+}
+.plan-map .map-caption {
+  text-align: center;
+}

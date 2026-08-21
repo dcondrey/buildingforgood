@@ -306,11 +306,11 @@ function ForecastChart({ history, data }: { history: HistoryPoint[]; data: DemoD
         </span>
         <span>
           <i className="legend-forecast" />
-          Historical scenario
+          Forecast (rehearsal)
         </span>
         <span>
           <i className="legend-range" />
-          80% residual band
+          Likely range, from past errors
         </span>
       </div>
     </div>
@@ -840,7 +840,7 @@ function App() {
             <span>01</span> Test the drop
           </a>
           <a href="#forecast">
-            <span>02</span> Historical scenario
+            <span>02</span> Check the forecast
           </a>
           <a href="#planner">
             <span>03</span> Plan the shift
@@ -1796,10 +1796,10 @@ function App() {
 
               {!guardEnabled && (
                 <div className="audit-banner" role="status">
-                  <strong>Audit view—not a recommendation.</strong>{" "}
+                  <strong>Comparison view, not a recommendation.</strong>{" "}
                   {coverageFloor > 0
-                    ? `Areas below the selected ${coverageFloor}h floor are at risk of losing continuity.`
-                    : "The zero-floor scenario removes the continuity protection for comparison."}
+                    ? `With no minimum enforced, areas below ${coverageFloor}h would lose their guaranteed visit.`
+                    : "This shows what happens with no guaranteed minimum: some neighborhoods get almost nothing."}
                 </div>
               )}
 

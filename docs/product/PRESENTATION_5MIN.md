@@ -1,7 +1,7 @@
 # Five-Minute Presentation Script (paired with the Guide demo)
 
 Format: 1 min setup · 5 min presentation · 3 min Q&A · 1 min teardown.
-This script drives the app's own nine-step Guide demo, so the screen and the
+This script drives the app's own ten-step Guide demo, so the screen and the
 narration can never drift apart. Every scored rubric item is said out loud —
 judges award points for what they hear, not what the repo contains.
 
@@ -93,7 +93,7 @@ scenario, pin **Compare**.
 > a working product, deployed, offline-capable, keyboard-accessible, and
 > axe-clean."
 
-### 4:05–4:35 · Leave with the brief (Guide step 9)
+### 4:05–4:35 · Leave with the brief (Guide step 10)
 
 Press **Copy decision brief**.
 
@@ -112,15 +112,16 @@ Press **Copy decision brief**.
 > observations rose. Which ruler should govern a coverage policy? That
 > decision belongs to a person — this tool just makes it honest."
 
-Then the digitization-audit line — it has run, say it as fact:
+Then the digitization-audit beat — Guide step 9 puts the card itself on
+screen in the evidence section, so point at it:
 
-> "And we pointed computer vision at the ruler itself. The published counts
-> come from scanned, hand-annotated field sheets; our digitization audit
-> OCRs them — running fully offline on this laptop — and the City Center
+> "And we pointed computer vision at the ruler itself — it ships in the
+> product. The published counts come from scanned, hand-annotated field
+> sheets; this audit card OCRs them, fully offline, and the City Center
 > sheet's handwritten totals reconcile through the documented multipliers to
 > the published number: 152 plus 14 tents times 1.75 is 176.5, published 177.
 > The engine is swappable: EyePop's hosted abilities drop in with one flag.
-> CV that audits the instrument, never the people."
+> Vision that audits the instrument, never the people."
 
 If a borrowed EyePop key exists, run `--engine eyepop` beforehand and show
 both cards side by side (runbook in JUDGING_ALIGNMENT.md).

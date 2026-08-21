@@ -99,6 +99,49 @@ function buildGuideSteps(data: DemoData): GuideStep[] {
   ];
 }
 
+// Scenario workbench: a saved scenario is only the policy settings — budget,
+// floor, guard, locks. Allocations are recomputed deterministically from the
+// frozen artifact on load, so nothing derived (and nothing sensitive) is
+// stored, and storage stays in this browser.
+type SavedScenario = {
+  id: string;
+  name: string;
+  budget: number;
+  floor: number;
+  guard: boolean;
+  locks: Array<[string, number]>;
+};
+
+const SCENARIO_STORE_KEY = "stillhere-scenarios-v1";
+const MAX_SAVED_SCENARIOS = 8;
+
+function readSavedScenarios(): SavedScenario[] {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(SCENARIO_STORE_KEY) ?? "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (entry): entry is SavedScenario =>
+        Boolean(entry) &&
+        typeof (entry as SavedScenario).id === "string" &&
+        typeof (entry as SavedScenario).name === "string" &&
+        typeof (entry as SavedScenario).budget === "number" &&
+        typeof (entry as SavedScenario).floor === "number" &&
+        typeof (entry as SavedScenario).guard === "boolean" &&
+        Array.isArray((entry as SavedScenario).locks),
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writeSavedScenarios(list: SavedScenario[]): void {
+  try {
+    localStorage.setItem(SCENARIO_STORE_KEY, JSON.stringify(list));
+  } catch {
+    // Without storage the workbench still works for the session.
+  }
+}
+
 function formatDate(value: string): string {
   if (/^\d{4}-\d{2}$/.test(value)) {
     const [year, month] = value.split("-").map(Number);
@@ -703,6 +746,8 @@ function App() {
   const [copyStatus, setCopyStatus] = useState("");
   const [guideIndex, setGuideIndex] = useState<number | null>(null);
   const [guideAuto, setGuideAuto] = useState(false);
+  const [scenarios, setScenarios] = useState<SavedScenario[]>(readSavedScenarios);
+  const [compareId, setCompareId] = useState<string | null>(null);
   // First-visit cue on the Guide button: with no presenter in the room, the
   // tour has to advertise itself. Storage failures err toward showing it.
   const [guideUsed, setGuideUsed] = useState(() => {
@@ -948,6 +993,55 @@ function App() {
       setCopyStatus("Clipboard unavailable. The full brief is open below for manual copy.");
     }
   }
+
+  function saveScenario() {
+    if (!planReady) return;
+    const lockCount = lockedIds.size;
+    const entry: SavedScenario = {
+      id: `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      name: `${budget}h · ${coverageFloor}h floor${lockCount ? ` · ${lockCount} lock${lockCount > 1 ? "s" : ""}` : ""}`,
+      budget,
+      floor: coverageFloor,
+      guard: guardEnabled,
+      locks: Array.from(currentLocks().entries()),
+    };
+    const next = [...scenarios, entry].slice(-MAX_SAVED_SCENARIOS);
+    setScenarios(next);
+    writeSavedScenarios(next);
+  }
+
+  function loadScenario(scenario: SavedScenario) {
+    const locks = new Map(scenario.locks);
+    setBudget(scenario.budget);
+    setCoverageFloor(scenario.floor);
+    setGuardEnabled(scenario.guard);
+    setLockedIds(new Set(locks.keys()));
+    setLockValues(Object.fromEntries(locks));
+    runPlan(scenario.guard, locks, scenario.floor, scenario.budget);
+  }
+
+  function deleteScenario(id: string) {
+    const next = scenarios.filter((scenario) => scenario.id !== id);
+    setScenarios(next);
+    writeSavedScenarios(next);
+    if (compareId === id) setCompareId(null);
+  }
+
+  const compareScenario = scenarios.find((scenario) => scenario.id === compareId) ?? null;
+  // The baseline plan is recomputed from settings, never stored, so it always
+  // reflects the same frozen artifact as the current plan.
+  const compareById = useMemo(() => {
+    if (!compareScenario) return null;
+    const baseline = allocateHours(
+      data.areas,
+      compareScenario.budget,
+      compareScenario.floor,
+      compareScenario.guard,
+      new Map(compareScenario.locks),
+    );
+    if (!baseline.feasible) return null;
+    return new Map(baseline.allocations.map((row) => [row.areaId, row.hours]));
+  }, [compareScenario, data.areas]);
 
   const guideSteps = useMemo(() => buildGuideSteps(data), [data]);
 
@@ -2328,6 +2422,72 @@ function App() {
             </div>
           )}
 
+          <div className="scenario-bench">
+            <div className="scenario-bench-head">
+              <span className="eyebrow">Scenario workbench · saved only in this browser</span>
+              <button
+                className="button button-quiet"
+                disabled={!planReady}
+                onClick={saveScenario}
+                type="button"
+              >
+                Save scenario
+              </button>
+            </div>
+            {scenarios.length === 0 ? (
+              <p className="scenario-empty">
+                Save this plan, change the policy, then compare the two side by side.
+              </p>
+            ) : (
+              <ul className="scenario-list">
+                {scenarios.map((scenario) => (
+                  <li className={compareId === scenario.id ? "is-compare" : ""} key={scenario.id}>
+                    <button
+                      className="scenario-load"
+                      onClick={() => loadScenario(scenario)}
+                      type="button"
+                    >
+                      {scenario.name}
+                    </button>
+                    <button
+                      aria-pressed={compareId === scenario.id}
+                      className="scenario-compare"
+                      onClick={() =>
+                        setCompareId((current) => (current === scenario.id ? null : scenario.id))
+                      }
+                      type="button"
+                    >
+                      {compareId === scenario.id ? "Comparing" : "Compare"}
+                    </button>
+                    <button
+                      aria-label={`Delete scenario ${scenario.name}`}
+                      className="scenario-delete"
+                      onClick={() => deleteScenario(scenario.id)}
+                      type="button"
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {compareScenario && (
+              <p className="scenario-compare-note" role="status">
+                {compareById ? (
+                  <>
+                    Comparing with <strong>{compareScenario.name}</strong> — each area shows how
+                    many hours the current plan shifts against it.
+                  </>
+                ) : (
+                  <>
+                    <strong>{compareScenario.name}</strong> is infeasible against the current data,
+                    so no comparison is shown.
+                  </>
+                )}
+              </p>
+            )}
+          </div>
+
           {!plan ? (
             <div className="planner-start">
               <div className="constraint-equation">
@@ -2422,7 +2582,7 @@ function App() {
               </div>
 
               <div
-                className="allocation-list"
+                className={`allocation-list ${compareById ? "with-compare" : ""}`}
                 role="list"
                 aria-label="Illustrative staff-hour allocation"
               >
@@ -2489,6 +2649,23 @@ function App() {
                             ? "Below minimum"
                             : `${coverageFloor}h minimum met`}
                       </span>
+                      {compareById && (
+                        <span
+                          className={`compare-delta ${
+                            hours - (compareById.get(area.id) ?? 0) > 0
+                              ? "delta-up"
+                              : hours - (compareById.get(area.id) ?? 0) < 0
+                                ? "delta-down"
+                                : "delta-same"
+                          }`}
+                        >
+                          {hours - (compareById.get(area.id) ?? 0) > 0
+                            ? `+${hours - (compareById.get(area.id) ?? 0)}h vs saved`
+                            : hours - (compareById.get(area.id) ?? 0) < 0
+                              ? `${hours - (compareById.get(area.id) ?? 0)}h vs saved`
+                              : "same as saved"}
+                        </span>
+                      )}
                     </article>
                   );
                 })}

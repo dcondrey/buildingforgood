@@ -252,6 +252,68 @@ describe("guided onboarding", () => {
   }, 30000);
 });
 
+describe("scenario workbench", () => {
+  function stubStorage() {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => void store.set(key, value),
+      removeItem: (key: string) => void store.delete(key),
+    });
+    return store;
+  }
+
+  async function generateAndSave(user: ReturnType<typeof userEvent.setup>) {
+    await renderOffline();
+    await user.click(screen.getByRole("button", { name: /Generate coverage scenario/ }));
+    await screen.findByText(/80\/80 hours allocated\./);
+    await user.click(screen.getByRole("button", { name: "Save scenario" }));
+    return screen.getByRole("button", { name: "80h · 8h floor" });
+  }
+
+  it("saves settings only, loads them back, and survives a reload", async () => {
+    const store = stubStorage();
+    const user = userEvent.setup();
+    await generateAndSave(user);
+    expect(store.get("stillhere-scenarios-v1")).toContain("80h · 8h floor");
+    expect(store.get("stillhere-scenarios-v1")).not.toContain("allocations");
+    // Change the policy, then load the saved scenario back.
+    const floorGroup = screen.getByLabelText("Coverage-continuity floor sensitivity");
+    await user.click(within(floorGroup).getAllByRole("button")[1]); // 0h, 4h, 8h
+    await screen.findByText(/24 of 80 hours are set aside/);
+    await user.click(screen.getByRole("button", { name: "80h · 8h floor" }));
+    expect(await screen.findByText(/48 of 80 hours are set aside/)).toBeDefined();
+    // A fresh mount reads the same store.
+    cleanup();
+    render(<App />);
+    await screen.findByText("Offline demo snapshot");
+    expect(screen.getByRole("button", { name: "80h · 8h floor" })).toBeDefined();
+  });
+
+  it("shows per-area hour differences against a pinned saved scenario", async () => {
+    stubStorage();
+    const user = userEvent.setup();
+    await generateAndSave(user);
+    const floorGroup = screen.getByLabelText("Coverage-continuity floor sensitivity");
+    await user.click(within(floorGroup).getAllByRole("button")[0]); // 0h, 4h, 8h
+    await screen.findByText("OFF · COMPARISON ONLY");
+    await user.click(screen.getByRole("button", { name: "Compare" }));
+    expect(screen.getByText(/Comparing with/).textContent).toContain("80h · 8h floor");
+    const deltas = screen.getAllByText(/vs saved|same as saved/);
+    expect(deltas.length).toBe(6);
+    expect(screen.getAllByText(/[+-]\d+h vs saved/).length).toBeGreaterThan(0);
+  });
+
+  it("deletes a saved scenario", async () => {
+    stubStorage();
+    const user = userEvent.setup();
+    await generateAndSave(user);
+    await user.click(screen.getByRole("button", { name: "Delete scenario 80h · 8h floor" }));
+    expect(screen.queryByRole("button", { name: "80h · 8h floor" })).toBeNull();
+    expect(screen.getByText(/Save this plan, change the policy/)).toBeDefined();
+  });
+});
+
 describe("keyboard access (#12, #16)", () => {
   it("offers a skip link as the first tab stop and a labeled budget input", async () => {
     const user = userEvent.setup();

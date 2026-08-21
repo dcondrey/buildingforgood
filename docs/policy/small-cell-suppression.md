@@ -5,10 +5,15 @@ Both enforcement points cite THIS list and must change when it changes:
 
 - Emitter: `pipeline/src/stillhere_pipeline/suppress.py` (produces artifacts)
 - Scanner: `pipeline/src/stillhere_pipeline/privacy.py`,
-  `analyze_recoverability` (verifies artifacts; strictly conservative: it
-  enumerates every composition of a suppressed remainder, so it permits
-  anything this policy permits and gains only false positives, never false
-  negatives, if this doc drifts)
+  `analyze_recoverability` (verifies artifacts; its feasible set MIRRORS the
+  branches below and must be updated with them. An attacker knows the
+  policy, so a feasible set WIDER than this policy models a weaker attacker
+  and produces false negatives, not false positives: extra stories create
+  ambiguity a real reader does not have. Proven by the remainder-10 case
+  with published minimum 6, where the policy-feasible set is exactly {4, 6}
+  and a broader enumeration wrongly reads it as ambiguous. A row no branch
+  could have produced raises `recovery.policy_inconsistent` rather than
+  passing as ambiguous.)
 
 The attacker model on both sides is derived from these branches. Adding,
 removing, or reordering a branch without updating this document and both

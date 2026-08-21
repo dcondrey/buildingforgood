@@ -23,6 +23,16 @@
 - The runtime has no live API dependency; the generated artifact is committed.
 - Separate data-science, product-experience, and judge-readiness reviews were
   performed. Their release blockers were routed into implementation work.
+- 2026-08-21: the spatial view was upgraded to simplified real neighborhood
+  boundaries (dissolved from the organizer block grid, aggregate outlines
+  only) with keyboard-accessible area selection and per-area detail panels,
+  and short-viewport compression tiers were added so the page fits
+  presentation resolutions. Full gate rerun after the change: 214 Python
+  tests, 129 app tests (two axe passes included), privacy scan 0 blocking /
+  0 warning over the rebuilt bundle.
+- 2026-08-21: fallback media captured from the verified build via browser
+  automation into `docs/testing/media/` (22.5s browser-playable walkthrough
+  plus the four stills: drop result, forecast, guarded plan, decision brief).
 
 ## Still required before presenting
 
@@ -31,7 +41,9 @@
 - [ ] Complete the entire flow keyboard-only at the presentation resolution.
 - [ ] Rehearse the spoken script under three minutes twice.
 - [ ] Repeat the network-disabled run on the presentation device itself.
-- [ ] Capture a browser-playable fallback and four static result images.
+- [x] Capture a browser-playable fallback and four static result images.
+      (Captured 2026-08-21 into `docs/testing/media/`; copy them onto the
+      presentation device, and re-record there if the stage machine differs.)
 - [ ] Test projector contrast, browser zoom, power, sleep, and notifications.
 
 This file is intentionally not a claim that human rehearsal has occurred. The

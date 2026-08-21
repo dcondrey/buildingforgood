@@ -251,3 +251,8 @@ Scope: the surfaces the second pass could not reach because they did not exist y
 **One construction reviewed and kept:** the plan footer's "Nh moved to minimums and locks" applies "moved" to hours with hours as the explicit subject; no person-reading is available. Kept.
 
 **Verdict:** the §4 launch-blocking checklist passes against every surface that ships. No open finding remains in §3. The standing rule stays: any new rendered copy, especially anything compressing `possible_displacement` into a headline, gets a full-sentence read before release, not a grep.
+
+**2026-08-21 update (interactive neighborhood map).** The spatial view was upgraded from labeled rectangles to simplified real neighborhood boundaries, derived by dissolving the organizer block grid to the six-area level (cell-quantized outlines, viewBox units, no lat/lon values in the bundle). This changes two records above, neither adversely:
+
+- **R-11:** the caption now reads "simplified neighborhood boundaries, aggregate values only · not a count of people". The tabular equivalents and non-color state words are unchanged; the map areas are additionally keyboard-selectable buttons feeding a text detail panel, which strengthens the non-color path. Still resolved.
+- **The §4 location adjudication:** "no geometry is drawn anywhere" no longer holds as stated; neighborhood-level boundary polygons are now drawn. C-02 §3 explicitly permits aggregate boundary polygons ("boundary polygons are legitimate coordinates"); block-level geometry and precise observation locations still do not ship, the in-app disclosure copy was tightened to say exactly that, and the bundle privacy scan reports 0 findings against the rebuilt `app/dist`. Still PROTECTED.

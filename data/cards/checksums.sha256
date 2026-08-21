@@ -20,6 +20,11 @@ f6e4f0196176a23740545355e9e7acf937e0ff06ea982db6ce12e9ac1ee2a7d6  data/raw/parki
 6ab5bff6453ea4e9e5a297ca158e7cbfe9226505abba229de0e4c87c610edab6  data/raw/parking_meters/treas_meters_2025_pole_by_month_datasd.csv
 aa6121bc042d94c7c97764227f7cbbbb43ecdb68245b1b626d7a0a29027bea37  data/raw/parking_meters/treas_parking_meters_loc_datasd.csv
 b080cd42f7a69ec20984fcfdad1917cb154bb4dde7e3dcc5e8f1aa1b7aa6ad30  data/raw/weather/san_diego_airport_daily_2017_2025.csv
+# public-records (PRA) capacity/context snapshots (reference only; never a demo_v1 input)
+60c36fc2c0fc66b03ef8d68b04d0b77487bc19e334d74c7560725c54acabc897  data/raw/pra_sandiego/Proposal_Alpha Project.pdf
+a3aab27d81e52d1ba1eaa452e08183ad20aef570ffd78cfc9974d601bc5127f8  data/raw/pra_sandiego/1859_Temp-Bridge-Shelters_HAR20-019.pdf
+099397b709a519e082c325190a8cb622448e64073bbf3298bca8edce5705dfbf  data/raw/pra_sandiego/Payments to Alpha Project for the Homeless PRA 21-5187.xlsx
+b76ef75bc5bf92a058aa8de56c73040be763361b1493afa57fa1034d9f7d9b2a  data/raw/pra_sandiego/Payments to Alpha Project for the Homeless PRA 21-5187 March 2007 to June 2009.xlsx
 # public post-freeze monitoring sources (reference only; never a demo_v1 input)
 807babdc12076bfcf6a598dcb31ec996287727888625b4609f1019f3f13358b3  data/raw/rtfh_pitc/2026-PITC-Unsheltered-Census-Tract-per-City.xlsx
 54565330a14382d3f5e0f5ddbb849396795b08a9b47007b456728f565b5b5074  data/raw/rtfh_public_reports/HMIS-Data-Newsletter-July-2026.pdf

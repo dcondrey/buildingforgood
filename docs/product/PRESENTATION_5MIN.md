@@ -5,6 +5,10 @@ This script drives the app's own nine-step Guide demo, so the screen and the
 narration can never drift apart. Every scored rubric item is said out loud —
 judges award points for what they hear, not what the repo contains.
 
+This is the on-stage script. If the Guide or the deployed site is unavailable,
+fall back to the manual walkthrough in [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md),
+which also owns the offline fallback checklist and the time-slip cut order.
+
 ## Setup minute
 
 - Open https://dcondrey.github.io/buildingforgood/ and hard-refresh once.

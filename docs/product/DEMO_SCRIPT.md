@@ -9,6 +9,12 @@ teardown. The script below fills the five presentation minutes; the
 three-minute core it grew from survives intact as the cut-down path in
 **If time slips**.
 
+On stage, prefer [`PRESENTATION_5MIN.md`](PRESENTATION_5MIN.md): the same
+five minutes delivered through the app's Guide steps against the deployed
+site, with the rubric lines said aloud. This document is the manual
+walkthrough — drive it when the Guide is unavailable — and it owns the
+offline fallback checklist and the time-slip cut order below.
+
 ## Before the clock starts
 
 Start the application and open the local address printed by Vite:

@@ -20,7 +20,11 @@ from typing import Any
 import yaml
 
 from stillhere_pipeline.aggregate import aggregate_observations, monthly_gaps
-from stillhere_pipeline.contracts import validate_observations_v0, validate_quality_report_v0
+from stillhere_pipeline.contracts import (
+    OBSERVATION_COUNT_FIELDS,
+    validate_observations_v0,
+    validate_quality_report_v0,
+)
 from stillhere_pipeline.manifest import build_manifest
 from stillhere_pipeline.normalize import normalize_records
 from stillhere_pipeline.quality import (
@@ -127,6 +131,11 @@ def run_build(raw_dir: Path, cards_dir: Path, out_dir: Path) -> dict[str, Any]:
         )
     observations_doc: dict[str, Any] = {
         "schema": "observations.v0",
+        "contract": {
+            "count_fields": list(OBSERVATION_COUNT_FIELDS),
+            "small_cell_threshold": SMALL_CELL_THRESHOLD,
+            "suppression_marker": {"field": "suppressed", "affirmative": [True]},
+        },
         "source": {"source_id": SOURCE_ID, "retrieved_at": retrieved_at},
         "months_observed": observed_months,
         "missing_months_global": monthly_gaps(observed_months),

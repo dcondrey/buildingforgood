@@ -348,6 +348,67 @@ describe("intervention assumption explorer", () => {
   });
 });
 
+describe("map workspace view", () => {
+  async function openWorkspace(user: ReturnType<typeof userEvent.setup>) {
+    await renderOffline();
+    await user.click(screen.getByRole("button", { name: "Map workspace" }));
+  }
+
+  it("switches to a layered map, remembers the choice, and hides the narrative", async () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => void store.set(key, value),
+      removeItem: (key: string) => void store.delete(key),
+    });
+    const user = userEvent.setup();
+    await openWorkspace(user);
+    expect(screen.queryByRole("heading", { level: 1 })).toBeNull();
+    expect(screen.getByLabelText(/showing planned staff-hours/)).toBeDefined();
+    await user.click(screen.getByRole("button", { name: "Observed change" }));
+    expect(screen.getByLabelText(/change in raw field observations/)).toBeDefined();
+    await user.click(screen.getByRole("button", { name: "Unmet load" }));
+    expect(screen.getByLabelText(/unmet planning load/)).toBeDefined();
+    expect(store.get("stillhere-view")).toBe("workspace");
+  });
+
+  it("opens the unified area dossier with the assumption explorer on map selection", async () => {
+    const user = userEvent.setup();
+    await openWorkspace(user);
+    await user.click(screen.getAllByRole("button", { name: /East Village:/ })[0]);
+    expect(screen.getByText("Area dossier")).toBeDefined();
+    expect(screen.getAllByText("Observed change").length).toBeGreaterThan(1);
+    expect(screen.getByText("Planned hours", { selector: "dt" })).toBeDefined();
+    expect(screen.getByText("Unmet load", { selector: "dt" })).toBeDefined();
+    expect(screen.getByText(/What if East Village were cleared\?/)).toBeDefined();
+  });
+
+  it("reuses the real planner, workbench, and brief in the inspector tabs", async () => {
+    const user = userEvent.setup();
+    await openWorkspace(user);
+    expect(screen.getByLabelText("Coverage-continuity floor sensitivity")).toBeDefined();
+    expect(screen.getByLabelText(/What-if · drag to stress-test the budget/)).toBeDefined();
+    await user.click(screen.getByRole("button", { name: "Scenarios" }));
+    expect(screen.getByText(/Scenario workbench · saved only in this browser/)).toBeDefined();
+    await user.click(screen.getByRole("button", { name: "Brief" }));
+    expect(screen.getByRole("button", { name: "Copy decision brief" })).toBeDefined();
+  });
+
+  it("returns to the story view for the guide", async () => {
+    const user = userEvent.setup();
+    await openWorkspace(user);
+    await user.click(screen.getByRole("button", { name: /Guide demo/ }));
+    expect(screen.getByRole("dialog")).toBeDefined();
+    expect(screen.getByRole("heading", { level: 1 })).toBeDefined();
+  });
+
+  it("has no axe violations in the workspace view", async () => {
+    const user = userEvent.setup();
+    await openWorkspace(user);
+    expect(await violationsFor(document.body)).toEqual([]);
+  }, 30000);
+});
+
 describe("keyboard access (#12, #16)", () => {
   it("offers a skip link as the first tab stop and a labeled budget input", async () => {
     const user = userEvent.setup();

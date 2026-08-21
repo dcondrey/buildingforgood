@@ -770,6 +770,17 @@ function App() {
   const [shareDraft, setShareDraft] = useState(1);
   // First-visit cue on the Guide button: with no presenter in the room, the
   // tour has to advertise itself. Storage failures err toward showing it.
+  // Story is the narrative argument; the map workspace is the alternative
+  // operations view (one layered map + inspector). The choice persists.
+  const [view, setView] = useState<"story" | "workspace">(() => {
+    try {
+      return localStorage.getItem("stillhere-view") === "workspace" ? "workspace" : "story";
+    } catch {
+      return "story";
+    }
+  });
+  const [mapLayer, setMapLayer] = useState<"hours" | "change" | "unmet">("hours");
+  const [wsTab, setWsTab] = useState<"area" | "plan" | "scenarios" | "brief">("plan");
   const [guideUsed, setGuideUsed] = useState(() => {
     try {
       return localStorage.getItem("stillhere-guide-used") === "1";
@@ -1219,6 +1230,16 @@ function App() {
     }, 80);
   }
 
+  function switchView(next: "story" | "workspace") {
+    if (next === "workspace" && guideIndex !== null) stopGuide();
+    setView(next);
+    try {
+      localStorage.setItem("stillhere-view", next);
+    } catch {
+      // The choice simply resets next visit.
+    }
+  }
+
   function beginGuide() {
     setGuideUsed(true);
     try {
@@ -1227,6 +1248,8 @@ function App() {
       // Private windows without storage still get the tour; only the
       // first-visit cue repeats.
     }
+    // The guide narrates the story sections, so it always runs there.
+    switchView("story");
     goToStep(0);
   }
 
@@ -1307,6 +1330,29 @@ function App() {
     element.classList.add("guide-spotlight");
     return () => element.classList.remove("guide-spotlight");
   }, [guideIndex, guideSteps]);
+
+  function renderPlanState() {
+    return (
+      <div aria-label="Live plan state" className="plan-state" role="status">
+        <span>
+          {planTotal}/{budget}h allocated
+        </span>
+        <span>{guardEnabled ? `${coverageFloor}h floor` : "no minimum"}</span>
+        <span>{unmetTotal > 0 ? `${unmetTotal}h unmet load` : "0h unmet"}</span>
+        {lockedIds.size > 0 && (
+          <span>
+            {lockedIds.size} lock{lockedIds.size > 1 ? "s" : ""}
+          </span>
+        )}
+        {intervention && (
+          <span className="plan-state-assumption">
+            assumption: {data.areas.find((area) => area.id === intervention.areaId)?.name ?? ""}{" "}
+            cleared
+          </span>
+        )}
+      </div>
+    );
+  }
 
   function renderPlannerControls() {
     return (
@@ -1763,7 +1809,7 @@ function App() {
 
   return (
     <div className={`app-shell ${projectorMode ? "projector-mode" : ""}`}>
-      <a className="skip-link" href="#drop-test">
+      <a className="skip-link" href={view === "workspace" ? "#workspace" : "#drop-test"}>
         Skip to decision
       </a>
 
@@ -1806,6 +1852,24 @@ function App() {
               capacity data.
             </span>
           </label>
+          <div aria-label="View" className="view-toggle" role="group">
+            <button
+              aria-pressed={view === "story"}
+              className={view === "story" ? "active" : ""}
+              onClick={() => switchView("story")}
+              type="button"
+            >
+              Story
+            </button>
+            <button
+              aria-pressed={view === "workspace"}
+              className={view === "workspace" ? "active" : ""}
+              onClick={() => switchView("workspace")}
+              type="button"
+            >
+              Map workspace
+            </button>
+          </div>
           <button
             className={`button button-quiet guide-button ${guideUsed ? "" : "guide-button-new"}`}
             onClick={beginGuide}
@@ -1888,1125 +1952,210 @@ function App() {
         </aside>
       )}
 
-      <main>
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-copy">
-            <span className="status-line">
-              <i className="status-dot" />{" "}
-              {loading
-                ? "Verifying local artifacts…"
-                : data.origin === "generated"
-                  ? "Generated analysis loaded"
-                  : "Offline demo snapshot"}
-            </span>
-            <p className="kicker">
-              Prepared decision · {data.scenario.focusArea} · {data.scenario.period}
-            </p>
-            <h1 id="hero-title">
-              Fewer tents,
-              <br />
-              <em>or fewer people?</em>
-            </h1>
-            <p className="hero-lede">
-              Downtown San Diego’s unsheltered estimate fell 22% in a year, but the drop came from
-              tents, not people: on the same 261 blocks, outreach workers saw more people than the
-              year before. This tool shows what changed, what’s uncertain, and where the next
-              outreach shift should go.
-            </p>
-            <div
-              className="composition-lead"
-              aria-label="Observed composition and active-block footprint comparison"
-            >
-              <div>
-                <span>People seen in the field</span>
-                <strong>+{formatNumber(signal.components.individuals.changePct, 1)}%</strong>
-                <small>
-                  {signal.components.individuals.from} → {signal.components.individuals.to}
-                </small>
+      {view === "workspace" && (
+        <div className="workspace" id="workspace">
+          <section aria-label="Plan map stage" className="ws-stage">
+            <div className="ws-stage-head">
+              <div aria-label="Map layer" className="ws-layers" role="group">
+                {(
+                  [
+                    ["hours", "Planned hours"],
+                    ["change", "Observed change"],
+                    ["unmet", "Unmet load"],
+                  ] as const
+                ).map(([layer, label]) => (
+                  <button
+                    aria-pressed={mapLayer === layer}
+                    className={mapLayer === layer ? "active" : ""}
+                    key={layer}
+                    onClick={() => setMapLayer(layer)}
+                    type="button"
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-              <div>
-                <span>Tents & structures</span>
-                <strong>{formatNumber(signal.components.structures.changePct, 1)}%</strong>
-                <small>
-                  {signal.components.structures.from} → {signal.components.structures.to}
-                </small>
-              </div>
-              <div>
-                <span>Vehicles</span>
-                <strong>{formatNumber(signal.components.vehicles.changePct, 1)}%</strong>
-                <small>
-                  {signal.components.vehicles.from} → {signal.components.vehicles.to}
-                </small>
-              </div>
-              <div>
-                <span>{individualOne ? "Blocks where people were seen" : "Active blocks"}</span>
-                <strong>
-                  +
-                  {individualOne
-                    ? formatNumber((individualOne.change / individualOne.fromBlocks) * 100, 1)
-                    : formatNumber(signal.activeChangePct, 1)}
-                  %
-                </strong>
-                <small>
-                  {individualOne?.fromBlocks ?? signal.activeFrom} →{" "}
-                  {individualOne?.toBlocks ?? signal.activeTo}
-                </small>
-              </div>
-              <p>Same month · same method · same {signal.panelSize} blocks</p>
+              {plan?.feasible && renderPlanState()}
             </div>
-          </div>
-          <div aria-label="Prepared scenario summary" className="hero-decision">
-            <span className="eyebrow">The decision at hand</span>
-            <p>
-              Suppose <strong>{budget} staff-hours</strong> are available for next week’s outreach
-              shifts. Which neighborhoods should get them?
-            </p>
-            <p className="capacity-note">
-              The hours are an editable assumption, not staffing data. A real deployment would use
-              the provider’s own schedule.
-            </p>
-            <div className="provisional-note">
-              <span>{data.scenario.status === "ready" ? "✓ Prepared" : "◇ Provisional"}</span>{" "}
-              Evidence limits and review triggers travel with the result.
-            </div>
-            <EvidenceChain data={data} />
-          </div>
-        </section>
-
-        <nav aria-label="Decision steps" className="step-nav">
-          <a href="#drop-test">
-            <span>01</span> Test the drop
-          </a>
-          <a href="#forecast">
-            <span>02</span> Check the forecast
-          </a>
-          <a href="#planner">
-            <span>03</span> Plan the shift
-          </a>
-          <a href="#review">
-            <span>04</span> Human review
-          </a>
-          {plan?.feasible && (
-            <div aria-label="Live plan state" className="plan-state" role="status">
-              <span>
-                {planTotal}/{budget}h allocated
-              </span>
-              <span>{guardEnabled ? `${coverageFloor}h floor` : "no minimum"}</span>
-              <span>{unmetTotal > 0 ? `${unmetTotal}h unmet load` : "0h unmet"}</span>
-              {lockedIds.size > 0 && (
-                <span>
-                  {lockedIds.size} lock{lockedIds.size > 1 ? "s" : ""}
-                </span>
-              )}
-              {intervention && (
-                <span className="plan-state-assumption">
-                  assumption:{" "}
-                  {data.areas.find((area) => area.id === intervention.areaId)?.name ?? ""} cleared
-                </span>
-              )}
-            </div>
-          )}
-        </nav>
-
-        <section className="decision-section" id="drop-test" aria-labelledby="drop-title">
-          <div aria-hidden="true" className="section-number">
-            01
-          </div>
-          <div className="section-intro">
-            <p className="eyebrow">What actually changed</p>
-            <h2 id="drop-title">Test the drop</h2>
-            <p>
-              The falling estimate is built from three things counted in the field: people, tents,
-              and vehicles. Compare each on the same {signal.panelSize} blocks, one January to the
-              next, and see which actually dropped.
-            </p>
-          </div>
-
-          <div className="metric-grid composition-metrics">
-            <Metric
-              label="People seen in the field"
-              value={`${signal.components.individuals.from} → ${signal.components.individuals.to}`}
-              detail={`+${formatNumber(signal.components.individuals.changePct, 1)}%`}
-              tone="teal"
-            />
-            <Metric
-              label="Tents & structures"
-              value={`${signal.components.structures.from} → ${signal.components.structures.to}`}
-              detail={`${formatNumber(signal.components.structures.changePct, 1)}%`}
-              tone="amber"
-            />
-            <Metric
-              label="Vehicles"
-              value={`${signal.components.vehicles.from} → ${signal.components.vehicles.to}`}
-              detail={`${formatNumber(signal.components.vehicles.changePct, 1)}%`}
-            />
-            <Metric
-              label={individualOne ? "Blocks with at least one person" : "Active footprint"}
-              value={`${formatNumber(individualOne?.fromBlocks ?? signal.activeFrom)} → ${formatNumber(individualOne?.toBlocks ?? signal.activeTo)}`}
-              detail={
-                individualOne
-                  ? `+${individualOne.change} blocks · like-for-like`
-                  : `+${formatNumber(signal.activeChangePct, 1)}% active blocks`
+            <AreaMap
+              areas={mapLayer === "change" ? data.areas : planningAreas}
+              ariaLabel={
+                mapLayer === "hours"
+                  ? "Map of the six downtown neighborhoods showing planned staff-hours; select a neighborhood for detail"
+                  : mapLayer === "change"
+                    ? "Map of the six downtown neighborhoods showing the change in raw field observations; select a neighborhood for detail"
+                    : "Map of the six downtown neighborhoods showing unmet planning load in hours; select a neighborhood for detail"
               }
-              tone="teal"
+              onSelect={(areaId) => {
+                toggleAreaSelection(areaId);
+                setWsTab("area");
+              }}
+              selectedId={selectedAreaId}
+              valueFor={(area) => {
+                if (mapLayer === "change") {
+                  if (area.latest === null) return { text: "no data", tone: "missing" };
+                  const maxDelta = Math.max(1, ...data.areas.map((row) => Math.abs(row.delta)));
+                  return {
+                    text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                    tone: area.delta > 0 ? "up" : "down",
+                    intensity: Math.abs(area.delta) / maxDelta,
+                  };
+                }
+                if (mapLayer === "unmet") {
+                  const unmet = unmetByArea.get(area.id) ?? 0;
+                  const maxUnmet = Math.max(1, ...Array.from(unmetByArea.values()));
+                  return {
+                    text: `${unmet}h`,
+                    tone: unmet > 0 ? "down" : "neutral",
+                    intensity: unmet / maxUnmet,
+                  };
+                }
+                const hours = allocationById.get(area.id) ?? 0;
+                const belowFloor = guardEnabled && hours < coverageFloor;
+                return {
+                  text: `${hours}h${belowFloor ? " !" : ""}`,
+                  tone: belowFloor ? "down" : "neutral",
+                  intensity: hours / maxHours,
+                };
+              }}
             />
-          </div>
-          <details className="context-details">
-            <summary>
-              <span>How to read this comparison</span>
-              <small>Panel, units, and date checks</small>
-            </summary>
-            <p className="mixed-index-note">
-              <strong>Secondary mixed-component context:</strong> all active blocks{" "}
-              {signal.activeFrom}
-              {" → "}
-              {signal.activeTo} (+{formatNumber(signal.activeChangePct, 1)}%); mixed-unit index{" "}
-              {signal.fromValue} → {signal.toValue} ({formatNumber(signal.changePct, 1)}%). The
-              index arithmetically sums unlike observation units—individuals, structures, and
-              vehicles—and is not a count of unique people or an estimated person total. Panel fixed
-              at {signal.panelSize} blocks.
+            <p className="map-caption">
+              {mapLayer === "hours"
+                ? "Planned staff-hours by neighborhood"
+                : mapLayer === "change"
+                  ? "Change in raw field observations, latest same-month comparison"
+                  : "Hours the minimums moved away from the forecast split"}
+              {" · simplified neighborhood boundaries · not a count of people"}
+              {intervention
+                ? ` · ${data.areas.find((area) => area.id === intervention.areaId)?.name ?? ""} modeled as cleared (assumption)`
+                : ""}
             </p>
-            <p className="comparison-defense">
-              <CheckIcon /> This is the latest available same-month year-over-year pair in the
-              supplied panel: January 2025 is its final date, both months use the POST2020 method,
-              and the exact same {signal.panelSize} blocks are compared.
-            </p>
-          </details>
-
-          {!dropRevealed ? (
-            <div className="reveal-action">
-              <button
-                className="button button-primary button-large"
-                onClick={() => revealDrop()}
-                type="button"
-              >
-                <SparkIcon /> Test the drop
-              </button>
-              <span>Same result every run · bundled local data · no AI in the loop</span>
+            <details className="ws-table">
+              <summary>View map values as a table</summary>
+              <MapValueTable
+                caption={
+                  mapLayer === "hours"
+                    ? "Planned staff-hours by neighborhood"
+                    : mapLayer === "change"
+                      ? "Observed change by neighborhood"
+                      : "Unmet planning load by neighborhood"
+                }
+                rows={(mapLayer === "change" ? data.areas : planningAreas).map((area) => {
+                  if (mapLayer === "change") {
+                    return {
+                      name: area.name,
+                      value:
+                        area.latest === null ? "—" : `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                      state:
+                        area.latest === null
+                          ? "No recent observation"
+                          : area.delta > 0
+                            ? "More observed units"
+                            : "Fewer observed units",
+                    };
+                  }
+                  if (mapLayer === "unmet") {
+                    const unmet = unmetByArea.get(area.id) ?? 0;
+                    return {
+                      name: area.name,
+                      value: `${unmet}h`,
+                      state: unmet > 0 ? "Load moved by minimums" : "Follows forecast",
+                    };
+                  }
+                  const hours = allocationById.get(area.id) ?? 0;
+                  return {
+                    name: area.name,
+                    value: `${hours}h`,
+                    state: lockedIds.has(area.id)
+                      ? "Human lock"
+                      : !guardEnabled
+                        ? "No minimum"
+                        : hours < coverageFloor
+                          ? "Below minimum"
+                          : "Minimum met",
+                  };
+                })}
+              />
+            </details>
+          </section>
+          <aside aria-label="Inspector" className="ws-inspector">
+            <div aria-label="Inspector sections" className="ws-tabs" role="group">
+              {(
+                [
+                  ["plan", "Plan"],
+                  ["area", "Area"],
+                  ["scenarios", "Scenarios"],
+                  ["brief", "Brief"],
+                ] as const
+              ).map(([tab, label]) => (
+                <button
+                  aria-pressed={wsTab === tab}
+                  className={wsTab === tab ? "active" : ""}
+                  key={tab}
+                  onClick={() => setWsTab(tab)}
+                  type="button"
+                >
+                  {label}
+                </button>
+              ))}
             </div>
-          ) : (
-            <div aria-live="polite" className="evidence-result reveal" id="evidence-result">
-              <div className="result-header">
-                <div className="result-symbol">
-                  <ArrowDownIcon />
-                </div>
-                <div>
-                  <p className="eyebrow">What the same-blocks comparison shows</p>
-                  <h3 ref={resultHeading} tabIndex={-1}>
-                    {classificationLabel}
-                  </h3>
-                  <p>
-                    {individualSpatial
-                      ? "People were seen on more blocks than last year, spread about as evenly as before. Tents disappeared from many blocks and bunched up in fewer."
-                      : "Field activity reached more blocks while becoming more concentrated where it remained."}{" "}
-                    These are on-site observations: they cannot say who moved where, or why.
-                  </p>
-                </div>
-                <span className="confidence-chip">Human review required</span>
-              </div>
-
-              {individualSpatial &&
-                individualOne &&
-                individualTwo &&
-                structureOne &&
-                structureTwo && (
-                  <div
-                    className="component-proof"
-                    aria-label="Like-for-like observed individual and tent footprint sensitivity"
-                  >
-                    <div className="distribution-heading">
+            <div className="ws-body">
+              {wsTab === "plan" && (
+                <>
+                  {renderPlannerControls()}
+                  {!plan ? (
+                    renderPlannerStart()
+                  ) : !plan.feasible ? (
+                    <div className="infeasible" role="alert">
+                      <span>!</span>
                       <div>
-                        <span className="eyebrow">The key check · same blocks, one year apart</span>
-                        <strong>People were seen on more blocks, however strictly you count</strong>
+                        <h3>No feasible plan</h3>
+                        <p>{plan.message}</p>
+                        <p>Increase the budget, remove a lock, or explicitly revise the floor.</p>
                       </div>
-                      <span>Same 261 blocks both years</span>
                     </div>
-                    <div className="component-thresholds">
-                      {[
-                        { label: "Blocks with ≥1 person seen", value: individualOne, tone: "up" },
-                        { label: "Blocks with ≥2 people seen", value: individualTwo, tone: "up" },
-                        { label: "Blocks with ≥1 tent", value: structureOne, tone: "down" },
-                        { label: "Blocks with ≥2 tents", value: structureTwo, tone: "down" },
-                      ].map((item) => (
-                        <div
-                          className={`component-threshold component-${item.tone}`}
-                          key={item.label}
+                  ) : (
+                    <>
+                      {renderPlanRows()}
+                      {planDirty && (
+                        <button
+                          className="button button-primary ws-recompute"
+                          disabled={!budgetValid}
+                          onClick={() => runPlan()}
+                          type="button"
                         >
-                          <small>{item.label}</small>
-                          <strong>
-                            {item.value.fromBlocks} → {item.value.toBlocks}
-                          </strong>
-                          <span>
-                            {item.value.change > 0 ? "+" : ""}
-                            {item.value.change} blocks
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                    {structureSpatial && (
-                      <div className="component-concentration">
-                        <span>
-                          <strong>Individuals: similar concentration</strong>
-                          HHI {individualSpatial.hhiFrom.toFixed(6)} →{" "}
-                          {individualSpatial.hhiTo.toFixed(6)} · effective blocks{" "}
-                          {formatNumber(individualSpatial.effectiveBlocksFrom, 1)} →{" "}
-                          {formatNumber(individualSpatial.effectiveBlocksTo, 1)}
-                        </span>
-                        <span>
-                          <strong>Tents: sharper concentration</strong>
-                          HHI {structureSpatial.hhiFrom.toFixed(6)} →{" "}
-                          {structureSpatial.hhiTo.toFixed(6)} · effective blocks{" "}
-                          {formatNumber(structureSpatial.effectiveBlocksFrom, 1)} →{" "}
-                          {formatNumber(structureSpatial.effectiveBlocksTo, 1)}
-                        </span>
-                      </div>
-                    )}
-                    {signal.componentDistribution?.derivedEstimate && (
-                      <div className="derived-bridge">
-                        <div>
-                          <span className="eyebrow">Why the adjusted estimate can fall</span>
-                          <strong>
-                            {formatNumber(signal.componentDistribution.derivedEstimate.from, 1)} →{" "}
-                            {formatNumber(signal.componentDistribution.derivedEstimate.to, 1)}{" "}
-                            <em>
-                              (
-                              {formatNumber(
-                                signal.componentDistribution.derivedEstimate.changePct,
-                                1,
-                              )}
-                              %)
-                            </em>
-                          </strong>
-                          <small>Secondary POST2020 multiplier-derived estimate</small>
-                        </div>
-                        <div className="decomposition-values">
-                          <span>
-                            Individuals{" "}
-                            <strong>
-                              +
-                              {formatNumber(
-                                signal.componentDistribution.derivedEstimate
-                                  .individualsContribution,
-                                1,
-                              )}
-                            </strong>
-                          </span>
-                          <span>
-                            Structures{" "}
-                            <strong>
-                              {formatNumber(
-                                signal.componentDistribution.derivedEstimate.structuresContribution,
-                                1,
-                              )}
-                            </strong>
-                          </span>
-                          <span>
-                            Vehicles{" "}
-                            <strong>
-                              {formatNumber(
-                                signal.componentDistribution.derivedEstimate.vehiclesContribution,
-                                1,
-                              )}
-                            </strong>
-                          </span>
-                        </div>
-                        <p>
-                          The derived decline is structure-driven and partly offset by more observed
-                          individuals. Components were digitized from maps; this is not a
-                          unique-person count or the published total series.
-                        </p>
-                      </div>
-                    )}
-                    <p>{signal.componentDistribution?.interpretation}</p>
-                  </div>
-                )}
-
-              <details className="evidence-details">
-                <summary>
-                  <span>Explore supporting evidence</span>
-                  <small>Thresholds, geography, limits, and review triggers</small>
-                </summary>
-
-                {signal.distributionSensitivity && (
-                  <div
-                    className="distribution-proof distribution-secondary"
-                    aria-label="Secondary mixed-unit active-block threshold and concentration sensitivity"
-                  >
-                    <div className="distribution-heading">
-                      <div>
-                        <span className="eyebrow">Secondary mixed-unit sensitivity</span>
-                        <strong>Mixed threshold dependence and composition-driven HHI</strong>
-                      </div>
-                      <span>Not a person count</span>
-                    </div>
-                    <div className="threshold-row">
-                      {signal.distributionSensitivity.thresholds.map((threshold) => (
-                        <div key={threshold.minimumUnits}>
-                          <small>
-                            Active blocks ≥{threshold.minimumUnits} unit
-                            {threshold.minimumUnits > 1 ? "s" : ""}
-                          </small>
-                          <strong>
-                            {threshold.fromBlocks} → {threshold.toBlocks}
-                          </strong>
-                          <span className={threshold.change > 0 ? "delta-up" : "threshold-flat"}>
-                            {threshold.change > 0 ? "+" : ""}
-                            {threshold.change} · {threshold.entered} entered / {threshold.exited}{" "}
-                            exited
-                          </span>
-                        </div>
-                      ))}
-                      <div className="concentration-result">
-                        <small>Intensity concentration</small>
-                        <strong>
-                          HHI +{formatNumber(signal.distributionSensitivity.hhiChangePct, 1)}%
-                        </strong>
-                        <span>
-                          effective blocks{" "}
-                          {formatNumber(signal.distributionSensitivity.effectiveBlocksFrom, 1)} →{" "}
-                          {formatNumber(signal.distributionSensitivity.effectiveBlocksTo, 1)}
-                        </span>
-                      </div>
-                    </div>
-                    <p>
-                      Single-unit blocks grew {signal.distributionSensitivity.singleUnitFrom} →{" "}
-                      {signal.distributionSensitivity.singleUnitTo} (+
-                      {signal.distributionSensitivity.singleUnitChange}), but do not alone explain
-                      the +{signal.activeChange} at ≥1 because ≥2 still rises. HHI{" "}
-                      {signal.distributionSensitivity.hhiFrom.toFixed(6)} →{" "}
-                      {signal.distributionSensitivity.hhiTo.toFixed(6)} is composition-driven; this
-                      secondary mixed index does not establish uniform spread or track movement.
-                    </p>
-                  </div>
-                )}
-
-                <div className="evidence-grid">
-                  <div className="churn-card">
-                    <div className="card-heading">
-                      <div>
-                        <span className="eyebrow">Secondary mixed-unit index</span>
-                        <h4>Index churn inside the stable panel</h4>
-                      </div>
-                      <span className="formula">
-                        +{signal.grossIncreases} − {signal.grossDecreases} = {signal.change}
-                      </span>
-                    </div>
-                    <div
-                      className="churn-visual"
-                      aria-label={`${signal.grossIncreases} increases, ${signal.grossDecreases} decreases, net ${signal.change}`}
-                      role="img"
-                    >
-                      <div
-                        className="churn-up"
-                        style={
-                          {
-                            "--bar": `${(signal.grossIncreases / Math.max(signal.grossIncreases, signal.grossDecreases)) * 100}%`,
-                          } as CSSProperties
-                        }
-                      >
-                        <span>Gross increases</span>
-                        <strong>+{signal.grossIncreases}</strong>
-                      </div>
-                      <div
-                        className="churn-down"
-                        style={
-                          {
-                            "--bar": `${(signal.grossDecreases / Math.max(signal.grossIncreases, signal.grossDecreases)) * 100}%`,
-                          } as CSSProperties
-                        }
-                      >
-                        <span>Gross decreases</span>
-                        <strong>−{signal.grossDecreases}</strong>
-                      </div>
-                    </div>
-                    <p className="method-note">
-                      <CheckIcon /> Individuals, tents/structures, and vehicles each count as one
-                      raw unit here. This is not a person estimate; the footprint is fixed at{" "}
-                      {signal.panelSize} blocks.
-                    </p>
-                  </div>
-
-                  <div className="area-view-card">
-                    <div className="card-heading">
-                      <div>
-                        <span className="eyebrow">Aggregate context</span>
-                        <h4>Where the signal changed</h4>
-                      </div>
-                      <span className="formula positive">Active blocks +{signal.activeChange}</span>
-                    </div>
-                    <div className="map-detail-row">
-                      <div>
-                        <AreaMap
-                          areas={data.areas}
-                          ariaLabel="Map of the six downtown neighborhoods showing the change in raw field observations; select a neighborhood for detail"
-                          onSelect={toggleAreaSelection}
-                          selectedId={selectedAreaId}
-                          valueFor={(area) => {
-                            if (area.latest === null) return { text: "no data", tone: "missing" };
-                            const maxDelta = Math.max(
-                              1,
-                              ...data.areas.map((row) => Math.abs(row.delta)),
-                            );
-                            return {
-                              text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
-                              tone: area.delta > 0 ? "up" : "down",
-                              intensity: Math.abs(area.delta) / maxDelta,
-                            };
-                          }}
-                        />
-                        <div className="map-legend" aria-label="Map legend">
-                          <span>
-                            <i className="map-legend-up" /> More observed units
-                          </span>
-                          <span>
-                            <i className="map-legend-down" /> Fewer observed units
-                          </span>
-                          {data.areas.some((area) => area.latest === null) && (
-                            <span>
-                              <i className="map-legend-missing" /> No recent observation
-                            </span>
-                          )}
-                        </div>
-                        <p className="map-caption">
-                          Change in raw field observations by neighborhood · simplified neighborhood
-                          boundaries, aggregate values only · not a count of people
-                        </p>
-                      </div>
-                      <AreaDetailPanel
-                        area={selectedArea}
-                        empty="Select a neighborhood — click, or Tab and Enter — to see what changed there."
-                        kicker="Neighborhood detail"
-                        note="Raw observed units on the fixed like-for-like panel. Aggregate area values, not unique people; components are digitized from the same maps."
-                        rows={
-                          selectedArea
-                            ? [
-                                {
-                                  label: "Observed change",
-                                  value: `${selectedArea.delta > 0 ? "+" : ""}${selectedArea.delta} units`,
-                                  hint: "Jan 2024 → Jan 2025, same blocks",
-                                },
-                                {
-                                  label: "Latest observations",
-                                  value:
-                                    selectedArea.latest === null
-                                      ? "no data"
-                                      : formatNumber(selectedArea.latest),
-                                  hint: "most recent monthly street count",
-                                },
-                                {
-                                  label: "Planning load",
-                                  value: formatNumber(selectedArea.planningLoad),
-                                  hint: "upper forecast bound",
-                                },
-                                {
-                                  label: "Held-out WAPE",
-                                  value:
-                                    selectedArea.auditWape === null
-                                      ? "not audited"
-                                      : `${formatNumber(selectedArea.auditWape, 1)}%`,
-                                  hint:
-                                    selectedArea.auditWape !== null && selectedArea.auditWape > 30
-                                      ? "noisy — treat with caution"
-                                      : "2025 held-out audit",
-                                  flagged:
-                                    selectedArea.auditWape !== null && selectedArea.auditWape > 30,
-                                },
-                              ]
-                            : []
-                        }
-                      />
-                    </div>
-                    <MapValueTable
-                      caption="Change in raw field observations by neighborhood"
-                      rows={data.areas.map((area) => ({
-                        name: area.name,
-                        value:
-                          area.latest === null
-                            ? "no data"
-                            : `${area.delta > 0 ? "+" : ""}${area.delta}`,
-                        state:
-                          area.latest === null
-                            ? "No recent observation"
-                            : area.delta > 0
-                              ? "More observed units"
-                              : "Fewer observed units",
-                      }))}
-                    />
-                  </div>
-                </div>
-
-                <div className="evidence-balance">
-                  <div>
-                    <span className="evidence-icon evidence-for">+</span>
-                    <p>
-                      <strong>Evidence for</strong>Observed individuals increased while structures
-                      fell; individual observations reached more fixed-panel blocks at both tested
-                      thresholds.
-                    </p>
-                  </div>
-                  <div>
-                    <span className="evidence-icon evidence-against">!</span>
-                    <p>
-                      <strong>Evidence boundary</strong>No identities, movement paths, or causal
-                      explanation are observed.
-                    </p>
-                  </div>
-                  <div>
-                    <span className="evidence-icon evidence-check">✓</span>
-                    <p>
-                      <strong>Validity check</strong>Stable panel, explicit missingness, source-era
-                      labels kept separate.
-                    </p>
-                  </div>
-                </div>
-
-                <aside aria-labelledby="challenge-title" className="challenge-card">
-                  <div className="challenge-heading">
-                    <div>
-                      <span className="eyebrow">Adversarial checkpoint</span>
-                      <h4 id="challenge-title">What would change our mind?</h4>
-                    </div>
-                    <span className="challenge-badge">Open to revision</span>
-                  </div>
-                  <p>
-                    This result is useful because its failure conditions are explicit. Any one of
-                    these findings would downgrade the conclusion or trigger a new review.
-                  </p>
-                  <ul>
-                    <li>
-                      One of the matched months is later found to be incomplete or misclassified.
-                    </li>
-                    <li>
-                      A boundary or method change makes the 261-block comparison non-comparable.
-                    </li>
-                    <li>
-                      Source review explains the 2023–2024 discontinuity as collection change.
-                    </li>
-                    <li>
-                      New held-out data materially weakens forecast error or interval coverage.
-                    </li>
-                  </ul>
-                </aside>
-              </details>
-
-              {data.reportingBias ? (
-                <details className="bias-diagnostic">
-                  <summary>
-                    <span>
-                      <small>Optional attention-bias check</small>
-                      Encampment report share rose{" "}
-                      {formatNumber(
-                        data.reportingBias.matchedCalendar?.shareChangePoints ??
-                          data.reportingBias.shareChangePoints,
-                        1,
-                      )}{" "}
-                      points
-                    </span>
-                    <strong>Excluded from planner</strong>
-                  </summary>
-                  <div className="bias-body">
-                    <div className="bias-heading">
-                      <div>
-                        <span className="eyebrow">Get It Done · descriptive diagnostic</span>
-                        <h4>Did public reporting attention change?</h4>
-                      </div>
-                      <span className="diagnostic-only">Diagnostic only · no causal claim</span>
-                    </div>
-
-                    {data.reportingBias.matchedCalendar && (
-                      <div className="matched-calendar">
-                        <div>
-                          <span className="eyebrow">
-                            Matched calendar · same Aug–Jan months YoY
-                          </span>
-                          <strong>Seasonality check strengthens the reporting-pattern shift</strong>
-                        </div>
-                        <div className="bias-metrics">
-                          <div>
-                            <span>Encampment rows</span>
-                            <strong>
-                              +{formatNumber(data.reportingBias.matchedCalendar.rawChangePct, 1)}%
-                            </strong>
-                          </div>
-                          <div>
-                            <span>Top-level requests</span>
-                            <strong>
-                              +
-                              {formatNumber(
-                                data.reportingBias.matchedCalendar.uniqueParentChangePct,
-                                1,
-                              )}
-                              %
-                            </strong>
-                          </div>
-                          <div>
-                            <span>All GID rows</span>
-                            <strong>
-                              +
-                              {formatNumber(
-                                data.reportingBias.matchedCalendar.allReportsChangePct,
-                                1,
-                              )}
-                              %
-                            </strong>
-                          </div>
-                          <div>
-                            <span>Encampment share</span>
-                            <strong>
-                              {formatNumber(data.reportingBias.matchedCalendar.sharePrePct, 1)} →{" "}
-                              {formatNumber(data.reportingBias.matchedCalendar.sharePostPct, 1)}%
-                            </strong>
-                          </div>
-                        </div>
-                        <p>{data.reportingBias.matchedCalendar.interpretation}</p>
-                      </div>
-                    )}
-
-                    <span className="eyebrow diagnostic-subhead">
-                      Prepared pre/post windows · July 2023 excluded
-                    </span>
-                    <div className="bias-metrics">
-                      <div>
-                        <span>Encampment rows</span>
-                        <strong>+{formatNumber(data.reportingBias.rawChangePct, 1)}%</strong>
-                      </div>
-                      <div>
-                        <span>Unique parents</span>
-                        <strong>
-                          +{formatNumber(data.reportingBias.uniqueParentChangePct, 1)}%
-                        </strong>
-                      </div>
-                      <div>
-                        <span>All GID rows</span>
-                        <strong>+{formatNumber(data.reportingBias.allReportsChangePct, 1)}%</strong>
-                      </div>
-                      <div>
-                        <span>Encampment share</span>
-                        <strong>
-                          {formatNumber(data.reportingBias.sharePrePct, 1)} →{" "}
-                          {formatNumber(data.reportingBias.sharePostPct, 1)}%
-                        </strong>
-                      </div>
-                      <div>
-                        <span>Placebo basket</span>
-                        <strong>{formatNumber(data.reportingBias.placeboChangePct, 1)}%</strong>
-                      </div>
-                    </div>
-
-                    <div className="checkpoint-block">
-                      <div>
-                        <span className="eyebrow">Cross-source checkpoints</span>
-                        <p>Raw reports per published total unit—not reports per person.</p>
-                      </div>
-                      <div className="checkpoint-list">
-                        {data.reportingBias.checkpoints.map((checkpoint) => (
-                          <div key={checkpoint.month}>
-                            <span>{checkpoint.month}</span>
-                            <strong>{formatNumber(checkpoint.rawPerPublishedUnit, 2)}×</strong>
-                            <small>
-                              {formatNumber(checkpoint.rawReports)} raw reports /{" "}
-                              {formatNumber(checkpoint.publishedTotal)} published units
-                            </small>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {data.robustness ? (
-                      <section className="robustness-section" aria-labelledby="robustness-title">
-                        <div className="robustness-section-title">
-                          <span className="eyebrow" id="robustness-title">
-                            Alternative explanations tested
-                          </span>
-                          <strong>Two descriptive sensitivity checks</strong>
-                        </div>
-                        <div className="robustness-grid">
-                          <article className="robustness-card">
-                            <div className="robustness-title">
-                              <span className="eyebrow">Footfall sensitivity</span>
-                              <strong>Paid-parking proxy</strong>
-                              <small>
-                                {data.robustness.parking.matchedCalendar
-                                  ? "Same six calendar months one year apart"
-                                  : "Aligned six-month means · July 2023 excluded"}
-                              </small>
-                            </div>
-                            <div className="parking-result">
-                              <span>
-                                <small>
-                                  {formatNumber(
-                                    data.robustness.parking.matchedCalendar?.verifiedPoles ??
-                                      data.robustness.parking.verifiedPoles,
-                                  )}{" "}
-                                  historically verified poles
-                                </small>
-                                <strong>
-                                  {formatNumber(
-                                    data.robustness.parking.matchedCalendar?.preMonthlyMean ??
-                                      data.robustness.parking.preMonthlyMean,
-                                  )}{" "}
-                                  →{" "}
-                                  {formatNumber(
-                                    data.robustness.parking.matchedCalendar?.postMonthlyMean ??
-                                      data.robustness.parking.postMonthlyMean,
-                                  )}
-                                </strong>
-                                <small>
-                                  transactions / month ·{" "}
-                                  {formatNumber(
-                                    data.robustness.parking.matchedCalendar?.changePct ??
-                                      data.robustness.parking.changePct,
-                                    1,
-                                  )}
-                                  %
-                                </small>
-                              </span>
-                              <span>
-                                <small>
-                                  {data.robustness.parking.matchedCalendar
-                                    ? "All observed Downtown meters"
-                                    : "Per meter-month"}
-                                </small>
-                                <strong>
-                                  {data.robustness.parking.matchedCalendar
-                                    ? `${formatNumber(data.robustness.parking.matchedCalendar.allMeterChangePct, 1)}%`
-                                    : `${formatNumber(data.robustness.parking.prePerMeter, 1)} → ${formatNumber(data.robustness.parking.postPerMeter, 1)}`}
-                                </strong>
-                                <small>
-                                  {data.robustness.parking.matchedCalendar
-                                    ? "matched-calendar sensitivity"
-                                    : `all observed meters ${formatNumber(data.robustness.parking.allMeterChangePct, 1)}%`}
-                                </small>
-                              </span>
-                            </div>
-                            <p>
-                              {data.robustness.parking.matchedCalendar?.interpretation ??
-                                data.robustness.parking.interpretation}
-                            </p>
-                            <small className="robustness-caveat">
-                              Transactions ≠ people or visits. Rates, hours, inventory, payment
-                              substitution, free parking, events, transit, economy, and seasonality
-                              remain possible; the parking zone is not a proven GID-boundary match.
-                            </small>
-                          </article>
-
-                          <article className="robustness-card">
-                            <div className="robustness-title">
-                              <span className="eyebrow">Count-day sensitivity</span>
-                              <strong>NOAA weather was nearly matched</strong>
-                            </div>
-                            <div className="weather-dates">
-                              {data.robustness.weather.dates.map((date) => (
-                                <span key={date.date}>
-                                  <small>{formatDate(date.date)}</small>
-                                  <strong>{formatNumber(date.maximumTemperature)}°F</strong>
-                                  <small>{formatNumber(date.precipitation, 2)} in rain</small>
-                                </span>
-                              ))}
-                            </div>
-                            <p>{data.robustness.weather.interpretation}</p>
-                            <small className="robustness-caveat">
-                              {data.robustness.weather.station}. This rules out only an obvious
-                              same-day rain/TMAX contrast; airport conditions and prior weather may
-                              differ.
-                            </small>
-                          </article>
-                        </div>
-                      </section>
-                    ) : (
-                      <p className="diagnostic-unavailable" role="note">
-                        Alternative-explanation checks are unavailable in this artifact. They remain
-                        excluded from forecasting and allocation.
-                      </p>
-                    )}
-
-                    <p className="bias-interpretation">{data.reportingBias.interpretation}</p>
-                    <div className="sensitivity-row">
-                      <span>
-                        Duplicate-child share {formatNumber(data.reportingBias.duplicatePrePct, 1)}{" "}
-                        → {formatNumber(data.reportingBias.duplicatePostPct, 1)}%
-                      </span>
-                      <span>
-                        Mobile-origin share {formatNumber(data.reportingBias.mobilePrePct, 1)} →{" "}
-                        {formatNumber(data.reportingBias.mobilePostPct, 1)}%
-                      </span>
-                      <span>
-                        <code>comm_plan_name=DOWNTOWN</code> · <code>date_requested</code> · July
-                        2023 excluded
-                      </span>
-                    </div>
-                    <p className="bias-exclusion">
-                      <strong>Never used for:</strong> planning load, outreach allocation, people or
-                      movement, abatement, case response, intervention effects, or the forecast.
-                    </p>
-                  </div>
-                </details>
-              ) : (
-                <div className="diagnostic-unavailable" role="note">
-                  <strong>Optional reporting diagnostic unavailable.</strong> The loaded artifact
-                  did not contain a complete validated diagnostic, so no partial values are shown.
-                  This lane remains excluded from forecasting and allocation.
-                </div>
+                          Recompute unlocked hours
+                        </button>
+                      )}
+                    </>
+                  )}
+                </>
               )}
-            </div>
-          )}
-        </section>
-
-        <section className="decision-section" id="forecast" aria-labelledby="forecast-title">
-          <div aria-hidden="true" className="section-number">
-            02
-          </div>
-          <div className="section-intro split-intro">
-            <div>
-              <p className="eyebrow">Forecast rehearsal · only past data used</p>
-              <h2 id="forecast-title">Could we have predicted January 2026?</h2>
-              <p>
-                Using only data available in December 2025, the tool forecasts the next month, then
-                grades itself against its own past errors. The plan uses the high end of that error
-                range, so uncertainty buys extra coverage.
-              </p>
-            </div>
-            <span className="wide-warning">A rehearsal on past data · not a live forecast</span>
-          </div>
-
-          <div className="forecast-layout">
-            <div className="chart-card">
-              <div className="chart-summary">
-                <div>
-                  <span className="eyebrow">{data.forecast.targetPeriod}</span>
-                  <strong>{formatNumber(data.forecast.point)}</strong>
-                  <small>best single guess</small>
-                </div>
-                <div>
-                  <span className="eyebrow">Likely range, from past errors</span>
-                  <strong>
-                    {formatNumber(data.forecast.lower)}–{formatNumber(data.forecast.upper)}
-                  </strong>
-                  <small>the plan uses the high end</small>
-                </div>
-              </div>
-              <ForecastChart data={data.forecast} history={data.history} />
-            </div>
-
-            <div className="model-card">
-              <div className="card-heading">
-                <div>
-                  <span className="eyebrow">Rolling-origin backtest</span>
-                  <h3>Model scorecard</h3>
-                </div>
-                <span className="selected-chip">
-                  {data.forecast.scorecard
-                    .find((model) => model.selected)
-                    ?.model.toLowerCase()
-                    .includes("seasonal naive")
-                    ? "Baseline retained"
-                    : "Challenger promoted"}
-                </span>
-              </div>
-              <p className="model-rule">
-                A candidate is promoted only if it improves held-out error. Lower MAE and WAPE are
-                better; interval coverage is audited separately.
-              </p>
-              <div className="model-audit" aria-label="Final 2025 walk-forward audit">
-                <span>
-                  <small>Audit MAE</small>
-                  <strong>{formatNumber(data.forecast.mae, 1)}</strong>
-                </span>
-                <span>
-                  <small>Audit WAPE</small>
-                  <strong>{formatNumber(data.forecast.wape, 1)}%</strong>
-                </span>
-                <span>
-                  <small>Interval coverage</small>
-                  <strong>{formatNumber(data.forecast.coverage)}%</strong>
-                  <small>{data.forecast.intervalPoints} held-out folds</small>
-                </span>
-              </div>
-              <div className="scorecard-table-wrap">
-                <table className="scorecard-table">
-                  <caption className="sr-only">Rolling-origin forecast model comparison</caption>
-                  <thead>
-                    <tr>
-                      <th>Model</th>
-                      <th>MAE</th>
-                      <th>WAPE</th>
-                      <th>Coverage</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.forecast.scorecard.map((model) => (
-                      <tr className={model.selected ? "selected-model" : ""} key={model.model}>
-                        <th>
-                          {model.model}
-                          {model.selected && <span>Selected</span>}
-                        </th>
-                        <td>{formatNumber(model.mae)}</td>
-                        <td>{formatNumber(model.wape, 1)}%</td>
-                        <td>
-                          {model.coverage === null ? "—" : `${formatNumber(model.coverage)}%`}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="model-validation">
-                <CheckIcon />
-                <span>
-                  <strong>No black-box promotion.</strong> Seasonal baseline remains unless a
-                  candidate wins out of sample.
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <details className="data-table-disclosure">
-            <summary>View accessible scenario values & method</summary>
-            <div className="table-scroll">
-              <table>
-                <caption>
-                  Observed history and historical one-step-ahead scenario shown in the chart
-                </caption>
-                <thead>
-                  <tr>
-                    <th>Period</th>
-                    <th>Status</th>
-                    <th>Value</th>
-                    <th>Lower</th>
-                    <th>Upper</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.history.map((point) => (
-                    <tr key={point.period}>
-                      <th>{point.period}</th>
-                      <td>{point.value === null ? "Missing" : "Observed"}</td>
-                      <td>{point.value ?? "—"}</td>
-                      <td>—</td>
-                      <td>—</td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <th>{data.forecast.targetPeriod}</th>
-                    <td>Historical scenario</td>
-                    <td>{formatNumber(data.forecast.point)}</td>
-                    <td>{formatNumber(data.forecast.lower)}</td>
-                    <td>{formatNumber(data.forecast.upper)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p>
-              <strong>Training:</strong> {data.forecast.trainingWindow}. Rolling-origin evaluation;
-              no interpolation across missing targets. Data are frozen at December 2025; the
-              historical scenario’s upper bound feeds only this demonstration allocation. The
-              residual band achieved {formatNumber(data.forecast.coverage)}% empirical coverage
-              across {data.forecast.intervalPoints} folds; it is not a guaranteed 80% probability
-              statement.
-            </p>
-          </details>
-        </section>
-
-        <section className="decision-section" id="planner" aria-labelledby="planner-title">
-          <div aria-hidden="true" className="section-number">
-            03
-          </div>
-          <div className="section-intro split-intro planner-intro">
-            <div>
-              <p className="eyebrow">The staffing plan</p>
-              <h2 id="planner-title">Plan {budget} staff-hours</h2>
-              <p>
-                Split the hours across the six neighborhoods. First, every area gets a minimum you
-                choose, so no place goes unvisited. Whatever remains goes where the forecast expects
-                the most people.
-              </p>
-            </div>
-            <div className={`guard-status ${guardEnabled ? "guard-on" : "guard-off"}`}>
-              <span>{guardEnabled ? "✓" : "!"}</span>
-              <div>
-                <small>Guaranteed minimum</small>
-                <strong>
-                  {guardEnabled ? `ON · ${coverageFloor}h per area` : "OFF · COMPARISON ONLY"}
-                </strong>
-              </div>
-            </div>
-          </div>
-
-          {renderPlannerControls()}
-
-          {renderScenarioBench()}
-
-          {!plan ? (
-            renderPlannerStart()
-          ) : !plan.feasible ? (
-            <div className="infeasible" role="alert">
-              <span>!</span>
-              <div>
-                <h3>No feasible plan</h3>
-                <p>{plan.message}</p>
-                <p>Increase the budget, remove a lock, or explicitly revise the floor.</p>
-              </div>
-            </div>
-          ) : (
-            <div aria-live="polite" className="plan-result reveal">
-              {renderPlanRows()}
-
-              <div className="plan-map">
-                <div className="plan-map-heading">
-                  <span className="eyebrow">The plan on the map</span>
-                  <p>
-                    Every neighborhood keeps its guaranteed minimum; the extra hours go where the
-                    forecast expects the most people.
-                  </p>
-                </div>
-                <div className="map-detail-row">
-                  <div>
-                    <AreaMap
-                      areas={planningAreas}
-                      ariaLabel="Map of the six downtown neighborhoods showing planned staff-hours; select a neighborhood for detail"
-                      onSelect={toggleAreaSelection}
-                      selectedId={selectedAreaId}
-                      valueFor={(area) => {
-                        const hours = allocationById.get(area.id) ?? 0;
-                        const belowFloor = guardEnabled && hours < coverageFloor;
-                        return {
-                          text: `${hours}h${belowFloor ? " !" : ""}`,
-                          tone: belowFloor ? "down" : "neutral",
-                          intensity: hours / maxHours,
-                        };
-                      }}
-                    />
-                    <p className="map-caption">
-                      Planned staff-hours by neighborhood · simplified neighborhood boundaries
-                      {guardEnabled ? " · ! marks hours below the minimum" : ""}
-                      {intervention
-                        ? ` · ${data.areas.find((area) => area.id === intervention.areaId)?.name ?? ""} modeled as cleared (assumption)`
-                        : ""}
-                    </p>
-                  </div>
+              {wsTab === "area" && (
+                <>
                   <AreaDetailPanel
                     area={selectedArea}
-                    empty="Select a neighborhood on the map — click, or Tab and press Enter — to inspect its share of the plan, or to stress-test an action there."
-                    kicker="Allocation detail"
+                    empty="Select a neighborhood on the map to open its dossier."
+                    kicker="Area dossier"
                     note={selectedArea?.reason}
                     rows={
                       selectedArea
                         ? [
                             {
-                              label: "Planned hours",
-                              value: `${allocationById.get(selectedArea.id) ?? 0}h`,
-                              hint: lockedIds.has(selectedArea.id)
-                                ? "human lock — edit in the list above"
-                                : "recompute updates this",
+                              label: "Observed change",
+                              value:
+                                selectedArea.latest === null
+                                  ? "no recent observation"
+                                  : `${selectedArea.delta > 0 ? "+" : ""}${selectedArea.delta} units`,
+                              hint: "raw field observations, same month",
                             },
                             {
-                              label: "Coverage floor",
-                              value: guardEnabled
-                                ? `${coverageFloor}h minimum`
-                                : "off — audit only",
-                              hint: guardEnabled
-                                ? "user-set continuity floor"
-                                : "no minimum enforced",
+                              label: "Latest count",
+                              value:
+                                selectedArea.latest === null
+                                  ? "—"
+                                  : formatNumber(selectedArea.latest),
+                              hint: "latest monthly observation",
                             },
                             {
                               label: "Planning load",
@@ -3021,6 +2170,20 @@ function App() {
                                   : "weights the remaining hours",
                             },
                             {
+                              label: "Planned hours",
+                              value: `${allocationById.get(selectedArea.id) ?? 0}h`,
+                              hint: lockedIds.has(selectedArea.id)
+                                ? "human lock"
+                                : guardEnabled
+                                  ? `${coverageFloor}h minimum guaranteed`
+                                  : "no minimum enforced",
+                            },
+                            {
+                              label: "Unmet load",
+                              value: `${unmetByArea.get(selectedArea.id) ?? 0}h`,
+                              hint: "hours moved by minimums and locks",
+                            },
+                            {
                               label: "Held-out WAPE",
                               value:
                                 selectedArea.auditWape === null
@@ -3033,180 +2196,1354 @@ function App() {
                               flagged:
                                 selectedArea.auditWape !== null && selectedArea.auditWape > 30,
                             },
+                            ...(compareById
+                              ? [
+                                  {
+                                    label: "Vs saved scenario",
+                                    value: (() => {
+                                      const delta =
+                                        (allocationById.get(selectedArea.id) ?? 0) -
+                                        (compareById.get(selectedArea.id) ?? 0);
+                                      return delta === 0
+                                        ? "same"
+                                        : `${delta > 0 ? "+" : ""}${delta}h`;
+                                    })(),
+                                    hint: "current plan minus pinned scenario",
+                                  },
+                                ]
+                              : []),
                           ]
                         : []
                     }
                   />
-                </div>
-                {renderInterventionControl()}
-                <MapValueTable
-                  caption="Planned staff-hours by neighborhood"
-                  rows={planningAreas.map((area) => {
-                    const hours = allocationById.get(area.id) ?? 0;
-                    return {
-                      name: area.name,
-                      value: `${hours}h`,
-                      state: lockedIds.has(area.id)
-                        ? "Human lock"
-                        : !guardEnabled
-                          ? "No minimum"
-                          : hours < coverageFloor
-                            ? "Below minimum"
-                            : "Minimum met",
-                    };
-                  })}
-                />
-              </div>
+                  {renderInterventionControl()}
+                </>
+              )}
+              {wsTab === "scenarios" && renderScenarioBench()}
+              {wsTab === "brief" && <div className="ws-brief">{renderBriefCluster()}</div>}
+            </div>
+          </aside>
+        </div>
+      )}
 
-              <div className="plan-footer">
+      {view === "story" && (
+        <main>
+          <section className="hero" aria-labelledby="hero-title">
+            <div className="hero-copy">
+              <span className="status-line">
+                <i className="status-dot" />{" "}
+                {loading
+                  ? "Verifying local artifacts…"
+                  : data.origin === "generated"
+                    ? "Generated analysis loaded"
+                    : "Offline demo snapshot"}
+              </span>
+              <p className="kicker">
+                Prepared decision · {data.scenario.focusArea} · {data.scenario.period}
+              </p>
+              <h1 id="hero-title">
+                Fewer tents,
+                <br />
+                <em>or fewer people?</em>
+              </h1>
+              <p className="hero-lede">
+                Downtown San Diego’s unsheltered estimate fell 22% in a year, but the drop came from
+                tents, not people: on the same 261 blocks, outreach workers saw more people than the
+                year before. This tool shows what changed, what’s uncertain, and where the next
+                outreach shift should go.
+              </p>
+              <div
+                className="composition-lead"
+                aria-label="Observed composition and active-block footprint comparison"
+              >
                 <div>
-                  <span className="eyebrow">Constraint check</span>
-                  <strong>
-                    {planTotal === budget ? "Budget conserved exactly" : "Budget mismatch"}
-                  </strong>
+                  <span>People seen in the field</span>
+                  <strong>+{formatNumber(signal.components.individuals.changePct, 1)}%</strong>
+                  <small>
+                    {signal.components.individuals.from} → {signal.components.individuals.to}
+                  </small>
                 </div>
                 <div>
-                  <span className="eyebrow">Unmet planning load</span>
-                  <strong>
-                    {unmetTotal > 0
-                      ? `${unmetTotal}h moved to minimums and locks`
-                      : "0h · hours follow the forecast"}
-                  </strong>
+                  <span>Tents & structures</span>
+                  <strong>{formatNumber(signal.components.structures.changePct, 1)}%</strong>
+                  <small>
+                    {signal.components.structures.from} → {signal.components.structures.to}
+                  </small>
                 </div>
                 <div>
-                  <span className="eyebrow">Human changes</span>
-                  <strong>
-                    {lockedIds.size
-                      ? `${lockedIds.size} locked assignment${lockedIds.size > 1 ? "s" : ""}`
-                      : "None yet"}
-                  </strong>
+                  <span>Vehicles</span>
+                  <strong>{formatNumber(signal.components.vehicles.changePct, 1)}%</strong>
+                  <small>
+                    {signal.components.vehicles.from} → {signal.components.vehicles.to}
+                  </small>
                 </div>
-                {planDirty && (
-                  <button
-                    className="button button-primary"
-                    disabled={!budgetValid}
-                    onClick={() => runPlan()}
-                    type="button"
-                  >
-                    Recompute unlocked hours
-                  </button>
+                <div>
+                  <span>{individualOne ? "Blocks where people were seen" : "Active blocks"}</span>
+                  <strong>
+                    +
+                    {individualOne
+                      ? formatNumber((individualOne.change / individualOne.fromBlocks) * 100, 1)
+                      : formatNumber(signal.activeChangePct, 1)}
+                    %
+                  </strong>
+                  <small>
+                    {individualOne?.fromBlocks ?? signal.activeFrom} →{" "}
+                    {individualOne?.toBlocks ?? signal.activeTo}
+                  </small>
+                </div>
+                <p>Same month · same method · same {signal.panelSize} blocks</p>
+              </div>
+            </div>
+            <div aria-label="Prepared scenario summary" className="hero-decision">
+              <span className="eyebrow">The decision at hand</span>
+              <p>
+                Suppose <strong>{budget} staff-hours</strong> are available for next week’s outreach
+                shifts. Which neighborhoods should get them?
+              </p>
+              <p className="capacity-note">
+                The hours are an editable assumption, not staffing data. A real deployment would use
+                the provider’s own schedule.
+              </p>
+              <div className="provisional-note">
+                <span>{data.scenario.status === "ready" ? "✓ Prepared" : "◇ Provisional"}</span>{" "}
+                Evidence limits and review triggers travel with the result.
+              </div>
+              <EvidenceChain data={data} />
+            </div>
+          </section>
+
+          <nav aria-label="Decision steps" className="step-nav">
+            <a href="#drop-test">
+              <span>01</span> Test the drop
+            </a>
+            <a href="#forecast">
+              <span>02</span> Check the forecast
+            </a>
+            <a href="#planner">
+              <span>03</span> Plan the shift
+            </a>
+            <a href="#review">
+              <span>04</span> Human review
+            </a>
+            {plan?.feasible && renderPlanState()}
+          </nav>
+
+          <section className="decision-section" id="drop-test" aria-labelledby="drop-title">
+            <div aria-hidden="true" className="section-number">
+              01
+            </div>
+            <div className="section-intro">
+              <p className="eyebrow">What actually changed</p>
+              <h2 id="drop-title">Test the drop</h2>
+              <p>
+                The falling estimate is built from three things counted in the field: people, tents,
+                and vehicles. Compare each on the same {signal.panelSize} blocks, one January to the
+                next, and see which actually dropped.
+              </p>
+            </div>
+
+            <div className="metric-grid composition-metrics">
+              <Metric
+                label="People seen in the field"
+                value={`${signal.components.individuals.from} → ${signal.components.individuals.to}`}
+                detail={`+${formatNumber(signal.components.individuals.changePct, 1)}%`}
+                tone="teal"
+              />
+              <Metric
+                label="Tents & structures"
+                value={`${signal.components.structures.from} → ${signal.components.structures.to}`}
+                detail={`${formatNumber(signal.components.structures.changePct, 1)}%`}
+                tone="amber"
+              />
+              <Metric
+                label="Vehicles"
+                value={`${signal.components.vehicles.from} → ${signal.components.vehicles.to}`}
+                detail={`${formatNumber(signal.components.vehicles.changePct, 1)}%`}
+              />
+              <Metric
+                label={individualOne ? "Blocks with at least one person" : "Active footprint"}
+                value={`${formatNumber(individualOne?.fromBlocks ?? signal.activeFrom)} → ${formatNumber(individualOne?.toBlocks ?? signal.activeTo)}`}
+                detail={
+                  individualOne
+                    ? `+${individualOne.change} blocks · like-for-like`
+                    : `+${formatNumber(signal.activeChangePct, 1)}% active blocks`
+                }
+                tone="teal"
+              />
+            </div>
+            <details className="context-details">
+              <summary>
+                <span>How to read this comparison</span>
+                <small>Panel, units, and date checks</small>
+              </summary>
+              <p className="mixed-index-note">
+                <strong>Secondary mixed-component context:</strong> all active blocks{" "}
+                {signal.activeFrom}
+                {" → "}
+                {signal.activeTo} (+{formatNumber(signal.activeChangePct, 1)}%); mixed-unit index{" "}
+                {signal.fromValue} → {signal.toValue} ({formatNumber(signal.changePct, 1)}%). The
+                index arithmetically sums unlike observation units—individuals, structures, and
+                vehicles—and is not a count of unique people or an estimated person total. Panel
+                fixed at {signal.panelSize} blocks.
+              </p>
+              <p className="comparison-defense">
+                <CheckIcon /> This is the latest available same-month year-over-year pair in the
+                supplied panel: January 2025 is its final date, both months use the POST2020 method,
+                and the exact same {signal.panelSize} blocks are compared.
+              </p>
+            </details>
+
+            {!dropRevealed ? (
+              <div className="reveal-action">
+                <button
+                  className="button button-primary button-large"
+                  onClick={() => revealDrop()}
+                  type="button"
+                >
+                  <SparkIcon /> Test the drop
+                </button>
+                <span>Same result every run · bundled local data · no AI in the loop</span>
+              </div>
+            ) : (
+              <div aria-live="polite" className="evidence-result reveal" id="evidence-result">
+                <div className="result-header">
+                  <div className="result-symbol">
+                    <ArrowDownIcon />
+                  </div>
+                  <div>
+                    <p className="eyebrow">What the same-blocks comparison shows</p>
+                    <h3 ref={resultHeading} tabIndex={-1}>
+                      {classificationLabel}
+                    </h3>
+                    <p>
+                      {individualSpatial
+                        ? "People were seen on more blocks than last year, spread about as evenly as before. Tents disappeared from many blocks and bunched up in fewer."
+                        : "Field activity reached more blocks while becoming more concentrated where it remained."}{" "}
+                      These are on-site observations: they cannot say who moved where, or why.
+                    </p>
+                  </div>
+                  <span className="confidence-chip">Human review required</span>
+                </div>
+
+                {individualSpatial &&
+                  individualOne &&
+                  individualTwo &&
+                  structureOne &&
+                  structureTwo && (
+                    <div
+                      className="component-proof"
+                      aria-label="Like-for-like observed individual and tent footprint sensitivity"
+                    >
+                      <div className="distribution-heading">
+                        <div>
+                          <span className="eyebrow">
+                            The key check · same blocks, one year apart
+                          </span>
+                          <strong>
+                            People were seen on more blocks, however strictly you count
+                          </strong>
+                        </div>
+                        <span>Same 261 blocks both years</span>
+                      </div>
+                      <div className="component-thresholds">
+                        {[
+                          { label: "Blocks with ≥1 person seen", value: individualOne, tone: "up" },
+                          { label: "Blocks with ≥2 people seen", value: individualTwo, tone: "up" },
+                          { label: "Blocks with ≥1 tent", value: structureOne, tone: "down" },
+                          { label: "Blocks with ≥2 tents", value: structureTwo, tone: "down" },
+                        ].map((item) => (
+                          <div
+                            className={`component-threshold component-${item.tone}`}
+                            key={item.label}
+                          >
+                            <small>{item.label}</small>
+                            <strong>
+                              {item.value.fromBlocks} → {item.value.toBlocks}
+                            </strong>
+                            <span>
+                              {item.value.change > 0 ? "+" : ""}
+                              {item.value.change} blocks
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      {structureSpatial && (
+                        <div className="component-concentration">
+                          <span>
+                            <strong>Individuals: similar concentration</strong>
+                            HHI {individualSpatial.hhiFrom.toFixed(6)} →{" "}
+                            {individualSpatial.hhiTo.toFixed(6)} · effective blocks{" "}
+                            {formatNumber(individualSpatial.effectiveBlocksFrom, 1)} →{" "}
+                            {formatNumber(individualSpatial.effectiveBlocksTo, 1)}
+                          </span>
+                          <span>
+                            <strong>Tents: sharper concentration</strong>
+                            HHI {structureSpatial.hhiFrom.toFixed(6)} →{" "}
+                            {structureSpatial.hhiTo.toFixed(6)} · effective blocks{" "}
+                            {formatNumber(structureSpatial.effectiveBlocksFrom, 1)} →{" "}
+                            {formatNumber(structureSpatial.effectiveBlocksTo, 1)}
+                          </span>
+                        </div>
+                      )}
+                      {signal.componentDistribution?.derivedEstimate && (
+                        <div className="derived-bridge">
+                          <div>
+                            <span className="eyebrow">Why the adjusted estimate can fall</span>
+                            <strong>
+                              {formatNumber(signal.componentDistribution.derivedEstimate.from, 1)} →{" "}
+                              {formatNumber(signal.componentDistribution.derivedEstimate.to, 1)}{" "}
+                              <em>
+                                (
+                                {formatNumber(
+                                  signal.componentDistribution.derivedEstimate.changePct,
+                                  1,
+                                )}
+                                %)
+                              </em>
+                            </strong>
+                            <small>Secondary POST2020 multiplier-derived estimate</small>
+                          </div>
+                          <div className="decomposition-values">
+                            <span>
+                              Individuals{" "}
+                              <strong>
+                                +
+                                {formatNumber(
+                                  signal.componentDistribution.derivedEstimate
+                                    .individualsContribution,
+                                  1,
+                                )}
+                              </strong>
+                            </span>
+                            <span>
+                              Structures{" "}
+                              <strong>
+                                {formatNumber(
+                                  signal.componentDistribution.derivedEstimate
+                                    .structuresContribution,
+                                  1,
+                                )}
+                              </strong>
+                            </span>
+                            <span>
+                              Vehicles{" "}
+                              <strong>
+                                {formatNumber(
+                                  signal.componentDistribution.derivedEstimate.vehiclesContribution,
+                                  1,
+                                )}
+                              </strong>
+                            </span>
+                          </div>
+                          <p>
+                            The derived decline is structure-driven and partly offset by more
+                            observed individuals. Components were digitized from maps; this is not a
+                            unique-person count or the published total series.
+                          </p>
+                        </div>
+                      )}
+                      <p>{signal.componentDistribution?.interpretation}</p>
+                    </div>
+                  )}
+
+                <details className="evidence-details">
+                  <summary>
+                    <span>Explore supporting evidence</span>
+                    <small>Thresholds, geography, limits, and review triggers</small>
+                  </summary>
+
+                  {signal.distributionSensitivity && (
+                    <div
+                      className="distribution-proof distribution-secondary"
+                      aria-label="Secondary mixed-unit active-block threshold and concentration sensitivity"
+                    >
+                      <div className="distribution-heading">
+                        <div>
+                          <span className="eyebrow">Secondary mixed-unit sensitivity</span>
+                          <strong>Mixed threshold dependence and composition-driven HHI</strong>
+                        </div>
+                        <span>Not a person count</span>
+                      </div>
+                      <div className="threshold-row">
+                        {signal.distributionSensitivity.thresholds.map((threshold) => (
+                          <div key={threshold.minimumUnits}>
+                            <small>
+                              Active blocks ≥{threshold.minimumUnits} unit
+                              {threshold.minimumUnits > 1 ? "s" : ""}
+                            </small>
+                            <strong>
+                              {threshold.fromBlocks} → {threshold.toBlocks}
+                            </strong>
+                            <span className={threshold.change > 0 ? "delta-up" : "threshold-flat"}>
+                              {threshold.change > 0 ? "+" : ""}
+                              {threshold.change} · {threshold.entered} entered / {threshold.exited}{" "}
+                              exited
+                            </span>
+                          </div>
+                        ))}
+                        <div className="concentration-result">
+                          <small>Intensity concentration</small>
+                          <strong>
+                            HHI +{formatNumber(signal.distributionSensitivity.hhiChangePct, 1)}%
+                          </strong>
+                          <span>
+                            effective blocks{" "}
+                            {formatNumber(signal.distributionSensitivity.effectiveBlocksFrom, 1)} →{" "}
+                            {formatNumber(signal.distributionSensitivity.effectiveBlocksTo, 1)}
+                          </span>
+                        </div>
+                      </div>
+                      <p>
+                        Single-unit blocks grew {signal.distributionSensitivity.singleUnitFrom} →{" "}
+                        {signal.distributionSensitivity.singleUnitTo} (+
+                        {signal.distributionSensitivity.singleUnitChange}), but do not alone explain
+                        the +{signal.activeChange} at ≥1 because ≥2 still rises. HHI{" "}
+                        {signal.distributionSensitivity.hhiFrom.toFixed(6)} →{" "}
+                        {signal.distributionSensitivity.hhiTo.toFixed(6)} is composition-driven;
+                        this secondary mixed index does not establish uniform spread or track
+                        movement.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="evidence-grid">
+                    <div className="churn-card">
+                      <div className="card-heading">
+                        <div>
+                          <span className="eyebrow">Secondary mixed-unit index</span>
+                          <h4>Index churn inside the stable panel</h4>
+                        </div>
+                        <span className="formula">
+                          +{signal.grossIncreases} − {signal.grossDecreases} = {signal.change}
+                        </span>
+                      </div>
+                      <div
+                        className="churn-visual"
+                        aria-label={`${signal.grossIncreases} increases, ${signal.grossDecreases} decreases, net ${signal.change}`}
+                        role="img"
+                      >
+                        <div
+                          className="churn-up"
+                          style={
+                            {
+                              "--bar": `${(signal.grossIncreases / Math.max(signal.grossIncreases, signal.grossDecreases)) * 100}%`,
+                            } as CSSProperties
+                          }
+                        >
+                          <span>Gross increases</span>
+                          <strong>+{signal.grossIncreases}</strong>
+                        </div>
+                        <div
+                          className="churn-down"
+                          style={
+                            {
+                              "--bar": `${(signal.grossDecreases / Math.max(signal.grossIncreases, signal.grossDecreases)) * 100}%`,
+                            } as CSSProperties
+                          }
+                        >
+                          <span>Gross decreases</span>
+                          <strong>−{signal.grossDecreases}</strong>
+                        </div>
+                      </div>
+                      <p className="method-note">
+                        <CheckIcon /> Individuals, tents/structures, and vehicles each count as one
+                        raw unit here. This is not a person estimate; the footprint is fixed at{" "}
+                        {signal.panelSize} blocks.
+                      </p>
+                    </div>
+
+                    <div className="area-view-card">
+                      <div className="card-heading">
+                        <div>
+                          <span className="eyebrow">Aggregate context</span>
+                          <h4>Where the signal changed</h4>
+                        </div>
+                        <span className="formula positive">
+                          Active blocks +{signal.activeChange}
+                        </span>
+                      </div>
+                      <div className="map-detail-row">
+                        <div>
+                          <AreaMap
+                            areas={data.areas}
+                            ariaLabel="Map of the six downtown neighborhoods showing the change in raw field observations; select a neighborhood for detail"
+                            onSelect={toggleAreaSelection}
+                            selectedId={selectedAreaId}
+                            valueFor={(area) => {
+                              if (area.latest === null) return { text: "no data", tone: "missing" };
+                              const maxDelta = Math.max(
+                                1,
+                                ...data.areas.map((row) => Math.abs(row.delta)),
+                              );
+                              return {
+                                text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                                tone: area.delta > 0 ? "up" : "down",
+                                intensity: Math.abs(area.delta) / maxDelta,
+                              };
+                            }}
+                          />
+                          <div className="map-legend" aria-label="Map legend">
+                            <span>
+                              <i className="map-legend-up" /> More observed units
+                            </span>
+                            <span>
+                              <i className="map-legend-down" /> Fewer observed units
+                            </span>
+                            {data.areas.some((area) => area.latest === null) && (
+                              <span>
+                                <i className="map-legend-missing" /> No recent observation
+                              </span>
+                            )}
+                          </div>
+                          <p className="map-caption">
+                            Change in raw field observations by neighborhood · simplified
+                            neighborhood boundaries, aggregate values only · not a count of people
+                          </p>
+                        </div>
+                        <AreaDetailPanel
+                          area={selectedArea}
+                          empty="Select a neighborhood — click, or Tab and Enter — to see what changed there."
+                          kicker="Neighborhood detail"
+                          note="Raw observed units on the fixed like-for-like panel. Aggregate area values, not unique people; components are digitized from the same maps."
+                          rows={
+                            selectedArea
+                              ? [
+                                  {
+                                    label: "Observed change",
+                                    value: `${selectedArea.delta > 0 ? "+" : ""}${selectedArea.delta} units`,
+                                    hint: "Jan 2024 → Jan 2025, same blocks",
+                                  },
+                                  {
+                                    label: "Latest observations",
+                                    value:
+                                      selectedArea.latest === null
+                                        ? "no data"
+                                        : formatNumber(selectedArea.latest),
+                                    hint: "most recent monthly street count",
+                                  },
+                                  {
+                                    label: "Planning load",
+                                    value: formatNumber(selectedArea.planningLoad),
+                                    hint: "upper forecast bound",
+                                  },
+                                  {
+                                    label: "Held-out WAPE",
+                                    value:
+                                      selectedArea.auditWape === null
+                                        ? "not audited"
+                                        : `${formatNumber(selectedArea.auditWape, 1)}%`,
+                                    hint:
+                                      selectedArea.auditWape !== null && selectedArea.auditWape > 30
+                                        ? "noisy — treat with caution"
+                                        : "2025 held-out audit",
+                                    flagged:
+                                      selectedArea.auditWape !== null &&
+                                      selectedArea.auditWape > 30,
+                                  },
+                                ]
+                              : []
+                          }
+                        />
+                      </div>
+                      <MapValueTable
+                        caption="Change in raw field observations by neighborhood"
+                        rows={data.areas.map((area) => ({
+                          name: area.name,
+                          value:
+                            area.latest === null
+                              ? "no data"
+                              : `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                          state:
+                            area.latest === null
+                              ? "No recent observation"
+                              : area.delta > 0
+                                ? "More observed units"
+                                : "Fewer observed units",
+                        }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="evidence-balance">
+                    <div>
+                      <span className="evidence-icon evidence-for">+</span>
+                      <p>
+                        <strong>Evidence for</strong>Observed individuals increased while structures
+                        fell; individual observations reached more fixed-panel blocks at both tested
+                        thresholds.
+                      </p>
+                    </div>
+                    <div>
+                      <span className="evidence-icon evidence-against">!</span>
+                      <p>
+                        <strong>Evidence boundary</strong>No identities, movement paths, or causal
+                        explanation are observed.
+                      </p>
+                    </div>
+                    <div>
+                      <span className="evidence-icon evidence-check">✓</span>
+                      <p>
+                        <strong>Validity check</strong>Stable panel, explicit missingness,
+                        source-era labels kept separate.
+                      </p>
+                    </div>
+                  </div>
+
+                  <aside aria-labelledby="challenge-title" className="challenge-card">
+                    <div className="challenge-heading">
+                      <div>
+                        <span className="eyebrow">Adversarial checkpoint</span>
+                        <h4 id="challenge-title">What would change our mind?</h4>
+                      </div>
+                      <span className="challenge-badge">Open to revision</span>
+                    </div>
+                    <p>
+                      This result is useful because its failure conditions are explicit. Any one of
+                      these findings would downgrade the conclusion or trigger a new review.
+                    </p>
+                    <ul>
+                      <li>
+                        One of the matched months is later found to be incomplete or misclassified.
+                      </li>
+                      <li>
+                        A boundary or method change makes the 261-block comparison non-comparable.
+                      </li>
+                      <li>
+                        Source review explains the 2023–2024 discontinuity as collection change.
+                      </li>
+                      <li>
+                        New held-out data materially weakens forecast error or interval coverage.
+                      </li>
+                    </ul>
+                  </aside>
+                </details>
+
+                {data.reportingBias ? (
+                  <details className="bias-diagnostic">
+                    <summary>
+                      <span>
+                        <small>Optional attention-bias check</small>
+                        Encampment report share rose{" "}
+                        {formatNumber(
+                          data.reportingBias.matchedCalendar?.shareChangePoints ??
+                            data.reportingBias.shareChangePoints,
+                          1,
+                        )}{" "}
+                        points
+                      </span>
+                      <strong>Excluded from planner</strong>
+                    </summary>
+                    <div className="bias-body">
+                      <div className="bias-heading">
+                        <div>
+                          <span className="eyebrow">Get It Done · descriptive diagnostic</span>
+                          <h4>Did public reporting attention change?</h4>
+                        </div>
+                        <span className="diagnostic-only">Diagnostic only · no causal claim</span>
+                      </div>
+
+                      {data.reportingBias.matchedCalendar && (
+                        <div className="matched-calendar">
+                          <div>
+                            <span className="eyebrow">
+                              Matched calendar · same Aug–Jan months YoY
+                            </span>
+                            <strong>
+                              Seasonality check strengthens the reporting-pattern shift
+                            </strong>
+                          </div>
+                          <div className="bias-metrics">
+                            <div>
+                              <span>Encampment rows</span>
+                              <strong>
+                                +{formatNumber(data.reportingBias.matchedCalendar.rawChangePct, 1)}%
+                              </strong>
+                            </div>
+                            <div>
+                              <span>Top-level requests</span>
+                              <strong>
+                                +
+                                {formatNumber(
+                                  data.reportingBias.matchedCalendar.uniqueParentChangePct,
+                                  1,
+                                )}
+                                %
+                              </strong>
+                            </div>
+                            <div>
+                              <span>All GID rows</span>
+                              <strong>
+                                +
+                                {formatNumber(
+                                  data.reportingBias.matchedCalendar.allReportsChangePct,
+                                  1,
+                                )}
+                                %
+                              </strong>
+                            </div>
+                            <div>
+                              <span>Encampment share</span>
+                              <strong>
+                                {formatNumber(data.reportingBias.matchedCalendar.sharePrePct, 1)} →{" "}
+                                {formatNumber(data.reportingBias.matchedCalendar.sharePostPct, 1)}%
+                              </strong>
+                            </div>
+                          </div>
+                          <p>{data.reportingBias.matchedCalendar.interpretation}</p>
+                        </div>
+                      )}
+
+                      <span className="eyebrow diagnostic-subhead">
+                        Prepared pre/post windows · July 2023 excluded
+                      </span>
+                      <div className="bias-metrics">
+                        <div>
+                          <span>Encampment rows</span>
+                          <strong>+{formatNumber(data.reportingBias.rawChangePct, 1)}%</strong>
+                        </div>
+                        <div>
+                          <span>Unique parents</span>
+                          <strong>
+                            +{formatNumber(data.reportingBias.uniqueParentChangePct, 1)}%
+                          </strong>
+                        </div>
+                        <div>
+                          <span>All GID rows</span>
+                          <strong>
+                            +{formatNumber(data.reportingBias.allReportsChangePct, 1)}%
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Encampment share</span>
+                          <strong>
+                            {formatNumber(data.reportingBias.sharePrePct, 1)} →{" "}
+                            {formatNumber(data.reportingBias.sharePostPct, 1)}%
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Placebo basket</span>
+                          <strong>{formatNumber(data.reportingBias.placeboChangePct, 1)}%</strong>
+                        </div>
+                      </div>
+
+                      <div className="checkpoint-block">
+                        <div>
+                          <span className="eyebrow">Cross-source checkpoints</span>
+                          <p>Raw reports per published total unit—not reports per person.</p>
+                        </div>
+                        <div className="checkpoint-list">
+                          {data.reportingBias.checkpoints.map((checkpoint) => (
+                            <div key={checkpoint.month}>
+                              <span>{checkpoint.month}</span>
+                              <strong>{formatNumber(checkpoint.rawPerPublishedUnit, 2)}×</strong>
+                              <small>
+                                {formatNumber(checkpoint.rawReports)} raw reports /{" "}
+                                {formatNumber(checkpoint.publishedTotal)} published units
+                              </small>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {data.robustness ? (
+                        <section className="robustness-section" aria-labelledby="robustness-title">
+                          <div className="robustness-section-title">
+                            <span className="eyebrow" id="robustness-title">
+                              Alternative explanations tested
+                            </span>
+                            <strong>Two descriptive sensitivity checks</strong>
+                          </div>
+                          <div className="robustness-grid">
+                            <article className="robustness-card">
+                              <div className="robustness-title">
+                                <span className="eyebrow">Footfall sensitivity</span>
+                                <strong>Paid-parking proxy</strong>
+                                <small>
+                                  {data.robustness.parking.matchedCalendar
+                                    ? "Same six calendar months one year apart"
+                                    : "Aligned six-month means · July 2023 excluded"}
+                                </small>
+                              </div>
+                              <div className="parking-result">
+                                <span>
+                                  <small>
+                                    {formatNumber(
+                                      data.robustness.parking.matchedCalendar?.verifiedPoles ??
+                                        data.robustness.parking.verifiedPoles,
+                                    )}{" "}
+                                    historically verified poles
+                                  </small>
+                                  <strong>
+                                    {formatNumber(
+                                      data.robustness.parking.matchedCalendar?.preMonthlyMean ??
+                                        data.robustness.parking.preMonthlyMean,
+                                    )}{" "}
+                                    →{" "}
+                                    {formatNumber(
+                                      data.robustness.parking.matchedCalendar?.postMonthlyMean ??
+                                        data.robustness.parking.postMonthlyMean,
+                                    )}
+                                  </strong>
+                                  <small>
+                                    transactions / month ·{" "}
+                                    {formatNumber(
+                                      data.robustness.parking.matchedCalendar?.changePct ??
+                                        data.robustness.parking.changePct,
+                                      1,
+                                    )}
+                                    %
+                                  </small>
+                                </span>
+                                <span>
+                                  <small>
+                                    {data.robustness.parking.matchedCalendar
+                                      ? "All observed Downtown meters"
+                                      : "Per meter-month"}
+                                  </small>
+                                  <strong>
+                                    {data.robustness.parking.matchedCalendar
+                                      ? `${formatNumber(data.robustness.parking.matchedCalendar.allMeterChangePct, 1)}%`
+                                      : `${formatNumber(data.robustness.parking.prePerMeter, 1)} → ${formatNumber(data.robustness.parking.postPerMeter, 1)}`}
+                                  </strong>
+                                  <small>
+                                    {data.robustness.parking.matchedCalendar
+                                      ? "matched-calendar sensitivity"
+                                      : `all observed meters ${formatNumber(data.robustness.parking.allMeterChangePct, 1)}%`}
+                                  </small>
+                                </span>
+                              </div>
+                              <p>
+                                {data.robustness.parking.matchedCalendar?.interpretation ??
+                                  data.robustness.parking.interpretation}
+                              </p>
+                              <small className="robustness-caveat">
+                                Transactions ≠ people or visits. Rates, hours, inventory, payment
+                                substitution, free parking, events, transit, economy, and
+                                seasonality remain possible; the parking zone is not a proven
+                                GID-boundary match.
+                              </small>
+                            </article>
+
+                            <article className="robustness-card">
+                              <div className="robustness-title">
+                                <span className="eyebrow">Count-day sensitivity</span>
+                                <strong>NOAA weather was nearly matched</strong>
+                              </div>
+                              <div className="weather-dates">
+                                {data.robustness.weather.dates.map((date) => (
+                                  <span key={date.date}>
+                                    <small>{formatDate(date.date)}</small>
+                                    <strong>{formatNumber(date.maximumTemperature)}°F</strong>
+                                    <small>{formatNumber(date.precipitation, 2)} in rain</small>
+                                  </span>
+                                ))}
+                              </div>
+                              <p>{data.robustness.weather.interpretation}</p>
+                              <small className="robustness-caveat">
+                                {data.robustness.weather.station}. This rules out only an obvious
+                                same-day rain/TMAX contrast; airport conditions and prior weather
+                                may differ.
+                              </small>
+                            </article>
+                          </div>
+                        </section>
+                      ) : (
+                        <p className="diagnostic-unavailable" role="note">
+                          Alternative-explanation checks are unavailable in this artifact. They
+                          remain excluded from forecasting and allocation.
+                        </p>
+                      )}
+
+                      <p className="bias-interpretation">{data.reportingBias.interpretation}</p>
+                      <div className="sensitivity-row">
+                        <span>
+                          Duplicate-child share{" "}
+                          {formatNumber(data.reportingBias.duplicatePrePct, 1)} →{" "}
+                          {formatNumber(data.reportingBias.duplicatePostPct, 1)}%
+                        </span>
+                        <span>
+                          Mobile-origin share {formatNumber(data.reportingBias.mobilePrePct, 1)} →{" "}
+                          {formatNumber(data.reportingBias.mobilePostPct, 1)}%
+                        </span>
+                        <span>
+                          <code>comm_plan_name=DOWNTOWN</code> · <code>date_requested</code> · July
+                          2023 excluded
+                        </span>
+                      </div>
+                      <p className="bias-exclusion">
+                        <strong>Never used for:</strong> planning load, outreach allocation, people
+                        or movement, abatement, case response, intervention effects, or the
+                        forecast.
+                      </p>
+                    </div>
+                  </details>
+                ) : (
+                  <div className="diagnostic-unavailable" role="note">
+                    <strong>Optional reporting diagnostic unavailable.</strong> The loaded artifact
+                    did not contain a complete validated diagnostic, so no partial values are shown.
+                    This lane remains excluded from forecasting and allocation.
+                  </div>
                 )}
               </div>
-            </div>
-          )}
-        </section>
+            )}
+          </section>
 
-        <section
-          className="decision-section review-section"
-          id="review"
-          aria-labelledby="review-title"
-        >
-          <div aria-hidden="true" className="section-number">
-            04
-          </div>
-          <div className="section-intro split-intro">
+          <section className="decision-section" id="forecast" aria-labelledby="forecast-title">
+            <div aria-hidden="true" className="section-number">
+              02
+            </div>
+            <div className="section-intro split-intro">
+              <div>
+                <p className="eyebrow">Forecast rehearsal · only past data used</p>
+                <h2 id="forecast-title">Could we have predicted January 2026?</h2>
+                <p>
+                  Using only data available in December 2025, the tool forecasts the next month,
+                  then grades itself against its own past errors. The plan uses the high end of that
+                  error range, so uncertainty buys extra coverage.
+                </p>
+              </div>
+              <span className="wide-warning">A rehearsal on past data · not a live forecast</span>
+            </div>
+
+            <div className="forecast-layout">
+              <div className="chart-card">
+                <div className="chart-summary">
+                  <div>
+                    <span className="eyebrow">{data.forecast.targetPeriod}</span>
+                    <strong>{formatNumber(data.forecast.point)}</strong>
+                    <small>best single guess</small>
+                  </div>
+                  <div>
+                    <span className="eyebrow">Likely range, from past errors</span>
+                    <strong>
+                      {formatNumber(data.forecast.lower)}–{formatNumber(data.forecast.upper)}
+                    </strong>
+                    <small>the plan uses the high end</small>
+                  </div>
+                </div>
+                <ForecastChart data={data.forecast} history={data.history} />
+              </div>
+
+              <div className="model-card">
+                <div className="card-heading">
+                  <div>
+                    <span className="eyebrow">Rolling-origin backtest</span>
+                    <h3>Model scorecard</h3>
+                  </div>
+                  <span className="selected-chip">
+                    {data.forecast.scorecard
+                      .find((model) => model.selected)
+                      ?.model.toLowerCase()
+                      .includes("seasonal naive")
+                      ? "Baseline retained"
+                      : "Challenger promoted"}
+                  </span>
+                </div>
+                <p className="model-rule">
+                  A candidate is promoted only if it improves held-out error. Lower MAE and WAPE are
+                  better; interval coverage is audited separately.
+                </p>
+                <div className="model-audit" aria-label="Final 2025 walk-forward audit">
+                  <span>
+                    <small>Audit MAE</small>
+                    <strong>{formatNumber(data.forecast.mae, 1)}</strong>
+                  </span>
+                  <span>
+                    <small>Audit WAPE</small>
+                    <strong>{formatNumber(data.forecast.wape, 1)}%</strong>
+                  </span>
+                  <span>
+                    <small>Interval coverage</small>
+                    <strong>{formatNumber(data.forecast.coverage)}%</strong>
+                    <small>{data.forecast.intervalPoints} held-out folds</small>
+                  </span>
+                </div>
+                <div className="scorecard-table-wrap">
+                  <table className="scorecard-table">
+                    <caption className="sr-only">Rolling-origin forecast model comparison</caption>
+                    <thead>
+                      <tr>
+                        <th>Model</th>
+                        <th>MAE</th>
+                        <th>WAPE</th>
+                        <th>Coverage</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.forecast.scorecard.map((model) => (
+                        <tr className={model.selected ? "selected-model" : ""} key={model.model}>
+                          <th>
+                            {model.model}
+                            {model.selected && <span>Selected</span>}
+                          </th>
+                          <td>{formatNumber(model.mae)}</td>
+                          <td>{formatNumber(model.wape, 1)}%</td>
+                          <td>
+                            {model.coverage === null ? "—" : `${formatNumber(model.coverage)}%`}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="model-validation">
+                  <CheckIcon />
+                  <span>
+                    <strong>No black-box promotion.</strong> Seasonal baseline remains unless a
+                    candidate wins out of sample.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <details className="data-table-disclosure">
+              <summary>View accessible scenario values & method</summary>
+              <div className="table-scroll">
+                <table>
+                  <caption>
+                    Observed history and historical one-step-ahead scenario shown in the chart
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th>Period</th>
+                      <th>Status</th>
+                      <th>Value</th>
+                      <th>Lower</th>
+                      <th>Upper</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.history.map((point) => (
+                      <tr key={point.period}>
+                        <th>{point.period}</th>
+                        <td>{point.value === null ? "Missing" : "Observed"}</td>
+                        <td>{point.value ?? "—"}</td>
+                        <td>—</td>
+                        <td>—</td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <th>{data.forecast.targetPeriod}</th>
+                      <td>Historical scenario</td>
+                      <td>{formatNumber(data.forecast.point)}</td>
+                      <td>{formatNumber(data.forecast.lower)}</td>
+                      <td>{formatNumber(data.forecast.upper)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>
+                <strong>Training:</strong> {data.forecast.trainingWindow}. Rolling-origin
+                evaluation; no interpolation across missing targets. Data are frozen at December
+                2025; the historical scenario’s upper bound feeds only this demonstration
+                allocation. The residual band achieved {formatNumber(data.forecast.coverage)}%
+                empirical coverage across {data.forecast.intervalPoints} folds; it is not a
+                guaranteed 80% probability statement.
+              </p>
+            </details>
+          </section>
+
+          <section className="decision-section" id="planner" aria-labelledby="planner-title">
+            <div aria-hidden="true" className="section-number">
+              03
+            </div>
+            <div className="section-intro split-intro planner-intro">
+              <div>
+                <p className="eyebrow">The staffing plan</p>
+                <h2 id="planner-title">Plan {budget} staff-hours</h2>
+                <p>
+                  Split the hours across the six neighborhoods. First, every area gets a minimum you
+                  choose, so no place goes unvisited. Whatever remains goes where the forecast
+                  expects the most people.
+                </p>
+              </div>
+              <div className={`guard-status ${guardEnabled ? "guard-on" : "guard-off"}`}>
+                <span>{guardEnabled ? "✓" : "!"}</span>
+                <div>
+                  <small>Guaranteed minimum</small>
+                  <strong>
+                    {guardEnabled ? `ON · ${coverageFloor}h per area` : "OFF · COMPARISON ONLY"}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            {renderPlannerControls()}
+
+            {renderScenarioBench()}
+
+            {!plan ? (
+              renderPlannerStart()
+            ) : !plan.feasible ? (
+              <div className="infeasible" role="alert">
+                <span>!</span>
+                <div>
+                  <h3>No feasible plan</h3>
+                  <p>{plan.message}</p>
+                  <p>Increase the budget, remove a lock, or explicitly revise the floor.</p>
+                </div>
+              </div>
+            ) : (
+              <div aria-live="polite" className="plan-result reveal">
+                {renderPlanRows()}
+
+                <div className="plan-map">
+                  <div className="plan-map-heading">
+                    <span className="eyebrow">The plan on the map</span>
+                    <p>
+                      Every neighborhood keeps its guaranteed minimum; the extra hours go where the
+                      forecast expects the most people.
+                    </p>
+                  </div>
+                  <div className="map-detail-row">
+                    <div>
+                      <AreaMap
+                        areas={planningAreas}
+                        ariaLabel="Map of the six downtown neighborhoods showing planned staff-hours; select a neighborhood for detail"
+                        onSelect={toggleAreaSelection}
+                        selectedId={selectedAreaId}
+                        valueFor={(area) => {
+                          const hours = allocationById.get(area.id) ?? 0;
+                          const belowFloor = guardEnabled && hours < coverageFloor;
+                          return {
+                            text: `${hours}h${belowFloor ? " !" : ""}`,
+                            tone: belowFloor ? "down" : "neutral",
+                            intensity: hours / maxHours,
+                          };
+                        }}
+                      />
+                      <p className="map-caption">
+                        Planned staff-hours by neighborhood · simplified neighborhood boundaries
+                        {guardEnabled ? " · ! marks hours below the minimum" : ""}
+                        {intervention
+                          ? ` · ${data.areas.find((area) => area.id === intervention.areaId)?.name ?? ""} modeled as cleared (assumption)`
+                          : ""}
+                      </p>
+                    </div>
+                    <AreaDetailPanel
+                      area={selectedArea}
+                      empty="Select a neighborhood on the map — click, or Tab and press Enter — to inspect its share of the plan, or to stress-test an action there."
+                      kicker="Allocation detail"
+                      note={selectedArea?.reason}
+                      rows={
+                        selectedArea
+                          ? [
+                              {
+                                label: "Planned hours",
+                                value: `${allocationById.get(selectedArea.id) ?? 0}h`,
+                                hint: lockedIds.has(selectedArea.id)
+                                  ? "human lock — edit in the list above"
+                                  : "recompute updates this",
+                              },
+                              {
+                                label: "Coverage floor",
+                                value: guardEnabled
+                                  ? `${coverageFloor}h minimum`
+                                  : "off — audit only",
+                                hint: guardEnabled
+                                  ? "user-set continuity floor"
+                                  : "no minimum enforced",
+                              },
+                              {
+                                label: "Planning load",
+                                value: formatNumber(
+                                  planningAreas.find((area) => area.id === selectedArea.id)
+                                    ?.planningLoad ?? selectedArea.planningLoad,
+                                  1,
+                                ),
+                                hint:
+                                  intervention && interventionResult
+                                    ? "adjusted by the active assumption"
+                                    : "weights the remaining hours",
+                              },
+                              {
+                                label: "Held-out WAPE",
+                                value:
+                                  selectedArea.auditWape === null
+                                    ? "not audited"
+                                    : `${formatNumber(selectedArea.auditWape, 1)}%`,
+                                hint:
+                                  selectedArea.auditWape !== null && selectedArea.auditWape > 30
+                                    ? "noisy — human review required"
+                                    : "2025 held-out audit",
+                                flagged:
+                                  selectedArea.auditWape !== null && selectedArea.auditWape > 30,
+                              },
+                            ]
+                          : []
+                      }
+                    />
+                  </div>
+                  {renderInterventionControl()}
+                  <MapValueTable
+                    caption="Planned staff-hours by neighborhood"
+                    rows={planningAreas.map((area) => {
+                      const hours = allocationById.get(area.id) ?? 0;
+                      return {
+                        name: area.name,
+                        value: `${hours}h`,
+                        state: lockedIds.has(area.id)
+                          ? "Human lock"
+                          : !guardEnabled
+                            ? "No minimum"
+                            : hours < coverageFloor
+                              ? "Below minimum"
+                              : "Minimum met",
+                      };
+                    })}
+                  />
+                </div>
+
+                <div className="plan-footer">
+                  <div>
+                    <span className="eyebrow">Constraint check</span>
+                    <strong>
+                      {planTotal === budget ? "Budget conserved exactly" : "Budget mismatch"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="eyebrow">Unmet planning load</span>
+                    <strong>
+                      {unmetTotal > 0
+                        ? `${unmetTotal}h moved to minimums and locks`
+                        : "0h · hours follow the forecast"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="eyebrow">Human changes</span>
+                    <strong>
+                      {lockedIds.size
+                        ? `${lockedIds.size} locked assignment${lockedIds.size > 1 ? "s" : ""}`
+                        : "None yet"}
+                    </strong>
+                  </div>
+                  {planDirty && (
+                    <button
+                      className="button button-primary"
+                      disabled={!budgetValid}
+                      onClick={() => runPlan()}
+                      type="button"
+                    >
+                      Recompute unlocked hours
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section
+            className="decision-section review-section"
+            id="review"
+            aria-labelledby="review-title"
+          >
+            <div aria-hidden="true" className="section-number">
+              04
+            </div>
+            <div className="section-intro split-intro">
+              <div>
+                <p className="eyebrow">You decide</p>
+                <h2 id="review-title">Review before the next shift</h2>
+                <p>
+                  The tool writes the plan up with its caveats attached. A coordinator decides what
+                  local context changes.
+                </p>
+              </div>
+              <span className={`review-status ${planReady ? "review-ready" : ""}`}>
+                {planReady
+                  ? "Ready for coordinator review"
+                  : plan?.feasible && !guardEnabled
+                    ? "Comparison view · restore a minimum to continue"
+                    : plan?.feasible && planTotal !== budget
+                      ? "Budget mismatch · cannot copy"
+                      : planDirty
+                        ? "Recompute human changes"
+                        : "Waiting for a feasible plan"}
+              </span>
+            </div>
+
+            <div className="brief-grid">
+              <div className="brief-summary">
+                <div>
+                  <span>What changed</span>
+                  <strong>
+                    Individuals +{formatNumber(signal.components.individuals.changePct, 1)}% ·
+                    structures {formatNumber(signal.components.structures.changePct, 1)}%
+                  </strong>
+                </div>
+                <div>
+                  <span>What may be hidden</span>
+                  <strong>
+                    Active blocks +{signal.activeChange}
+                    {signal.distributionSensitivity
+                      ? ` · HHI +${formatNumber(signal.distributionSensitivity.hhiChangePct, 1)}%`
+                      : ""}
+                  </strong>
+                </div>
+                <div>
+                  <span>Historical Jan 2026 range</span>
+                  <strong>
+                    {formatNumber(data.forecast.lower)}–{formatNumber(data.forecast.upper)}
+                  </strong>
+                </div>
+                <div>
+                  <span>Illustrative capacity</span>
+                  <strong>{plan?.feasible ? `${planTotal} staff-hours` : "Run planner"}</strong>
+                </div>
+                <div>
+                  <span>Coverage-continuity policy</span>
+                  <strong>
+                    {guardEnabled
+                      ? `${coverageFloor}h demo-policy minimum`
+                      : "No minimum · comparison only"}
+                  </strong>
+                </div>
+                <div>
+                  <span>Human overrides</span>
+                  <strong>{lockedIds.size || "None"}</strong>
+                </div>
+              </div>
+
+              <div className="review-triggers">
+                <span className="eyebrow">Review again when</span>
+                <div className="trigger-list">
+                  <span>New month</span>
+                  <span>Budget changes</span>
+                  <span>Boundary changes</span>
+                  <span>Interval widens</span>
+                  <span>Floor infeasible</span>
+                  <span>Local knowledge conflicts</span>
+                </div>
+                <p>
+                  <strong>Never authorized:</strong> person tracking, causal claims, enforcement,
+                  eligibility decisions, or automatic dispatch.
+                </p>
+              </div>
+            </div>
+
+            <div className="limitations-row">
+              {data.limitations.slice(0, 3).map((limitation, index) => (
+                <details key={limitation}>
+                  <summary>
+                    {["Boundary card", "Model card", "Claim limits"][index] ?? "Limitation"}
+                  </summary>
+                  <p>{limitation}</p>
+                </details>
+              ))}
+            </div>
+
+            {renderBriefCluster()}
+          </section>
+
+          <footer className="footer">
             <div>
-              <p className="eyebrow">You decide</p>
-              <h2 id="review-title">Review before the next shift</h2>
-              <p>
-                The tool writes the plan up with its caveats attached. A coordinator decides what
-                local context changes.
-              </p>
+              <strong>Still Here SD</strong>
+              <span>See beyond the count. Plan the next shift.</span>
             </div>
-            <span className={`review-status ${planReady ? "review-ready" : ""}`}>
-              {planReady
-                ? "Ready for coordinator review"
-                : plan?.feasible && !guardEnabled
-                  ? "Comparison view · restore a minimum to continue"
-                  : plan?.feasible && planTotal !== budget
-                    ? "Budget mismatch · cannot copy"
-                    : planDirty
-                      ? "Recompute human changes"
-                      : "Waiting for a feasible plan"}
-            </span>
-          </div>
-
-          <div className="brief-grid">
-            <div className="brief-summary">
-              <div>
-                <span>What changed</span>
-                <strong>
-                  Individuals +{formatNumber(signal.components.individuals.changePct, 1)}% ·
-                  structures {formatNumber(signal.components.structures.changePct, 1)}%
-                </strong>
-              </div>
-              <div>
-                <span>What may be hidden</span>
-                <strong>
-                  Active blocks +{signal.activeChange}
-                  {signal.distributionSensitivity
-                    ? ` · HHI +${formatNumber(signal.distributionSensitivity.hhiChangePct, 1)}%`
-                    : ""}
-                </strong>
-              </div>
-              <div>
-                <span>Historical Jan 2026 range</span>
-                <strong>
-                  {formatNumber(data.forecast.lower)}–{formatNumber(data.forecast.upper)}
-                </strong>
-              </div>
-              <div>
-                <span>Illustrative capacity</span>
-                <strong>{plan?.feasible ? `${planTotal} staff-hours` : "Run planner"}</strong>
-              </div>
-              <div>
-                <span>Coverage-continuity policy</span>
-                <strong>
-                  {guardEnabled
-                    ? `${coverageFloor}h demo-policy minimum`
-                    : "No minimum · comparison only"}
-                </strong>
-              </div>
-              <div>
-                <span>Human overrides</span>
-                <strong>{lockedIds.size || "None"}</strong>
-              </div>
-            </div>
-
-            <div className="review-triggers">
-              <span className="eyebrow">Review again when</span>
-              <div className="trigger-list">
-                <span>New month</span>
-                <span>Budget changes</span>
-                <span>Boundary changes</span>
-                <span>Interval widens</span>
-                <span>Floor infeasible</span>
-                <span>Local knowledge conflicts</span>
-              </div>
-              <p>
-                <strong>Never authorized:</strong> person tracking, causal claims, enforcement,
-                eligibility decisions, or automatic dispatch.
-              </p>
-            </div>
-          </div>
-
-          <div className="limitations-row">
-            {data.limitations.slice(0, 3).map((limitation, index) => (
-              <details key={limitation}>
-                <summary>
-                  {["Boundary card", "Model card", "Claim limits"][index] ?? "Limitation"}
-                </summary>
-                <p>{limitation}</p>
-              </details>
-            ))}
-          </div>
-
-          {renderBriefCluster()}
-        </section>
-
-        <footer className="footer">
-          <div>
-            <strong>Still Here SD</strong>
-            <span>See beyond the count. Plan the next shift.</span>
-          </div>
-          <p>Aggregate places. Explicit uncertainty. Human decisions.</p>
-        </footer>
-      </main>
+            <p>Aggregate places. Explicit uncertainty. Human decisions.</p>
+          </footer>
+        </main>
+      )}
 
       {guideIndex !== null && (
         <div

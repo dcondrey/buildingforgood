@@ -47,7 +47,12 @@ npm ci --prefix app && npm --prefix app run dev -- --host 127.0.0.1
 ```
 
 In the app, **Guide demo** gives a nine-step hands-on tour that asks you to
-work the real controls and notices when you have.
+work the real controls and notices when you have. The **Map workspace**
+toggle switches to an operations view: one map with switchable layers
+(planned hours, observed change, unmet load) and a tabbed inspector holding
+the plan controls, a per-area dossier with the assumption explorer, saved
+scenarios, and the decision brief. The story view and the workspace share one
+state — the same plan, locks, scenarios, and assumptions travel between them.
 
 To regenerate the analysis artifact and run the full gate (Python 3.11+;
 raw-data tests skip without the organizer bundle):

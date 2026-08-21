@@ -112,11 +112,22 @@ Press **Copy decision brief**.
 > observations rose. Which ruler should govern a coverage policy? That
 > decision belongs to a person — this tool just makes it honest."
 
-If the EyePop digitization audit ran (see JUDGING_ALIGNMENT), add one line:
+Then the digitization-audit line — it has run, say it as fact:
 
-> "And with EyePop we pointed computer vision at the ruler itself — detecting
-> the printed map symbols on the published count documents to audit the
-> digitization step. CV that audits the instrument, never the people."
+> "And we pointed computer vision at the ruler itself. The published counts
+> come from scanned, hand-annotated field sheets; our digitization audit
+> OCRs them — running fully offline on this laptop — and the City Center
+> sheet's handwritten totals reconcile through the documented multipliers to
+> the published number: 152 plus 14 tents times 1.75 is 176.5, published 177.
+> The engine is swappable: EyePop's hosted abilities drop in with one flag.
+> CV that audits the instrument, never the people."
+
+If a borrowed EyePop key exists, run `--engine eyepop` beforehand and show
+both cards side by side (runbook in JUDGING_ALIGNMENT.md).
+
+Optional viability close (10s, if time allows): "Data requests are already
+pending with SDHC, RTFH, the City's homelessness department, and DSDP —
+disclosed in the product, and pre-committed to the same documented lanes."
 
 ## The three-minute Q&A
 
@@ -163,9 +174,11 @@ has to defend a coverage policy. Success is a brief a coordinator would
 actually attach to a staffing decision.
 
 **"What's next?"**
-The tract-to-neighborhood crosswalk to bring the 2026 PIT down to area level;
-a capacity baseline card (caseload-per-FTE benchmarks); and the EyePop
-digitization audit becoming a standing QA step for every monthly report.
+Responses to the pending data requests (SDHC, RTFH, the City's homelessness
+department, DSDP) entering the documented lanes; the tract-to-neighborhood
+crosswalk to bring the 2026 PIT down to area level; a capacity baseline card
+(caseload-per-FTE benchmarks); and the digitization audit becoming a standing
+QA step for every monthly report, with EyePop as the hosted engine.
 
 **"Fresh code?"**
 Everything was built inside the hacking window; the repo history shows the

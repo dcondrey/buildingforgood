@@ -1940,6 +1940,15 @@ function App() {
               <dt>Non-goal</dt>
               <dd>No tracking, enforcement, eligibility, or automatic dispatch.</dd>
             </div>
+            <div>
+              <dt>Pending requests</dt>
+              <dd>
+                Data requests are pending with the San Diego Housing Commission, the Regional Task
+                Force on Homelessness, the City&apos;s Homelessness Strategies &amp; Solutions
+                department, and DSDP Clean &amp; Safe. Responsive records enter the source
+                ledger&apos;s documented lanes before any analytical use.
+              </dd>
+            </div>
           </dl>
           <button
             aria-label="Close data and limits"

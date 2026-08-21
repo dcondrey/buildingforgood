@@ -183,28 +183,32 @@
         },
         {
           "by_type": {
-            "individual": 20,
+            "individual": null,
             "structure": 57,
-            "vehicle": 3
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2021-08",
           "total": 80
         },
         {
-          "by_type": {
-            "individual": 2,
-            "structure": 1,
-            "vehicle": 0
-          },
           "month": "2021-09",
-          "total": 3
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
-            "individual": 23,
+            "individual": null,
             "structure": 61,
-            "vehicle": 2
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2021-10",
           "total": 86
         },
@@ -219,19 +223,27 @@
         },
         {
           "by_type": {
-            "individual": 8,
+            "individual": null,
             "structure": 95,
-            "vehicle": 1
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2021-12",
           "total": 104
         },
         {
           "by_type": {
-            "individual": 26,
+            "individual": null,
             "structure": 103,
-            "vehicle": 3
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-01",
           "total": 132
         },
@@ -255,10 +267,14 @@
         },
         {
           "by_type": {
-            "individual": 7,
+            "individual": null,
             "structure": 115,
-            "vehicle": 2
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-05",
           "total": 124
         },
@@ -273,37 +289,53 @@
         },
         {
           "by_type": {
-            "individual": 16,
+            "individual": null,
             "structure": 86,
-            "vehicle": 3
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-07",
           "total": 105
         },
         {
           "by_type": {
-            "individual": 22,
+            "individual": null,
             "structure": 111,
-            "vehicle": 4
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-08",
           "total": 137
         },
         {
           "by_type": {
-            "individual": 17,
+            "individual": null,
             "structure": 134,
-            "vehicle": 2
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-09",
           "total": 153
         },
         {
           "by_type": {
-            "individual": 18,
+            "individual": null,
             "structure": 173,
-            "vehicle": 2
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-10",
           "total": 193
         },
@@ -318,10 +350,14 @@
         },
         {
           "by_type": {
-            "individual": 11,
+            "individual": null,
             "structure": 189,
-            "vehicle": 4
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-12",
           "total": 204
         }
@@ -702,18 +738,26 @@
         {
           "by_type": {
             "individual": 172,
-            "structure": 12,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-09",
           "total": 185
         },
         {
           "by_type": {
-            "individual": 170,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2017-10",
           "total": 172
         },
@@ -747,72 +791,104 @@
         {
           "by_type": {
             "individual": 137,
-            "structure": 10,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-02",
           "total": 148
         },
         {
           "by_type": {
-            "individual": 123,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-03",
           "total": 126
         },
         {
           "by_type": {
-            "individual": 106,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-04",
           "total": 109
         },
         {
           "by_type": {
             "individual": 151,
-            "structure": 14,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-05",
           "total": 167
         },
         {
           "by_type": {
             "individual": 112,
-            "structure": 3,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-06",
           "total": 117
         },
         {
           "by_type": {
             "individual": 132,
-            "structure": 3,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-07",
           "total": 136
         },
         {
           "by_type": {
-            "individual": 142,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-08",
           "total": 144
         },
         {
           "by_type": {
-            "individual": 122,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-09",
           "total": 126
         },
@@ -1071,9 +1147,13 @@
         {
           "by_type": {
             "individual": 104,
-            "structure": 18,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-05",
           "total": 123
         },
@@ -1098,9 +1178,13 @@
         {
           "by_type": {
             "individual": 103,
-            "structure": 20,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-08",
           "total": 125
         },
@@ -1116,63 +1200,91 @@
         {
           "by_type": {
             "individual": 92,
-            "structure": 19,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-10",
           "total": 113
         },
         {
           "by_type": {
             "individual": 143,
-            "structure": 19,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-11",
           "total": 163
         },
         {
           "by_type": {
             "individual": 122,
-            "structure": 39,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-12",
           "total": 163
         },
         {
           "by_type": {
             "individual": 123,
-            "structure": 48,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-01",
           "total": 172
         },
         {
           "by_type": {
             "individual": 180,
-            "structure": 118,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-03",
           "total": 299
         },
         {
           "by_type": {
             "individual": 150,
-            "structure": 67,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-04",
           "total": 218
         },
         {
           "by_type": {
             "individual": 176,
-            "structure": 86,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-05",
           "total": 264
         },
@@ -1197,27 +1309,39 @@
         {
           "by_type": {
             "individual": 162,
-            "structure": 55,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-08",
           "total": 218
         },
         {
           "by_type": {
             "individual": 131,
-            "structure": 54,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-09",
           "total": 187
         },
         {
           "by_type": {
             "individual": 169,
-            "structure": 57,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-10",
           "total": 228
         },
@@ -1233,9 +1357,13 @@
         {
           "by_type": {
             "individual": 123,
-            "structure": 78,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-12",
           "total": 203
         }
@@ -1404,10 +1532,14 @@
         },
         {
           "by_type": {
-            "individual": 39,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2017-04",
           "total": 43
         },
@@ -1450,18 +1582,26 @@
         {
           "by_type": {
             "individual": 48,
-            "structure": 8,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-09",
           "total": 57
         },
         {
           "by_type": {
-            "individual": 49,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2017-10",
           "total": 53
         },
@@ -1504,9 +1644,13 @@
         {
           "by_type": {
             "individual": 54,
-            "structure": 3,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-03",
           "total": 58
         },
@@ -1531,18 +1675,26 @@
         {
           "by_type": {
             "individual": 45,
-            "structure": 3,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-06",
           "total": 49
         },
         {
           "by_type": {
-            "individual": 25,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-07",
           "total": 28
         },
@@ -1557,19 +1709,27 @@
         },
         {
           "by_type": {
-            "individual": 21,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-09",
           "total": 24
         },
         {
           "by_type": {
-            "individual": 27,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-10",
           "total": 31
         },
@@ -1656,10 +1816,14 @@
         },
         {
           "by_type": {
-            "individual": 42,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-09",
           "total": 46
         },
@@ -1701,10 +1865,14 @@
         },
         {
           "by_type": {
-            "individual": 19,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-03",
           "total": 22
         },
@@ -1738,27 +1906,39 @@
         {
           "by_type": {
             "individual": 42,
-            "structure": 7,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-07",
           "total": 50
         },
         {
           "by_type": {
-            "individual": 41,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-08",
           "total": 45
         },
         {
           "by_type": {
-            "individual": 49,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-09",
           "total": 53
         },
@@ -1791,19 +1971,27 @@
         },
         {
           "by_type": {
-            "individual": 44,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-01",
           "total": 48
         },
         {
           "by_type": {
             "individual": 31,
-            "structure": 8,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-02",
           "total": 40
         },
@@ -1845,10 +2033,14 @@
         },
         {
           "by_type": {
-            "individual": 94,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-07",
           "total": 98
         },
@@ -1863,10 +2055,14 @@
         },
         {
           "by_type": {
-            "individual": 74,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-09",
           "total": 77
         },
@@ -1962,37 +2158,53 @@
         },
         {
           "by_type": {
-            "individual": 24,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-09",
           "total": 28
         },
         {
           "by_type": {
-            "individual": 22,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-10",
           "total": 26
         },
         {
           "by_type": {
-            "individual": 28,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-11",
           "total": 31
         },
         {
           "by_type": {
-            "individual": 20,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-12",
           "total": 23
         }
@@ -2341,18 +2553,26 @@
         {
           "by_type": {
             "individual": 21,
-            "structure": 2,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-04",
           "total": 24
         },
         {
           "by_type": {
-            "individual": 42,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2017-05",
           "total": 46
         },
@@ -2368,9 +2588,13 @@
         {
           "by_type": {
             "individual": 55,
-            "structure": 5,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-07",
           "total": 61
         },
@@ -2386,9 +2610,13 @@
         {
           "by_type": {
             "individual": 79,
-            "structure": 8,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-09",
           "total": 88
         },
@@ -2403,10 +2631,14 @@
         },
         {
           "by_type": {
-            "individual": 53,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2017-11",
           "total": 56
         },
@@ -2421,37 +2653,53 @@
         },
         {
           "by_type": {
-            "individual": 55,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-01",
           "total": 58
         },
         {
           "by_type": {
             "individual": 50,
-            "structure": 1,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-02",
           "total": 52
         },
         {
           "by_type": {
             "individual": 53,
-            "structure": 6,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-03",
           "total": 63
         },
         {
           "by_type": {
             "individual": 39,
-            "structure": 2,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-04",
           "total": 42
         },
@@ -2466,37 +2714,53 @@
         },
         {
           "by_type": {
-            "individual": 40,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-06",
           "total": 42
         },
         {
           "by_type": {
-            "individual": 40,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-07",
           "total": 44
         },
         {
           "by_type": {
-            "individual": 49,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-08",
           "total": 52
         },
         {
           "by_type": {
-            "individual": 30,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-09",
           "total": 31
         },
@@ -2511,64 +2775,92 @@
         },
         {
           "by_type": {
-            "individual": 37,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-12",
           "total": 38
         },
         {
           "by_type": {
-            "individual": 47,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-01",
           "total": 51
         },
         {
           "by_type": {
-            "individual": 31,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-02",
           "total": 32
         },
         {
           "by_type": {
-            "individual": 45,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-03",
           "total": 47
         },
         {
           "by_type": {
-            "individual": 39,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-04",
           "total": 41
         },
         {
           "by_type": {
-            "individual": 40,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-05",
           "total": 43
         },
         {
           "by_type": {
-            "individual": 44,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-06",
           "total": 45
         },
@@ -2583,73 +2875,105 @@
         },
         {
           "by_type": {
-            "individual": 29,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-08",
           "total": 30
         },
         {
           "by_type": {
-            "individual": 45,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-09",
           "total": 49
         },
         {
           "by_type": {
-            "individual": 34,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-10",
           "total": 37
         },
         {
           "by_type": {
-            "individual": 22,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-11",
           "total": 24
         },
         {
           "by_type": {
             "individual": 37,
-            "structure": 3,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-01",
           "total": 42
         },
         {
           "by_type": {
-            "individual": 42,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-02",
           "total": 46
         },
         {
           "by_type": {
-            "individual": 24,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-03",
           "total": 26
         },
         {
           "by_type": {
-            "individual": 20,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-04",
           "total": 22
         },
@@ -2664,19 +2988,27 @@
         },
         {
           "by_type": {
-            "individual": 32,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-06",
           "total": 36
         },
         {
           "by_type": {
-            "individual": 22,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-07",
           "total": 23
         },
@@ -2745,28 +3077,40 @@
         },
         {
           "by_type": {
-            "individual": 22,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-03",
           "total": 26
         },
         {
           "by_type": {
-            "individual": 25,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-04",
           "total": 29
         },
         {
           "by_type": {
-            "individual": 28,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-05",
           "total": 29
         },
@@ -2782,9 +3126,13 @@
         {
           "by_type": {
             "individual": 38,
-            "structure": 2,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-07",
           "total": 41
         },
@@ -2799,28 +3147,40 @@
         },
         {
           "by_type": {
-            "individual": 27,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-09",
           "total": 28
         },
         {
           "by_type": {
-            "individual": 31,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-10",
           "total": 33
         },
         {
           "by_type": {
-            "individual": 23,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-11",
           "total": 27
         },
@@ -2836,9 +3196,13 @@
         {
           "by_type": {
             "individual": 37,
-            "structure": 28,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-01",
           "total": 68
         },
@@ -2854,45 +3218,65 @@
         {
           "by_type": {
             "individual": 30,
-            "structure": 17,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-04",
           "total": 50
         },
         {
           "by_type": {
-            "individual": 17,
+            "individual": null,
             "structure": 23,
-            "vehicle": 1
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-05",
           "total": 41
         },
         {
           "by_type": {
             "individual": 28,
-            "structure": 11,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-06",
           "total": 41
         },
         {
           "by_type": {
             "individual": 42,
-            "structure": 20,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-07",
           "total": 63
         },
         {
           "by_type": {
             "individual": 52,
-            "structure": 16,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-08",
           "total": 69
         },
@@ -2908,9 +3292,13 @@
         {
           "by_type": {
             "individual": 50,
-            "structure": 21,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-10",
           "total": 72
         },
@@ -2926,9 +3314,13 @@
         {
           "by_type": {
             "individual": 38,
-            "structure": 36,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-12",
           "total": 77
         }
@@ -3015,10 +3407,14 @@
         },
         {
           "by_type": {
-            "individual": 438,
+            "individual": null,
             "structure": 0,
-            "vehicle": 1
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2014-10",
           "total": 439
         },
@@ -3286,45 +3682,65 @@
         {
           "by_type": {
             "individual": 91,
-            "structure": 24,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-05",
           "total": 116
         },
         {
           "by_type": {
             "individual": 125,
-            "structure": 25,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-06",
           "total": 153
         },
         {
           "by_type": {
             "individual": 141,
-            "structure": 37,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-07",
           "total": 180
         },
         {
           "by_type": {
             "individual": 124,
-            "structure": 20,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-08",
           "total": 145
         },
         {
           "by_type": {
             "individual": 120,
-            "structure": 47,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-09",
           "total": 171
         },
@@ -3340,36 +3756,52 @@
         {
           "by_type": {
             "individual": 109,
-            "structure": 26,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-11",
           "total": 136
         },
         {
           "by_type": {
             "individual": 113,
-            "structure": 39,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-12",
           "total": 154
         },
         {
           "by_type": {
             "individual": 83,
-            "structure": 23,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-01",
           "total": 107
         },
         {
           "by_type": {
             "individual": 64,
-            "structure": 25,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-02",
           "total": 93
         },
@@ -3385,9 +3817,13 @@
         {
           "by_type": {
             "individual": 114,
-            "structure": 23,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-04",
           "total": 139
         },
@@ -3403,9 +3839,13 @@
         {
           "by_type": {
             "individual": 112,
-            "structure": 22,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-06",
           "total": 136
         },
@@ -3421,18 +3861,26 @@
         {
           "by_type": {
             "individual": 125,
-            "structure": 27,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-08",
           "total": 156
         },
         {
           "by_type": {
             "individual": 103,
-            "structure": 32,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-09",
           "total": 138
         },
@@ -3448,9 +3896,13 @@
         {
           "by_type": {
             "individual": 102,
-            "structure": 32,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-12",
           "total": 135
         },
@@ -3466,45 +3918,65 @@
         {
           "by_type": {
             "individual": 116,
-            "structure": 30,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-02",
           "total": 149
         },
         {
           "by_type": {
             "individual": 85,
-            "structure": 33,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-03",
           "total": 120
         },
         {
           "by_type": {
             "individual": 112,
-            "structure": 33,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-04",
           "total": 148
         },
         {
           "by_type": {
             "individual": 70,
-            "structure": 51,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-05",
           "total": 123
         },
         {
           "by_type": {
             "individual": 82,
-            "structure": 34,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-06",
           "total": 118
         },
@@ -3520,54 +3992,78 @@
         {
           "by_type": {
             "individual": 89,
-            "structure": 24,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-08",
           "total": 115
         },
         {
           "by_type": {
             "individual": 101,
-            "structure": 31,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-09",
           "total": 136
         },
         {
           "by_type": {
             "individual": 110,
-            "structure": 27,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-10",
           "total": 140
         },
         {
           "by_type": {
             "individual": 62,
-            "structure": 24,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-11",
           "total": 87
         },
         {
           "by_type": {
             "individual": 105,
-            "structure": 23,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-01",
           "total": 131
         },
         {
           "by_type": {
             "individual": 100,
-            "structure": 21,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-02",
           "total": 122
         },
@@ -3601,72 +4097,104 @@
         {
           "by_type": {
             "individual": 87,
-            "structure": 31,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-06",
           "total": 119
         },
         {
           "by_type": {
             "individual": 93,
-            "structure": 29,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-07",
           "total": 125
         },
         {
           "by_type": {
             "individual": 72,
-            "structure": 15,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-08",
           "total": 90
         },
         {
           "by_type": {
             "individual": 84,
-            "structure": 20,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-09",
           "total": 107
         },
         {
           "by_type": {
             "individual": 79,
-            "structure": 17,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-10",
           "total": 98
         },
         {
           "by_type": {
             "individual": 61,
-            "structure": 25,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-11",
           "total": 88
         },
         {
           "by_type": {
             "individual": 36,
-            "structure": 28,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-12",
           "total": 66
         },
         {
           "by_type": {
             "individual": 67,
-            "structure": 33,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-01",
           "total": 101
         },
@@ -3682,126 +4210,182 @@
         {
           "by_type": {
             "individual": 50,
-            "structure": 18,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-03",
           "total": 70
         },
         {
           "by_type": {
             "individual": 49,
-            "structure": 20,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-04",
           "total": 71
         },
         {
           "by_type": {
             "individual": 72,
-            "structure": 34,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-05",
           "total": 108
         },
         {
           "by_type": {
             "individual": 66,
-            "structure": 40,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-06",
           "total": 107
         },
         {
           "by_type": {
             "individual": 78,
-            "structure": 24,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-07",
           "total": 105
         },
         {
           "by_type": {
             "individual": 57,
-            "structure": 34,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-08",
           "total": 92
         },
         {
           "by_type": {
             "individual": 59,
-            "structure": 29,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-09",
           "total": 89
         },
         {
           "by_type": {
             "individual": 70,
-            "structure": 43,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-10",
           "total": 116
         },
         {
           "by_type": {
             "individual": 86,
-            "structure": 30,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-11",
           "total": 120
         },
         {
           "by_type": {
             "individual": 67,
-            "structure": 35,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-12",
           "total": 105
         },
         {
           "by_type": {
-            "individual": 45,
+            "individual": null,
             "structure": 54,
-            "vehicle": 3
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-01",
           "total": 102
         },
         {
           "by_type": {
             "individual": 125,
-            "structure": 84,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-03",
           "total": 212
         },
         {
           "by_type": {
             "individual": 66,
-            "structure": 58,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-04",
           "total": 125
         },
         {
           "by_type": {
-            "individual": 39,
+            "individual": null,
             "structure": 52,
-            "vehicle": 1
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-05",
           "total": 92
         },
@@ -3816,10 +4400,14 @@
         },
         {
           "by_type": {
-            "individual": 39,
+            "individual": null,
             "structure": 59,
-            "vehicle": 4
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-07",
           "total": 102
         },
@@ -4006,18 +4594,26 @@
         {
           "by_type": {
             "individual": 257,
-            "structure": 34,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-09",
           "total": 295
         },
         {
           "by_type": {
             "individual": 280,
-            "structure": 30,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-10",
           "total": 313
         },
@@ -4096,9 +4692,13 @@
         {
           "by_type": {
             "individual": 289,
-            "structure": 21,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-08",
           "total": 314
         },
@@ -4123,9 +4723,13 @@
         {
           "by_type": {
             "individual": 288,
-            "structure": 18,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-11",
           "total": 310
         },
@@ -4150,9 +4754,13 @@
         {
           "by_type": {
             "individual": 120,
-            "structure": 39,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-03",
           "total": 162
         },
@@ -4168,9 +4776,13 @@
         {
           "by_type": {
             "individual": 148,
-            "structure": 17,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-05",
           "total": 169
         },
@@ -4186,27 +4798,39 @@
         {
           "by_type": {
             "individual": 202,
-            "structure": 21,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-07",
           "total": 227
         },
         {
           "by_type": {
             "individual": 158,
-            "structure": 19,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-08",
           "total": 178
         },
         {
           "by_type": {
             "individual": 239,
-            "structure": 38,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-09",
           "total": 281
         },
@@ -4231,18 +4855,26 @@
         {
           "by_type": {
             "individual": 142,
-            "structure": 46,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-12",
           "total": 190
         },
         {
           "by_type": {
             "individual": 136,
-            "structure": 78,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-01",
           "total": 216
         },
@@ -4266,10 +4898,14 @@
         },
         {
           "by_type": {
-            "individual": 117,
+            "individual": null,
             "structure": 125,
-            "vehicle": 4
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2021-04",
           "total": 246
         },
@@ -4285,9 +4921,13 @@
         {
           "by_type": {
             "individual": 163,
-            "structure": 109,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-06",
           "total": 276
         },
@@ -4797,37 +5437,53 @@
         },
         {
           "by_type": {
-            "individual": 47,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2017-05",
           "total": 48
         },
         {
           "by_type": {
-            "individual": 52,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2017-06",
           "total": 53
         },
         {
           "by_type": {
-            "individual": 46,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2017-07",
           "total": 47
         },
         {
           "by_type": {
-            "individual": 64,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2017-08",
           "total": 65
         },
@@ -4851,10 +5507,14 @@
         },
         {
           "by_type": {
-            "individual": 40,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2017-11",
           "total": 41
         },
@@ -4906,9 +5566,13 @@
         {
           "by_type": {
             "individual": 62,
-            "structure": 2,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-05",
           "total": 65
         },
@@ -4941,10 +5605,14 @@
         },
         {
           "by_type": {
-            "individual": 39,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-09",
           "total": 40
         },
@@ -4959,28 +5627,40 @@
         },
         {
           "by_type": {
-            "individual": 38,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-12",
           "total": 39
         },
         {
           "by_type": {
-            "individual": 55,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-01",
           "total": 57
         },
         {
           "by_type": {
-            "individual": 66,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-02",
           "total": 67
         },
@@ -5004,37 +5684,53 @@
         },
         {
           "by_type": {
-            "individual": 59,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-05",
           "total": 62
         },
         {
           "by_type": {
-            "individual": 53,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-06",
           "total": 57
         },
         {
           "by_type": {
-            "individual": 50,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-07",
           "total": 51
         },
         {
           "by_type": {
-            "individual": 56,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-08",
           "total": 59
         },
@@ -5049,19 +5745,27 @@
         },
         {
           "by_type": {
-            "individual": 57,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-10",
           "total": 59
         },
         {
           "by_type": {
-            "individual": 54,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-11",
           "total": 56
         },
@@ -5076,37 +5780,53 @@
         },
         {
           "by_type": {
-            "individual": 48,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-02",
           "total": 50
         },
         {
           "by_type": {
-            "individual": 62,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-03",
           "total": 65
         },
         {
           "by_type": {
-            "individual": 42,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-04",
           "total": 43
         },
         {
           "by_type": {
-            "individual": 40,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-05",
           "total": 43
         },
@@ -5121,91 +5841,131 @@
         },
         {
           "by_type": {
-            "individual": 47,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-07",
           "total": 50
         },
         {
           "by_type": {
-            "individual": 37,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-08",
           "total": 38
         },
         {
           "by_type": {
-            "individual": 45,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-09",
           "total": 46
         },
         {
           "by_type": {
-            "individual": 31,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-10",
           "total": 33
         },
         {
           "by_type": {
-            "individual": 27,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-11",
           "total": 29
         },
         {
           "by_type": {
-            "individual": 36,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-12",
           "total": 37
         },
         {
           "by_type": {
-            "individual": 29,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-01",
           "total": 30
         },
         {
           "by_type": {
-            "individual": 30,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-02",
           "total": 31
         },
         {
           "by_type": {
-            "individual": 28,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-03",
           "total": 30
         },
         {
           "by_type": {
-            "individual": 27,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-04",
           "total": 28
         },
@@ -5247,55 +6007,79 @@
         },
         {
           "by_type": {
-            "individual": 42,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-09",
           "total": 43
         },
         {
           "by_type": {
-            "individual": 49,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-10",
           "total": 50
         },
         {
           "by_type": {
-            "individual": 41,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-11",
           "total": 44
         },
         {
           "by_type": {
-            "individual": 54,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-12",
           "total": 57
         },
         {
           "by_type": {
-            "individual": 61,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-01",
           "total": 62
         },
         {
           "by_type": {
             "individual": 103,
-            "structure": 2,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-03",
           "total": 106
         },
@@ -5310,10 +6094,14 @@
         },
         {
           "by_type": {
-            "individual": 44,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-05",
           "total": 45
         },
@@ -5328,10 +6116,14 @@
         },
         {
           "by_type": {
-            "individual": 26,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-07",
           "total": 27
         },
@@ -5346,10 +6138,14 @@
         },
         {
           "by_type": {
-            "individual": 58,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-09",
           "total": 61
         },
@@ -5364,19 +6160,27 @@
         },
         {
           "by_type": {
-            "individual": 49,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-11",
           "total": 52
         },
         {
           "by_type": {
-            "individual": 64,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-12",
           "total": 66
         }
@@ -5446,19 +6250,28 @@
         },
         {
           "by_type": {
-            "individual": 3,
-            "structure": 1,
-            "vehicle": 2
+            "individual": null,
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-10",
           "total": 6
         },
         {
           "by_type": {
-            "individual": 2,
-            "structure": 9,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-11",
           "total": 11
         },
@@ -5473,21 +6286,21 @@
         },
         {
           "by_type": {
-            "individual": 2,
-            "structure": 6,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-01",
           "total": 8
         },
         {
-          "by_type": {
-            "individual": 1,
-            "structure": 3,
-            "vehicle": 0
-          },
           "month": "2022-03",
-          "total": 4
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -5499,22 +6312,14 @@
           "total": 14
         },
         {
-          "by_type": {
-            "individual": 0,
-            "structure": 3,
-            "vehicle": 0
-          },
           "month": "2022-05",
-          "total": 3
+          "suppressed": true,
+          "total": null
         },
         {
-          "by_type": {
-            "individual": 1,
-            "structure": 0,
-            "vehicle": 0
-          },
           "month": "2022-06",
-          "total": 1
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -5536,30 +6341,35 @@
         },
         {
           "by_type": {
-            "individual": 3,
-            "structure": 3,
-            "vehicle": 1
+            "individual": null,
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-09",
           "total": 7
         },
         {
           "by_type": {
-            "individual": 1,
-            "structure": 16,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-10",
           "total": 17
         },
         {
-          "by_type": {
-            "individual": 0,
-            "structure": 2,
-            "vehicle": 0
-          },
           "month": "2022-11",
-          "total": 2
+          "suppressed": true,
+          "total": null
         },
         {
           "by_type": {
@@ -5918,10 +6728,14 @@
         },
         {
           "by_type": {
-            "individual": 33,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2017-05",
           "total": 37
         },
@@ -5937,9 +6751,13 @@
         {
           "by_type": {
             "individual": 36,
-            "structure": 6,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-07",
           "total": 43
         },
@@ -5964,9 +6782,13 @@
         {
           "by_type": {
             "individual": 53,
-            "structure": 14,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-10",
           "total": 68
         },
@@ -5982,81 +6804,117 @@
         {
           "by_type": {
             "individual": 37,
-            "structure": 6,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2017-12",
           "total": 44
         },
         {
           "by_type": {
             "individual": 26,
-            "structure": 2,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-01",
           "total": 29
         },
         {
           "by_type": {
             "individual": 25,
-            "structure": 2,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-02",
           "total": 29
         },
         {
           "by_type": {
             "individual": 25,
-            "structure": 3,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-03",
           "total": 29
         },
         {
           "by_type": {
-            "individual": 35,
+            "individual": null,
             "structure": 0,
-            "vehicle": 1
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2018-04",
           "total": 36
         },
         {
           "by_type": {
             "individual": 22,
-            "structure": 6,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-05",
           "total": 29
         },
         {
           "by_type": {
-            "individual": 49,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-06",
           "total": 50
         },
         {
           "by_type": {
-            "individual": 33,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-07",
           "total": 35
         },
         {
           "by_type": {
             "individual": 55,
-            "structure": 7,
-            "vehicle": 3
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2018-08",
           "total": 65
         },
@@ -6071,10 +6929,14 @@
         },
         {
           "by_type": {
-            "individual": 25,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2018-10",
           "total": 28
         },
@@ -6107,19 +6969,27 @@
         },
         {
           "by_type": {
-            "individual": 18,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-03",
           "total": 22
         },
         {
           "by_type": {
             "individual": 18,
-            "structure": 4,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2019-04",
           "total": 23
         },
@@ -6134,19 +7004,27 @@
         },
         {
           "by_type": {
-            "individual": 28,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-06",
           "total": 32
         },
         {
           "by_type": {
-            "individual": 34,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-07",
           "total": 35
         },
@@ -6161,10 +7039,14 @@
         },
         {
           "by_type": {
-            "individual": 33,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-09",
           "total": 37
         },
@@ -6179,28 +7061,40 @@
         },
         {
           "by_type": {
-            "individual": 29,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2019-11",
           "total": 31
         },
         {
           "by_type": {
             "individual": 23,
-            "structure": 1,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2020-02",
           "total": 25
         },
         {
           "by_type": {
-            "individual": 15,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-03",
           "total": 18
         },
@@ -6224,19 +7118,27 @@
         },
         {
           "by_type": {
-            "individual": 25,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-06",
           "total": 27
         },
         {
           "by_type": {
-            "individual": 24,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-07",
           "total": 26
         },
@@ -6251,19 +7153,27 @@
         },
         {
           "by_type": {
-            "individual": 22,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-09",
           "total": 25
         },
         {
           "by_type": {
-            "individual": 13,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2020-10",
           "total": 15
         },
@@ -6288,63 +7198,91 @@
         {
           "by_type": {
             "individual": 54,
-            "structure": 6,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-01",
           "total": 61
         },
         {
           "by_type": {
-            "individual": 17,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-02",
           "total": 21
         },
         {
           "by_type": {
-            "individual": 21,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-03",
           "total": 24
         },
         {
           "by_type": {
-            "individual": 14,
-            "structure": 1,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-04",
           "total": 15
         },
         {
           "by_type": {
-            "individual": 17,
-            "structure": 4,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-05",
           "total": 21
         },
         {
           "by_type": {
-            "individual": 15,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-06",
           "total": 18
         },
         {
           "by_type": {
             "individual": 21,
-            "structure": 1,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-07",
           "total": 23
         },
@@ -6369,9 +7307,13 @@
         {
           "by_type": {
             "individual": 18,
-            "structure": 4,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-10",
           "total": 24
         },
@@ -6387,81 +7329,117 @@
         {
           "by_type": {
             "individual": 35,
-            "structure": 4,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-12",
           "total": 40
         },
         {
           "by_type": {
             "individual": 30,
-            "structure": 2,
-            "vehicle": 1
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-01",
           "total": 33
         },
         {
           "by_type": {
-            "individual": 48,
-            "structure": 2,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-03",
           "total": 50
         },
         {
           "by_type": {
             "individual": 25,
-            "structure": 6,
-            "vehicle": 4
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-04",
           "total": 35
         },
         {
           "by_type": {
-            "individual": 8,
+            "individual": null,
             "structure": 0,
-            "vehicle": 1
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-05",
           "total": 9
         },
         {
           "by_type": {
             "individual": 39,
-            "structure": 5,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-06",
           "total": 46
         },
         {
           "by_type": {
-            "individual": 8,
+            "individual": null,
             "structure": 0,
-            "vehicle": 2
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-07",
           "total": 10
         },
         {
           "by_type": {
             "individual": 29,
-            "structure": 6,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-08",
           "total": 37
         },
         {
           "by_type": {
-            "individual": 16,
-            "structure": 3,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2022-09",
           "total": 19
         },
@@ -6477,9 +7455,13 @@
         {
           "by_type": {
             "individual": 30,
-            "structure": 5,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2022-11",
           "total": 37
         },
@@ -6531,10 +7513,14 @@
         },
         {
           "by_type": {
-            "individual": 3,
-            "structure": 65,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-07",
           "total": 68
         },
@@ -6550,135 +7536,195 @@
         {
           "by_type": {
             "individual": 0,
-            "structure": 38,
-            "vehicle": 2
+            "structure": null,
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "structure",
+            "vehicle"
+          ],
           "month": "2021-09",
           "total": 40
         },
         {
           "by_type": {
-            "individual": 4,
-            "structure": 13,
+            "individual": null,
+            "structure": null,
             "vehicle": 0
           },
+          "by_type_suppressed": [
+            "individual",
+            "structure"
+          ],
           "month": "2021-10",
           "total": 17
         },
         {
           "by_type": {
-            "individual": 2,
+            "individual": null,
             "structure": 28,
-            "vehicle": 2
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2021-11",
           "total": 32
         },
         {
           "by_type": {
-            "individual": 3,
+            "individual": null,
             "structure": 27,
-            "vehicle": 2
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2021-12",
           "total": 32
         },
         {
           "by_type": {
-            "individual": 2,
+            "individual": null,
             "structure": 14,
-            "vehicle": 4
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-01",
           "total": 20
         },
         {
           "by_type": {
-            "individual": 22,
+            "individual": null,
             "structure": 66,
-            "vehicle": 2
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-03",
           "total": 90
         },
         {
           "by_type": {
-            "individual": 11,
+            "individual": null,
             "structure": 35,
-            "vehicle": 3
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-04",
           "total": 49
         },
         {
           "by_type": {
-            "individual": 2,
+            "individual": null,
             "structure": 51,
-            "vehicle": 3
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-05",
           "total": 56
         },
         {
           "by_type": {
-            "individual": 12,
+            "individual": null,
             "structure": 33,
-            "vehicle": 1
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-06",
           "total": 46
         },
         {
           "by_type": {
-            "individual": 8,
+            "individual": null,
             "structure": 25,
-            "vehicle": 1
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-07",
           "total": 34
         },
         {
           "by_type": {
-            "individual": 12,
+            "individual": null,
             "structure": 38,
-            "vehicle": 4
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-08",
           "total": 54
         },
         {
           "by_type": {
-            "individual": 9,
+            "individual": null,
             "structure": 40,
-            "vehicle": 3
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-09",
           "total": 52
         },
         {
           "by_type": {
-            "individual": 16,
+            "individual": null,
             "structure": 37,
-            "vehicle": 2
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-10",
           "total": 55
         },
         {
           "by_type": {
-            "individual": 1,
+            "individual": null,
             "structure": 57,
-            "vehicle": 7
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-11",
           "total": 65
         },
         {
           "by_type": {
-            "individual": 3,
+            "individual": null,
             "structure": 52,
-            "vehicle": 11
+            "vehicle": null
           },
+          "by_type_suppressed": [
+            "individual",
+            "vehicle"
+          ],
           "month": "2022-12",
           "total": 66
         }

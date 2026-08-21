@@ -576,6 +576,12 @@
     "normalized": 25865
   },
   "schema": "quality_report.v0",
+  "small_cell_suppression": {
+    "cells_suppressed": 534,
+    "policy": "complementary; zeros publishable; small totals suppress the row",
+    "rows_suppressed": 5,
+    "threshold": 5
+  },
   "source": {
     "retrieved_at": "2026-08-21T01:06:45Z",
     "source_id": "sdrdl_source"

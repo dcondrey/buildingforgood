@@ -10,11 +10,16 @@ It is built around a swappable OCR engine so a sponsor API is a drop-in:
 
 - ``--engine local`` (default): Apple Vision handwriting recognition, fully
   offline, macOS only.
-- ``--engine eyepop``: EyePop.ai's hosted abilities via the ``eyepop`` SDK;
-  fail-closed without ``EYEPOP_API_KEY``.
+- ``--engine eyepop``: EyePop.ai's hosted detect-then-recognize OCR via the
+  ``eyepop`` SDK; fail-closed without ``EYEPOP_API_KEY``.
+- ``--engine eyepop-vlm``: EyePop.ai's hosted image-contents VLM reading the
+  same pages a second way; same credential gate.
 
-Both engines emit the same text-observation shape (``text``/``confidence``),
-so the audit card is engine-independent and records which engine produced it.
+Every engine emits the same text-observation shape (``text``/``confidence``),
+so the audit card is engine-independent and records which engine produced it,
+and at what raster resolution (``--dpi``; handwriting recognition is not
+stable across resolutions, which is itself a finding the agreement card can
+quantify).
 
 Privacy boundary (C-02): the input is an already-published aggregate
 document, and the card carries page-level results only — a count of integer
@@ -24,7 +29,8 @@ identifiers, no geometry, and no sub-threshold values are written.
 Usage:
     .venv/bin/python -m stillhere_pipeline.eyepop_audit \
         --pdf data/raw/dsdp_public_reports/June-2026-Unsheltered-Sleep-Count.pdf \
-        --out data/monitoring/digitization_audit.json [--engine local|eyepop]
+        --out data/monitoring/digitization_audit.json \
+        [--engine local|eyepop|eyepop-vlm] [--dpi 200]
 """
 
 from __future__ import annotations
@@ -41,6 +47,8 @@ from pathlib import Path
 
 MIN_CONFIDENCE = 0.3
 VALUE_THRESHOLD = 12  # below this, a bare integer could be a block-level mark
+DEFAULT_DPI = 200  # the only resolution the module ever rasterized at before
+# --dpi existed, so a card without a "dpi" field was produced at this value.
 # The card reports how many qualifying values survive at each floor, so a
 # single-threshold count reads as the stability band it actually sits in.
 CONFIDENCE_FLOORS = (0.2, 0.3, 0.5)
@@ -88,11 +96,14 @@ def page_summary(page: int, observations: list[TextObservation]) -> dict[str, ob
     }
 
 
-def audit_card(pages: list[dict[str, object]], pdf: str, engine: str) -> dict[str, object]:
+def audit_card(
+    pages: list[dict[str, object]], pdf: str, engine: str, dpi: int = DEFAULT_DPI
+) -> dict[str, object]:
     return {
         "kind": "digitization_audit",
         "status": "experimental",
         "engine": engine,
+        "dpi": dpi,
         "source_pdf": pdf,
         "value_threshold": VALUE_THRESHOLD,
         "pages": pages,
@@ -127,6 +138,12 @@ def agreement_card(first: dict[str, object], second: dict[str, object]) -> dict[
             if isinstance(p, dict)
         }
 
+    def run_of(card: dict[str, object]) -> dict[str, object]:
+        # Cards written before the --dpi flag existed carry no "dpi" field;
+        # every such run rasterized at DEFAULT_DPI, so backfilling it here is
+        # recorded provenance, not a guess.
+        return {"engine": card.get("engine"), "dpi": card.get("dpi", DEFAULT_DPI)}
+
     first_pages, second_pages = pages_of(first), pages_of(second)
     rows: list[dict[str, object]] = []
     shared_total = first_total = second_total = 0
@@ -150,6 +167,7 @@ def agreement_card(first: dict[str, object], second: dict[str, object]) -> dict[
         "kind": "digitization_audit_agreement",
         "status": "experimental",
         "engines": [first.get("engine"), second.get("engine")],
+        "runs": [run_of(first), run_of(second)],
         "source_pdfs": sorted({str(first.get("source_pdf")), str(second.get("source_pdf"))}),
         "value_threshold": first.get("value_threshold"),
         "pages": rows,
@@ -257,31 +275,22 @@ def eyepop_text_pop() -> object:
     )
 
 
-_EYEPOP_ENDPOINT: object | None = None
+def eyepop_vlm_pop() -> object:
+    """The whole-frame image-contents Pop: EyePop's VLM reading the page.
 
-
-def _eyepop_endpoint() -> object:
-    """One worker session for the whole run instead of one per page."""
-    global _EYEPOP_ENDPOINT
-    if _EYEPOP_ENDPOINT is None:
-        import atexit
-
-        from eyepop import EyePopSdk  # type: ignore[import-not-found]
-
-        endpoint = EyePopSdk.sync_worker(pop=eyepop_text_pop())
-        endpoint.__enter__()
-        atexit.register(endpoint.__exit__, None, None, None)
-        _EYEPOP_ENDPOINT = endpoint
-    return _EYEPOP_ENDPOINT
-
-
-def eyepop_engine(image: Path) -> list[TextObservation]:
-    """EyePop.ai hosted OCR; drop-in replacement for the local engine.
-
-    API-key auth works only with the default transient pop, so
-    ``EYEPOP_POP_ID`` must stay unset when authenticating with
-    ``EYEPOP_API_KEY``.
+    A second, independent way to read the same page — a vision-language model
+    describing frame contents rather than a detect-then-recognize OCR chain —
+    so OCR-vs-VLM disagreement on one engine vendor's stack is measurable with
+    the same agreement card. Emits top-level ``texts``, which
+    ``collect_text_observations`` already parses.
     """
+    from eyepop.worker.worker_types import InferenceComponent, Pop
+
+    return Pop(components=[InferenceComponent(ability="eyepop.image-contents:latest")])
+
+
+def _require_eyepop_credentials() -> None:
+    """Fail closed before any network use; shared by both hosted engines."""
     if not os.environ.get("EYEPOP_API_KEY"):
         raise SystemExit(
             "EYEPOP_API_KEY is not set. Get credentials from the EyePop rep "
@@ -293,25 +302,79 @@ def eyepop_engine(image: Path) -> list[TextObservation]:
             "pop (a named pop needs EYEPOP_SECRET_KEY instead)."
         )
     try:
-        import eyepop  # noqa: F401
+        import eyepop  # type: ignore[import-not-found]  # noqa: F401
     except ImportError as error:
         raise SystemExit("The eyepop package is missing: uv pip install eyepop") from error
 
-    endpoint = _eyepop_endpoint()
+
+_EYEPOP_ENDPOINTS: dict[str, object] = {}
+
+
+def _eyepop_endpoint(kind: str, pop_factory: Callable[[], object]) -> object:
+    """One worker session per pop for the whole run instead of one per page."""
+    if kind not in _EYEPOP_ENDPOINTS:
+        import atexit
+
+        from eyepop import EyePopSdk
+
+        endpoint = EyePopSdk.sync_worker(pop=pop_factory())
+        endpoint.__enter__()
+        atexit.register(endpoint.__exit__, None, None, None)
+        _EYEPOP_ENDPOINTS[kind] = endpoint
+    return _EYEPOP_ENDPOINTS[kind]
+
+
+def eyepop_engine(image: Path) -> list[TextObservation]:
+    """EyePop.ai hosted OCR; drop-in replacement for the local engine.
+
+    API-key auth works only with the default transient pop, so
+    ``EYEPOP_POP_ID`` must stay unset when authenticating with
+    ``EYEPOP_API_KEY``.
+    """
+    _require_eyepop_credentials()
+    endpoint = _eyepop_endpoint("ocr", eyepop_text_pop)
     result = endpoint.upload(str(image)).predict()  # type: ignore[attr-defined]
     return collect_text_observations(result)
 
 
-ENGINES: dict[str, Engine] = {"local": local_engine, "eyepop": eyepop_engine}
+def word_tokens(observations: list[TextObservation]) -> list[TextObservation]:
+    """Split each observation into whitespace-delimited tokens. Pure; tested.
+
+    A VLM answers in phrases ("Total 152"), where OCR emits per-region
+    strings; splitting keeps ``integer_values``'s standalone-token contract
+    meaningful for both. Confidence carries to every token unchanged.
+    """
+    tokens: list[TextObservation] = []
+    for obs in observations:
+        for word in str(obs.get("text", "")).split():
+            tokens.append({"text": word, "confidence": obs.get("confidence", 1.0)})
+    return tokens
 
 
-def run_audit(pdf: Path, out_path: Path, engine_name: str = "local") -> dict[str, object]:
+def eyepop_vlm_engine(image: Path) -> list[TextObservation]:
+    """EyePop.ai hosted image-contents VLM; same gate, second reading."""
+    _require_eyepop_credentials()
+    endpoint = _eyepop_endpoint("vlm", eyepop_vlm_pop)
+    result = endpoint.upload(str(image)).predict()  # type: ignore[attr-defined]
+    return word_tokens(collect_text_observations(result))
+
+
+ENGINES: dict[str, Engine] = {
+    "local": local_engine,
+    "eyepop": eyepop_engine,
+    "eyepop-vlm": eyepop_vlm_engine,
+}
+
+
+def run_audit(
+    pdf: Path, out_path: Path, engine_name: str = "local", dpi: int = DEFAULT_DPI
+) -> dict[str, object]:
     engine = ENGINES[engine_name]
     pages: list[dict[str, object]] = []
     with tempfile.TemporaryDirectory() as scratch:
-        for index, image in enumerate(rasterize(pdf, Path(scratch)), start=1):
+        for index, image in enumerate(rasterize(pdf, Path(scratch), dpi=dpi), start=1):
             pages.append(page_summary(index, engine(image)))
-    card = audit_card(pages, str(pdf), engine_name)
+    card = audit_card(pages, str(pdf), engine_name, dpi=dpi)
     out_path.write_text(json.dumps(card, indent=2, sort_keys=True) + "\n")
     return card
 
@@ -321,6 +384,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--pdf", type=Path)
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--engine", choices=sorted(ENGINES), default="local")
+    parser.add_argument(
+        "--dpi",
+        type=int,
+        default=DEFAULT_DPI,
+        help="Raster resolution; recorded in the card because handwriting "
+        "recognition is not stable across resolutions.",
+    )
     parser.add_argument(
         "--compare",
         nargs=2,
@@ -338,10 +408,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.pdf is None:
         parser.error("--pdf is required unless --compare is given")
-    card = run_audit(args.pdf, args.out, args.engine)
+    card = run_audit(args.pdf, args.out, args.engine, dpi=args.dpi)
     pages = card["pages"]
     page_count = len(pages) if isinstance(pages, list) else 0
-    print(f"wrote {args.out} · engine={args.engine} · {page_count} pages")
+    print(f"wrote {args.out} · engine={args.engine} · dpi={args.dpi} · {page_count} pages")
     return 0
 
 

@@ -439,6 +439,27 @@ describe("digitization audit card", () => {
     expect(screen.getByText(/never a model input/)).toBeDefined();
     expect(screen.getByText(/Per-page recovery across 11 pages/)).toBeDefined();
   });
+
+  it("tells the misread honestly: the shipped card's 157 against the sheet's 152", async () => {
+    await renderOffline();
+    expect(screen.getByText(/reads the.*handwritten total as 157/)).toBeDefined();
+    expect(screen.getByText(/re-rastered at 300 DPI reads 152/)).toBeDefined();
+  });
+
+  it("renders the cross-resolution agreement with both runs and the share", async () => {
+    await renderOffline();
+    expect(screen.getByText("Reading-vs-reading agreement")).toBeDefined();
+    expect(screen.getByText(/Apple Vision · 200 DPI vs Apple Vision · 300 DPI/)).toBeDefined();
+    expect(screen.getByText(/agree on 289 of the 297 and 296 area-scale values/)).toBeDefined();
+    expect(screen.getByText(/97\.5%/)).toBeDefined();
+    expect(screen.getByText(/Per-page agreement across 11 pages/)).toBeDefined();
+  });
+
+  // The new falsification bullet (digitization error, quantified from the
+  // agreement card) lives in the evidence section's challenge card, which
+  // mounts only with the loaded artifact's spatial-evidence structures — the
+  // offline-fallback harness never renders it, so it is verified on the live
+  // bundle instead of here.
 });
 
 describe("keyboard access (#12, #16)", () => {

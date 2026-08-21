@@ -27,13 +27,19 @@ the EyePop rep at the venue or andy@eyepop.ai, or borrow a teammate's key.
 The audit no longer waits on the key: the module has a swappable OCR engine,
 and `--engine local` (Apple Vision handwriting recognition, fully offline)
 already ran against the pinned report — the committed card is
-`data/monitoring/digitization_audit.json`, including the recovered City
-Center field-sheet totals whose multiplier lineage reconciles to the
-published 177 (152 + 14 × 1.75 = 176.5). EyePop is a drop-in:
-`--engine eyepop` on the same command, same card shape, engine recorded in
-the output. The presentation line without a key: "we built the ability and
-ran it locally; EyePop is one flag away — same interface, hosted engine."
-With a key, run both engines and show the cards side by side.
+`data/monitoring/digitization_audit.json`. That card misreads the City
+Center handwritten total as 157 at 200 DPI; a 300-DPI re-raster with the
+same engine (`digitization_audit_300dpi.json`) reads 152, which is what the
+sheet shows, and 152 reconciles through the multipliers to the published 177
+(152 + 14 × 1.75 = 176.5). The cross-resolution agreement card
+(`digitization_audit_agreement.json`) shows the two readings agreeing on
+97.5% of recovered values — the misread-and-caught story is the demo, not a
+blemish. EyePop is a drop-in: `--engine eyepop` (hosted OCR) or
+`--engine eyepop-vlm` (EyePop's image-contents VLM) on the same command,
+same card shape, engine recorded in the output. The presentation line
+without a key: "we built the ability and ran it locally; EyePop is one flag
+away — same interface, hosted engine." With a key, run both engines and
+show the cards side by side.
 
 1. Sign up at dashboard.eyepop.ai (event code **DSA2026**; questions:
    andy@eyepop.ai). Hamburger menu → API Keys → Create API Key.
@@ -41,7 +47,9 @@ With a key, run both engines and show the cards side by side.
    API-key auth works only with the SDK's default transient pop (the module
    refuses to run otherwise; a named pop needs `EYEPOP_SECRET_KEY` instead).
    Then `uv pip install eyepop` (needs Python 3.12+; the repo venv is 3.14).
-3. Run (the `--engine eyepop` flag is required; the default engine is local):
+3. Run (the `--engine` flag chooses `local` (default), `eyepop` hosted OCR,
+   or `eyepop-vlm`, EyePop's image-contents VLM; `--dpi` sets the raster
+   resolution, default 200, and is recorded in the card):
 
    ```bash
    .venv/bin/python -m stillhere_pipeline.eyepop_audit \
@@ -49,19 +57,23 @@ With a key, run both engines and show the cards side by side.
      --out data/monitoring/eyepop_digitization_audit.json --engine eyepop
    ```
 
-4. Cross-validate the two engines — one command, no OCR rerun:
+4. Cross-validate the two engines — one command, no OCR rerun (write to a
+   new file; `digitization_audit_agreement.json` is the committed
+   cross-resolution card the app renders):
 
    ```bash
    .venv/bin/python -m stillhere_pipeline.eyepop_audit \
      --compare data/monitoring/digitization_audit.json \
        data/monitoring/eyepop_digitization_audit.json \
-     --out data/monitoring/digitization_audit_agreement.json
+     --out data/monitoring/digitization_audit_engine_agreement.json
    ```
 
-   The agreement card reports, per page, the values both engines recovered
-   and each engine's exclusive count, plus an overall agreement share. Two
-   independent vision systems agreeing on the recovered totals is a stronger
-   audit claim than either engine alone.
+   The agreement card records both runs' engine and DPI in a `runs` list and
+   reports, per page, the values both engines recovered and each engine's
+   exclusive count, plus an overall agreement share. Two independent vision
+   systems agreeing on the recovered totals is a stronger audit claim than
+   either engine alone — or than the committed same-engine 200-vs-300-DPI
+   comparison.
 
 5. Show the cards next to the transcribed monitoring totals. The claim to
    make: "computer vision audits the measurement instrument — the handwritten

@@ -117,11 +117,14 @@ screen in the evidence section, so point at it:
 
 > "And we pointed computer vision at the ruler itself — it ships in the
 > product. The published counts come from scanned, hand-annotated field
-> sheets; this audit card OCRs them, fully offline, and the City Center
-> sheet's handwritten totals reconcile through the documented multipliers to
-> the published number: 152 plus 14 tents times 1.75 is 176.5, published 177.
-> The engine is swappable: EyePop's hosted abilities drop in with one flag.
-> Vision that audits the instrument, never the people."
+> sheets; this audit card OCRs them, fully offline — and it caught its own
+> mistake. The shipped 200-DPI pass reads City Center's handwritten total as
+> 157; a 300-DPI pass reads 152, which is what the sheet shows, and 152 plus
+> 14 tents times 1.75 is 176.5, published 177. Two full readings agree on
+> 97.5 percent of recovered values — that gap is the instrument's error bar,
+> surfaced instead of hidden. The engine is swappable: EyePop's hosted
+> abilities drop in with one flag. Vision that audits the instrument, never
+> the people."
 
 If a borrowed EyePop key exists, run `--engine eyepop` beforehand and show
 both cards side by side (runbook in JUDGING_ALIGNMENT.md).

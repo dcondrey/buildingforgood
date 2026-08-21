@@ -71,10 +71,17 @@ block-scale digit can enter this file). The module has a swappable engine —
 One recovered example of the lineage reconciling: the City Center field sheet
 shows handwritten totals of 152 individuals and 14 tents, and
 152 + 14 × 1.75 = 176.5 ≈ 177, the published City Center June total. OCR of
-the handwritten "152" is unstable across raster resolutions (the committed
-card reads 157 at 200 dpi), which is exactly the kind of uncertainty the
-audit exists to surface; treat recovered values as candidates for human
-verification, never as counts.
+the handwritten "152" is unstable across raster resolutions: the committed
+200-dpi card reads 157, while `digitization_audit_300dpi.json` — the same
+engine re-run at 300 dpi via the module's `--dpi` flag, which is recorded in
+every card — reads 152. `digitization_audit_agreement.json` compares the two
+runs (each identified by engine and dpi in its `runs` list) and reports a
+97.5% agreement share over the recovered area-scale values. That surfaced
+disagreement is exactly the uncertainty the audit exists to expose; treat
+recovered values as candidates for human verification, never as counts. The
+original 200-dpi card is quoted by the app and the product docs as the
+shipped misread-and-caught example, so do not regenerate it casually — a
+rerun that silently "fixes" the 157 would erase the evidence the docs cite.
 
 ## Update protocol
 

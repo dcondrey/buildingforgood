@@ -326,7 +326,8 @@ main {
   text-transform: uppercase;
 }
 .hero h1 {
-  font-family: var(--serif);
+  font-family: var(--display);
+  font-optical-sizing: auto;
   font-size: clamp(3.7rem, 7.2vw, 7.1rem);
   font-weight: 500;
   letter-spacing: -0.065em;
@@ -421,7 +422,8 @@ main {
   width: 3px;
 }
 .hero-decision > p {
-  font-family: var(--serif);
+  font-family: var(--display);
+  font-optical-sizing: auto;
   font-size: clamp(1.45rem, 2.5vw, 2.1rem);
   line-height: 1.25;
   margin: 1rem 0 2rem;
@@ -441,6 +443,72 @@ main {
   font-family: var(--mono);
   margin-right: 0.35rem;
   text-transform: uppercase;
+}
+
+.evidence-chain {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(4, 1fr);
+  list-style: none;
+  margin: 1.4rem 0 0;
+  padding: 1.2rem 0 0;
+}
+.evidence-chain-step {
+  align-items: start;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-width: 0;
+  position: relative;
+}
+.chain-node {
+  align-items: center;
+  background: var(--panel-solid);
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  color: var(--muted);
+  display: inline-flex;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  height: 1.55rem;
+  justify-content: center;
+  margin-right: 0.45rem;
+  width: 1.55rem;
+  z-index: 1;
+}
+.chain-teal .chain-node {
+  border-color: rgba(110, 195, 202, 0.5);
+  color: var(--teal-bright);
+}
+.chain-amber .chain-node {
+  border-color: rgba(240, 173, 78, 0.5);
+  color: var(--amber-bright);
+}
+.chain-copy {
+  display: grid;
+  gap: 0.16rem;
+  min-width: 0;
+}
+.chain-copy strong {
+  color: var(--ink-soft);
+  font-size: 0.66rem;
+  line-height: 1.2;
+}
+.chain-copy small {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.52rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.chain-connector {
+  background: linear-gradient(90deg, var(--line-strong), transparent);
+  height: 1px;
+  left: 1.55rem;
+  position: absolute;
+  right: 0.45rem;
+  top: 0.77rem;
+  transform: translateX(0.45rem);
 }
 
 .step-nav {
@@ -501,7 +569,8 @@ main {
   position: relative;
 }
 .section-intro h2 {
-  font-family: var(--serif);
+  font-family: var(--display);
+  font-optical-sizing: auto;
   font-size: clamp(2.4rem, 5vw, 4.5rem);
   font-weight: 450;
   letter-spacing: -0.045em;
@@ -646,7 +715,8 @@ main {
   width: 3.2rem;
 }
 .result-header h3 {
-  font-family: var(--serif);
+  font-family: var(--display);
+  font-optical-sizing: auto;
   font-size: clamp(1.8rem, 3vw, 2.7rem);
   font-weight: 500;
   margin: 0.05rem 0;
@@ -2255,6 +2325,13 @@ main {
   .hero-decision {
     max-width: 40rem;
   }
+  .evidence-chain {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 1rem;
+  }
+  .evidence-chain-step:nth-child(2) .chain-connector {
+    display: none;
+  }
   .composition-metrics {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -2423,6 +2500,13 @@ main {
   }
   .hero-decision > p {
     font-size: 1.45rem;
+  }
+  .evidence-chain {
+    grid-template-columns: 1fr;
+    row-gap: 0.8rem;
+  }
+  .evidence-chain-step .chain-connector {
+    display: none;
   }
   .decision-section {
     padding: 5rem 0;

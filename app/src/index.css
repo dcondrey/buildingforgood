@@ -1,3 +1,43 @@
+@font-face {
+  font-display: swap;
+  font-family: "Source Serif 4";
+  font-style: normal;
+  font-weight: 200 900;
+  src: url("./assets/fonts/source-serif-4-variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "Source Serif 4";
+  font-style: italic;
+  font-weight: 200 900;
+  src: url("./assets/fonts/source-serif-4-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 300 700;
+  src: url("./assets/fonts/Fraunces-Var.woff2") format("woff2");
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 300;
+  src: url("./assets/fonts/jetbrains-mono-light.woff2") format("woff2");
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 700;
+  src: url("./assets/fonts/jetbrains-mono-regular.woff2") format("woff2");
+}
+
 :root {
   color-scheme: dark;
   font-family:
@@ -31,8 +71,9 @@
   --green-dim: rgba(114, 211, 160, 0.12);
   --red: #ff7b6c;
   --red-dim: rgba(255, 123, 108, 0.12);
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --display: "Fraunces", "Source Serif 4", Georgia, serif;
+  --serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --shadow: 0 28px 80px -38px rgba(0, 0, 0, 0.95);
 }
 
@@ -43,6 +84,7 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 9rem;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -54,6 +96,17 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 button,

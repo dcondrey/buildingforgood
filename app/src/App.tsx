@@ -809,6 +809,81 @@ function App() {
                       </div>
                     </div>
 
+                    {data.robustness && (
+                      <section className="robustness-section" aria-labelledby="robustness-title">
+                        <div className="robustness-section-title">
+                          <span className="eyebrow" id="robustness-title">
+                            Alternative explanations tested
+                          </span>
+                          <strong>Two descriptive sensitivity checks</strong>
+                        </div>
+                        <div className="robustness-grid">
+                          <article className="robustness-card">
+                            <div className="robustness-title">
+                              <span className="eyebrow">Footfall sensitivity</span>
+                              <strong>Paid-parking proxy</strong>
+                              <small>Aligned six-month means · July 2023 excluded</small>
+                            </div>
+                            <div className="parking-result">
+                              <span>
+                                <small>
+                                  {formatNumber(data.robustness.parking.verifiedPoles)} historically
+                                  verified poles
+                                </small>
+                                <strong>
+                                  {formatNumber(data.robustness.parking.preMonthlyMean)} →{" "}
+                                  {formatNumber(data.robustness.parking.postMonthlyMean)}
+                                </strong>
+                                <small>
+                                  transactions / month ·{" "}
+                                  {formatNumber(data.robustness.parking.changePct, 1)}%
+                                </small>
+                              </span>
+                              <span>
+                                <small>Per meter-month</small>
+                                <strong>
+                                  {formatNumber(data.robustness.parking.prePerMeter, 1)} →{" "}
+                                  {formatNumber(data.robustness.parking.postPerMeter, 1)}
+                                </strong>
+                                <small>
+                                  all observed meters{" "}
+                                  {formatNumber(data.robustness.parking.allMeterChangePct, 1)}%
+                                </small>
+                              </span>
+                            </div>
+                            <p>{data.robustness.parking.interpretation}</p>
+                            <small className="robustness-caveat">
+                              Transactions ≠ people or visits. Rates, hours, inventory, payment
+                              substitution, free parking, events, transit, economy, and seasonality
+                              remain possible; the parking zone is not a proven GID-boundary match.
+                            </small>
+                          </article>
+
+                          <article className="robustness-card">
+                            <div className="robustness-title">
+                              <span className="eyebrow">Count-day sensitivity</span>
+                              <strong>NOAA weather was nearly matched</strong>
+                            </div>
+                            <div className="weather-dates">
+                              {data.robustness.weather.dates.map((date) => (
+                                <span key={date.date}>
+                                  <small>{formatDate(date.date)}</small>
+                                  <strong>{formatNumber(date.maximumTemperature)}°F</strong>
+                                  <small>{formatNumber(date.precipitation, 2)} in rain</small>
+                                </span>
+                              ))}
+                            </div>
+                            <p>{data.robustness.weather.interpretation}</p>
+                            <small className="robustness-caveat">
+                              {data.robustness.weather.station}. This rules out only an obvious
+                              same-day rain/TMAX contrast; airport conditions and prior weather may
+                              differ.
+                            </small>
+                          </article>
+                        </div>
+                      </section>
+                    )}
+
                     <p className="bias-interpretation">{data.reportingBias.interpretation}</p>
                     <div className="sensitivity-row">
                       <span>
@@ -826,7 +901,7 @@ function App() {
                     </div>
                     <p className="bias-exclusion">
                       <strong>Never used for:</strong> planning load, outreach allocation, people or
-                      movement, abatement, case response, or intervention effects.
+                      movement, abatement, case response, intervention effects, or the forecast.
                     </p>
                   </div>
                 </details>

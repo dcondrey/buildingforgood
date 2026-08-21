@@ -924,6 +924,90 @@ main {
   font-size: 1.05rem;
   font-weight: 550;
 }
+.robustness-section {
+  border-top: 1px solid var(--line);
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+}
+.robustness-section-title {
+  align-items: end;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.55rem;
+}
+.robustness-section-title > strong {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 550;
+}
+.robustness-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: 1.15fr 0.85fr;
+  margin-top: 0.8rem;
+}
+.robustness-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 0.8rem;
+}
+.robustness-title {
+  display: grid;
+}
+.robustness-title > strong {
+  color: var(--ink-soft);
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 550;
+}
+.robustness-title > small {
+  color: var(--faint);
+  font-size: 0.55rem;
+}
+.parking-result,
+.weather-dates {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 0.7rem;
+}
+.parking-result > span,
+.weather-dates > span {
+  border-left: 2px solid var(--teal);
+  display: grid;
+  padding-left: 0.55rem;
+}
+.parking-result small,
+.weather-dates small {
+  color: var(--muted);
+  font-size: 0.56rem;
+}
+.parking-result strong,
+.weather-dates strong {
+  color: var(--teal-bright);
+  font-family: var(--mono);
+  font-size: 0.79rem;
+  font-weight: 550;
+}
+.weather-dates > span {
+  border-color: var(--amber);
+}
+.weather-dates strong {
+  color: var(--amber-bright);
+  font-size: 1.05rem;
+}
+.robustness-card > p {
+  color: var(--ink-soft);
+  font-size: 0.68rem;
+  margin: 0.75rem 0 0.35rem;
+}
+.robustness-caveat {
+  color: var(--faint);
+  display: block;
+  font-size: 0.58rem;
+  line-height: 1.45;
+}
 .bias-interpretation {
   color: var(--ink-soft);
   font-family: var(--serif);
@@ -1804,6 +1888,9 @@ main {
   }
   .checkpoint-block {
     align-items: start;
+    grid-template-columns: 1fr;
+  }
+  .robustness-grid {
     grid-template-columns: 1fr;
   }
   .confidence-chip {

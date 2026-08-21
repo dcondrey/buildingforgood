@@ -55,4 +55,19 @@ describe("generated demo adapter", () => {
     ]);
     expect(demo?.areas.find((area) => area.id === "east_village")?.planningLoad).toBe(591);
   });
+
+  it("adapts descriptive parking and weather robustness checks", () => {
+    const demo = adaptDemoV1(artifact);
+    expect(demo?.robustness?.parking).toMatchObject({
+      verifiedPoles: 2035,
+      preMonthlyMean: 291623.7,
+      postMonthlyMean: 286531.2,
+      changePct: -1.7,
+      allMeterChangePct: -2.9,
+    });
+    expect(demo?.robustness?.weather.dates).toEqual([
+      { date: "2024-01-25", precipitation: 0, maximumTemperature: 62 },
+      { date: "2025-01-31", precipitation: 0, maximumTemperature: 63 },
+    ]);
+  });
 });

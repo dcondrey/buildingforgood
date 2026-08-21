@@ -88,6 +88,27 @@ export interface DemoData {
     }>;
     interpretation: string;
   };
+  robustness?: {
+    parking: {
+      verifiedPoles: number;
+      preMonthlyMean: number;
+      postMonthlyMean: number;
+      changePct: number;
+      prePerMeter: number;
+      postPerMeter: number;
+      allMeterChangePct: number;
+      interpretation: string;
+    };
+    weather: {
+      station: string;
+      dates: Array<{
+        date: string;
+        precipitation: number;
+        maximumTemperature: number;
+      }>;
+      interpretation: string;
+    };
+  };
   limitations: string[];
 }
 
@@ -396,6 +417,54 @@ export function adaptDemoV1(input: unknown): DemoData | null {
     };
   }
 
+  let robustness: DemoData["robustness"];
+  const robustnessRoot = record(evidence.robustness);
+  const parkingRoot = record(robustnessRoot?.parking_exposure);
+  const weatherRoot = record(robustnessRoot?.count_day_weather);
+  if (parkingRoot && weatherRoot) {
+    const parkingCohort = record(parkingRoot.cohort) ?? {};
+    const parkingComparison = record(parkingRoot.comparison) ?? {};
+    const fixedCohort = record(parkingComparison.fixed_cohort) ?? {};
+    const allMeters = record(parkingComparison.all_observed_downtown_meters) ?? {};
+    const weatherStation = record(weatherRoot.station) ?? {};
+    const weatherComparison = record(weatherRoot.comparison) ?? {};
+    const weatherDates = array(weatherRoot.dates)
+      .map((item) => {
+        const row = record(item);
+        const date = text(row?.date, "");
+        if (!date) return null;
+        return {
+          date,
+          precipitation: number(row?.precipitation_inches, 0),
+          maximumTemperature: number(row?.maximum_temperature_f, 0),
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+    robustness = {
+      parking: {
+        verifiedPoles: number(parkingCohort.historically_verified_poles, 0),
+        preMonthlyMean: number(fixedCohort.pre_monthly_mean, 0),
+        postMonthlyMean: number(fixedCohort.post_monthly_mean, 0),
+        changePct: number(fixedCohort.percent_change, 0),
+        prePerMeter: number(fixedCohort.pre_transactions_per_meter_month, 0),
+        postPerMeter: number(fixedCohort.post_transactions_per_meter_month, 0),
+        allMeterChangePct: number(allMeters.percent_change, 0),
+        interpretation: text(
+          parkingComparison.interpretation,
+          "Paid-parking exposure is a descriptive sensitivity only.",
+        ),
+      },
+      weather: {
+        station: `${text(weatherStation.label, "Weather station")} · ${text(weatherStation.id, "")}`,
+        dates: weatherDates,
+        interpretation: text(
+          weatherComparison.interpretation,
+          "Same-day weather is a descriptive sensitivity only.",
+        ),
+      },
+    };
+  }
+
   return {
     origin: "generated",
     source: {
@@ -451,6 +520,7 @@ export function adaptDemoV1(input: unknown): DemoData | null {
     },
     areas: areas.length ? areas : EMBEDDED_DEMO.areas,
     reportingBias,
+    robustness,
     limitations: limitations.length ? limitations : EMBEDDED_DEMO.limitations,
   };
 }

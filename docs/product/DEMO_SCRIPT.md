@@ -80,10 +80,12 @@ explicit interval; then point to the selected model and held-out error.
 **Land:** The simplest defensible model wins; there is no random time-series
 split, future-error leakage, or LLM forecast.
 
-### 1:40–2:05 — Generate a coverage-continuity scenario
+### 1:40–2:05 — Walk into the coverage-continuity scenario
 
-**Do:** Click **Generate coverage scenario**. Point to the 80/80 total and use
-the **0h audit only**, **4h sensitivity**, and **8h prepared demo** controls.
+**Do:** Scroll to **Plan the shift** — the 80-hour plan is already computed and
+its state rides the sticky header (80/80 allocated, 8h floor). Point to the
+80/80 total and use the **0h audit only**, **4h sensitivity**, and **8h
+prepared demo** controls.
 
 **Say:**
 
@@ -164,8 +166,8 @@ Stop. Let the judge ask the first question.
 
 ## If time slips
 
-Keep the hook, **Test the drop**, **Generate coverage scenario**, and the closing. Cut
-in this order:
+Keep the hook, **Test the drop**, the already-live plan walk-through, and the
+closing. Cut in this order:
 
 1. the manual lock/recompute;
 2. detailed forecast metric narration; then
@@ -176,9 +178,9 @@ Do not cut the causal/privacy boundary or imply the decline proves progress.
 **Guide demo** also carries this script on its own for a viewer exploring with
 no presenter in the room. Nine steps narrate the same story with the
 artifact's live numbers and ask the viewer to work the real controls — **Test
-the drop**, **Generate coverage scenario**, the 0h and 8h floors, a lock plus
-**Recompute unlocked hours**, the assumption explorer on the plan map, and
-**Copy decision brief**. The guide detects
+the drop**, the 0h and 8h floors, a lock plus **Recompute unlocked hours**,
+the assumption explorer on the plan map, and **Copy decision brief**. The
+guide detects
 each completed action and advances by itself; **Do it for me** performs a step
 for a hands-off viewer, and **Play** runs the whole flow unattended and stops
 on any outside interaction. Presenting live, drive it with `→` and `←`. Stop

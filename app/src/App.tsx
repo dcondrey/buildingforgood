@@ -73,10 +73,9 @@ function buildGuideSteps(data: DemoData): GuideStep[] {
     },
     {
       id: "generate",
-      title: "Turn it into a staffing plan",
+      title: "The plan is already on the table",
       targetId: "planner",
-      task: "Press “Generate coverage scenario”.",
-      body: `${data.scenario.defaultBudget} assumed staff-hours go across the six neighborhoods: every area first keeps the guaranteed minimum you set, and the rest follows where more people are expected. The tool proposes; it never dispatches.`,
+      body: `The tool opened mid-work: ${data.scenario.defaultBudget} assumed staff-hours are already split across the six neighborhoods — every area keeps the guaranteed minimum you set, and the rest follows where more people are expected. Change the budget or the floor and it recomputes instantly. It proposes; it never dispatches.`,
     },
     {
       id: "compare",
@@ -819,13 +818,22 @@ function App() {
 
   useEffect(() => {
     const controller = new AbortController();
+    // The shell opens mid-work: a live default plan is on the table from the
+    // first paint, and the controls adjust it rather than reveal it.
+    const openWithPlan = (source: DemoData) => {
+      setPlan(
+        allocateHours(source.areas, source.scenario.defaultBudget, DEFAULT_COVERAGE_FLOOR, true),
+      );
+    };
     loadDemoData(controller.signal)
       .then((loaded) => {
         setData(loaded);
         setBudget(loaded.scenario.defaultBudget);
+        openWithPlan(loaded);
       })
       .catch(() => {
-        // Aborted fetches (e.g. unmount) fall back to the embedded snapshot already set.
+        // Fetch failed or aborted; the embedded snapshot already set renders.
+        if (!controller.signal.aborted) openWithPlan(EMBEDDED_DEMO);
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
@@ -1532,6 +1540,26 @@ function App() {
           <a href="#review">
             <span>04</span> Human review
           </a>
+          {plan?.feasible && (
+            <div aria-label="Live plan state" className="plan-state" role="status">
+              <span>
+                {planTotal}/{budget}h allocated
+              </span>
+              <span>{guardEnabled ? `${coverageFloor}h floor` : "no minimum"}</span>
+              <span>{unmetTotal > 0 ? `${unmetTotal}h unmet load` : "0h unmet"}</span>
+              {lockedIds.size > 0 && (
+                <span>
+                  {lockedIds.size} lock{lockedIds.size > 1 ? "s" : ""}
+                </span>
+              )}
+              {intervention && (
+                <span className="plan-state-assumption">
+                  assumption:{" "}
+                  {data.areas.find((area) => area.id === intervention.areaId)?.name ?? ""} cleared
+                </span>
+              )}
+            </div>
+          )}
         </nav>
 
         <section className="decision-section" id="drop-test" aria-labelledby="drop-title">

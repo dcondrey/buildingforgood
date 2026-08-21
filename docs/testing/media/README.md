@@ -6,9 +6,11 @@ preview`) of the build that passed `./scripts/verify.sh` on
 Content is the frozen `demo.v1.json` scenario; no live data.
 
 - `demo-walkthrough.mp4` — 22.5s browser-playable walkthrough of the full
-  scripted flow: hero → Test the drop → forecast → Generate coverage scenario
-  → map selection (East Village) → Compare with no minimum → Restore the 8h
-  minimum → decision brief.
+  scripted flow (recaptured 2026-08-21 after the mid-work opening landed):
+  hero with the live default plan → Test the drop → forecast → the already
+  computed 80h plan → what-if slider at 120h → map selection (East Village) →
+  assumption explorer → Compare with no minimum → Restore the 8h minimum →
+  decision brief.
 - `still-1-drop-result.png` — drop-test decomposition result.
 - `still-2-forecast.png` — forecast replay with interval and scorecard.
 - `still-3-guarded-plan.png` — 80/80 guarded allocation with the neighborhood

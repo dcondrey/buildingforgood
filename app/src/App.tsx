@@ -1184,6 +1184,14 @@ function App() {
                         tone: area.delta > 0 ? "up" : "down",
                       })}
                     />
+                    <div className="map-legend" aria-label="Map legend">
+                      <span>
+                        <i className="map-legend-up" /> More observed units
+                      </span>
+                      <span>
+                        <i className="map-legend-down" /> Fewer observed units
+                      </span>
+                    </div>
                     <p className="map-caption">
                       Change in raw street observations by neighborhood · schematic, not to scale ·
                       not a count of people

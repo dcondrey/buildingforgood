@@ -1239,6 +1239,35 @@ main {
   letter-spacing: 0.4px;
   text-transform: uppercase;
 }
+.map-legend {
+  align-items: center;
+  color: var(--faint);
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  gap: 0.8rem 1rem;
+  justify-content: flex-end;
+  margin-top: 0.65rem;
+  text-transform: uppercase;
+}
+.map-legend span {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+}
+.map-legend i {
+  border-radius: 2px;
+  display: inline-block;
+  height: 0.55rem;
+  width: 0.9rem;
+}
+.map-legend-up {
+  background: var(--teal);
+}
+.map-legend-down {
+  background: var(--amber);
+}
 .area-cell {
   background: linear-gradient(135deg, rgba(110, 195, 202, 0.11), rgba(110, 195, 202, 0.03));
   border: 1px solid rgba(110, 195, 202, 0.22);

@@ -41,11 +41,20 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  // If the environment provides a real localStorage, a persisted view or
+  // scenario written by one test must not leak into the next render.
+  try {
+    window.localStorage.clear();
+  } catch {
+    // No storage in this environment; the shell treats that as first-visit.
+  }
 });
 
 async function renderOffline() {
   render(<App />);
-  await screen.findByText("Offline demo snapshot");
+  // Late tests in this large file exceed findByText's 1s default on loaded CI
+  // runners; the offline badge itself renders synchronously once effects run.
+  await screen.findByText("Offline demo snapshot", {}, { timeout: 10000 });
 }
 
 async function violationsFor(element: HTMLElement): Promise<string[]> {

@@ -41,6 +41,9 @@ from pathlib import Path
 
 MIN_CONFIDENCE = 0.3
 VALUE_THRESHOLD = 12  # below this, a bare integer could be a block-level mark
+# The card reports how many qualifying values survive at each floor, so a
+# single-threshold count reads as the stability band it actually sits in.
+CONFIDENCE_FLOORS = (0.2, 0.3, 0.5)
 
 TextObservation = dict[str, object]
 Engine = Callable[[Path], list[TextObservation]]
@@ -73,6 +76,15 @@ def page_summary(page: int, observations: list[TextObservation]) -> dict[str, ob
         "integer_tokens": len(values),
         "values": sorted(v for v in values if v >= VALUE_THRESHOLD),
         "withheld_below_threshold": sum(1 for v in values if v < VALUE_THRESHOLD),
+        # Counts only, never values: a value that qualifies only under a lower
+        # floor stays unwritten, so loosening the floor cannot leak anything
+        # the standard floor withheld.
+        "qualifying_by_confidence": {
+            f"{floor:.1f}": sum(
+                1 for v in integer_values(observations, floor) if v >= VALUE_THRESHOLD
+            )
+            for floor in CONFIDENCE_FLOORS
+        },
     }
 
 
@@ -90,6 +102,69 @@ def audit_card(pages: list[dict[str, object]], pdf: str, engine: str) -> dict[st
             "values at or above the area-total threshold. No block "
             "identifiers, no geometry, no sub-threshold values; a reference "
             "card for auditing the digitization lineage, never a model input."
+        ),
+    }
+
+
+def agreement_card(first: dict[str, object], second: dict[str, object]) -> dict[str, object]:
+    """Two-engine agreement summary over two audit cards. Pure; tested.
+
+    Both inputs are already page-level, privacy-filtered cards, so the
+    comparison can only ever write values one of them already carries.
+    """
+    from collections import Counter
+
+    if first.get("value_threshold") != second.get("value_threshold"):
+        raise SystemExit("Cannot compare cards produced under different value thresholds.")
+
+    def pages_of(card: dict[str, object]) -> dict[int, Counter[int]]:
+        pages = card.get("pages")
+        if not isinstance(pages, list):
+            return {}
+        return {
+            int(str(p.get("page"))): Counter(v for v in p.get("values", []) if isinstance(v, int))
+            for p in pages
+            if isinstance(p, dict)
+        }
+
+    first_pages, second_pages = pages_of(first), pages_of(second)
+    rows: list[dict[str, object]] = []
+    shared_total = first_total = second_total = 0
+    for page in sorted(first_pages.keys() | second_pages.keys()):
+        a, b = first_pages.get(page, Counter()), second_pages.get(page, Counter())
+        shared = a & b
+        rows.append(
+            {
+                "page": page,
+                "shared_values": sorted(shared.elements()),
+                "shared": sum(shared.values()),
+                "only_in_first": sum((a - b).values()),
+                "only_in_second": sum((b - a).values()),
+            }
+        )
+        shared_total += sum(shared.values())
+        first_total += sum(a.values())
+        second_total += sum(b.values())
+    denominator = first_total + second_total
+    return {
+        "kind": "digitization_audit_agreement",
+        "status": "experimental",
+        "engines": [first.get("engine"), second.get("engine")],
+        "source_pdfs": sorted({str(first.get("source_pdf")), str(second.get("source_pdf"))}),
+        "value_threshold": first.get("value_threshold"),
+        "pages": rows,
+        "summary": {
+            "pages_compared": len(rows),
+            "shared_total": shared_total,
+            "first_total": first_total,
+            "second_total": second_total,
+            "agreement_share": round(2 * shared_total / denominator, 3) if denominator else None,
+        },
+        "boundary": (
+            "Agreement summary over two page-level, privacy-filtered "
+            "digitization-audit cards. It writes only values already present "
+            "in a filtered card; independent-engine agreement is evidence "
+            "about the digitization lineage, never a model input."
         ),
     }
 
@@ -168,10 +243,26 @@ def run_audit(pdf: Path, out_path: Path, engine_name: str = "local") -> dict[str
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--pdf", required=True, type=Path)
+    parser.add_argument("--pdf", type=Path)
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--engine", choices=sorted(ENGINES), default="local")
+    parser.add_argument(
+        "--compare",
+        nargs=2,
+        type=Path,
+        metavar=("CARD_A", "CARD_B"),
+        help="Two existing audit-card JSON files; writes their agreement card, no OCR run.",
+    )
     args = parser.parse_args(argv)
+    if args.compare:
+        first, second = (json.loads(path.read_text()) for path in args.compare)
+        card = agreement_card(first, second)
+        args.out.write_text(json.dumps(card, indent=2, sort_keys=True) + "\n")
+        summary = card["summary"]
+        print(f"wrote {args.out} · engines={card['engines']} · {summary}")
+        return 0
+    if args.pdf is None:
+        parser.error("--pdf is required unless --compare is given")
     card = run_audit(args.pdf, args.out, args.engine)
     pages = card["pages"]
     page_count = len(pages) if isinstance(pages, list) else 0

@@ -176,10 +176,12 @@ actually attach to a staffing decision.
 
 **"What's next?"**
 Responses to the pending data requests (SDHC, RTFH, the City's homelessness
-department, DSDP) entering the documented lanes; the tract-to-neighborhood
-crosswalk to bring the 2026 PIT down to area level; a capacity baseline card
-(caseload-per-FTE benchmarks); and the digitization audit becoming a standing
-QA step for every monthly report, with EyePop as the hosted engine.
+department, DSDP) entering their documented lanes; the tract-to-neighborhood
+crosswalk to bring the 2026 PIT down to area level; and the digitization
+audit becoming a standing QA step for every monthly report — the two-engine
+agreement mode is already built, so a hosted EyePop run cross-checks the
+local OCR with one command. (The capacity card shipped today; it's on the
+brief with HUD guidance and the locally contracted shelter ratios, cited.)
 
 **"Fresh code?"**
 Everything was built inside the hacking window; the repo history shows the

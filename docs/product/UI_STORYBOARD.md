@@ -19,16 +19,12 @@ supports the recommendation; it does not occupy the top of the hierarchy.
 
 ## Journey overview
 
-```text
-Decision context
-      ↓
-Test the drop
-      ↓
-Review forecast range
-      ↓
-Plan next shift
-      ↓
-Human review and decision brief
+```mermaid
+flowchart TD
+    A[Decision context] --> B[Test the drop]
+    B --> C[Review forecast range]
+    C --> D[Plan next shift]
+    D --> E[Human review and decision brief]
 ```
 
 The MVP uses one responsive page with a persistent decision header and four
@@ -132,12 +128,12 @@ Requirements:
 
 ```text
 ┌─ 3. Plan 80 staff-hours ────────────────────────────────────────────┐
-│ Coverage guard: ON     Minimum: 8 hours/area     6 areas included   │
+│ Coverage guard: ON     Minimum: 6 hours/area     6 areas included   │
 │                                                                     │
 │ Area             Suggested   Locked?   Why this amount?             │
 │ East Village        24 h       [ ]     upper range + continuity     │
 │ Gaslamp             12 h       [ ]     forecast share + floor       │
-│ Cortez Hill          8 h       [ ]     minimum coverage             │
+│ Cortez Hill          6 h       [ ]     minimum coverage             │
 │ …                                                                   │
 │                                                                     │
 │ Allocated: 80/80 h   Unmet planning load: 14 h                      │

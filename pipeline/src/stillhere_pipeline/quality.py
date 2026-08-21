@@ -121,6 +121,7 @@ def build_quality_report(
     series: list[NeighborhoodSeries],
     file_total_mismatches: list[dict[str, Any]],
     source_maps_without_counts: list[str],
+    small_cell_suppression: dict[str, Any],
     source_id: str,
     retrieved_at: str,
 ) -> dict[str, Any]:
@@ -143,6 +144,7 @@ def build_quality_report(
         },
         "file_total_mismatches": file_total_mismatches,
         "source_maps_without_counts": source_maps_without_counts,
+        "small_cell_suppression": small_cell_suppression,
         "comparability_events": COMPARABILITY_EVENTS,
         "day_of_month_reliable": False,
     }

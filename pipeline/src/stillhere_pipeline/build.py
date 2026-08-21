@@ -28,6 +28,7 @@ from stillhere_pipeline.quality import (
     build_quality_report,
     cross_check_file_totals,
 )
+from stillhere_pipeline.suppress import SMALL_CELL_THRESHOLD, suppress_observation_row
 
 SOURCE_ID = "sdrdl_source"
 
@@ -101,32 +102,49 @@ def run_build(raw_dir: Path, cards_dir: Path, out_dir: Path) -> dict[str, Any]:
     )
 
     observed_months = sorted({record.month for record in normalization.records})
-    observations_doc: dict[str, Any] = {
-        "schema": "observations.v0",
-        "source": {"source_id": SOURCE_ID, "retrieved_at": retrieved_at},
-        "months_observed": observed_months,
-        "missing_months_global": monthly_gaps(observed_months),
-        "neighborhoods": [
+    suppressed_rows = 0
+    suppressed_cells = 0
+    neighborhoods: list[dict[str, Any]] = []
+    for s in series:
+        rows: list[dict[str, Any]] = []
+        for o in s.observations:
+            published = suppress_observation_row(
+                {"month": o.month, "total": o.total, "by_type": dict(o.by_type)}
+            )
+            if published.get("suppressed"):
+                suppressed_rows += 1
+            suppressed_cells += len(published.get("by_type_suppressed", []))
+            rows.append(published)
+        neighborhoods.append(
             {
                 "neighborhood": s.neighborhood,
                 "label_variants": s.label_variants,
                 "coverage_start": s.coverage_start,
                 "coverage_end": s.coverage_end,
                 "observed_gap_months": s.observed_gap_months,
-                "observations": [
-                    {"month": o.month, "total": o.total, "by_type": dict(o.by_type)}
-                    for o in s.observations
-                ],
+                "observations": rows,
             }
-            for s in series
-        ],
+        )
+    observations_doc: dict[str, Any] = {
+        "schema": "observations.v0",
+        "source": {"source_id": SOURCE_ID, "retrieved_at": retrieved_at},
+        "months_observed": observed_months,
+        "missing_months_global": monthly_gaps(observed_months),
+        "neighborhoods": neighborhoods,
         "comparability_events": COMPARABILITY_EVENTS,
+    }
+    suppression_stats = {
+        "threshold": SMALL_CELL_THRESHOLD,
+        "rows_suppressed": suppressed_rows,
+        "cells_suppressed": suppressed_cells,
+        "policy": "complementary; zeros publishable; small totals suppress the row",
     }
     quality_doc = build_quality_report(
         normalization=normalization,
         series=series,
         file_total_mismatches=mismatches,
         source_maps_without_counts=maps_without_counts,
+        small_cell_suppression=suppression_stats,
         source_id=SOURCE_ID,
         retrieved_at=retrieved_at,
     )

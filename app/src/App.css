@@ -458,11 +458,15 @@ main {
 .evidence-chain {
   border-top: 1px solid var(--line);
   display: grid;
-  gap: 0;
-  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem 1.15rem;
+  grid-template-columns: repeat(2, 1fr);
   list-style: none;
   margin: 1.4rem 0 0;
-  padding: 1.2rem 0 0;
+  padding: 1.15rem 0 0;
+}
+/* The connector between steps 2 and 3 would cross the row break. */
+.evidence-chain-step:nth-child(2) .chain-connector {
+  display: none;
 }
 .evidence-chain-step {
   align-items: start;
@@ -501,15 +505,14 @@ main {
 }
 .chain-copy strong {
   color: var(--ink-soft);
-  font-size: 0.705rem;
-  line-height: 1.2;
+  font-size: 0.75rem;
+  line-height: 1.25;
 }
 .chain-copy small {
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 0.635rem;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
+  font-size: 0.66rem;
+  line-height: 1.4;
 }
 .chain-connector {
   background: linear-gradient(90deg, var(--line-strong), transparent);
@@ -2720,6 +2723,72 @@ main {
   outline: 2px solid var(--amber);
   outline-offset: 10px;
 }
+/* First-visit cue: a small pulse on the Guide button until it is used once.
+   The global reduced-motion rule freezes the pulse to a static dot. */
+.guide-button-new {
+  position: relative;
+}
+.guide-button-new::after {
+  animation: guide-cue 2.4s ease-in-out infinite;
+  background: var(--amber);
+  border-radius: 50%;
+  content: "";
+  height: 8px;
+  position: absolute;
+  right: -2px;
+  top: -2px;
+  width: 8px;
+}
+@keyframes guide-cue {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(240, 173, 78, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(240, 173, 78, 0);
+  }
+}
+
+/* Interaction affordances: every activatable control reads as clickable, and
+   control chrome is not text-selectable. Content — narration, evidence prose,
+   table values, the brief — stays selectable on purpose. */
+.button,
+.floor-option,
+summary {
+  cursor: pointer;
+}
+.button,
+.floor-option,
+.chain-node,
+.section-number,
+.brand-mark,
+.guide-step-count,
+.guide-progress,
+.guide-actions,
+.area-map svg,
+summary {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.floor-option:hover:not(.active) {
+  border-color: var(--line-strong);
+  color: var(--ink-soft);
+}
+/* Badges are tags, buttons are pills. Status and label chips drop the pill
+   silhouette so the rounded-pill shape is reserved for activatable buttons. */
+.confidence-chip,
+.selected-chip,
+.wide-warning,
+.review-status,
+.distribution-heading > span,
+.challenge-badge,
+.bias-diagnostic > summary > strong,
+.diagnostic-only,
+.sensitivity-row span,
+.constraint-chip,
+.trigger-list span {
+  border-radius: 6px;
+}
 
 @keyframes reveal-up {
   from {
@@ -2795,9 +2864,6 @@ main {
     flex: 1;
     justify-content: flex-end;
   }
-  .guide-button {
-    display: none;
-  }
   .step-nav {
     top: 5.8rem;
   }
@@ -2822,13 +2888,6 @@ main {
   }
   .hero-decision {
     max-width: 40rem;
-  }
-  .evidence-chain {
-    grid-template-columns: repeat(2, 1fr);
-    row-gap: 1rem;
-  }
-  .evidence-chain-step:nth-child(2) .chain-connector {
-    display: none;
   }
   .composition-metrics {
     grid-template-columns: repeat(2, 1fr);

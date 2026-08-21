@@ -39,19 +39,33 @@ With a key, run both engines and show the cards side by side.
    andy@eyepop.ai). Hamburger menu → API Keys → Create API Key.
 2. `export EYEPOP_API_KEY=eyp_...` (and `EYEPOP_POP_ID` if the dashboard
    assigns one), then `uv pip install eyepop`.
-3. Run:
+3. Run (the `--engine eyepop` flag is required; the default engine is local):
 
    ```bash
    .venv/bin/python -m stillhere_pipeline.eyepop_audit \
      --pdf data/raw/dsdp_public_reports/June-2026-Unsheltered-Sleep-Count.pdf \
-     --out data/monitoring/eyepop_digitization_audit.json
+     --out data/monitoring/eyepop_digitization_audit.json --engine eyepop
    ```
 
-4. Show the JSON card next to the transcribed monitoring totals. The claim to
-   make: "computer vision audits the measurement instrument — the printed
-   symbols the counts were digitized from — never people." The module is
-   fail-closed without a key, unit-tested offline, and its output is a
-   reference card, never a model input.
+4. Cross-validate the two engines — one command, no OCR rerun:
+
+   ```bash
+   .venv/bin/python -m stillhere_pipeline.eyepop_audit \
+     --compare data/monitoring/digitization_audit.json \
+       data/monitoring/eyepop_digitization_audit.json \
+     --out data/monitoring/digitization_audit_agreement.json
+   ```
+
+   The agreement card reports, per page, the values both engines recovered
+   and each engine's exclusive count, plus an overall agreement share. Two
+   independent vision systems agreeing on the recovered totals is a stronger
+   audit claim than either engine alone.
+
+5. Show the cards next to the transcribed monitoring totals. The claim to
+   make: "computer vision audits the measurement instrument — the handwritten
+   field-sheet totals the published counts were digitized from — never
+   people." The module is fail-closed without a key, unit-tested offline, and
+   its output is a reference card, never a model input.
 
 ## EyePop Abilities track framing (secondary entry)
 

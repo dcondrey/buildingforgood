@@ -100,7 +100,14 @@ h4 {
 }
 
 p {
+  orphans: 3;
   text-wrap: pretty;
+  widows: 3;
+}
+
+li {
+  orphans: 3;
+  widows: 3;
 }
 
 button,

@@ -83,3 +83,19 @@ New independent street-count validation, documented enumeration-effort data,
 prospective forecast outcomes, outreach severity/capacity information, and
 review by people with lived experience could change the interpretation or the
 appropriate coverage policy. None is inferred from the current bundle.
+
+## Blocker status — 2026-08-21 addendum (working session, not the original reviewer)
+
+1. Satisfied. The privacy scan runs last in `scripts/verify.sh` with
+   `--require-bundle`, in CI on every push and PR, and inside the Pages deploy
+   job itself; the final merge (18f39da) verified green.
+2. Open. Tracked in #25 and docs/testing/RELEASE_REHEARSAL.md; automated
+   keyboard/axe coverage over the deployed shell landed (App.test.tsx) but does
+   not substitute for observed use.
+3. Satisfied. Deployed, `app/dist`, `public/generated`, and a fresh rebuild are
+   hash-identical (SHA-256 `1da6777a…`); the deploy run on the verified merge
+   succeeded.
+4. Open. Tracked in #25.
+5. Satisfied. The 2026-08-21 reconciliation closed the superseded issues with
+   explicit evidence and recorded the scope decisions as DEC-011..013 in
+   docs/project/PROJECT_CONTROL.md.

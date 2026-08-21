@@ -1,5 +1,8 @@
 /* Still Here SD: small, update-safe runtime cache for the static demo. */
-const CACHE_VERSION = "stillhere-v1";
+// v2: navigations and the artifact revalidate past the HTTP cache
+// ("no-cache"), so a GitHub Pages max-age=600 index.html can no longer pin a
+// returning visitor to a previous deploy's hashed assets.
+const CACHE_VERSION = "stillhere-v2";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const DOCUMENT_CACHE = `${CACHE_VERSION}:documents`;
 
@@ -7,7 +10,11 @@ self.addEventListener("install", (event) => {
   // Activate the new worker promptly; the network-first document policy below
   // still lets a newly deployed HTML shell win on the next navigation.
   self.skipWaiting();
-  event.waitUntil(caches.open(DOCUMENT_CACHE).then((cache) => cache.add("./")));
+  event.waitUntil(
+    caches
+      .open(DOCUMENT_CACHE)
+      .then((cache) => cache.add(new Request("./", { cache: "reload" }))),
+  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -22,7 +29,10 @@ self.addEventListener("activate", (event) => {
 async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   try {
-    const response = await fetch(request);
+    // "no-cache" forces conditional revalidation with the server instead of
+    // trusting the browser HTTP cache; offline still falls through to cache.
+    // Fetch by URL: copying a navigation-mode Request with init can reject.
+    const response = await fetch(request.url, { cache: "no-cache" });
     if (response.ok) await cache.put(request, response.clone());
     return response;
   } catch {

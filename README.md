@@ -8,7 +8,7 @@ works offline once loaded ·
 [3-minute script](docs/product/DEMO_SCRIPT.md) ·
 [judge Q&A](docs/product/JUDGE_QA.md)
 
-![Planned staff-hours on the six-neighborhood map, with East Village selected and its allocation detail open](docs/img/plan-map.png)
+![The map workspace: planned staff-hours across the six downtown neighborhoods, with East Village's dossier and the assumption explorer open in the inspector](docs/img/workspace.png)
 
 Downtown San Diego's unsheltered estimate fell 22% in a year — but the drop
 came from tents, not people. On the same 261 blocks, outreach workers saw

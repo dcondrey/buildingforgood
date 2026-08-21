@@ -82,9 +82,12 @@ The three-minute walkthrough is in
 and ethics answers are in
 [`docs/product/JUDGE_QA.md`](docs/product/JUDGE_QA.md).
 
-Use **Guide demo** for a four-beat, keyboard-safe walkthrough with a deliberate
-**Next** reveal, or drive the four decision scenes manually. The guide never
-changes the underlying analysis; it stages the same local artifact.
+Use **Guide demo** for a hands-on, self-narrating tour: eight steps ask you to
+work the real controls and notice when you have, with **Do it for me** on every
+task, **Play** for hands-free playback on an unattended screen, and arrow-key
+navigation. Stopping it never leaves the guard-off comparison view on screen.
+The guide never changes the underlying analysis; it stages the same local
+artifact.
 
 ## The three-minute story
 

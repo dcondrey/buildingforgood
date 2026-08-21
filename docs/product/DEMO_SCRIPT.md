@@ -155,10 +155,17 @@ in this order:
 
 Do not cut the causal/privacy boundary or imply the decline proves progress.
 
-For a more controlled stage reveal, select **Guide demo** before speaking and
-let the evidence result land. It stays on that first beat until you press
-**Next**, then advances through the same four scenes. Stop it with **Stop** or
-Escape; it is presentation control, not a different analytical mode.
+**Guide demo** also carries this script on its own for a viewer exploring with
+no presenter in the room. Eight steps narrate the same story with the
+artifact's live numbers and ask the viewer to work the real controls — **Test
+the drop**, **Generate coverage scenario**, the 0h and 8h floors, a lock plus
+**Recompute unlocked hours**, and **Copy decision brief**. The guide detects
+each completed action and advances by itself; **Do it for me** performs a step
+for a hands-off viewer, and **Play** runs the whole flow unattended and stops
+on any outside interaction. Presenting live, drive it with `→` and `←`. Stop
+it with **Stop** or Escape; stopping while the 0h comparison view is up
+restores the coverage minimum automatically, and the guide never changes the
+underlying analysis — it stages the same local artifact.
 
 ## Offline fallback checklist
 

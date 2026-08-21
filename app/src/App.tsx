@@ -108,6 +108,10 @@ function ForecastChart({ history, data }: { history: HistoryPoint[]; data: DemoD
         viewBox={`0 0 ${width} ${height}`}
       >
         <title>Historical one-step-ahead planning scenario and residual interval</title>
+        <desc>
+          Observed monthly history with missing periods shown as gaps, followed by a historical
+          scenario point and its residual interval.
+        </desc>
         {[0, maxValue / 2, maxValue].map((tick) => (
           <g key={tick}>
             <line
@@ -326,6 +330,18 @@ function App() {
 
   const planTotal = plan?.allocations.reduce((sum, row) => sum + row.hours, 0) ?? 0;
   const maxHours = Math.max(1, ...Array.from(allocationById.values()));
+  const budgetValid = Number.isInteger(budget) && budget >= 0;
+  const planReady = Boolean(
+    plan?.feasible && !planDirty && guardEnabled && budgetValid && planTotal === budget,
+  );
+  const auditedAreas = useMemo(
+    () => data.areas.filter((area) => area.auditWape !== null),
+    [data.areas],
+  );
+  const auditedAreaWapes = useMemo(
+    () => auditedAreas.map((area) => area.auditWape as number),
+    [auditedAreas],
+  );
 
   function scrollTo(id: string) {
     document.getElementById(id)?.scrollIntoView({
@@ -349,6 +365,7 @@ function App() {
     const next = allocateHours(data.areas, budget, nextFloor, nextGuard, locks);
     setPlan(next);
     setPlanDirty(false);
+    setCopyStatus("");
     return next;
   }
 
@@ -376,6 +393,7 @@ function App() {
     }
     setLockedIds(next);
     setPlanDirty(true);
+    setCopyStatus("");
   }
 
   const decisionBrief = useMemo(() => {
@@ -387,12 +405,14 @@ function App() {
       .join("; ");
     return [
       `STILL HERE SD · NEXT-SHIFT DECISION BRIEF`,
-      `Status: READY FOR COORDINATOR REVIEW — not automatic dispatch`,
+      `Status: ${data.scenario.status === "ready" ? "READY FOR COORDINATOR REVIEW" : "PROVISIONAL OFFLINE SNAPSHOT"} — not automatic dispatch`,
+      `Source: ${data.source.label}. Artifact: ${data.source.artifact}; source data through ${formatDate(data.source.retrievedAt)}; ${data.origin === "generated" ? "generated analysis" : "embedded offline fallback"}.`,
+      `Method: same-month comparison on the fixed ${signal.panelSize}-block panel under the POST2020 method; block-map components are separately digitized observations, not unique people.`,
       `Evidence: ${signal.classification === "wider_footprint" ? "Wider observed-individual footprint" : titleCase(signal.classification)}. ${signal.fromPeriod} to ${signal.toPeriod}: observed individuals ${signal.components.individuals.from} → ${signal.components.individuals.to} (+${formatNumber(signal.components.individuals.changePct, 1)}%); tents/structures ${signal.components.structures.from} → ${signal.components.structures.to} (${formatNumber(signal.components.structures.changePct, 1)}%).${individualOne && individualTwo ? ` Blocks with ≥1 observed individual ${individualOne.fromBlocks} → ${individualOne.toBlocks}; blocks with ≥2 ${individualTwo.fromBlocks} → ${individualTwo.toBlocks}.` : ` Active mixed-component blocks ${signal.activeFrom} → ${signal.activeTo} (+${formatNumber(signal.activeChangePct, 1)}%).`} The mixed-unit index is secondary, not a person count.${individualSpatial ? ` Individual HHI was nearly unchanged (${individualSpatial.hhiFrom.toFixed(6)} → ${individualSpatial.hhiTo.toFixed(6)}).` : ""}`,
       `Historical one-step-ahead planning scenario (data frozen Dec 2025): ${data.forecast.targetPeriod} ${formatNumber(data.forecast.point)}; historical 80% residual interval ${formatNumber(data.forecast.lower)}–${formatNumber(data.forecast.upper)}. ${data.forecast.model}; rolling-origin MAE ${formatNumber(data.forecast.mae)}; empirical coverage ${formatNumber(data.forecast.coverage)}% across ${data.forecast.intervalPoints} folds. Not a live future forecast or a guaranteed probability interval.`,
-      `Illustrative coverage-continuity scenario for human review: ${budget} staff-hours; user-set guard ${guardEnabled ? `on (${coverageFloor}h demo-policy minimum)` : "off — audit only"}. ${rows}. Area forecasts are noisier than the aggregate (held-out WAPE ranges ${formatNumber(Math.min(...data.areas.flatMap((area) => (area.auditWape === null ? [] : [area.auditWape]))), 1)}%–${formatNumber(Math.max(...data.areas.flatMap((area) => (area.auditWape === null ? [] : [area.auditWape]))), 1)}%).`,
+      `Illustrative coverage-continuity scenario for human review: ${budget} staff-hours; user-set guard ${guardEnabled ? `on (${coverageFloor}h demo-policy minimum)` : "off — audit only"}. ${rows}.${auditedAreaWapes.length ? ` Area forecasts are noisier than the aggregate (held-out WAPE ranges ${formatNumber(Math.min(...auditedAreaWapes), 1)}%–${formatNumber(Math.max(...auditedAreaWapes), 1)}%).` : " Area-level audit WAPE is unavailable in this artifact; do not infer equal accuracy."}`,
       `Review triggers: new month, budget or boundary change, wider interval, infeasible floor, or local knowledge conflict.`,
-      `Boundary: aggregate place-level evidence only. This does not track people, establish causality, or authorize enforcement.`,
+      `Privacy and authorization boundary: aggregate place-level evidence only; no block records or geometry ship. This does not track people, establish causality, authorize enforcement, or dispatch staff automatically.`,
     ].join("\n");
   }, [
     allocationById,
@@ -405,6 +425,7 @@ function App() {
     individualTwo,
     lockedIds,
     signal,
+    auditedAreaWapes,
   ]);
 
   async function copyBrief() {
@@ -418,16 +439,18 @@ function App() {
 
   function beginGuide() {
     setGuideIndex(0);
-    scrollTo("drop-test");
-    window.setTimeout(() => guidePanel.current?.focus(), 50);
+    revealDrop(false);
+    window.setTimeout(() => {
+      scrollTo("evidence-result");
+      guidePanel.current?.focus();
+    }, 80);
   }
 
   function advanceGuide() {
     if (guideIndex === null) return;
     const next = guideIndex + 1;
     if (guideIndex === 0) {
-      revealDrop(false);
-      window.setTimeout(() => scrollTo("forecast"), 650);
+      scrollTo("forecast");
     } else if (guideIndex === 1) {
       setCoverageFloor(DEFAULT_COVERAGE_FLOOR);
       runPlan(true, new Map(), DEFAULT_COVERAGE_FLOOR);
@@ -463,7 +486,7 @@ function App() {
         Skip to decision
       </a>
 
-      <header className="topbar">
+      <header className="topbar" id="main-content">
         <div className="brand-lockup">
           <div aria-hidden="true" className="brand-mark">
             SH
@@ -480,23 +503,31 @@ function App() {
             <span className="eyebrow">Decision horizon</span>
             <strong>{data.scenario.decisionHorizon}</strong>
           </div>
-          <label className="budget-control">
+          <label className="budget-control" htmlFor="budget-hours">
             <span className="eyebrow">Available capacity</span>
             <span className="budget-input-wrap">
               <input
                 aria-label="Available staff-hours"
+                aria-describedby="budget-help"
+                id="budget-hours"
                 inputMode="numeric"
                 max="400"
                 min="0"
+                step="1"
                 onChange={(event) => {
                   setBudget(Number(event.target.value));
                   setPlan(null);
                   setPlanDirty(false);
+                  setCopyStatus("");
                 }}
                 type="number"
                 value={budget}
               />
               <span>hours</span>
+            </span>
+            <span className="sr-only" id="budget-help">
+              Enter a whole number from 0 to 400. This is a demonstration scenario, not staffing
+              capacity data.
             </span>
           </label>
           <button className="button button-quiet guide-button" onClick={beginGuide} type="button">
@@ -545,7 +576,10 @@ function App() {
             </div>
             <div>
               <dt>AI use</dt>
-              <dd>Interface generation only; no AI determines the allocation.</dd>
+              <dd>
+                Development assistance only; no AI runs in the product or determines evidence,
+                forecasts, or allocations.
+              </dd>
             </div>
             <div>
               <dt>Non-goal</dt>
@@ -657,7 +691,9 @@ function App() {
         </nav>
 
         <section className="decision-section" id="drop-test" aria-labelledby="drop-title">
-          <div className="section-number">01</div>
+          <div aria-hidden="true" className="section-number">
+            01
+          </div>
           <div className="section-intro">
             <p className="eyebrow">Evidence gate</p>
             <h2 id="drop-title">Test the drop</h2>
@@ -929,6 +965,7 @@ function App() {
                   <div
                     className="churn-visual"
                     aria-label={`${signal.grossIncreases} increases, ${signal.grossDecreases} decreases, net ${signal.change}`}
+                    role="img"
                   >
                     <div
                       className="churn-up"
@@ -968,7 +1005,11 @@ function App() {
                     </div>
                     <span className="formula positive">Active blocks +{signal.activeChange}</span>
                   </div>
-                  <div className="area-map" aria-label="Relative area view, not to scale">
+                  <div
+                    className="area-map"
+                    aria-label="Relative area view, not to scale"
+                    role="img"
+                  >
                     {data.areas.map((area) => (
                       <div className={`area-cell area-${area.id}`} key={area.id}>
                         <span>{area.name}</span>
@@ -1010,13 +1051,18 @@ function App() {
                 </div>
               </div>
 
-              {data.reportingBias && (
+              {data.reportingBias ? (
                 <details className="bias-diagnostic">
                   <summary>
                     <span>
                       <small>Optional attention-bias check</small>
                       Encampment report share rose{" "}
-                      {formatNumber(data.reportingBias.shareChangePoints, 1)} points
+                      {formatNumber(
+                        data.reportingBias.matchedCalendar?.shareChangePoints ??
+                          data.reportingBias.shareChangePoints,
+                        1,
+                      )}{" "}
+                      points
                     </span>
                     <strong>Excluded from planner</strong>
                   </summary>
@@ -1029,6 +1075,58 @@ function App() {
                       <span className="diagnostic-only">Diagnostic only · no causal claim</span>
                     </div>
 
+                    {data.reportingBias.matchedCalendar && (
+                      <div className="matched-calendar">
+                        <div>
+                          <span className="eyebrow">
+                            Matched calendar · same Aug–Jan months YoY
+                          </span>
+                          <strong>Seasonality check strengthens the reporting-pattern shift</strong>
+                        </div>
+                        <div className="bias-metrics">
+                          <div>
+                            <span>Encampment rows</span>
+                            <strong>
+                              +{formatNumber(data.reportingBias.matchedCalendar.rawChangePct, 1)}%
+                            </strong>
+                          </div>
+                          <div>
+                            <span>Top-level requests</span>
+                            <strong>
+                              +
+                              {formatNumber(
+                                data.reportingBias.matchedCalendar.uniqueParentChangePct,
+                                1,
+                              )}
+                              %
+                            </strong>
+                          </div>
+                          <div>
+                            <span>All GID rows</span>
+                            <strong>
+                              +
+                              {formatNumber(
+                                data.reportingBias.matchedCalendar.allReportsChangePct,
+                                1,
+                              )}
+                              %
+                            </strong>
+                          </div>
+                          <div>
+                            <span>Encampment share</span>
+                            <strong>
+                              {formatNumber(data.reportingBias.matchedCalendar.sharePrePct, 1)} →{" "}
+                              {formatNumber(data.reportingBias.matchedCalendar.sharePostPct, 1)}%
+                            </strong>
+                          </div>
+                        </div>
+                        <p>{data.reportingBias.matchedCalendar.interpretation}</p>
+                      </div>
+                    )}
+
+                    <span className="eyebrow diagnostic-subhead">
+                      Prepared pre/post windows · July 2023 excluded
+                    </span>
                     <div className="bias-metrics">
                       <div>
                         <span>Encampment rows</span>
@@ -1076,7 +1174,7 @@ function App() {
                       </div>
                     </div>
 
-                    {data.robustness && (
+                    {data.robustness ? (
                       <section className="robustness-section" aria-labelledby="robustness-title">
                         <div className="robustness-section-title">
                           <span className="eyebrow" id="robustness-title">
@@ -1089,36 +1187,64 @@ function App() {
                             <div className="robustness-title">
                               <span className="eyebrow">Footfall sensitivity</span>
                               <strong>Paid-parking proxy</strong>
-                              <small>Aligned six-month means · July 2023 excluded</small>
+                              <small>
+                                {data.robustness.parking.matchedCalendar
+                                  ? "Same six calendar months one year apart"
+                                  : "Aligned six-month means · July 2023 excluded"}
+                              </small>
                             </div>
                             <div className="parking-result">
                               <span>
                                 <small>
-                                  {formatNumber(data.robustness.parking.verifiedPoles)} historically
-                                  verified poles
+                                  {formatNumber(
+                                    data.robustness.parking.matchedCalendar?.verifiedPoles ??
+                                      data.robustness.parking.verifiedPoles,
+                                  )}{" "}
+                                  historically verified poles
                                 </small>
                                 <strong>
-                                  {formatNumber(data.robustness.parking.preMonthlyMean)} →{" "}
-                                  {formatNumber(data.robustness.parking.postMonthlyMean)}
+                                  {formatNumber(
+                                    data.robustness.parking.matchedCalendar?.preMonthlyMean ??
+                                      data.robustness.parking.preMonthlyMean,
+                                  )}{" "}
+                                  →{" "}
+                                  {formatNumber(
+                                    data.robustness.parking.matchedCalendar?.postMonthlyMean ??
+                                      data.robustness.parking.postMonthlyMean,
+                                  )}
                                 </strong>
                                 <small>
                                   transactions / month ·{" "}
-                                  {formatNumber(data.robustness.parking.changePct, 1)}%
+                                  {formatNumber(
+                                    data.robustness.parking.matchedCalendar?.changePct ??
+                                      data.robustness.parking.changePct,
+                                    1,
+                                  )}
+                                  %
                                 </small>
                               </span>
                               <span>
-                                <small>Per meter-month</small>
+                                <small>
+                                  {data.robustness.parking.matchedCalendar
+                                    ? "All observed Downtown meters"
+                                    : "Per meter-month"}
+                                </small>
                                 <strong>
-                                  {formatNumber(data.robustness.parking.prePerMeter, 1)} →{" "}
-                                  {formatNumber(data.robustness.parking.postPerMeter, 1)}
+                                  {data.robustness.parking.matchedCalendar
+                                    ? `${formatNumber(data.robustness.parking.matchedCalendar.allMeterChangePct, 1)}%`
+                                    : `${formatNumber(data.robustness.parking.prePerMeter, 1)} → ${formatNumber(data.robustness.parking.postPerMeter, 1)}`}
                                 </strong>
                                 <small>
-                                  all observed meters{" "}
-                                  {formatNumber(data.robustness.parking.allMeterChangePct, 1)}%
+                                  {data.robustness.parking.matchedCalendar
+                                    ? "matched-calendar sensitivity"
+                                    : `all observed meters ${formatNumber(data.robustness.parking.allMeterChangePct, 1)}%`}
                                 </small>
                               </span>
                             </div>
-                            <p>{data.robustness.parking.interpretation}</p>
+                            <p>
+                              {data.robustness.parking.matchedCalendar?.interpretation ??
+                                data.robustness.parking.interpretation}
+                            </p>
                             <small className="robustness-caveat">
                               Transactions ≠ people or visits. Rates, hours, inventory, payment
                               substitution, free parking, events, transit, economy, and seasonality
@@ -1149,6 +1275,11 @@ function App() {
                           </article>
                         </div>
                       </section>
+                    ) : (
+                      <p className="diagnostic-unavailable" role="note">
+                        Alternative-explanation checks are unavailable in this artifact. They remain
+                        excluded from forecasting and allocation.
+                      </p>
                     )}
 
                     <p className="bias-interpretation">{data.reportingBias.interpretation}</p>
@@ -1172,13 +1303,21 @@ function App() {
                     </p>
                   </div>
                 </details>
+              ) : (
+                <div className="diagnostic-unavailable" role="note">
+                  <strong>Optional reporting diagnostic unavailable.</strong> The loaded artifact
+                  did not contain a complete validated diagnostic, so no partial values are shown.
+                  This lane remains excluded from forecasting and allocation.
+                </div>
               )}
             </div>
           )}
         </section>
 
         <section className="decision-section" id="forecast" aria-labelledby="forecast-title">
-          <div className="section-number">02</div>
+          <div aria-hidden="true" className="section-number">
+            02
+          </div>
           <div className="section-intro split-intro">
             <div>
               <p className="eyebrow">Historical replay · data frozen December 2025</p>
@@ -1331,7 +1470,9 @@ function App() {
         </section>
 
         <section className="decision-section" id="planner" aria-labelledby="planner-title">
-          <div className="section-number">03</div>
+          <div aria-hidden="true" className="section-number">
+            03
+          </div>
           <div className="section-intro split-intro planner-intro">
             <div>
               <p className="eyebrow">Constrained allocation</p>
@@ -1456,17 +1597,11 @@ function App() {
 
               <div className="area-accuracy-warning" role="note">
                 <strong>Illustrative and human-review-only.</strong> Aggregate audit WAPE is{" "}
-                {formatNumber(data.forecast.wape, 1)}%, but small-area forecasts are noisier: Cortez{" "}
-                {formatNumber(
-                  data.areas.find((area) => area.id === "cortez")?.auditWape ?? 34.2,
-                  1,
-                )}
-                % and Marina{" "}
-                {formatNumber(
-                  data.areas.find((area) => area.id === "marina")?.auditWape ?? 32.7,
-                  1,
-                )}
-                %. The aggregate score does not imply equal area accuracy; a coordinator must review
+                {formatNumber(data.forecast.wape, 1)}%.{" "}
+                {auditedAreas.length
+                  ? `Area-level held-out WAPE ranges ${formatNumber(Math.min(...auditedAreaWapes), 1)}%–${formatNumber(Math.max(...auditedAreaWapes), 1)}%; small areas are noisier.`
+                  : "Area-level held-out WAPE is unavailable in this artifact."}{" "}
+                The aggregate score does not imply equal area accuracy; a coordinator must review
                 every assignment.
               </div>
 
@@ -1566,7 +1701,9 @@ function App() {
           id="review"
           aria-labelledby="review-title"
         >
-          <div className="section-number">04</div>
+          <div aria-hidden="true" className="section-number">
+            04
+          </div>
           <div className="section-intro split-intro">
             <div>
               <p className="eyebrow">Human accountability</p>
@@ -1576,12 +1713,16 @@ function App() {
                 changes.
               </p>
             </div>
-            <span className={`review-status ${plan?.feasible && !planDirty ? "review-ready" : ""}`}>
-              {plan?.feasible && !planDirty
+            <span className={`review-status ${planReady ? "review-ready" : ""}`}>
+              {planReady
                 ? "Ready for coordinator review"
-                : planDirty
-                  ? "Recompute human changes"
-                  : "Waiting for a feasible plan"}
+                : plan?.feasible && !guardEnabled
+                  ? "Audit only · restore a coverage guard"
+                  : plan?.feasible && planTotal !== budget
+                    ? "Budget mismatch · cannot copy"
+                    : planDirty
+                      ? "Recompute human changes"
+                      : "Waiting for a feasible plan"}
             </span>
           </div>
 
@@ -1665,7 +1806,7 @@ function App() {
             </div>
             <button
               className="button button-primary button-large"
-              disabled={!plan?.feasible || planDirty}
+              disabled={!planReady}
               onClick={copyBrief}
               type="button"
             >
@@ -1698,7 +1839,8 @@ function App() {
         <div
           className="guide-panel"
           role="dialog"
-          aria-label="Guided demo"
+          aria-labelledby="guide-title"
+          aria-modal="true"
           aria-live="polite"
           ref={guidePanel}
           tabIndex={-1}
@@ -1706,9 +1848,9 @@ function App() {
           <div className="guide-progress">
             <span style={{ width: `${((guideIndex + 1) / GUIDE_STEPS.length) * 100}%` }} />
           </div>
-          <span className="eyebrow">
+          <h2 className="eyebrow" id="guide-title">
             Decision beat {guideIndex + 1}/{GUIDE_STEPS.length} · Arrow right to advance
-          </span>
+          </h2>
           <p>{GUIDE_STEPS[guideIndex]}</p>
           <div>
             <button

@@ -342,3 +342,28 @@ describe("the complaint guard reaches all the way down", () => {
     expect(() => buildPlan(nested, POLICY)).toThrow(/diagnostics/);
   });
 });
+
+describe("excess capacity", () => {
+  it("distributes a very large budget without losing or inventing hours", () => {
+    // #14 claims synthetic coverage of scarcity, excess capacity, rounding,
+    // uncertainty reserves and infeasibility. The first four had named
+    // tests; excess capacity rested on a loop, so it is explicit now.
+    const plan = buildPlan(SIX_AREAS, { ...POLICY, budget_hours: 100_000 });
+    expect(plan.status).toBe("planned");
+    expect(plan.total_allocated_hours + plan.rounding_residue_hours).toBe(100_000);
+    for (const a of plan.allocations) expect(Number.isInteger(a.allocated_hours)).toBe(true);
+  });
+
+  it("gives a zero-forecast area the floor and no more, however large the budget", () => {
+    const withEmpty = [...SIX_AREAS, area("empty_area", 0, 0)];
+    const plan = buildPlan(withEmpty, { ...POLICY, budget_hours: 100_000 });
+    const empty = plan.allocations.find((a) => a.area_id === "empty_area");
+    expect(empty?.allocated_hours).toBe(POLICY.minimum_coverage_floor_hours);
+  });
+
+  it("still reports unmet load when the floor redistributes under excess capacity", () => {
+    const plan = buildPlan(SIX_AREAS, { ...POLICY, budget_hours: 100_000 });
+    expect(plan.unmet_hours_total).toBeGreaterThanOrEqual(0);
+    expect(plan.constraint_notes.join(" ")).toMatch(/still leaves load uncovered/);
+  });
+});

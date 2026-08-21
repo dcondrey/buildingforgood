@@ -121,6 +121,7 @@ describe("decision flow (#12)", () => {
     expect(card?.textContent).toContain("not street outreach");
     expect(card?.textContent).toContain("No benchmark number enters the allocation");
     expect(card?.textContent).toContain("stated assumptions, not staffing data");
+    expect(card?.textContent).toContain("not street outreach and not observed practice");
   });
 });
 

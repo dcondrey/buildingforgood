@@ -1,0 +1,589 @@
+{
+  "comparability_events": [
+    {
+      "description": "DSP adopted HUD/RTFH occupancy multipliers from 2017-04-27 (1.75 per tent/structure, 1.66 per vehicle; vehicle updated to 2.03 on 2018-05-31; 2 and 2 before). This series is deliberately UNMULTIPLIED and stays internally comparable across the break, but diverges from official published totals after 2017-03.",
+      "id": "occupancy_multiplier_break",
+      "kind": "methodology",
+      "month": "2017-04"
+    },
+    {
+      "description": "east_village_south appears from 2017-04 and generally co-occurs with east_village, with gaps (no extracted counts 2018-03 through 2018-06; see source_maps_without_counts). Era-consistent East Village totals across the split require summing both areas after 2017-04.",
+      "id": "east_village_south_split",
+      "kind": "boundary",
+      "month": "2017-04"
+    },
+    {
+      "assumption": true,
+      "description": "Sleeper types are named (Individual/Structure/Vehicle) through 2018-06 and digit codes (1/2/3) from 2018-07. The digit mapping 1=individual, 2=structure, 3=vehicle is inferred from rank consistency; the source package does not document it.",
+      "id": "type_code_switch",
+      "kind": "encoding",
+      "month": "2018-07"
+    },
+    {
+      "assumption": true,
+      "description": "The label 'core' stops after 2019-11 and 'City Center' begins 2020-01 with zero overlapping months; both map to city_center. Boundary equivalence across the rename is assumed, not verified against a map.",
+      "id": "city_center_label_transition",
+      "kind": "boundary",
+      "month": "2020-01"
+    },
+    {
+      "description": "barrio_logan, golden_hill, and sherman_heights enter the count from 2021-05. Downtown-total comparisons spanning 2021-05 must exclude the expansion areas or flag the boundary change.",
+      "id": "coverage_expansion_2021",
+      "kind": "boundary",
+      "month": "2021-05"
+    }
+  ],
+  "day_of_month_reliable": false,
+  "duplicates_dropped": 26,
+  "file_total_mismatches": [
+    {
+      "computed": 22,
+      "delta": -2,
+      "file_id": "+KxfOKtW7VnJfmqIpYWNDhLf33bO7/EOgJVk6Q==",
+      "reported": 24
+    },
+    {
+      "computed": 117,
+      "delta": 3,
+      "file_id": "+xE/b1f+MV2gjI9pRXxEqjhrKdJSUSpV9m9gfA==",
+      "reported": 114
+    },
+    {
+      "computed": 42,
+      "delta": 4,
+      "file_id": "//w7IfgJX8pn96inuCWjsvZPCx/Fyh6xEmLMxg==",
+      "reported": 38
+    },
+    {
+      "computed": 547,
+      "delta": -2,
+      "file_id": "/i+7D4ULCXLsKAiYrZ7yB5Qj6AumggUZUaltnA==",
+      "reported": 549
+    },
+    {
+      "computed": 66,
+      "delta": -6,
+      "file_id": "0K7oDCcX/Pigf7F4HvN+BfgAhCERjG5BY1QWGw==",
+      "reported": 72
+    },
+    {
+      "computed": 848,
+      "delta": 4,
+      "file_id": "0pp5EIfXgFpYP7bSbtNGmSEWDyFRl57br7ewwQ==",
+      "reported": 844
+    },
+    {
+      "computed": 58,
+      "delta": -1,
+      "file_id": "0rFaICFAqG+CCkyLC3UapwBhV+7bS9M2I4hX+w==",
+      "reported": 59
+    },
+    {
+      "computed": 14,
+      "delta": -2,
+      "file_id": "1FIld9SiB6IQBwJAEQGrQvkzRpSyXbljTvnsdA==",
+      "reported": 16
+    },
+    {
+      "computed": 53,
+      "delta": -6,
+      "file_id": "1UfTou3yycpT5pcF0HRsMGbKE0SeL++WRdv0yA==",
+      "reported": 59
+    },
+    {
+      "computed": 787,
+      "delta": 2,
+      "file_id": "2+f7ey8rhbvQVdfHYuwBKkAHeBBQVaFETgn/Qg==",
+      "reported": 785
+    },
+    {
+      "computed": 143,
+      "delta": 1,
+      "file_id": "3rGfLwDm78hTV2wwvTsKV/4aoPTR9r6EQqo0JA==",
+      "reported": 142
+    },
+    {
+      "computed": 63,
+      "delta": -1,
+      "file_id": "47iPdT9QueBSuf97VVe2+B8+A+/8Z+nRaD8mxw==",
+      "reported": 64
+    },
+    {
+      "computed": 47,
+      "delta": -5,
+      "file_id": "7ZSCuke4ADlyYrtFu2fiX5XTTzkUa6CP3V0ZpA==",
+      "reported": 52
+    },
+    {
+      "computed": 333,
+      "delta": 3,
+      "file_id": "AWIpGHhttioJR9CUJsH+L0mz0aMWrPdqcfLMEA==",
+      "reported": 330
+    },
+    {
+      "computed": 185,
+      "delta": 1,
+      "file_id": "AYTwuTJ0EJmOpWgc8pQpDKLGso3t1jlE05Qp2A==",
+      "reported": 184
+    },
+    {
+      "computed": 31,
+      "delta": -2,
+      "file_id": "B9H2aDLEhmmuZ/toLXKqGS3rwUWizXjcBksIjQ==",
+      "reported": 33
+    },
+    {
+      "computed": 313,
+      "delta": -12,
+      "file_id": "CBTcPUwMDO8H6IuQqKfgMT+3/ljDKHyyVt3UVQ==",
+      "reported": 325
+    },
+    {
+      "computed": 158,
+      "delta": -3,
+      "file_id": "CY8Wo6gPgr/gb8RHGev/K6MQNIkESAanH45Irg==",
+      "reported": 161
+    },
+    {
+      "computed": 302,
+      "delta": 1,
+      "file_id": "Cxjjs5elEFHjpqIbYQkIrdnogvLSkZ7zkCOurg==",
+      "reported": 301
+    },
+    {
+      "computed": 52,
+      "delta": -3,
+      "file_id": "EBPMaA11e9yS3QxUzXvTzyInQ/i+9J45hlATag==",
+      "reported": 55
+    },
+    {
+      "computed": 120,
+      "delta": -3,
+      "file_id": "F/GJB34eyZCz8gh0p9/U0ddAwGVCmqNzMCDgTA==",
+      "reported": 123
+    },
+    {
+      "computed": 434,
+      "delta": -8,
+      "file_id": "G56Y07knLXYASxEOaK/Y5egHnd0SHVWroRM6gQ==",
+      "reported": 442
+    },
+    {
+      "computed": 188,
+      "delta": -12,
+      "file_id": "GEEwuYqZI3GeaORPXv6f+rK6F38uLFiwjq6+PA==",
+      "reported": 200
+    },
+    {
+      "computed": 37,
+      "delta": -2,
+      "file_id": "HWvRInhhbAGxpxNHosngl2lmnU2M6b6bVHZ3lQ==",
+      "reported": 39
+    },
+    {
+      "computed": 148,
+      "delta": -1,
+      "file_id": "Ip9aGEtU3adeSmGE5/3Lk2qxnga0e7hFTSBzaQ==",
+      "reported": 149
+    },
+    {
+      "computed": 43,
+      "delta": -3,
+      "file_id": "J6Jqdc6DZy3HOMyG6lH8AFe+XdaYAQ0dVXgFdA==",
+      "reported": 46
+    },
+    {
+      "computed": 547,
+      "delta": -1,
+      "file_id": "JkoX20TM0wfeCvYCN27l0dNHy+2KOq8tMVma2Q==",
+      "reported": 548
+    },
+    {
+      "computed": 413,
+      "delta": -2,
+      "file_id": "JzXhYw+tbzolRgoMTGAztZadafFEEI+bnJsW7A==",
+      "reported": 415
+    },
+    {
+      "computed": 34,
+      "delta": -3,
+      "file_id": "Lm++F9vvbT4Uiixo4+zXfc044ZfBr8AeZHIIUw==",
+      "reported": 37
+    },
+    {
+      "computed": 61,
+      "delta": 1,
+      "file_id": "Mmh28staKxIaAACRBkeqR8qefboXZt26MvPlIg==",
+      "reported": 60
+    },
+    {
+      "computed": 466,
+      "delta": -8,
+      "file_id": "O5NcxWmQfhQU+5aalo7i1IDY0YWUZD+ouezBpA==",
+      "reported": 474
+    },
+    {
+      "computed": 427,
+      "delta": 22,
+      "file_id": "P2tXymG92H1Of3vLjWV0P35nRe0WSygbJSnkeg==",
+      "reported": 405
+    },
+    {
+      "computed": 41,
+      "delta": 1,
+      "file_id": "P4D6M+yAm2tbdUsZCbfGO+OAXmlUMGP2AelhUg==",
+      "reported": 40
+    },
+    {
+      "computed": 165,
+      "delta": -3,
+      "file_id": "PcBrbJSu8wP6LSSRlP+ZGLnxHacoLa1J0Ngq9w==",
+      "reported": 168
+    },
+    {
+      "computed": 29,
+      "delta": -2,
+      "file_id": "QdfJyRgW3qixNWn4E6MBhbzsi2xymE02V+5NSA==",
+      "reported": 31
+    },
+    {
+      "computed": 60,
+      "delta": -4,
+      "file_id": "Qf4+VT17QgIrBK3+R5k01SwMC2nn8HujYydCNw==",
+      "reported": 64
+    },
+    {
+      "computed": 16,
+      "delta": 1,
+      "file_id": "QhSll1QW/keKl6izpsGq+f0NWqcBDBFDA1R7kw==",
+      "reported": 15
+    },
+    {
+      "computed": 865,
+      "delta": -1,
+      "file_id": "RLaWkfXpaovcfDUhtiN6ZcGaLWkOXM9Y/XekXQ==",
+      "reported": 866
+    },
+    {
+      "computed": 174,
+      "delta": 1,
+      "file_id": "SYU5RZLgd0qXHdRVaqH/1gS6JBEnNo1r3fVh0A==",
+      "reported": 173
+    },
+    {
+      "computed": 43,
+      "delta": -1,
+      "file_id": "T5/IiyYxJlUx9Y0GCVJqXVFDJcQHscFKC72bJw==",
+      "reported": 44
+    },
+    {
+      "computed": 34,
+      "delta": -7,
+      "file_id": "TDvHn68MfWzRQfjpfTUZ2DGgI75oftXX5/QZXA==",
+      "reported": 41
+    },
+    {
+      "computed": 622,
+      "delta": -7,
+      "file_id": "UBhRpzN2Rrxiysl/eBTB+WmHMC0fu0Nu5RQlnw==",
+      "reported": 629
+    },
+    {
+      "computed": 74,
+      "delta": 9,
+      "file_id": "UIIOYAIxiiUu4SMKYzSla0ZGGdlI6DlMf2BDog==",
+      "reported": 65
+    },
+    {
+      "computed": 462,
+      "delta": 16,
+      "file_id": "UuClOhsX2KL7EI194TlYTGtfssJkIJ0+U2mg5w==",
+      "reported": 446
+    },
+    {
+      "computed": 49,
+      "delta": -1,
+      "file_id": "XWh9j/Wyc1noUeWu5F4aKWdvIE/PT0IEONbx5g==",
+      "reported": 50
+    },
+    {
+      "computed": 53,
+      "delta": -3,
+      "file_id": "YR8d+9AFqetcrMmDq+/1TUWzm+kSwCBryYU/mw==",
+      "reported": 56
+    },
+    {
+      "computed": 98,
+      "delta": -4,
+      "file_id": "Z/6HW8pcLXgOn6jZoVAR8UDL3m16wOqYVEiNQw==",
+      "reported": 102
+    },
+    {
+      "computed": 354,
+      "delta": -12,
+      "file_id": "ZtJ+3se8q8Ji2oNPZ61/fpbTqpYMdwZWGGtAww==",
+      "reported": 366
+    },
+    {
+      "computed": 439,
+      "delta": -3,
+      "file_id": "axMPQhYbjrgk/8AKoqoP5Olnpm+W9tcTJ7rDzA==",
+      "reported": 442
+    },
+    {
+      "computed": 167,
+      "delta": 12,
+      "file_id": "cUvbp/70OrT2+p51trFxaRP8cnNi1Vupa9+E0Q==",
+      "reported": 155
+    },
+    {
+      "computed": 50,
+      "delta": 1,
+      "file_id": "ccWSEklmjYyLCiysPCzUGdZ7XvHYWfBQds6oqw==",
+      "reported": 49
+    },
+    {
+      "computed": 66,
+      "delta": -1,
+      "file_id": "csLVXxUmS9RbFfeJ0+Vu8LHLKU5ZsNB8kPDpOQ==",
+      "reported": 67
+    },
+    {
+      "computed": 131,
+      "delta": -1,
+      "file_id": "dlbf+6kfKyFDHr+1oYaPdOYzjdyAtpIYQepycA==",
+      "reported": 132
+    },
+    {
+      "computed": 34,
+      "delta": -5,
+      "file_id": "eTmJUc37kiCtOW2H6awCJFnHhxtQpuj82xj4Og==",
+      "reported": 39
+    },
+    {
+      "computed": 388,
+      "delta": 2,
+      "file_id": "ebMxROzzPTcwyh9gHsAlGuitVWwODt/4jCfvyw==",
+      "reported": 386
+    },
+    {
+      "computed": 208,
+      "delta": 2,
+      "file_id": "eibENHe2AHfPF/+3Wt8EpdKZ0uAPmvnVFgzNTw==",
+      "reported": 206
+    },
+    {
+      "computed": 167,
+      "delta": -2,
+      "file_id": "f978gBJaV4CBKLJLEV1CRNWcLxAlzguGLRqEqQ==",
+      "reported": 169
+    },
+    {
+      "computed": 56,
+      "delta": -2,
+      "file_id": "gGLSujQJsAKofMOTKu8R61EmpzXR+9ztrwogCQ==",
+      "reported": 58
+    },
+    {
+      "computed": 366,
+      "delta": 6,
+      "file_id": "gVaBkxEK/aBdg0h65bAJHjdoWIjqJ92qJSpO0g==",
+      "reported": 360
+    },
+    {
+      "computed": 390,
+      "delta": -1,
+      "file_id": "gsLG0Eed8b1/haqKwGegVgYAqxws119cdu/aKQ==",
+      "reported": 391
+    },
+    {
+      "computed": 316,
+      "delta": -23,
+      "file_id": "hwVX5uvuj25vouN3jVuIDQnkaQY/RuJhgNjpRA==",
+      "reported": 339
+    },
+    {
+      "computed": 166,
+      "delta": -1,
+      "file_id": "i8+jr3qAo6NzHx7k7cx+E3jaRz7sASHqOyrDDQ==",
+      "reported": 167
+    },
+    {
+      "computed": 116,
+      "delta": -432,
+      "file_id": "ieFUA5aVKqgR5j3AYIOofhzQZQ4cAT5BdATvkw==",
+      "reported": 548
+    },
+    {
+      "computed": 44,
+      "delta": -1,
+      "file_id": "iihbC6bre6ZHiZnKmBitxWppwM3LOsNSsu4YaA==",
+      "reported": 45
+    },
+    {
+      "computed": 39,
+      "delta": -5,
+      "file_id": "k+/kfQmHVhFcDcJQ6/fqdwUUu8+GPRxNzcKwPA==",
+      "reported": 44
+    },
+    {
+      "computed": 55,
+      "delta": -2,
+      "file_id": "nvGQyVxocCGBvYakiu3Ch4dHh8YPRiiwbxbAlg==",
+      "reported": 57
+    },
+    {
+      "computed": 32,
+      "delta": -2,
+      "file_id": "nwfT5DOxFi0UdtcNJoFjl9cEEGlKu3+yHv3R3A==",
+      "reported": 34
+    },
+    {
+      "computed": 55,
+      "delta": -1,
+      "file_id": "smdqcfbLZsoFLxyP+upFzpeYDFkKVjbxlK4FrQ==",
+      "reported": 56
+    },
+    {
+      "computed": 153,
+      "delta": -628,
+      "file_id": "t8EtI8uAi7sxVJjagzru75c1a3n/oM3Shq2E6w==",
+      "reported": 781
+    },
+    {
+      "computed": 594,
+      "delta": -25,
+      "file_id": "tTVfwSiHz/H7rhfRlUtujImU9fsefwCDra5f9g==",
+      "reported": 619
+    },
+    {
+      "computed": 662,
+      "delta": -1,
+      "file_id": "tzh5dM3GRFAE66WlnA4sXfV7Gy8Bz1m6MC+h1A==",
+      "reported": 663
+    },
+    {
+      "computed": 458,
+      "delta": -14,
+      "file_id": "vR9DgYZE8J9PhfHnUZPG4fTbaMJE8f53HRgoyQ==",
+      "reported": 472
+    },
+    {
+      "computed": 54,
+      "delta": -1,
+      "file_id": "w66YbjFTkyNbWPuGou+cCV6rtaDSeWOLcORyJg==",
+      "reported": 55
+    },
+    {
+      "computed": 91,
+      "delta": -507,
+      "file_id": "yCEjsE4lg2gvjiWGRg8OXnbQHxA/vrwRfgXlAw==",
+      "reported": 598
+    },
+    {
+      "computed": 517,
+      "delta": -1,
+      "file_id": "yFy16CoBqHCcx7iWSss8R33UDciw6kTHsXr6RA==",
+      "reported": 518
+    },
+    {
+      "computed": 173,
+      "delta": 1,
+      "file_id": "zFlpK7wYbpnp4jRxBdQlULy94Xy7ZgfKlU/eug==",
+      "reported": 172
+    }
+  ],
+  "invalid_rows": [],
+  "missing_months_global": [
+    "2014-08",
+    "2014-09",
+    "2015-06",
+    "2018-11",
+    "2019-12"
+  ],
+  "per_neighborhood_gap_months": {
+    "barrio_logan": [
+      "2022-02"
+    ],
+    "city_center": [
+      "2014-08",
+      "2014-09",
+      "2015-06",
+      "2018-11",
+      "2019-12",
+      "2020-05",
+      "2022-02"
+    ],
+    "columbia": [
+      "2015-10",
+      "2015-11",
+      "2015-12",
+      "2018-11",
+      "2019-12",
+      "2022-02"
+    ],
+    "cortez": [
+      "2014-08",
+      "2014-09",
+      "2015-06",
+      "2018-11",
+      "2019-12",
+      "2022-02"
+    ],
+    "east_village": [
+      "2014-08",
+      "2014-09",
+      "2015-06",
+      "2018-11",
+      "2019-12",
+      "2022-02"
+    ],
+    "east_village_south": [
+      "2018-03",
+      "2018-04",
+      "2018-05",
+      "2018-06",
+      "2018-11",
+      "2019-12"
+    ],
+    "gaslamp": [
+      "2014-02",
+      "2014-08",
+      "2014-09",
+      "2015-06",
+      "2018-11",
+      "2019-12",
+      "2022-02"
+    ],
+    "golden_hill": [
+      "2022-02"
+    ],
+    "marina": [
+      "2014-08",
+      "2014-09",
+      "2015-06",
+      "2018-11",
+      "2019-12",
+      "2020-01",
+      "2022-02"
+    ],
+    "sherman_heights": [
+      "2022-02"
+    ]
+  },
+  "row_counts": {
+    "invalid": 0,
+    "normalized": 25865
+  },
+  "schema": "quality_report.v0",
+  "source": {
+    "retrieved_at": "2026-08-21T01:06:45Z",
+    "source_id": "sdrdl_source"
+  },
+  "source_maps_without_counts": [
+    "CFtkDn7T3Iafj4TSUryB8YuxnlBdqnts1Qe0WQ==",
+    "MN587n4YJvRmJErdtEXjF6/0N6fHJA46B7YzBA==",
+    "NMU9zqDPqHXZrJxlsyTleC9qtYfRSfeKYx63mg==",
+    "x2yLvI5I1d3xMqtuGu2BLj2UqzrUg5f41qUlEQ=="
+  ]
+}

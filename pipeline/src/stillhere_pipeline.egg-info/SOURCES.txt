@@ -1,0 +1,8 @@
+pyproject.toml
+src/stillhere_pipeline/__init__.py
+src/stillhere_pipeline/manifest.py
+src/stillhere_pipeline.egg-info/PKG-INFO
+src/stillhere_pipeline.egg-info/SOURCES.txt
+src/stillhere_pipeline.egg-info/dependency_links.txt
+src/stillhere_pipeline.egg-info/requires.txt
+src/stillhere_pipeline.egg-info/top_level.txt

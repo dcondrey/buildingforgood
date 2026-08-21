@@ -1,0 +1,8 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# OS
+.DS_Store

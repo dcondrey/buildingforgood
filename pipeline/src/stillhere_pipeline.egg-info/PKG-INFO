@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: stillhere-pipeline
+Version: 0.0.1
+Summary: Still Here SD ingestion, validation, analysis, and export pipeline
+Requires-Python: >=3.11
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"
+Requires-Dist: ruff>=0.6; extra == "dev"
+Requires-Dist: mypy>=1.10; extra == "dev"

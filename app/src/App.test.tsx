@@ -361,7 +361,14 @@ describe("intervention assumption explorer", () => {
     expect(screen.getByLabelText("Hours for East Village").getAttribute("value")).toBe("8");
     // The brief carries the assumption disclosure.
     await user.click(screen.getByRole("button", { name: "Copy decision brief" }));
-    expect(await screen.findByText(/Stress-test assumption active: East Village/)).toBeDefined();
+    // The printable plan repeats the brief verbatim for print output. It is
+    // aria-hidden, so screen readers see one copy; findByText does not filter
+    // on that, so scope the assertion to the on-screen brief.
+    expect(
+      await screen.findByText(/Stress-test assumption active: East Village/, {
+        ignore: "[aria-hidden='true'], [aria-hidden='true'] *",
+      }),
+    ).toBeDefined();
     // Clearing the assumption restores the observed-load plan.
     await user.click(screen.getAllByRole("button", { name: "Clear assumption" })[0]);
     expect(screen.queryByText(/Assumption explorer:/)).toBeNull();

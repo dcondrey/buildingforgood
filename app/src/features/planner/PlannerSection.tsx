@@ -9,6 +9,7 @@ import { useShell } from "../../features/shell/ShellContext";
 import { AreaDetailPanel } from "../../features/spatial/AreaDetailPanel";
 import { AreaMap } from "../../features/spatial/AreaMap";
 import { MapValueTable } from "../../features/spatial/MapValueTable";
+import { formatCurrency, formatRate } from "../../domain/cost/index.ts";
 import { formatNumber } from "../../lib/format";
 
 export function PlannerSection() {
@@ -24,6 +25,7 @@ export function PlannerSection() {
     lockedIds,
     maxHours,
     plan,
+    planCost,
     planDirty,
     planTotal,
     planningAreas,
@@ -193,6 +195,13 @@ export function PlannerSection() {
                 {unmetTotal > 0
                   ? `${unmetTotal}h moved to minimums and locks`
                   : "0h · hours follow the forecast"}
+              </strong>
+            </div>
+            <div>
+              <span className="eyebrow">Cost of the floor · assumed</span>
+              <strong>
+                {formatCurrency(planCost.floor.cost, planCost.currency)} at an assumed{" "}
+                {formatRate(planCost.rate, planCost.currency)}
               </strong>
             </div>
             <div>

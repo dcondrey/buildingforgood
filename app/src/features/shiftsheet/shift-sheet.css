@@ -1,0 +1,252 @@
+/*
+ * The shift sheet is the one surface that is not part of the presentation.
+ *
+ * It is read outdoors, at 6am, on a phone held at arm's length, and then
+ * printed and carried in a pocket. So it is deliberately light-on-dark's
+ * opposite: near-black ink on white, at sizes that survive daylight, with no
+ * hover, no colour-only state, and no interaction needed to see anything.
+ * Every state that matters is a word, not a hue.
+ */
+
+.shift-sheet-overlay {
+  background: #fff;
+  color: #111820;
+  inset: 0;
+  overflow-y: auto;
+  position: fixed;
+  z-index: 400;
+  -webkit-text-size-adjust: 100%;
+}
+
+.shift-sheet-overlay * {
+  color: inherit;
+}
+
+.shift-sheet {
+  font-family: var(--display, system-ui), system-ui, sans-serif;
+  margin: 0 auto;
+  max-width: 46rem;
+  padding: 1.1rem 1.1rem 3rem;
+}
+
+.shift-sheet-bar {
+  align-items: center;
+  background: #fff;
+  border-bottom: 3px solid #111820;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin: -1.1rem -1.1rem 1rem;
+  padding: 0.75rem 1.1rem;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.shift-sheet-bar button {
+  background: #fff;
+  border: 3px solid #111820;
+  border-radius: 10px;
+  color: #111820;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  min-height: 3rem;
+  padding: 0.55rem 1.1rem;
+}
+
+.shift-sheet-bar button.is-primary {
+  background: #111820;
+  color: #fff;
+}
+
+.shift-sheet-bar button:focus-visible {
+  outline: 4px solid #005b60;
+  outline-offset: 3px;
+}
+
+.shift-sheet h2 {
+  font-size: clamp(1.6rem, 6vw, 2.1rem);
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.shift-sheet-meta {
+  border-bottom: 2px solid #111820;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0.35rem 0 0;
+  padding-bottom: 0.7rem;
+}
+
+.shift-sheet-meta span {
+  display: block;
+}
+
+.shift-sheet-meta .quiet {
+  font-weight: 600;
+}
+
+.shift-sheet-areas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.shift-sheet-area {
+  border-bottom: 2px solid #111820;
+  padding: 0.85rem 0;
+}
+
+.shift-sheet-area-head {
+  align-items: baseline;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.shift-sheet-area-name {
+  font-size: clamp(1.25rem, 5vw, 1.6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.shift-sheet-hours {
+  font-size: clamp(2rem, 9vw, 2.8rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.shift-sheet-why {
+  font-size: 1.05rem;
+  line-height: 1.4;
+  margin: 0.4rem 0 0;
+}
+
+.shift-sheet-why b {
+  text-transform: uppercase;
+}
+
+.shift-sheet-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.shift-sheet-tag {
+  border: 2px solid #111820;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.6rem;
+  text-transform: uppercase;
+}
+
+.shift-sheet-tag.is-strong {
+  background: #111820;
+  color: #fff;
+}
+
+.shift-sheet-total {
+  display: flex;
+  font-size: clamp(1.2rem, 5vw, 1.5rem);
+  font-weight: 800;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.9rem 0;
+  text-transform: uppercase;
+}
+
+.shift-sheet-disclosure {
+  border: 3px solid #111820;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0.4rem 0 0;
+  padding: 0.7rem 0.8rem;
+}
+
+.shift-sheet-source {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0.7rem 0 0;
+}
+
+/* While the sheet is open the page behind it does not scroll. The rule that
+ * makes the browser's own print command print the sheet rather than the app
+ * lives with the other page-takeover rules, in src/print.css. */
+body.shift-sheet-open {
+  overflow: hidden;
+}
+
+@media print {
+  body.shift-sheet-open {
+    overflow: visible;
+  }
+
+  .shift-sheet-overlay {
+    background: #fff !important;
+    color: #000 !important;
+    overflow: visible;
+    position: static;
+  }
+
+  .shift-sheet-bar {
+    display: none !important;
+  }
+
+  .shift-sheet {
+    max-width: none;
+    padding: 0;
+  }
+
+  .shift-sheet h2 {
+    font-size: 19pt;
+  }
+
+  .shift-sheet-meta {
+    font-size: 10pt;
+    padding-bottom: 2mm;
+  }
+
+  .shift-sheet-area {
+    break-inside: avoid;
+    padding: 2.4mm 0;
+    page-break-inside: avoid;
+  }
+
+  .shift-sheet-area-name {
+    font-size: 13pt;
+  }
+
+  .shift-sheet-hours {
+    font-size: 20pt;
+  }
+
+  .shift-sheet-why,
+  .shift-sheet-disclosure {
+    font-size: 9.5pt;
+  }
+
+  .shift-sheet-tag {
+    font-size: 8pt;
+  }
+
+  .shift-sheet-total {
+    font-size: 13pt;
+    padding: 2.4mm 0;
+  }
+
+  .shift-sheet-source {
+    font-size: 7.5pt;
+  }
+}

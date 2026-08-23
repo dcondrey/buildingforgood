@@ -1,5 +1,7 @@
 import { SparkIcon } from "../../components/Icons";
 import { CostAssumptionControl, PlanCostSummary } from "../../features/cost/CostPieces";
+import { ExportActions } from "../../features/export/ExportActions";
+import { ShareLink } from "../../features/share/ShareLink";
 import { useShell } from "../../features/shell/ShellContext";
 import { DEFAULT_COVERAGE_FLOOR, MAX_BUDGET_HOURS } from "../../lib/constants";
 import { formatNumber } from "../../lib/format";
@@ -566,6 +568,10 @@ export function BriefCluster() {
           <pre>{decisionBrief}</pre>
         </details>
       )}
+
+      <ShareLink />
+
+      <ExportActions />
     </>
   );
 }

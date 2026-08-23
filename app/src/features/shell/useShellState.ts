@@ -2,6 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { DEFAULT_COVERAGE_FLOOR, MAX_BUDGET_HOURS } from "../../lib/constants";
 import { EMBEDDED_DEMO, loadDemoData, type DemoData } from "../../lib/demo";
+import {
+  DEFAULT_LOADED_HOURLY_RATE,
+  floorCostSentence,
+  formatCurrency,
+  formatRate,
+  summarizePlanCost,
+} from "../../domain/cost/index.ts";
 import { formatDate, formatNumber, titleCase } from "../../lib/format";
 import { applyIntervention } from "../../lib/intervention";
 import { allocateHours, type PlanResult } from "../../lib/planner";
@@ -12,6 +19,12 @@ import {
   writeSavedScenarios,
   type SavedScenario,
 } from "../planner/scenarioStore";
+import type { PlanExportRow } from "../export/planCsv";
+import {
+  planShareUrl,
+  readPlanShareFromSearch,
+  type PlanShareState,
+} from "../share/planShareState";
 
 /**
  * Every piece of shell state, lifted out of App.tsx unchanged. Sections read
@@ -58,6 +71,10 @@ export function useShellState() {
       return false;
     }
   });
+  // Loaded cost of one staff hour. An operator-set assumption in exactly the
+  // sense the displaced share is: the operator states it, the interface labels
+  // it, and no plan is computed from it.
+  const [loadedHourlyRate, setLoadedHourlyRate] = useState(DEFAULT_LOADED_HOURLY_RATE);
   const [projectorMode, setProjectorMode] = useState(false);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const resultHeading = useRef<HTMLHeadingElement>(null);
@@ -191,6 +208,24 @@ export function useShellState() {
     );
   }, [plan, planningAreas, budget, lockedIds]);
   const unmetTotal = Array.from(unmetByArea.values()).reduce((sum, value) => sum + value, 0);
+  // Cost is priced off the plan that already exists; the rate is never an
+  // input to it. The floor's marginal cost is one multiplication on the same
+  // unmet hours reported above, not a second calculation.
+  const planCost = useMemo(
+    () =>
+      summarizePlanCost({
+        areas: planningAreas.map((area) => ({
+          id: area.id,
+          label: area.name,
+          planningLoad: area.planningLoad,
+        })),
+        hoursByArea: allocationById,
+        unmetHoursByArea: unmetByArea,
+        rate: loadedHourlyRate,
+      }),
+    [planningAreas, allocationById, unmetByArea, loadedHourlyRate],
+  );
+  const floorCostLine = floorCostSentence(planCost);
   const budgetValid = Number.isInteger(budget) && budget >= 0 && budget <= MAX_BUDGET_HOURS;
   const planReady = Boolean(
     plan?.feasible && !planDirty && guardEnabled && budgetValid && planTotal === budget,
@@ -308,6 +343,7 @@ export function useShellState() {
             `Stress-test assumption active: ${data.areas.find((area) => area.id === intervention.areaId)?.name ?? intervention.areaId} modeled as cleared, with ${formatNumber(intervention.share * 100)}% of its planning load assumed to shift to adjacent areas (${formatNumber(interventionResult.shifted, 1)} shifted, ${formatNumber(interventionResult.assumedResolved, 1)} assumed resolved). An explored assumption for review, not a prediction: the source data cannot verify displacement (April 2026 City Auditor).`,
           ]
         : []),
+      `Cost view — operator-set assumption, not a measured or published figure: at an assumed ${formatRate(planCost.rate, planCost.currency)}, the plan's ${planCost.totalHours} staff-hours cost ${formatCurrency(planCost.totalCost, planCost.currency)}.${floorCostLine ? ` ${floorCostLine} That is ${planCost.floor.hours} hours moved plan-wide by the guaranteed minimum, priced at the same assumed rate.` : ""} The rate is set by the operating organization, is derived from no source in this artifact, and enters no allocation: identical plans are produced at every rate. Costs are stated per staff-hour, per area, and per plan only; nothing here is a cost per person, per contact, or per anyone covered.`,
       `Review triggers: new month, budget or boundary change, wider interval, infeasible floor, or local knowledge conflict.`,
       `Privacy and authorization boundary: aggregate place-level evidence only; no block records or block-level geometry ship (the map draws simplified neighborhood boundaries only). This does not track people, establish causality, authorize enforcement, or dispatch staff automatically.`,
     ].join("\n");
@@ -325,6 +361,8 @@ export function useShellState() {
     auditedAreaWapes,
     intervention,
     interventionResult,
+    planCost,
+    floorCostLine,
   ]);
 
   async function copyBrief() {
@@ -600,6 +638,101 @@ export function useShellState() {
     element.classList.add("guide-spotlight");
     return () => element.classList.remove("guide-spotlight");
   }, [guideIndex, guideSteps]);
+  /* ---------------------------------------------------------------- *
+   * Phase 6: the plan leaves the room — link, exports, shift sheet.
+   *
+   * Additive only. Nothing above this comment changed, and nothing here
+   * feeds an allocation: these read the plan that already exists.
+   * ---------------------------------------------------------------- */
+
+  // A shared link is applied once, after the artifact settles: the loader
+  // sets its own default budget and plan when it resolves, and a colleague
+  // opening a link must end up with the sender's plan, not that default.
+  const sharedPlanApplied = useRef(false);
+  useEffect(() => {
+    if (loading || sharedPlanApplied.current) return;
+    sharedPlanApplied.current = true;
+    const shared = readPlanShareFromSearch(window.location.search);
+    if (!shared) return;
+    const known = new Set(data.areas.map((area) => area.id));
+    // An id the link names but this artifact does not have is dropped, not
+    // invented: a stale link degrades to the plan it can still describe.
+    const locks = new Map(shared.locks.filter(([areaId]) => known.has(areaId)));
+    const assumed = shared.assume !== null && known.has(shared.assume) ? shared.assume : null;
+    // The URL is the external system this effect synchronizes with.
+    // oxlint-disable-next-line react/set-state-in-effect
+    setBudget(shared.budget);
+    setCoverageFloor(shared.floor);
+    setGuardEnabled(shared.guard);
+    setLockedIds(new Set(locks.keys()));
+    setLockValues(Object.fromEntries(locks));
+    setLoadedHourlyRate(shared.rate);
+    setShareDraft(shared.share);
+    setIntervention(assumed ? { areaId: assumed, share: shared.share } : null);
+    const areasForPlan = assumed
+      ? (applyIntervention(data.areas, {
+          targetAreaId: assumed,
+          displacedShare: shared.share,
+        })?.areas ?? data.areas)
+      : data.areas;
+    runPlan(shared.guard, locks, shared.floor, shared.budget, areasForPlan);
+  }, [data, loading]);
+
+  const planShareState: PlanShareState = useMemo(
+    () => ({
+      budget,
+      floor: coverageFloor,
+      guard: guardEnabled,
+      locks: Array.from(lockedIds)
+        .map((areaId): [string, number] => [
+          areaId,
+          lockValues[areaId] ?? allocationById.get(areaId) ?? 0,
+        ])
+        .sort((a, b) => a[0].localeCompare(b[0])),
+      share: intervention ? intervention.share : shareDraft,
+      assume: intervention?.areaId ?? null,
+      rate: loadedHourlyRate,
+    }),
+    [
+      allocationById,
+      budget,
+      coverageFloor,
+      guardEnabled,
+      intervention,
+      loadedHourlyRate,
+      lockValues,
+      lockedIds,
+      shareDraft,
+    ],
+  );
+
+  // Empty when the state on screen is not shareable, which is the honest
+  // answer: the button that offers the link is disabled instead of handing
+  // over one that does not describe this plan.
+  const shareUrl = useMemo(() => {
+    try {
+      return planShareUrl(planShareState, `${window.location.origin}${window.location.pathname}`);
+    } catch {
+      return "";
+    }
+  }, [planShareState]);
+
+  // The plan as rows an export can render. `reason` is the artifact's own
+  // sentence, passed through untouched.
+  const planExportRows: PlanExportRow[] = useMemo(
+    () =>
+      planningAreas.map((area) => ({
+        areaId: area.id,
+        areaName: area.name,
+        hours: allocationById.get(area.id) ?? 0,
+        reason: area.reason,
+        locked: lockedIds.has(area.id),
+        floorHours: guardEnabled ? coverageFloor : 0,
+        unmetHours: unmetByArea.get(area.id) ?? 0,
+      })),
+    [allocationById, coverageFloor, guardEnabled, lockedIds, planningAreas, unmetByArea],
+  );
+
   const classificationLabel =
     signal.classification === "wider_footprint"
       ? individualSpatial
@@ -627,6 +760,7 @@ export function useShellState() {
     deleteScenario,
     disclosuresOpen,
     dropRevealed,
+    floorCostLine,
     goToStep,
     guardEnabled,
     guideAuto,
@@ -644,6 +778,7 @@ export function useShellState() {
     interventionHourChurn,
     interventionResult,
     loadScenario,
+    loadedHourlyRate,
     loading,
     lockValues,
     lockedIds,
@@ -651,8 +786,11 @@ export function useShellState() {
     maxHours,
     performStep,
     plan,
+    planCost,
     planDirty,
+    planExportRows,
     planReady,
+    planShareState,
     planTotal,
     planningAreas,
     projectorMode,
@@ -681,6 +819,7 @@ export function useShellState() {
     setGuideUsed,
     setIntervention,
     setInterventionScenario,
+    setLoadedHourlyRate,
     setLoading,
     setLockValues,
     setLockedIds,
@@ -694,6 +833,7 @@ export function useShellState() {
     setView,
     setWsTab,
     shareDraft,
+    shareUrl,
     signal,
     stepComplete,
     stopGuide,

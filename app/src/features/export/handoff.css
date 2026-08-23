@@ -1,0 +1,53 @@
+/*
+ * The coordinator handoff: link, spreadsheet, printable plan, shift sheet.
+ *
+ * Screen styles only. The printed form of the plan document is in
+ * src/print.css, next to the rest of the print rules.
+ */
+
+.handoff {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+}
+
+.handoff > p {
+  margin: 0;
+  max-width: 62ch;
+}
+
+.handoff-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.handoff-link {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.handoff-link code {
+  border: 1px dashed var(--line-strong, var(--line));
+  border-radius: 10px;
+  display: block;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  padding: 0.6rem 0.7rem;
+}
+
+.handoff-status {
+  font-weight: 650;
+  margin: 0;
+}
+
+/* The printable plan is assembled in the DOM and shown only by the print
+ * stylesheet, so a saved PDF is the same document every time regardless of
+ * where the page happens to be scrolled. */
+.plan-print-doc {
+  display: none;
+}

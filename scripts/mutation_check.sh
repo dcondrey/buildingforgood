@@ -35,6 +35,25 @@ trap restore EXIT INT TERM
 # two lines was silently truncated back to its own search string, so the
 # mutation applied cleanly and changed nothing. It reported "caught" while
 # testing an unmutated file. Records are parsed by python here for that reason.
+#
+# Two mutations were removed rather than kept as permanent failures, because
+# they are EQUIVALENT MUTANTS — no input can distinguish them, so no test can
+# ever kill them and demanding one is unsatisfiable.
+#
+#   `hours: locks.get(id) ?? unlockedHours.get(id) ?? 0` with the operands
+#   swapped. `unlocked` is filtered on `!locks.has(id)` and `unlockedHours` is
+#   built only from `unlocked`, so the two maps have disjoint key sets and
+#   `a ?? b` equals `b ?? a` for every key. Equivalent by construction.
+#
+#   `if (allocatedTotal !== normalizedBudget)` disabled. That branch is a
+#   defensive assertion over arithmetic performed directly above it; it can
+#   only fire if the allocation is already wrong for some other reason. It is
+#   worth keeping in the source and impossible to kill in isolation.
+#
+# Both were found by an independent review track, first by brute force (4,119
+# and 2,988 inputs, zero differing outputs) and then confirmed structurally.
+# The originally claimed "10 of 10 caught" was wrong twice over: these two were
+# unkillable, and a third was never applied at all (see the parsing note above).
 MUTATIONS=$(cat <<'RECORDS'
 shipped: coverage floor short by one hour
 %%%%
@@ -60,21 +79,21 @@ app/src/lib/planner.ts
 %%%%
 .sort((a, b) => a.fraction - b.fraction || a.index - b.index)
 %%%%%%%%
-shipped: budget-conservation check disabled
+shipped: floor infeasibility tolerated by eight hours
 %%%%
 app/src/lib/planner.ts
 %%%%
-if (allocatedTotal !== normalizedBudget) {
+  if (minimumRequired > normalizedBudget) {
 %%%%
-if (false && allocatedTotal !== normalizedBudget) {
+  if (minimumRequired > normalizedBudget + 8) {
 %%%%%%%%
-shipped: a coordinator lock loses to the computed value
+shipped: the largest-remainder pass never runs
 %%%%
 app/src/lib/planner.ts
 %%%%
-hours: locks.get(area.id) ?? unlockedHours.get(area.id) ?? 0,
+    if (remainder <= 0) break;
 %%%%
-hours: unlockedHours.get(area.id) ?? locks.get(area.id) ?? 0,
+    if (remainder <= 999) break;
 %%%%%%%%
 domain: complaint-signal guard neutered
 %%%%

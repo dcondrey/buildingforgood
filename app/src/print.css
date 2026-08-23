@@ -234,3 +234,74 @@
     padding: 4mm 0 0;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Phase 6: the two documents that are printed on purpose.
+ *
+ * The plan document and the shift sheet are assembled in the DOM and are
+ * invisible on screen (the shift sheet is a full-page panel while open).
+ * When one of them is being printed it becomes the whole page: the app is
+ * not a fallback layout for it, it is a different document.
+ * ------------------------------------------------------------------ */
+
+@media print {
+  body.printing-plan > *:not(.plan-print-doc),
+  body.shift-sheet-open > *:not(.shift-sheet-overlay) {
+    display: none !important;
+  }
+
+  /* The running footer belongs to the app's own printed evidence handoff;
+     these two documents carry their own disclosure line. */
+  body.printing-plan::after,
+  body.shift-sheet-open::after {
+    content: none;
+  }
+
+  body.printing-plan .plan-print-doc {
+    color: var(--ink);
+    display: block;
+  }
+
+  .plan-print-doc h1 {
+    font-size: 20pt;
+    line-height: 1.1;
+    margin: 0 0 2mm;
+  }
+
+  .plan-print-doc h2 {
+    font-size: 13pt;
+    margin: 6mm 0 2mm;
+  }
+
+  .plan-print-meta {
+    font-size: 9.5pt;
+    margin: 0 0 1.5mm;
+  }
+
+  .plan-print-disclosure {
+    border: 1pt solid var(--line-strong);
+    font-size: 9.5pt;
+    font-weight: 700;
+    margin: 3mm 0 4mm;
+    padding: 2.5mm 3mm;
+  }
+
+  .plan-print-doc table {
+    break-inside: auto;
+  }
+
+  .plan-print-doc caption {
+    font-size: 8.5pt;
+    margin-bottom: 1.5mm;
+    text-align: left;
+  }
+
+  .plan-print-doc tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .plan-print-brief {
+    font-size: 7.5pt;
+  }
+}

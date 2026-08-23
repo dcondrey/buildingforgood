@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { DEFAULT_COVERAGE_FLOOR, MAX_BUDGET_HOURS } from "../../lib/constants";
 import { EMBEDDED_DEMO, loadDemoData, type DemoData } from "../../lib/demo";
 import {
-  DEFAULT_LOADED_HOURLY_RATE,
   floorCostSentence,
   formatCurrency,
   formatRate,
@@ -21,24 +19,43 @@ import {
 } from "../planner/scenarioStore";
 import type { PlanExportRow } from "../export/planCsv";
 import {
+  PlanShareError,
+  assertGeographyMatches,
+  decodePlanShare,
   planShareUrl,
-  readPlanShareFromSearch,
   type PlanShareState,
 } from "../share/planShareState";
+import {
+  applyDeployment,
+  loadDeployment,
+  resolveProfileId,
+  unobservedAreas,
+  type Deployment,
+} from "./deployment";
 
 /**
  * Every piece of shell state, lifted out of App.tsx unchanged. Sections read
  * it through ShellContext rather than through a prop chain.
  */
 export function useShellState() {
-  const [data, setData] = useState<DemoData>(EMBEDDED_DEMO);
+  // The deployment is resolved once, from the profile this build was opened
+  // with. Every operating number below that used to be a module constant now
+  // comes from it.
+  const [deployment] = useState<Deployment>(() =>
+    loadDeployment(resolveProfileId(window.location.search)),
+  );
+  const [artifact, setArtifact] = useState<DemoData>(EMBEDDED_DEMO);
+  // The artifact as this deployment plans against it: the profile's in-scope
+  // areas, in the profile's order. Identity-stable, and identical to the
+  // artifact itself for the reference deployment.
+  const data = useMemo(() => applyDeployment(artifact, deployment), [artifact, deployment]);
   const [loading, setLoading] = useState(true);
-  const [budget, setBudget] = useState(EMBEDDED_DEMO.scenario.defaultBudget);
+  const [budget, setBudget] = useState(deployment.defaultBudget);
   const [dropRevealed, setDropRevealed] = useState(false);
   const [disclosuresOpen, setDisclosuresOpen] = useState(false);
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [guardEnabled, setGuardEnabled] = useState(true);
-  const [coverageFloor, setCoverageFloor] = useState(DEFAULT_COVERAGE_FLOOR);
+  const [coverageFloor, setCoverageFloor] = useState(deployment.coverageFloor);
   const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
   const [lockValues, setLockValues] = useState<Record<string, number>>({});
   const [planDirty, setPlanDirty] = useState(false);
@@ -74,7 +91,7 @@ export function useShellState() {
   // Loaded cost of one staff hour. An operator-set assumption in exactly the
   // sense the displaced share is: the operator states it, the interface labels
   // it, and no plan is computed from it.
-  const [loadedHourlyRate, setLoadedHourlyRate] = useState(DEFAULT_LOADED_HOURLY_RATE);
+  const [loadedHourlyRate, setLoadedHourlyRate] = useState(deployment.loadedHourlyRate);
   const [projectorMode, setProjectorMode] = useState(false);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const resultHeading = useRef<HTMLHeadingElement>(null);
@@ -119,14 +136,15 @@ export function useShellState() {
     // The shell opens mid-work: a live default plan is on the table from the
     // first paint, and the controls adjust it rather than reveal it.
     const openWithPlan = (source: DemoData) => {
+      const scoped = applyDeployment(source, deployment);
       setPlan(
-        allocateHours(source.areas, source.scenario.defaultBudget, DEFAULT_COVERAGE_FLOOR, true),
+        allocateHours(scoped.areas, deployment.defaultBudget, deployment.coverageFloor, true),
       );
     };
     loadDemoData(controller.signal)
       .then((loaded) => {
-        setData(loaded);
-        setBudget(loaded.scenario.defaultBudget);
+        setArtifact(loaded);
+        setBudget(deployment.defaultBudget);
         openWithPlan(loaded);
       })
       .catch(() => {
@@ -135,7 +153,7 @@ export function useShellState() {
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, []);
+  }, [deployment]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -226,7 +244,8 @@ export function useShellState() {
     [planningAreas, allocationById, unmetByArea, loadedHourlyRate],
   );
   const floorCostLine = floorCostSentence(planCost);
-  const budgetValid = Number.isInteger(budget) && budget >= 0 && budget <= MAX_BUDGET_HOURS;
+  const budgetValid =
+    Number.isInteger(budget) && budget >= deployment.minBudget && budget <= deployment.maxBudget;
   const planReady = Boolean(
     plan?.feasible && !planDirty && guardEnabled && budgetValid && planTotal === budget,
   );
@@ -287,7 +306,8 @@ export function useShellState() {
   function setBudgetHours(next: number) {
     setBudget(next);
     setCopyStatus("");
-    const valid = Number.isInteger(next) && next >= 0 && next <= MAX_BUDGET_HOURS;
+    const valid =
+      Number.isInteger(next) && next >= deployment.minBudget && next <= deployment.maxBudget;
     if (plan && valid) {
       runPlan(guardEnabled, currentLocks(), coverageFloor, next);
     } else {
@@ -297,7 +317,7 @@ export function useShellState() {
   }
 
   function setGuard(nextGuard: boolean) {
-    const nextFloor = nextGuard && coverageFloor === 0 ? DEFAULT_COVERAGE_FLOOR : coverageFloor;
+    const nextFloor = nextGuard && coverageFloor === 0 ? deployment.coverageFloor : coverageFloor;
     if (nextFloor !== coverageFloor) setCoverageFloor(nextFloor);
     setGuardEnabled(nextGuard);
     runPlan(nextGuard, currentLocks(), nextFloor);
@@ -454,7 +474,16 @@ export function useShellState() {
     lockValues,
   ]);
 
-  const guideSteps = useMemo(() => buildGuideSteps(data), [data]);
+  const guideSteps = useMemo(
+    () =>
+      buildGuideSteps(data, {
+        countWord: deployment.areaCountWord,
+        noun: deployment.areaNoun,
+        nounPlural: deployment.areaNounPlural,
+        coverageFloor: deployment.coverageFloor,
+      }),
+    [data, deployment],
+  );
 
   // Whether the viewer has completed the step's task with the app's own
   // controls. Read-only steps never self-complete; they advance on Next.
@@ -482,7 +511,7 @@ export function useShellState() {
   // "Do it for me": perform the step's task exactly as the on-screen control
   // would, so watching the guide never diverges from using the tool.
   function performStep(index: number) {
-    const floor = guardEnabled && coverageFloor > 0 ? coverageFloor : DEFAULT_COVERAGE_FLOOR;
+    const floor = guardEnabled && coverageFloor > 0 ? coverageFloor : deployment.coverageFloor;
     switch (guideSteps[index]?.id) {
       case "reveal":
         revealDrop(false);
@@ -496,7 +525,7 @@ export function useShellState() {
         setCoveragePolicy(0);
         break;
       case "restore":
-        setCoveragePolicy(DEFAULT_COVERAGE_FLOOR);
+        setCoveragePolicy(deployment.coverageFloor);
         break;
       case "lock": {
         setCoverageFloor(floor);
@@ -584,7 +613,7 @@ export function useShellState() {
   function stopGuide() {
     setGuideAuto(false);
     setGuideIndex(null);
-    if (plan && !guardEnabled) setCoveragePolicy(DEFAULT_COVERAGE_FLOOR);
+    if (plan && !guardEnabled) setCoveragePolicy(deployment.coverageFloor);
   }
 
   useEffect(() => {
@@ -649,10 +678,34 @@ export function useShellState() {
   // sets its own default budget and plan when it resolves, and a colleague
   // opening a link must end up with the sender's plan, not that default.
   const sharedPlanApplied = useRef(false);
+  // A link this build refuses. Distinct from "no link at all", which is the
+  // whole point: a recipient whose link was mangled used to be shown a
+  // plausible default plan with nothing to tell them it was not the sender's.
+  const [shareRefusal, setShareRefusal] = useState<{ field: string; detail: string } | null>(null);
   useEffect(() => {
     if (loading || sharedPlanApplied.current) return;
     sharedPlanApplied.current = true;
-    const shared = readPlanShareFromSearch(window.location.search);
+    let shared: PlanShareState | null;
+    try {
+      shared = decodePlanShare(window.location.search);
+      // A plan is only a plan against a named list of areas. A link built on
+      // another organization's geography is refused rather than partly
+      // applied: dropping unknown ids silently would hand the reader a
+      // different plan under the sender's name.
+      if (shared) assertGeographyMatches(shared, deployment.areaListVersion);
+    } catch (error) {
+      if (!(error instanceof PlanShareError)) throw error;
+      const prefix = `${error.field}: `;
+      // The URL is the external system this effect synchronizes with.
+      // oxlint-disable-next-line react/set-state-in-effect
+      setShareRefusal({
+        field: error.field,
+        detail: error.message.startsWith(prefix)
+          ? error.message.slice(prefix.length)
+          : error.message,
+      });
+      return;
+    }
     if (!shared) return;
     const known = new Set(data.areas.map((area) => area.id));
     // An id the link names but this artifact does not have is dropped, not
@@ -676,7 +729,7 @@ export function useShellState() {
         })?.areas ?? data.areas)
       : data.areas;
     runPlan(shared.guard, locks, shared.floor, shared.budget, areasForPlan);
-  }, [data, loading]);
+  }, [data, deployment, loading]);
 
   const planShareState: PlanShareState = useMemo(
     () => ({
@@ -692,11 +745,13 @@ export function useShellState() {
       share: intervention ? intervention.share : shareDraft,
       assume: intervention?.areaId ?? null,
       rate: loadedHourlyRate,
+      geography: deployment.areaListVersion,
     }),
     [
       allocationById,
       budget,
       coverageFloor,
+      deployment,
       guardEnabled,
       intervention,
       loadedHourlyRate,
@@ -733,6 +788,13 @@ export function useShellState() {
     [allocationById, coverageFloor, guardEnabled, lockedIds, planningAreas, unmetByArea],
   );
 
+  // In-scope areas this artifact carries no row for. Empty for the reference
+  // deployment; non-empty is a fact the planner section has to state.
+  const unobservedAreaNames = useMemo(
+    () => unobservedAreas(artifact.areas, deployment),
+    [artifact, deployment],
+  );
+
   const classificationLabel =
     signal.classification === "wider_footprint"
       ? individualSpatial
@@ -757,6 +819,7 @@ export function useShellState() {
     currentLocks,
     data,
     decisionBrief,
+    deployment,
     deleteScenario,
     disclosuresOpen,
     dropRevealed,
@@ -809,7 +872,7 @@ export function useShellState() {
     setCopyStatus,
     setCoverageFloor,
     setCoveragePolicy,
-    setData,
+    setArtifact,
     setDisclosuresOpen,
     setDropRevealed,
     setGuard,
@@ -833,6 +896,7 @@ export function useShellState() {
     setView,
     setWsTab,
     shareDraft,
+    shareRefusal,
     shareUrl,
     signal,
     stepComplete,
@@ -845,6 +909,7 @@ export function useShellState() {
     toggleLock,
     unmetByArea,
     unmetTotal,
+    unobservedAreaNames,
     view,
     wsTab,
   };

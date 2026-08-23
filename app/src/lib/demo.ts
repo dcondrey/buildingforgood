@@ -44,8 +44,60 @@ export interface ModelScore {
   selected: boolean;
 }
 
+/** One row a publisher reported after the freeze that no model may consume. */
+export interface ExcludedObservationRow {
+  month: string;
+  geography: string;
+  series: string;
+  value: number;
+  unit: string;
+  valueStatus: string;
+}
+
+/**
+ * Observations that exist and are deliberately not model inputs.
+ *
+ * Every string here is the artifact's own. Nothing in this shape may be
+ * rewritten in the interface: the exclusion has to read the way the people
+ * who made it wrote it.
+ */
+export interface ExcludedObservations {
+  headline: string;
+  summary: string;
+  grounds: string[];
+  promotionRule: string;
+  source: string;
+  months: string[];
+  unit: string;
+  excludedFrom: string[];
+  rows: ExcludedObservationRow[];
+}
+
+/**
+ * How current the artifact is, and what has been observed since it froze.
+ *
+ * `null` on `DemoData` means the artifact predates this block — the embedded
+ * offline snapshot does — and the interface says "currency unknown" rather
+ * than implying freshness it cannot check.
+ */
+export interface ArtifactCurrency {
+  sourceDataThrough: string;
+  asOf: string;
+  status: "current" | "stale";
+  stalenessReason: string;
+  nextPublication: {
+    month: string;
+    basis: string;
+    scheduled: boolean;
+    note: string;
+  } | null;
+  excluded: ExcludedObservations | null;
+}
+
 export interface DemoData {
   origin: "generated" | "embedded";
+  /** Null when the artifact carries no currency block. Never inferred. */
+  currency: ArtifactCurrency | null;
   source: { label: string; retrievedAt: string; artifact: string };
   scenario: {
     id: string;
@@ -210,6 +262,9 @@ type UnknownRecord = Record<string, unknown>;
 
 export const EMBEDDED_DEMO: DemoData = {
   origin: "embedded",
+  // The embedded snapshot is compiled in and never refreshed, so it can make
+  // no currency claim at all. That is the honest value, not a placeholder.
+  currency: null,
   source: {
     label: "SD Downtown Homelessness hackathon-provided curated data",
     retrievedAt: "2025-12",
@@ -438,6 +493,90 @@ function displayModel(value: string): string {
     .replace(/\b\w/g, (letter) => letter.toUpperCase())
     .replace("Observed", "observed")
     .replace("Months", "months");
+}
+
+/**
+ * Read the artifact's currency block, or report that there is none.
+ *
+ * Absence is a first-class answer: the embedded offline snapshot has no
+ * currency block, and an artifact written before the monthly refresh existed
+ * has none either. Both degrade to `null`, which the interface renders as
+ * "currency unknown". Nothing here is inferred from a retrieval date — an
+ * inferred freshness claim is the failure this block exists to prevent.
+ */
+function parseCurrency(raw: UnknownRecord | null): ArtifactCurrency | null {
+  if (!raw) return null;
+  const status = raw.status;
+  if (status !== "current" && status !== "stale") return null;
+  const sourceDataThrough = text(raw.source_data_through, "");
+  if (!sourceDataThrough) return null;
+
+  const staleness = record(raw.staleness) ?? {};
+  const expected = record(raw.next_publication_expected);
+  const nextMonth = expected ? text(expected.month, "") : "";
+
+  return {
+    sourceDataThrough: displayMonth(sourceDataThrough),
+    asOf: displayMonth(text(raw.as_of, "").slice(0, 7)),
+    status,
+    stalenessReason: text(staleness.reason, ""),
+    nextPublication:
+      expected && nextMonth
+        ? {
+            month: displayMonth(nextMonth),
+            basis: text(expected.basis, ""),
+            scheduled: expected.source_publication_scheduled === true,
+            note: text(expected.source_publication_note, ""),
+          }
+        : null,
+    excluded: parseExcludedObservations(record(raw.observed_not_model_eligible)),
+  };
+}
+
+/**
+ * The observed-but-excluded lane.
+ *
+ * Fail-closed in one specific way: a row is displayed only when it declares
+ * `model_eligible: false`. A row that claims eligibility has no place in a
+ * lane whose entire meaning is exclusion, so it is dropped rather than shown
+ * under an exclusion heading it contradicts.
+ */
+function parseExcludedObservations(raw: UnknownRecord | null): ExcludedObservations | null {
+  if (!raw || raw.status !== "observed_not_model_eligible") return null;
+  const reason = record(raw.exclusion_reason) ?? {};
+  const rows = array(raw.rows)
+    .map((item): ExcludedObservationRow | null => {
+      const row = record(item);
+      if (!row || row.model_eligible !== false) return null;
+      const month = text(row.month, "");
+      if (!month || !finite(row.value)) return null;
+      return {
+        month: displayMonth(month),
+        geography: text(row.geography, ""),
+        series: text(row.series, ""),
+        value: row.value,
+        unit: text(row.unit, text(raw.unit, "")),
+        valueStatus: text(row.value_status, ""),
+      };
+    })
+    .filter((row): row is ExcludedObservationRow => row !== null);
+  if (rows.length === 0) return null;
+
+  return {
+    headline: text(raw.headline, ""),
+    summary: text(reason.summary, ""),
+    grounds: array(reason.grounds).filter((item): item is string => typeof item === "string"),
+    promotionRule: text(reason.promotion_rule, ""),
+    source: text(reason.source, ""),
+    months: array(raw.months)
+      .filter((item): item is string => typeof item === "string")
+      .map(displayMonth),
+    unit: text(raw.unit, ""),
+    excludedFrom: array(raw.excluded_from).filter(
+      (item): item is string => typeof item === "string",
+    ),
+    rows,
+  };
 }
 
 export function adaptDemoV1(input: unknown): DemoData | null {
@@ -909,6 +1048,7 @@ export function adaptDemoV1(input: unknown): DemoData | null {
 
   return {
     origin: "generated",
+    currency: parseCurrency(record(root.currency)),
     source: {
       label: text(generatedFrom.bundle, EMBEDDED_DEMO.source.label),
       retrievedAt: text(generatedFrom.source_data_through, EMBEDDED_DEMO.source.retrievedAt),

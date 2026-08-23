@@ -5,6 +5,7 @@ import {
   PlannerStart,
   ScenarioBench,
 } from "../../features/planner/PlannerPieces";
+import { GeographyProvenance } from "../../features/shell/GeographyProvenance";
 import { useShell } from "../../features/shell/ShellContext";
 import { AreaDetailPanel } from "../../features/spatial/AreaDetailPanel";
 import { AreaMap } from "../../features/spatial/AreaMap";
@@ -19,6 +20,7 @@ export function PlannerSection() {
     budgetValid,
     coverageFloor,
     data,
+    deployment,
     guardEnabled,
     intervention,
     interventionResult,
@@ -45,9 +47,9 @@ export function PlannerSection() {
           <p className="eyebrow">The staffing plan</p>
           <h2 id="planner-title">Plan {budget} staff-hours</h2>
           <p>
-            Split the hours across the six neighborhoods. First, every area gets a minimum you
-            choose, so no place goes unvisited. Whatever remains goes where the forecast expects the
-            most people.
+            Split the hours across the {deployment.areaCountWord} {deployment.areaNounPlural}.
+            First, every area gets a minimum you choose, so no place goes unvisited. Whatever
+            remains goes where the forecast expects the most people.
           </p>
         </div>
         <div className={`guard-status ${guardEnabled ? "guard-on" : "guard-off"}`}>
@@ -84,15 +86,15 @@ export function PlannerSection() {
             <div className="plan-map-heading">
               <span className="eyebrow">The plan on the map</span>
               <p>
-                Every neighborhood keeps its guaranteed minimum; the extra hours go where the
-                forecast expects the most people.
+                Every {deployment.areaNoun} keeps its guaranteed minimum; the extra hours go where
+                the forecast expects the most people.
               </p>
             </div>
             <div className="map-detail-row">
               <div>
                 <AreaMap
                   areas={planningAreas}
-                  ariaLabel="Map of the six downtown neighborhoods showing planned staff-hours; select a neighborhood for detail"
+                  ariaLabel={`Map of the ${deployment.areaCountWord} ${deployment.areaNounPlural} showing planned staff-hours; select one for detail`}
                   onSelect={toggleAreaSelection}
                   selectedId={selectedAreaId}
                   valueFor={(area) => {
@@ -163,6 +165,7 @@ export function PlannerSection() {
               />
             </div>
             <InterventionControl />
+            <GeographyProvenance />
             <MapValueTable
               caption="Planned staff-hours by neighborhood"
               rows={planningAreas.map((area) => {

@@ -45,6 +45,11 @@ export interface PlanShareState {
   assume: string | null;
   /** Operator-set loaded cost of one staff-hour. */
   rate: number;
+  /**
+   * The organization profile's `geography.area_list.version`. A plan is only
+   * a plan against a named list of areas, so the list travels with it.
+   */
+  geography: string;
 }
 
 /** The complete set of fields a link may carry. Adding one is a deliberate act. */
@@ -56,6 +61,7 @@ export const SHARE_STATE_KEYS = [
   "share",
   "assume",
   "rate",
+  "geography",
 ] as const;
 
 /** The complete set of query parameters a link may use. */
@@ -84,7 +90,9 @@ const PERSON_OR_POINT_SEGMENT =
   /^(id|lat|lon|lng|latitude|longitude|coord|coords|coordinates|geometry|block|blockid|parcel|parcelid|address|street|streetaddress|email|phone|ssn|dob|dateofbirth|name|firstname|lastname|fullname|person|personid|personname|client|clientid|clientname|patient|case|caseid|household|householdid|user|userid|uuid|guid)$/;
 
 /** Every character legal in a value this module writes, unescaped. */
-const SAFE_PARAM_VALUE = /^[A-Za-z0-9_.:,-]+$/;
+const SAFE_PARAM_VALUE = /^[A-Za-z0-9_.:,/-]+$/;
+/** An area-list version string, e.g. `dsdp-core-six/2026-08-21`. */
+const AREA_LIST_VERSION_SHAPE = /^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,63}$/;
 const WHOLE_NUMBER = /^\d{1,6}$/;
 const DECIMAL_NUMBER = /^\d{1,6}(\.\d{1,2})?$/;
 
@@ -183,6 +191,14 @@ export function assertShareable(candidate: unknown): PlanShareState {
   }
   const rate = Math.round(candidate.rate * 100) / 100;
 
+  if (
+    typeof candidate.geography !== "string" ||
+    !AREA_LIST_VERSION_SHAPE.test(candidate.geography)
+  ) {
+    throw new PlanShareError("geography", "must be a versioned area-list identifier");
+  }
+  const geography = candidate.geography;
+
   return {
     budget,
     floor,
@@ -191,7 +207,30 @@ export function assertShareable(candidate: unknown): PlanShareState {
     share,
     assume,
     rate,
+    geography,
   };
+}
+
+/**
+ * Refuse a link built against a different list of areas.
+ *
+ * Hour counts and area ids mean nothing on their own: `east_village: 40` is a
+ * different instruction against a different geography, and a deployment that
+ * has no `east_village` would otherwise redistribute those forty hours and
+ * say nothing. Refused the same way a version mismatch is, and for the same
+ * reason — the reader must not be shown a plan the sender did not build.
+ */
+export function assertGeographyMatches(
+  state: PlanShareState,
+  areaListVersion: string,
+): PlanShareState {
+  if (state.geography !== areaListVersion) {
+    throw new PlanShareError(
+      "geography",
+      `names area list ${state.geography}; this deployment plans against ${areaListVersion}`,
+    );
+  }
+  return state;
 }
 
 /**
@@ -208,13 +247,14 @@ export function encodePlanShare(state: PlanShareState): string {
     ["floor", String(safe.floor)],
     ["guard", safe.guard ? "on" : "off"],
   ];
-  // All seven are always written, empty ones included, so that a parameter
+  // All eight are always written, empty ones included, so that a parameter
   // missing on arrival means the link was truncated or mangled rather than
   // meaning "the sender had none". The decoder refuses on absence.
   pairs.push(["locks", safe.locks.map(([areaId, hours]) => `${areaId}:${hours}`).join(",")]);
   pairs.push(["share", String(Math.round(safe.share * 100))]);
   pairs.push(["assume", safe.assume ?? ""]);
   pairs.push(["rate", String(safe.rate)]);
+  pairs.push(["geography", safe.geography]);
 
   for (const [key, value] of pairs) {
     if (!ALLOWED_PARAM_KEYS.has(key)) throw new PlanShareError(key, "is not a shareable parameter");
@@ -270,8 +310,8 @@ export function decodePlanShare(search: string): PlanShareState | null {
     throw new PlanShareError("guard", "must be on or off");
   }
 
-  // Every one of the seven fields is required. encodePlanShare always writes
-  // all seven, so a link missing one was not produced by this system, and
+  // Every one of the eight fields is required. encodePlanShare always writes
+  // all eight, so a link missing one was not produced by this system, and
   // defaulting the absent ones diverges the reader's plan from the sender's
   // without saying so: a dropped `rate` silently reinstates the placeholder
   // rate the cost copy tells a finance lead to replace, and a dropped `share`
@@ -303,6 +343,9 @@ export function decodePlanShare(search: string): PlanShareState | null {
     throw new PlanShareError("rate", "must be a number");
   }
 
+  const rawGeography = single(params, "geography");
+  if (rawGeography === null) throw new PlanShareError("geography", "is missing from the link");
+
   // The same gate the encoder passed through, applied to values a stranger
   // may have typed by hand.
   return assertShareable({
@@ -313,6 +356,7 @@ export function decodePlanShare(search: string): PlanShareState | null {
     share: sharePercent / 100,
     assume,
     rate: Number(rawRate),
+    geography: rawGeography,
   });
 }
 

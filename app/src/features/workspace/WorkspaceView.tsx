@@ -20,6 +20,7 @@ export function WorkspaceView() {
     compareById,
     coverageFloor,
     data,
+    deployment,
     guardEnabled,
     intervention,
     interventionResult,
@@ -67,10 +68,10 @@ export function WorkspaceView() {
           areas={mapLayer === "change" ? data.areas : planningAreas}
           ariaLabel={
             mapLayer === "hours"
-              ? "Map of the six downtown neighborhoods showing planned staff-hours; select a neighborhood for detail"
+              ? `Map of the ${deployment.areaCountWord} ${deployment.areaNounPlural} showing planned staff-hours; select one for detail`
               : mapLayer === "change"
-                ? "Map of the six downtown neighborhoods showing the change in raw field observations; select a neighborhood for detail"
-                : "Map of the six downtown neighborhoods showing unmet planning load in hours; select a neighborhood for detail"
+                ? `Map of the ${deployment.areaCountWord} ${deployment.areaNounPlural} showing the change in raw field observations; select one for detail`
+                : `Map of the ${deployment.areaCountWord} ${deployment.areaNounPlural} showing unmet planning load in hours; select one for detail`
           }
           onSelect={(areaId) => {
             toggleAreaSelection(areaId);

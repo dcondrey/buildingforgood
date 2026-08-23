@@ -1,4 +1,3 @@
-import { DEFAULT_COVERAGE_FLOOR } from "../../lib/constants";
 import type { DemoData } from "../../lib/demo";
 import { formatNumber } from "../../lib/format";
 
@@ -27,7 +26,19 @@ export type GuideStep = {
   task?: string;
 };
 
-export function buildGuideSteps(data: DemoData): GuideStep[] {
+/**
+ * What the loaded organization profile calls its places, and the floor it
+ * ships. Passed in rather than imported so the guide narrates whichever
+ * geography is running instead of a hardcoded six.
+ */
+export interface GuidePlaces {
+  countWord: string;
+  noun: string;
+  nounPlural: string;
+  coverageFloor: number;
+}
+
+export function buildGuideSteps(data: DemoData, places: GuidePlaces): GuideStep[] {
   const individuals = data.signal.components.individuals;
   const structures = data.signal.components.structures;
   const individualSpatial = data.signal.componentDistribution?.components.find(
@@ -67,34 +78,34 @@ export function buildGuideSteps(data: DemoData): GuideStep[] {
       id: "generate",
       title: "The plan is already on the table",
       targetId: "planner",
-      body: `The tool opened mid-work: ${data.scenario.defaultBudget} assumed staff-hours are already split across the six neighborhoods — every area keeps the guaranteed minimum you set, and the rest follows where more people are expected. Change the budget or the floor and it recomputes instantly. It proposes; it never dispatches.`,
+      body: `The tool opened mid-work: ${data.scenario.defaultBudget} assumed staff-hours are already split across the ${places.countWord} ${places.nounPlural} — every area keeps the guaranteed minimum you set, and the rest follows where more people are expected. Change the budget or the floor and it recomputes instantly. It proposes; it never dispatches.`,
     },
     {
       id: "compare",
       title: "See what the minimum protects",
       targetId: "planner",
       task: "Select the “0h · no minimum” floor.",
-      body: "With no minimum, hours follow the forecast alone and some neighborhoods are left with almost nothing. That view is an audit of the tradeoff, never a recommendation.",
+      body: `With no minimum, hours follow the forecast alone and some ${places.nounPlural} are left with almost nothing. That view is an audit of the tradeoff, never a recommendation.`,
     },
     {
       id: "restore",
       title: "Never leave the audit view on",
       targetId: "planner",
-      task: `Select the “${DEFAULT_COVERAGE_FLOOR}h · default” floor to restore the minimum.`,
-      body: "Restoring the minimum guarantees every neighborhood keeps a visit. The floor is a visible policy you chose, not something the model learned.",
+      task: `Select the “${places.coverageFloor}h · default” floor to restore the minimum.`,
+      body: `Restoring the minimum guarantees every ${places.noun} keeps a visit. The floor is a visible policy you chose, not something the model learned.`,
     },
     {
       id: "lock",
       title: "Override it like a coordinator",
       targetId: "planner",
-      task: `Lock a neighborhood (try ${firstArea}), then press “Recompute unlocked hours”.`,
+      task: `Lock ${places.noun === "area" ? "an" : "a"} ${places.noun} (try ${firstArea}), then press “Recompute unlocked hours”.`,
       body: "Local knowledge outranks the model. A locked line is preserved exactly and disclosed in the brief; recomputing rebalances only the unlocked hours and never silently repairs your choice.",
     },
     {
       id: "explore",
       title: "Stress-test the obvious action",
       targetId: "planner",
-      task: "Select a neighborhood on the plan map, then press “Explore this assumption”.",
+      task: `Select ${places.noun === "area" ? "an" : "a"} ${places.noun} on the plan map, then press “Explore this assumption”.`,
       body: "The most reached-for action is a clearance. Here you audit one honestly: you state how much of that area's load shifts next door instead of being resolved, and the plan reacts. No setting makes the need smaller without assuming it away in the open — the data cannot show who moves where, and this tool refuses to pretend otherwise.",
     },
     {

@@ -12,6 +12,7 @@ export function DropTestSection() {
   const {
     classificationLabel,
     data,
+    deployment,
     dropRevealed,
     individualOne,
     individualSpatial,
@@ -344,7 +345,7 @@ export function DropTestSection() {
                   <div>
                     <AreaMap
                       areas={data.areas}
-                      ariaLabel="Map of the six downtown neighborhoods showing the change in raw field observations; select a neighborhood for detail"
+                      ariaLabel={`Map of the ${deployment.areaCountWord} ${deployment.areaNounPlural} showing the change in raw field observations; select one for detail`}
                       onSelect={toggleAreaSelection}
                       selectedId={selectedAreaId}
                       valueFor={(area) => {

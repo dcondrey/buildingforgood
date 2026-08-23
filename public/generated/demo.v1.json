@@ -1,4 +1,248 @@
 {
+  "currency": {
+    "as_of": "2026-08-23",
+    "generated_at": "2026-08-23T00:00:00Z",
+    "is_stale": true,
+    "next_publication_expected": {
+      "basis": "this project's monthly operator refresh cadence",
+      "cadence": {
+        "months": 1
+      },
+      "month": "2026-09",
+      "source_publication_note": "DSDP moved to an irregular quarterly cadence in late 2025 and does not announce publication dates in advance; the month in this block is this project's own refresh cadence, not a publisher commitment.",
+      "source_publication_scheduled": false
+    },
+    "observed_not_model_eligible": {
+      "excluded_from": [
+        "demo_v1_training",
+        "demo_v1_forecast_selection",
+        "demo_v1_planner"
+      ],
+      "exclusion_reason": {
+        "grounds": [
+          "DSDP moved to an irregular quarterly cadence in late 2025.",
+          "2026 counts were run dually on paper and a piloted application.",
+          "At least one 2026 count was redone with differing results.",
+          "The 2026 count months themselves are contested: the DSDP dashboard labels 1,092 as \u201cQ1 2026,\u201d while the source PDF places that value in April and supplies no January\u2013March observation.",
+          "The values are multiplier-adjusted visual observations\u2014estimated person-equivalents, not unique people, verified service needs, or program outcomes."
+        ],
+        "promotion_rule": "Keep every row model_eligible=false. Promotion into training or planning requires a separate, documented model-version decision.",
+        "source": "data/monitoring/README.md",
+        "summary": "These are public monitoring checkpoints that postdate the frozen analytical snapshot. They are not model inputs and do not change the historical forecast replay or the planner."
+      },
+      "headline": "Observed after the frozen source window and deliberately excluded from every model and planner input.",
+      "months": [
+        "2026-04",
+        "2026-06"
+      ],
+      "rows": [
+        {
+          "geography": "East Village",
+          "model_eligible": false,
+          "month": "2026-04",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 571,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "City Center",
+          "model_eligible": false,
+          "month": "2026-04",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 209,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Columbia",
+          "model_eligible": false,
+          "month": "2026-04",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 38,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Marina",
+          "model_eligible": false,
+          "month": "2026-04",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 17,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Cortez",
+          "model_eligible": false,
+          "month": "2026-04",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 77,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Gaslamp",
+          "model_eligible": false,
+          "month": "2026-04",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 47,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Outside Perimeter",
+          "model_eligible": false,
+          "month": "2026-04",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 133,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Six-area downtown core",
+          "model_eligible": false,
+          "month": "2026-04",
+          "series": "six_area_core_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 959,
+          "value_status": "project_derived"
+        },
+        {
+          "geography": "DSDP published total",
+          "model_eligible": false,
+          "month": "2026-04",
+          "series": "seven_area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 1092,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "East Village",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 514,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "City Center",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 177,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Columbia",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 19,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Marina",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 8,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Cortez",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 75,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Gaslamp",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 48,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Outside Perimeter",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 114,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Six-area downtown core",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "six_area_core_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 841,
+          "value_status": "project_derived"
+        },
+        {
+          "geography": "DSDP published total",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "seven_area_total",
+          "source_id": "dsdp_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 955,
+          "value_status": "publisher_reported"
+        }
+      ],
+      "source_ids": [
+        "dsdp_public_monthly_reports"
+      ],
+      "status": "observed_not_model_eligible",
+      "unit": "estimated_person_equivalents"
+    },
+    "refresh": {
+      "inputs": {
+        "demo.v1.json": "fe6440b4d9c624922af532ad6e8becb2f2253ad39701446439bf1e7c22a4d033",
+        "dsdp_public_checkpoints.csv": "6b5490b15389448b02e7e493a15b4b14ba6a21e3437c8fcaa6bd5d57a7c30f6b"
+      },
+      "mode": "published",
+      "pins_verified": true
+    },
+    "source_data_through": "2025-12",
+    "staleness": {
+      "elapsed": {
+        "months": 8
+      },
+      "reason": "Source data runs through 2025-12; 8 months have elapsed as of 2026-08, past the 2-month freshness threshold.",
+      "threshold": {
+        "months": 2
+      }
+    },
+    "status": "stale"
+  },
   "evidence": {
     "balanced_panel": {
       "active_blocks": {

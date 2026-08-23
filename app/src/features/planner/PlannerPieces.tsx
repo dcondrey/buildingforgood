@@ -3,7 +3,6 @@ import { CostAssumptionControl, PlanCostSummary } from "../../features/cost/Cost
 import { ExportActions } from "../../features/export/ExportActions";
 import { ShareLink } from "../../features/share/ShareLink";
 import { useShell } from "../../features/shell/ShellContext";
-import { DEFAULT_COVERAGE_FLOOR, MAX_BUDGET_HOURS } from "../../lib/constants";
 import { formatNumber } from "../../lib/format";
 
 export function PlanState() {
@@ -45,6 +44,7 @@ export function PlannerControls() {
     budgetValid,
     coverageFloor,
     data,
+    deployment,
     guardEnabled,
     plan,
     setBudgetHours,
@@ -59,10 +59,10 @@ export function PlannerControls() {
       >
         <div>
           <span className="eyebrow">You set this · the tool never picks it</span>
-          <strong>Guaranteed minimum hours for every neighborhood</strong>
+          <strong>Guaranteed minimum hours for every {deployment.areaNoun}</strong>
         </div>
         <div className="floor-options">
-          {[0, 4, 8].map((floor) => (
+          {deployment.floorOptions.map((floor) => (
             <button
               aria-pressed={floor === 0 ? !guardEnabled : guardEnabled && coverageFloor === floor}
               className={`floor-option ${floor === 0 ? (!guardEnabled ? "active" : "") : guardEnabled && coverageFloor === floor ? "active" : ""}`}
@@ -71,7 +71,13 @@ export function PlannerControls() {
               type="button"
             >
               <strong>{floor}h</strong>
-              <span>{floor === 0 ? "no minimum" : floor === 8 ? "default" : "compare"}</span>
+              <span>
+                {floor === 0
+                  ? "no minimum"
+                  : floor === deployment.coverageFloor
+                    ? "default"
+                    : "compare"}
+              </span>
             </button>
           ))}
         </div>
@@ -79,8 +85,8 @@ export function PlannerControls() {
       <p aria-live="polite" className="policy-lens">
         <strong>Policy lens:</strong>{" "}
         {coverageFloor === 0
-          ? "with no minimum, hours follow the forecast alone. Use this to see which neighborhoods would be left with almost nothing; it is a comparison view, not a recommendation."
-          : `${data.areas.length * coverageFloor} of ${budget} hours are set aside first (${coverageFloor} per neighborhood); the rest follows the forecast.`}
+          ? `with no minimum, hours follow the forecast alone. Use this to see which ${deployment.areaNounPlural} would be left with almost nothing; it is a comparison view, not a recommendation.`
+          : `${data.areas.length * coverageFloor} of ${budget} hours are set aside first (${coverageFloor} per ${deployment.areaNoun}); the rest follows the forecast.`}
       </p>
 
       {plan && (
@@ -92,10 +98,10 @@ export function PlannerControls() {
             <input
               aria-describedby="whatif-help"
               id="whatif-budget"
-              max={MAX_BUDGET_HOURS}
-              min="0"
+              max={deployment.maxBudget}
+              min={deployment.minBudget}
               onChange={(event) => setBudgetHours(Number(event.target.value))}
-              step="1"
+              step={deployment.allocationIncrement}
               type="range"
               value={budgetValid ? budget : 0}
             />
@@ -198,7 +204,7 @@ export function ScenarioBench() {
 }
 
 export function PlannerStart() {
-  const { budget, budgetValid, coverageFloor, data, runPlan } = useShell();
+  const { budget, budgetValid, coverageFloor, data, deployment, runPlan } = useShell();
   return (
     <div className="planner-start">
       <div className="constraint-equation">
@@ -227,7 +233,8 @@ export function PlannerStart() {
       </button>
       {!budgetValid && (
         <p className="budget-invalid" role="status">
-          Enter a whole number of hours between 0 and {MAX_BUDGET_HOURS} to generate a plan.
+          Enter a whole number of hours between {deployment.minBudget} and {deployment.maxBudget} to
+          generate a plan.
         </p>
       )}
     </div>
@@ -236,6 +243,7 @@ export function PlannerStart() {
 
 export function PlanRows() {
   const {
+    deployment,
     allocationById,
     auditedAreaWapes,
     auditedAreas,
@@ -264,6 +272,12 @@ export function PlanRows() {
     unmetByArea,
   } = useShell();
   if (!plan?.feasible) return null;
+  // The planner's own sentence, with the deployment's word for its places.
+  // The numbers stay the planner's — only the noun is swapped, because
+  // `allocateHours` writes "neighborhoods" and its exact text is pinned by
+  // lib/planner.characterization.test.ts. A profile that plans service areas
+  // must not be told it plans neighborhoods.
+  const planSentence = plan.message.replace(" neighborhoods ", ` ${deployment.areaNounPlural} `);
   return (
     <>
       <div className="plan-toolbar">
@@ -271,7 +285,7 @@ export function PlanRows() {
           <strong>
             {planTotal}/{budget} hours allocated.
           </strong>{" "}
-          {plan.message}
+          {planSentence}
         </p>
         <div>
           <button
@@ -281,7 +295,7 @@ export function PlanRows() {
           >
             {guardEnabled
               ? "Compare with no minimum"
-              : `Restore the ${coverageFloor || DEFAULT_COVERAGE_FLOOR}h minimum`}
+              : `Restore the ${coverageFloor || deployment.coverageFloor}h minimum`}
           </button>
           <button
             className="button button-quiet"
@@ -302,7 +316,7 @@ export function PlanRows() {
           <strong>Comparison view, not a recommendation.</strong>{" "}
           {coverageFloor > 0
             ? `With no minimum enforced, areas below ${coverageFloor}h would lose their guaranteed visit.`
-            : "This shows what happens with no guaranteed minimum: some neighborhoods get almost nothing."}
+            : `This shows what happens with no guaranteed minimum: some ${deployment.areaNounPlural} get almost nothing.`}
         </div>
       )}
 

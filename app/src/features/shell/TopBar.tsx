@@ -1,12 +1,13 @@
 import { SparkIcon } from "../../components/Icons";
+import { CurrencyBadge } from "../currency/CurrencyBadge";
 import { useShell } from "../../features/shell/ShellContext";
-import { MAX_BUDGET_HOURS } from "../../lib/constants";
 
 export function TopBar() {
   const {
     beginGuide,
     budget,
     data,
+    deployment,
     disclosuresOpen,
     guideUsed,
     projectorMode,
@@ -34,6 +35,7 @@ export function TopBar() {
           <span className="eyebrow">Decision horizon</span>
           <strong>{data.scenario.decisionHorizon}</strong>
         </div>
+        <CurrencyBadge />
         <label className="budget-control" htmlFor="budget-hours">
           <span className="eyebrow">Available capacity</span>
           <span className="budget-input-wrap">
@@ -42,9 +44,9 @@ export function TopBar() {
               aria-describedby="budget-help"
               id="budget-hours"
               inputMode="numeric"
-              max={MAX_BUDGET_HOURS}
-              min="0"
-              step="1"
+              max={deployment.maxBudget}
+              min={deployment.minBudget}
+              step={deployment.allocationIncrement}
               onChange={(event) => setBudgetHours(Number(event.target.value))}
               type="number"
               value={budget}
@@ -52,8 +54,8 @@ export function TopBar() {
             <span>hours</span>
           </span>
           <span className="sr-only" id="budget-help">
-            Enter a whole number from 0 to 400. This is a demonstration scenario, not staffing
-            capacity data.
+            Enter a whole number from {deployment.minBudget} to {deployment.maxBudget}. This is a
+            demonstration scenario, not staffing capacity data.
           </span>
         </label>
         <div aria-label="View" className="view-toggle" role="group">

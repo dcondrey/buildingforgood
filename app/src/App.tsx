@@ -6,6 +6,7 @@ import { ForecastSection } from "./features/forecast/ForecastSection";
 import { GuidePanel } from "./features/guide/GuidePanel";
 import { DisclosurePanel } from "./features/shell/DisclosurePanel";
 import { PlannerSection } from "./features/planner/PlannerSection";
+import { ShareRefusalNotice } from "./features/shell/ShareRefusalNotice";
 import { ShellProvider } from "./features/shell/ShellContext";
 import { SiteFooter } from "./features/shell/SiteFooter";
 import { TopBar } from "./features/shell/TopBar";
@@ -23,6 +24,8 @@ function App() {
         </a>
 
         <TopBar />
+
+        <ShareRefusalNotice />
 
         {disclosuresOpen && <DisclosurePanel />}
 

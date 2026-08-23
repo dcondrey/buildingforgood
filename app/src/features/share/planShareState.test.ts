@@ -13,6 +13,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   PlanShareError,
+  assertGeographyMatches,
   assertShareable,
   decodePlanShare,
   encodePlanShare,
@@ -32,13 +33,14 @@ const PLAN: PlanShareState = {
   share: 0.4,
   assume: "east_village",
   rate: 95,
+  geography: "dsdp-core-six/2026-08-21",
 };
 
 describe("plan share links", () => {
   it("round-trips a plan through a readable query string", () => {
     const query = encodePlanShare(PLAN);
     expect(query).toBe(
-      "v=1&budget=120&floor=8&guard=on&locks=east_village:16,gaslamp:12&share=40&assume=east_village&rate=95",
+      "v=1&budget=120&floor=8&guard=on&locks=east_village:16,gaslamp:12&share=40&assume=east_village&rate=95&geography=dsdp-core-six/2026-08-21",
     );
     expect(decodePlanShare(query)).toEqual(PLAN);
     expect(decodePlanShare(`?${query}`)).toEqual(PLAN);
@@ -53,13 +55,14 @@ describe("plan share links", () => {
       share: 1,
       assume: null,
       rate: 45,
+      geography: "coldwater-valley-illustrative/2026-08-23",
     };
     expect(decodePlanShare(encodePlanShare(plain))).toEqual(plain);
   });
 
   it("builds an absolute link and drops any query the page already carried", () => {
     expect(planShareUrl(PLAN, "https://example.org/tool/?stale=1#top")).toBe(
-      "https://example.org/tool/?v=1&budget=120&floor=8&guard=on&locks=east_village:16,gaslamp:12&share=40&assume=east_village&rate=95",
+      "https://example.org/tool/?v=1&budget=120&floor=8&guard=on&locks=east_village:16,gaslamp:12&share=40&assume=east_village&rate=95&geography=dsdp-core-six/2026-08-21",
     );
   });
 
@@ -73,6 +76,8 @@ describe("plan share links", () => {
     expect(restored).toEqual(PLAN);
   });
 });
+
+const GEO = PLAN.geography;
 
 describe("the shareable allowlist", () => {
   it("refuses to encode a field that is not on the allowlist", () => {
@@ -116,25 +121,50 @@ describe("the shareable allowlist", () => {
       "v=1&floor=8&guard=on",
       // Every field omitted in turn, from a link that is otherwise complete.
       // An independent review found this test asserted the property only on
-      // the four fields that already refused: the name promised seven, the
+      // the four fields that already refused: the name promised all of them, the
       // body checked four, and dropping rate, share, or locks was accepted
       // silently with a substituted value.
-      "v=1&floor=8&guard=on&locks=&share=40&assume=&rate=95",
-      "v=1&budget=120&guard=on&locks=&share=40&assume=&rate=95",
-      "v=1&budget=120&floor=8&locks=&share=40&assume=&rate=95",
-      "v=1&budget=120&floor=8&guard=on&share=40&assume=&rate=95",
-      "v=1&budget=120&floor=8&guard=on&locks=&assume=&rate=95",
-      "v=1&budget=120&floor=8&guard=on&locks=&share=40&rate=95",
-      "v=1&budget=120&floor=8&guard=on&locks=&share=40&assume=",
+      `v=1&floor=8&guard=on&locks=&share=40&assume=&rate=95&geography=${GEO}`,
+      `v=1&budget=120&guard=on&locks=&share=40&assume=&rate=95&geography=${GEO}`,
+      `v=1&budget=120&floor=8&locks=&share=40&assume=&rate=95&geography=${GEO}`,
+      `v=1&budget=120&floor=8&guard=on&share=40&assume=&rate=95&geography=${GEO}`,
+      `v=1&budget=120&floor=8&guard=on&locks=&assume=&rate=95&geography=${GEO}`,
+      `v=1&budget=120&floor=8&guard=on&locks=&share=40&rate=95&geography=${GEO}`,
+      `v=1&budget=120&floor=8&guard=on&locks=&share=40&assume=&geography=${GEO}`,
+      "v=1&budget=120&floor=8&guard=on&locks=&share=40&assume=&rate=95",
       // Six realistic manglings of a link that left the sender intact.
       "v=1&budget=120&floor=8&guard=on&locks=east_village:16,gasl",
-      "v=1&amp;budget=120&amp;floor=8&amp;guard=on&amp;locks=&amp;share=40&amp;assume=&amp;rate=95",
-      "v=1&budget=120&floor=8&guard=on&locks=&share=40&assume=&rate=95.",
-      "v=1&budget=120&floor=8&guard=on&locks=&share=40&assume=&rate=95>",
+      `v=1&amp;budget=120&amp;floor=8&amp;guard=on&amp;locks=&amp;share=40&amp;assume=&amp;rate=95&amp;geography=${GEO}`,
+      `v=1&budget=120&floor=8&guard=on&locks=&share=40&assume=&rate=95.&geography=${GEO}`,
+      `v=1&budget=120&floor=8&guard=on&locks=&share=40&assume=&rate=95>&geography=${GEO}`,
     ];
     for (const search of handEdited) {
       expect(() => decodePlanShare(search), search).toThrow(PlanShareError);
       expect(readPlanShareFromSearch(search), search).toBeNull();
     }
+  });
+});
+
+describe("the area list a link was built against", () => {
+  it("accepts a link built against the same area list", () => {
+    const restored = decodePlanShare(encodePlanShare(PLAN)) as PlanShareState;
+    expect(assertGeographyMatches(restored, PLAN.geography)).toEqual(PLAN);
+  });
+
+  it("refuses a link built against a different area list, naming both", () => {
+    const restored = decodePlanShare(encodePlanShare(PLAN)) as PlanShareState;
+    expect(() =>
+      assertGeographyMatches(restored, "coldwater-valley-illustrative/2026-08-23"),
+    ).toThrow(PlanShareError);
+    expect(() =>
+      assertGeographyMatches(restored, "coldwater-valley-illustrative/2026-08-23"),
+    ).toThrow(/dsdp-core-six\/2026-08-21.*coldwater-valley-illustrative\/2026-08-23/);
+  });
+
+  it("refuses a geography value this module would not have written", () => {
+    expect(() => encodePlanShare({ ...PLAN, geography: "" })).toThrow(/versioned area-list/);
+    expect(() => encodePlanShare({ ...PLAN, geography: "has space" })).toThrow(
+      /versioned area-list/,
+    );
   });
 });

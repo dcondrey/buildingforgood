@@ -1,4 +1,5 @@
 import { CheckIcon } from "../../components/Icons";
+import { CurrencyPanel } from "../currency/CurrencyPanel";
 import { ForecastChart } from "../../features/forecast/ForecastChart";
 import { useShell } from "../../features/shell/ShellContext";
 import { formatNumber } from "../../lib/format";
@@ -12,7 +13,7 @@ export function ForecastSection() {
       </div>
       <div className="section-intro split-intro">
         <div>
-          <p className="eyebrow">Forecast rehearsal · only past data used</p>
+          <p className="eyebrow">Forecast rehearsal · methods exhibit · only past data used</p>
           <h2 id="forecast-title">Could we have predicted January 2026?</h2>
           <p>
             Using only data available in December 2025, the tool forecasts the next month, then
@@ -158,6 +159,8 @@ export function ForecastSection() {
           {data.forecast.intervalPoints} folds; it is not a guaranteed 80% probability statement.
         </p>
       </details>
+
+      <CurrencyPanel />
     </section>
   );
 }

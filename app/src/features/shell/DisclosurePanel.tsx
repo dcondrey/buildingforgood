@@ -2,7 +2,7 @@ import { useShell } from "../../features/shell/ShellContext";
 import { formatDate } from "../../lib/format";
 
 export function DisclosurePanel() {
-  const { data, setDisclosuresOpen } = useShell();
+  const { data, deployment, setDisclosuresOpen } = useShell();
   return (
     <aside
       aria-label="Data and limitation disclosures"
@@ -19,6 +19,18 @@ export function DisclosurePanel() {
           <dd>{data.source.label}</dd>
         </div>
         <div>
+          <dt>Currency</dt>
+          <dd>
+            {data.currency
+              ? `Source data through ${data.currency.sourceDataThrough}; ${
+                  data.currency.status === "stale"
+                    ? "publication overdue"
+                    : "publication on cadence"
+                }.`
+              : "This artifact states no currency. Freshness is unknown and is not inferred."}
+          </dd>
+        </div>
+        <div>
           <dt>Coverage through</dt>
           <dd>{formatDate(data.source.retrievedAt)}</dd>
         </div>
@@ -26,6 +38,25 @@ export function DisclosurePanel() {
           <dt>Loaded from</dt>
           <dd>
             <code>{data.source.artifact}</code>
+          </dd>
+        </div>
+        <div>
+          <dt>Organization profile</dt>
+          <dd>
+            {deployment.organizationName} · <code>{deployment.profileId}</code>. Owned by the{" "}
+            {deployment.ownerRole.toLowerCase()}.
+          </dd>
+        </div>
+        <div>
+          <dt>Operating parameters</dt>
+          <dd>
+            {deployment.areaCount} {deployment.areaNounPlural} in scope; {deployment.defaultBudget}
+            -staff-hour default budget over the {deployment.planningHorizonLabel} (
+            {deployment.planningHorizonDays} days); {deployment.coverageFloor}h coverage floor;{" "}
+            {deployment.continuityReserve}h continuity reserve; {deployment.allocationIncrement}
+            -hour allocation increments; {deployment.teamCount} teams on{" "}
+            {deployment.shiftLengthHours}-hour shifts. Every one of these is a profile value, not a
+            constant in this build.
           </dd>
         </div>
         <div>

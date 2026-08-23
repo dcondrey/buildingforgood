@@ -8,7 +8,7 @@ audit, any contract or privacy violation aborts before a single byte is
 written, so a stale-but-honest artifact is never replaced by a fresh-looking
 wrong one.
 
-Two input modes:
+Three input modes:
 
 ``--source bundle``
     Rebuild the artifact from the organizer bundle in ``data/raw``. Requires
@@ -18,6 +18,20 @@ Two input modes:
     Read a committed synthetic base artifact and monitoring table. Works from
     a clean checkout with no network and no bundle; this is what the golden
     test exercises.
+
+``--source published``
+    Re-derive currency for the artifact that is already published, without
+    rebuilding it. Everything the currency block needs is already in the
+    repository: ``generated_from.source_data_through`` from the artifact
+    itself, the tracked monitoring transcription, and the clock.
+
+    This mode is weaker than ``bundle`` and says so: it does **not** re-verify
+    the artifact against the raw inputs, because those inputs are not in the
+    repository. It therefore refuses to change any analytical value — the
+    document it writes must be byte-identical to the one it read except for
+    the ``currency`` key, and it aborts if that is not true. Use it to answer
+    "what does this say about this month" when a full rebuild is not
+    available; use ``bundle`` when it is.
 
 Run from the repository root::
 
@@ -30,6 +44,7 @@ import argparse
 import csv
 import hashlib
 import json
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -49,6 +64,7 @@ CHECKSUM_FILE = "checksums.sha256"
 CARDS_DEFAULT = Path("data/cards")
 RAW_DEFAULT = Path("data/raw/hackathon_provided")
 OUT_DEFAULT = Path("public/generated/demo.v1.json")
+PUBLISHED_DEFAULT = Path("public/generated/demo.v1.json")
 
 DEFAULT_CADENCE_MONTHS = 1
 DEFAULT_STALENESS_THRESHOLD_MONTHS = 2
@@ -423,6 +439,7 @@ def run_refresh(
     raw_dir: Path = RAW_DEFAULT,
     cards_dir: Path = CARDS_DEFAULT,
     fixture_dir: Path = FIXTURE_DEFAULT,
+    published_path: Path = PUBLISHED_DEFAULT,
     monitoring_path: Path = MONITORING_DEFAULT,
     out_path: Path = OUT_DEFAULT,
     as_of: date | None = None,
@@ -432,7 +449,7 @@ def run_refresh(
     dry_run: bool = False,
 ) -> dict[str, Any]:
     """Audit, rebuild, contract-check and (unless dry run) write the artifact."""
-    if source not in {"bundle", "fixture"}:
+    if source not in {"bundle", "fixture", "published"}:
         raise RefreshError(f"unknown source mode {source!r}")
     if cadence_months < 1:
         raise RefreshError("cadence must be at least one month")
@@ -441,7 +458,24 @@ def run_refresh(
     when = as_of or datetime.now(UTC).date()
     stamp = generated_at or f"{when.isoformat()}T00:00:00Z"
 
-    if source == "fixture":
+    published_baseline: dict[str, Any] | None = None
+    if source == "published":
+        if not published_path.is_file():
+            raise RefreshError(
+                f"no published artifact at {published_path}. This mode re-derives currency "
+                "for an artifact that already exists; it does not build one."
+            )
+        table_path = monitoring_path
+        if not table_path.is_file():
+            raise RefreshError(f"monitoring table not found at {table_path}")
+        document = _load_base_document(published_path)
+        published_baseline = deepcopy(document)
+        published_baseline.pop(CURRENCY_KEY, None)
+        verified = {
+            published_path.name: _sha256(published_path),
+            table_path.name: _sha256(table_path),
+        }
+    elif source == "fixture":
         pins = _load_pins(fixture_dir / CHECKSUM_FILE)
         base_path = fixture_dir / FIXTURE_BASE_FILE
         table_path = fixture_dir / FIXTURE_MONITORING_FILE
@@ -489,6 +523,17 @@ def run_refresh(
 
     assert_monitoring_isolated(document)
     try:
+        # `published` may only add the currency key. Anything else means the
+        # artifact was rebuilt, which this mode is explicitly not allowed to do.
+        if published_baseline is not None:
+            compare = deepcopy(document)
+            compare.pop(CURRENCY_KEY, None)
+            if compare != published_baseline:
+                raise RefreshError(
+                    "published mode changed an analytical value. It may only attach "
+                    "currency; rebuild with --source bundle instead."
+                )
+
         validate_demo_v1(document)
     except ContractViolation as error:
         raise RefreshError(f"contract violation: {error}") from None
@@ -519,10 +564,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Monthly refresh of the deployed demo artifact (run by a human).",
     )
-    parser.add_argument("--source", choices=("bundle", "fixture"), default="bundle")
+    parser.add_argument("--source", choices=("bundle", "fixture", "published"), default="bundle")
     parser.add_argument("--raw", type=Path, default=RAW_DEFAULT)
     parser.add_argument("--cards", type=Path, default=CARDS_DEFAULT)
     parser.add_argument("--fixture", type=Path, default=FIXTURE_DEFAULT)
+    parser.add_argument("--published", type=Path, default=PUBLISHED_DEFAULT)
     parser.add_argument("--monitoring", type=Path, default=MONITORING_DEFAULT)
     parser.add_argument("--out", type=Path, default=OUT_DEFAULT)
     parser.add_argument(
@@ -549,6 +595,7 @@ def main(argv: list[str] | None = None) -> int:
             raw_dir=args.raw,
             cards_dir=args.cards,
             fixture_dir=args.fixture,
+            published_path=args.published,
             monitoring_path=args.monitoring,
             out_path=args.out,
             as_of=args.as_of,

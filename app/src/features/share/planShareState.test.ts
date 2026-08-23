@@ -109,7 +109,18 @@ describe("the shareable allowlist", () => {
   });
 
   it("refuses a hand-edited link rather than restoring part of it", () => {
+    // `geography` is the last parameter, so it absorbs anything appended to
+    // the link. A sentence's trailing period and a quoted reply's ">" both
+    // used to decode successfully and surface later as a geography mismatch,
+    // which told the reader the wrong thing about why their link failed.
+    const INTACT =
+      "v=1&budget=120&floor=8&guard=on&locks=east_village:16&share=40" +
+      "&assume=east_village&rate=95&geography=dsdp-core-six/2026-08-21";
     const handEdited = [
+      INTACT + ".",
+      INTACT + ">",
+      INTACT.slice(0, 60),
+      INTACT.replace(/&/g, "&amp;"),
       "v=1&budget=notanumber&floor=8&guard=on",
       "v=1&budget=120&floor=8&guard=maybe",
       "v=1&budget=120&floor=8&guard=on&locks=east_village",

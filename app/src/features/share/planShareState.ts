@@ -92,7 +92,12 @@ const PERSON_OR_POINT_SEGMENT =
 /** Every character legal in a value this module writes, unescaped. */
 const SAFE_PARAM_VALUE = /^[A-Za-z0-9_.:,/-]+$/;
 /** An area-list version string, e.g. `dsdp-core-six/2026-08-21`. */
-const AREA_LIST_VERSION_SHAPE = /^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,63}$/;
+// Must both start and END alphanumeric. `geography` is the last parameter, so
+// it absorbs anything appended to the link: a sentence's trailing period, or
+// the `>` a quoted email reply adds. Allowing trailing punctuation let those
+// two manglings decode successfully and be caught later as a geography
+// mismatch, which tells the reader the wrong thing about why their link failed.
+const AREA_LIST_VERSION_SHAPE = /^[A-Za-z0-9](?:[A-Za-z0-9_.:/-]{0,62}[A-Za-z0-9])?$/;
 const WHOLE_NUMBER = /^\d{1,6}$/;
 const DECIMAL_NUMBER = /^\d{1,6}(\.\d{1,2})?$/;
 

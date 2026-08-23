@@ -24,18 +24,30 @@ excluded uses are `person_count`, `service_need`, `planning_load`, and
 "By type, not by convention" means the exclusion must be structural. The
 planner's input type must not carry a complaint-shaped field, and
 `assertNoComplaintSignal` (`app/src/domain/planner/planner.ts`) throws at the
-boundary where untyped artifact data becomes planner input. Adding a
-complaint-shaped field to a planner input type is the change to refuse, even
-if nothing reads it yet.
+boundary where untyped artifact data becomes planner input. It runs on the
+shipped path, `App.tsx` → `app/src/lib/planner.ts`. Adding a complaint-shaped
+field to a planner input type is the change to refuse, even if nothing reads
+it yet. Work that adds a second ungated allocation path is refused too.
 
-Honest status, recorded in
-[`docs/project/PHASE0_FINDINGS.md`](docs/project/PHASE0_FINDINGS.md) finding
-F-1: the guard currently lives on `domain/planner`, and the shipped decision
-path (`App.tsx` → `app/src/lib/planner.ts`) has no complaint guard. No
-complaint field reaches it today, so the invariant holds — by authorial
-discipline, which is exactly the thing this document exists to stop relying
-on. Work that moves the guard onto the shipped path is welcome. Work that
-adds a second ungated allocation path is not.
+**State this invariant no wider than it holds.** Both the type check and the
+guard match field _names_, and a number carries no name. An independent review
+wrote 311 counts into `planner.allocations[].planning_load` — a legally named,
+correctly typed field — and the shipped allocator re-ranked the plan. What
+holds the line now is `assertDeclaredPlanningLoad` and the artifact validator
+in `pipeline/src/stillhere_pipeline/contracts.py`: every `planning_load` must
+declare a derivation from an enumerated set, and the validator recomputes it
+against a value already published elsewhere in the same artifact. So the claim
+to make in a pull request, a README, or a demo is:
+
+> Complaint volume cannot reach allocation without also corrupting the
+> published forecast interval, which is derived from checksummed inputs.
+
+Not "complaint volume cannot influence planning." That version was tested,
+falsified, and withdrawn; see
+[`docs/project/DECISIONS.md`](docs/project/DECISIONS.md) and
+[`docs/project/PHASE1_ADVERSARIAL.md`](docs/project/PHASE1_ADVERSARIAL.md).
+Restoring the broad wording anywhere is a defect on the same footing as
+weakening the guard.
 
 ### 2. The four refusals hold
 
@@ -220,6 +232,77 @@ anchor in the script in the same pull request.
 CI runs this workflow (`.github/workflows/mutation.yml`) whenever either
 planner, a planner test, or the script itself changes.
 
+## Writing tests: the name is the claim
+
+**A test's name is a claim about what is covered, and an over-broad name is
+worse than no test at all.** Having no test leaves an obvious hole, and a
+reader auditing coverage will go looking. A test named for a property its
+body does not check fills that hole with a green tick, and the suspicion
+that would have produced a real test never arrives. The name is the only
+part of a test most people ever read.
+
+Before you open a pull request, apply this to every test you touched:
+
+> If I deleted the body and kept only the name, would the name still be a
+> true description of what is covered?
+
+Where the answer is no, **broaden the body rather than narrowing the name**.
+A test named for the real property, made to actually check that property, is
+worth more than an honest but narrow name. Narrow the name only when
+broadening is genuinely out of scope, and say so in the pull request.
+
+Four shapes to watch for, each of which has shipped here:
+
+- **A name quantifying over a set, and a body enumerating a subset.**
+  "every", "all", "each", "any", "never", "anywhere". Derive the enumeration
+  from the set — the schema's `required` array, the module's own registry or
+  deny-list, `readdirSync` over the directory. A hand-listed set silently
+  stops covering new members, and nothing fails when one is added.
+- **A name asserting a property, and a body asserting an incidental fact.**
+  A fact that is true today and not guaranteed tomorrow passes now and
+  breaks later for no reason, which teaches people to edit the test rather
+  than read it.
+- **A name asserting refusal, and a body checking only the easy refusals.**
+  Refusal tests attract the cases that already work.
+- **A test that would still pass if the feature it names were deleted.**
+  Two identical inputs proving each other equal is the classic form.
+
+### The three that got past us
+
+Concrete history teaches this better than the principle does. All three were
+found by an independent reviewer, because this is the class of defect an
+author structurally cannot see in their own work.
+
+1. **The share link.** `planShareState.test.ts` had a test named "refuses a
+   hand-edited link rather than restoring part of it" with nine cases. Every
+   one supplied a malformed _value_, or omitted one of the four fields that
+   already refused. None omitted the three fields that were being silently
+   defaulted — and a dropped `rate` moved a plan's cost from $7,500 to
+   $5,400, while a dropped `share` set the clearance assumption to 100%, the
+   maximum. Green test, name promising seven fields, body checking four.
+2. **The mutation gate.** `scripts/mutation_check.sh` reported "10 of 10
+   mutations caught" while at least one mutation was never applied: a shell
+   parsing bug replaced the search string with itself, so the gate graded an
+   unmutated file and recorded a result. Finding F-6 in
+   [`docs/project/PHASE0_FINDINGS.md`](docs/project/PHASE0_FINDINGS.md).
+3. **The currency block.** A test asserted the shipped artifact had no
+   `currency` key. That was an incidental fact when it was written, not a
+   property, so it failed the moment a refresh added one — with nothing
+   wrong. The property it meant to assert was that an artifact _without_ a
+   currency block degrades rather than guessing, which is now built
+   explicitly instead of borrowed from the artifact.
+
+### Two rules that follow from it
+
+- **A table-driven test must fail when its table is empty.** If the probes,
+  cases, or fixtures for one entry are missing, assert that before asserting
+  what they prove — otherwise adding a new entry with no cases is a silent
+  pass. `refusals.test.ts` checks that every refusal has probes before
+  checking that the probes are caught.
+- **Say what a derived set is derived from.** When a test reads a schema, a
+  registry, or a directory to build its cases, a one-line comment saying so
+  stops the next maintainer from "simplifying" it back into a literal list.
+
 ## Pull requests
 
 - One concern per pull request. A copy change and a planner change should not
@@ -229,6 +312,8 @@ planner, a planner test, or the script itself changes.
 - If you changed the suppression policy, the privacy rules, or the artifact
   contract, update the governing document in the same pull request. The
   documents are the authority; the code cites them.
+- Read every test name you added or touched as if the body were deleted, per
+  "Writing tests: the name is the claim" above.
 - Add a `CHANGELOG.md` entry under `[Unreleased]` for anything a user or an
   adopting organization would notice.
 - Do not add empty stubs, placeholder values, or "temporarily disabled"

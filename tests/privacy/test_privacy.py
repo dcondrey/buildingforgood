@@ -14,6 +14,8 @@ import pytest
 from stillhere_pipeline.privacy import (
     CELL_CONTEXT_KEYS,
     CELL_NUMERIC_ALLOWLIST,
+    FORBIDDEN_KEY_SUBSTRINGS,
+    FORBIDDEN_KEYS,
     Finding,
     normalize_key,
     scan_bundle_dir,
@@ -479,7 +481,20 @@ def test_too_many_features_is_source_grain_whatever_it_declares() -> None:
     assert "geography.source_grain_feature_count" in rules
 
 
-def test_block_identifiers_and_bounding_streets_are_denied() -> None:
+def test_every_denied_key_is_actually_denied() -> None:
+    """Read from the deny-list itself, not from a copy of part of it.
+
+    This test used to name seven fields. A key added to ``FORBIDDEN_KEYS``
+    but never wired into the walk would have shipped clean under a name that
+    claimed block identifiers and bounding streets were denied.
+    """
+    assert len(FORBIDDEN_KEYS) > 50
+    for field in sorted(FORBIDDEN_KEYS):
+        assert _blocking(scan_json_document({field: "x"})), field
+    for substring in FORBIDDEN_KEY_SUBSTRINGS:
+        field = f"area_{substring}_value"
+        assert _blocking(scan_json_document({field: "x"})), field
+    # The seven originally named here, spelled the way a real schema would.
     for field in (
         "block_id",
         "st_north",

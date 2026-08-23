@@ -15,6 +15,7 @@ from stillhere_pipeline.eyepop_audit import (
     CONFIDENCE_FLOORS,
     DEFAULT_DPI,
     ENGINES,
+    HOSTED_ENGINES,
     VALUE_THRESHOLD,
     agreement_card,
     audit_card,
@@ -74,14 +75,16 @@ def test_engine_registry_offers_local_and_both_eyepop_modes() -> None:
     assert set(ENGINES) == {"local", "eyepop", "eyepop-vlm"}
 
 
-@pytest.mark.parametrize("engine", [eyepop_engine, eyepop_vlm_engine])
+@pytest.mark.parametrize("name", sorted(HOSTED_ENGINES))
 def test_hosted_engines_fail_closed_without_credentials(
     monkeypatch: pytest.MonkeyPatch,
-    engine: object,
+    name: str,
 ) -> None:
+    """Taken from the registry, so a hosted engine added later is covered."""
+    assert HOSTED_ENGINES <= set(ENGINES)
     monkeypatch.delenv("EYEPOP_API_KEY", raising=False)
     with pytest.raises(SystemExit, match="EYEPOP_API_KEY"):
-        engine(Path("page.png"))  # type: ignore[operator]
+        ENGINES[name](Path("page.png"))
 
 
 def test_word_tokens_splits_phrases_and_keeps_confidence() -> None:

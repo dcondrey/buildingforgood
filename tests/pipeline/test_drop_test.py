@@ -94,10 +94,31 @@ class TestClassification:
 
 class TestEvidenceComponents:
     def test_every_result_publishes_components(self) -> None:
-        result = evaluate(DECLINE)
-        directions = {c.direction for c in result.components}
-        assert directions <= {"for", "against", "uncertainty"}
-        assert len(result.components) >= 4
+        """Every classification the module can return, not only one of them."""
+        increase = {"2022-09": 70, "2022-10": 80, "2022-11": 90, "2022-12": 100}
+        gap = {"2022-09": 100, "2022-11": 80, "2022-12": 70}
+        results = [
+            evaluate(DECLINE),
+            evaluate(DECLINE, adjacency_available=True, adjacent_matched_share=0.7),
+            evaluate(DECLINE, adjacency_available=True, adjacent_matched_share=0.1),
+            evaluate(increase, adjacency_available=True, adjacent_matched_share=0.0),
+            evaluate(gap, adjacency_available=True, adjacent_matched_share=0.9),
+            evaluate(
+                DECLINE,
+                method_break_months={"2022-10": "occupancy_multiplier_break"},
+                adjacency_available=True,
+                adjacent_matched_share=0.9,
+            ),
+        ]
+        assert {r.classification for r in results} == {
+            POSSIBLE_DISPLACEMENT,
+            LIKELY_IMPROVEMENT,
+            INSUFFICIENT_EVIDENCE,
+        }
+        for result in results:
+            directions = {c.direction for c in result.components}
+            assert directions <= {"for", "against", "uncertainty"}, result.classification
+            assert len(result.components) >= 4, result.classification
 
     def test_deterministic_repeat_runs(self) -> None:
         assert evaluate(DECLINE) == evaluate(DECLINE)

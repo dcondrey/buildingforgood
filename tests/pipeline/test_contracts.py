@@ -8,6 +8,7 @@ import pytest
 from stillhere_pipeline.contracts import (
     ContractViolation,
     assert_no_precise_fields,
+    validate_demo_v1,
     validate_observations_v0,
     validate_quality_report_v0,
 )
@@ -212,11 +213,23 @@ class TestDenyList:
 class TestShippedArtifactsMeetContracts:
     """The gate must bind the artifacts that actually ship, not only in-memory docs."""
 
+    # Dispatch by the artifact's own declared schema, so the set under test is
+    # whatever is in the directory. Naming two filenames meant this test
+    # skipped entirely in a checkout that ships a third artifact and neither
+    # of those two.
+    VALIDATORS = {
+        "observations.v0": validate_observations_v0,
+        "quality_report.v0": validate_quality_report_v0,
+        "stillhere.demo.v1": validate_demo_v1,
+    }
+
     def test_committed_generated_artifacts_validate(self) -> None:
-        generated = REPO_ROOT / "public" / "generated"
-        observations = generated / "observations.v0.json"
-        quality = generated / "quality_report.v0.json"
-        if not observations.exists():
+        generated = sorted((REPO_ROOT / "public" / "generated").glob("*.json"))
+        if not generated:
             pytest.skip("generated artifacts not present on this branch")
-        validate_observations_v0(json.loads(observations.read_text()))
-        validate_quality_report_v0(json.loads(quality.read_text()))
+        for path in generated:
+            document = json.loads(path.read_text())
+            schema = document.get("schema") if isinstance(document, dict) else None
+            validate = self.VALIDATORS.get(schema)
+            assert validate is not None, f"{path.name} declares unknown schema {schema!r}"
+            validate(document)

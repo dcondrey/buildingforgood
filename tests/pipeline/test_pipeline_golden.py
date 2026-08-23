@@ -86,10 +86,16 @@ def test_model_ineligible_rows_stay_out_of_every_model_lane() -> None:
     assert excluded.isdisjoint(row["month"] for row in document["observations"]["latest_by_area"])
     assert document["forecast"]["target_month"] not in excluded
     assert document["forecast"]["data_frozen_through"] not in excluded
-    # The rows exist in exactly one place. Nothing under observations,
-    # forecast or planner mentions them.
-    for lane in ("observations", "forecast", "planner"):
-        assert "observed_not_model_eligible" not in json.dumps(document[lane])
+    # The rows exist in exactly one place. Every block of the document
+    # except `currency` is checked, not three named ones: a fourth lane
+    # added later is covered the day it lands.
+    others = [key for key in document if key != "currency"]
+    assert {"observations", "forecast", "planner"} <= set(others)
+    for lane in others:
+        serialized = json.dumps(document[lane])
+        assert "observed_not_model_eligible" not in serialized, lane
+        for month in excluded:
+            assert month not in serialized, f"{lane} mentions {month}"
 
 
 def test_dry_run_checks_everything_and_writes_nothing(tmp_path: Path) -> None:

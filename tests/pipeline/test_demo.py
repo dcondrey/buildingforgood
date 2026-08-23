@@ -283,7 +283,11 @@ def test_future_audit_values_cannot_change_promotion() -> None:
     assert original["backtest"] != changed["backtest"]
 
 
-def test_prepared_allocation_is_feasible_and_excludes_complaints(demo: dict) -> None:
+def test_prepared_allocation_is_feasible_and_declares_its_excluded_inputs(demo: dict) -> None:
+    # The body reads the artifact's own declaration flags. That is what it can
+    # check here; it is not evidence that complaint volume cannot influence a
+    # plan, which is false and was withdrawn (docs/project/DECISIONS.md). The
+    # enforcement is the planning_load derivation check in contracts.py.
     planner = demo["planner"]
     assert sum(row["allocated_hours"] for row in planner["allocations"]) == 80
     assert all(row["allocated_hours"] >= 8 for row in planner["allocations"])

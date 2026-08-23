@@ -163,9 +163,16 @@ class TestRunBuild:
     def test_artifacts_never_carry_precise_locations(self, tmp_path: Path) -> None:
         write_fixture_tree(tmp_path)
         build(tmp_path)
-        for name in ("observations.v0.json", "quality_report.v0.json"):
-            doc = json.loads((tmp_path / "out" / name).read_text())
-            assert_no_precise_fields(doc)
+        # Every artifact the build writes, read from the directory: the two
+        # named here left manifest.v0.json unscanned under a plural name.
+        written = sorted((tmp_path / "out").glob("*.json"))
+        assert {path.name for path in written} >= {
+            "observations.v0.json",
+            "quality_report.v0.json",
+            "manifest.v0.json",
+        }
+        for path in written:
+            assert_no_precise_fields(json.loads(path.read_text()))
 
 
 class TestPrecautionGuard:

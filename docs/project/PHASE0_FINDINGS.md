@@ -80,8 +80,13 @@ none is complaint-shaped, and the only complaint-shaped key in
 never reads. The invariant holds today by the same authorial discipline the
 goal document says it wants to stop relying on.
 
-42% of the TypeScript suite (66 of 156 tests) grades code that is not in the
-product.
+**Correction.** The first version of this finding said "42% of the TypeScript
+suite (66 of 156 tests)". That was wrong, and it understated the problem. It
+counted only `domain/planner`. Counting every module unreachable from
+`main.tsx` — adding `lib/contracts.test.ts` (28), `PlannerPanel.test.tsx` (10),
+`PlannerPanel.a11y.test.tsx` (3), and `ResponsibleDataCards.test.tsx` (8) — the
+real figure at the Phase 0 baseline is **109 of 181 tests, 60%**. Measured from
+`vitest --reporter=json`, not estimated.
 
 ### What this changes downstream
 
@@ -175,3 +180,68 @@ surprises.
   `app/dist` into an error rather than a skipped check, and `verify.sh` orders
   the scan after the build for that reason.
 - `App.tsx` contains no `311` or `complaint` string at all.
+
+
+## Finding F-6: the mutation gate had a bug that made it report a false pass
+
+Self-reported. `scripts/mutation_check.sh` as first committed at `f8dd100`
+claimed "10 of 10 mutations caught". At least one of those was not tested at
+all.
+
+The mutation records were packed into a bash array and split with
+`IFS=$'\t' read -r name file needle replacement`. `read` stops at the first
+newline. The complaint-guard mutation's replacement spans two lines, so
+`replacement` was truncated back to its own first line — which is exactly the
+search string. The script then replaced the anchor with itself, ran the suite
+against a completely unmutated file, and recorded a result.
+
+Verified directly rather than reasoned about:
+
+```
+needle=[export function assertNoComplaintSignal(record: unknown, where: string): void {]
+repl  =[export function assertNoComplaintSignal(record: unknown, where: string): void {]
+>>> CONFIRMED BUG: mutation is a no-op
+```
+
+This is the precise failure mode the mutation gate exists to prevent, in the
+mutation gate itself: a green result that proves nothing. It was found by an
+independent review track, not by me.
+
+Fixed by parsing records with an explicit record/field separator instead of
+`read`, and by making the runner refuse a mutation whose replacement equals its
+search string rather than silently applying a no-op.
+
+## Finding F-7: the refusal guarantee is bypassable, and naming is why
+
+Raised by the independent review track as an open escalation
+(`review/ESCALATION.md`), executed rather than theorized, and re-verified after
+the Phase 1 guard was wired into the shipped path.
+
+Wiring `assertNoComplaintSignal` into `allocateHours` closes the case where a
+contractor names the field honestly. It does not close the case where the same
+numbers arrive in `planning_load`:
+
+- `pipeline/src/stillhere_pipeline/contracts.py` requires only that
+  `planning_load` be a nonnegative number.
+- `adaptDemoV1` reads it with no validation of meaning.
+- `allocateHours` weights on it directly.
+
+The plan is materially re-ranked and nothing anywhere says so, while the
+artifact continues to declare `planner.constraints.complaint_data_used: false`
+and pass its own contract.
+
+Both existing guards — the runtime `COMPLAINT_FIELD_PATTERN` and the
+compile-time `ExcludesComplaintSignal<T>` — match field *names*. They are the
+same check at two different times, so they fail together against the same
+input. Neither can see what a number means.
+
+This does not contradict invariant 1 as literally worded — complaint volume is
+not *representable as a field* — but it does falsify the guarantee the code
+comments and README state, which is that complaint volume cannot influence
+planning. The honest claim, until this is closed, is "the planner does not read
+a complaint field."
+
+Closing it needs a value-provenance claim at the artifact boundary rather than
+another name check: `planning_load` arrives with a declared derivation, the
+contract enumerates permitted derivations, and anything else is refused.
+Assigned to the Phase 1 workstream.

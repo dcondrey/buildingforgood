@@ -29,41 +29,122 @@ fi
 restore() { git checkout -- "$SHIPPED" "$DOMAIN" 2>/dev/null || true; }
 trap restore EXIT INT TERM
 
-# name | file | literal search string | replacement
-MUTATIONS=(
-$'shipped: coverage floor short by one hour\t'"$SHIPPED"$'\tshares.map((share) => [share.area.id, effectiveFloor + share.whole] as const),\tshares.map((share) => [share.area.id, Math.max(0, effectiveFloor - 1) + share.whole] as const),'
-$'shipped: guard flag ignored, floor always applied\t'"$SHIPPED"$'\tconst effectiveFloor = guardEnabled ? floor : 0;\tconst effectiveFloor = floor;'
-$'shipped: largest-remainder order reversed\t'"$SHIPPED"$'\t.sort((a, b) => b.fraction - a.fraction || a.index - b.index)\t.sort((a, b) => a.fraction - b.fraction || a.index - b.index)'
-$'shipped: budget-conservation check disabled\t'"$SHIPPED"$'\tif (allocatedTotal !== normalizedBudget) {\tif (false && allocatedTotal !== normalizedBudget) {'
-$'shipped: a coordinator lock loses to the computed value\t'"$SHIPPED"$'\thours: locks.get(area.id) ?? unlockedHours.get(area.id) ?? 0,\thours: unlockedHours.get(area.id) ?? locks.get(area.id) ?? 0,'
-$'domain: complaint-signal guard neutered\t'"$DOMAIN"$'\texport function assertNoComplaintSignal(record: unknown, where: string): void {\texport function assertNoComplaintSignal(record: unknown, where: string): void {\n  if (record !== undefined || where !== undefined) return;'
-$'domain: continuity reserve never granted\t'"$DOMAIN"$'\t      area.drop_test === "possible_displacement" ? policy.continuity_reserve_hours : 0;\t      area.drop_test === "never_matches_anything" ? policy.continuity_reserve_hours : 0;'
-$'domain: guaranteed hours rounded down instead of up\t'"$DOMAIN"$'\t    return Math.ceil(((m?.floor ?? 0) + (m?.continuity ?? 0)) / increment - 1e-9);\t    return Math.floor(((m?.floor ?? 0) + (m?.continuity ?? 0)) / increment - 1e-9);'
-$'domain: the "not a need estimate" disclosure dropped\t'"$DOMAIN"$'\t      "Complaint volume was not used. These hours describe available capacity. They do not estimate need.",\t      "Hours allocated.",'
-$'domain: infeasible plan reported as planned\t'"$DOMAIN"$'\t      status: "infeasible",\t      status: "planned",'
+# Mutations live in a heredoc, one per record, fields separated by a line of
+# four percent signs. An earlier version packed them into a bash array read by
+# `IFS=$'\t' read`, which stops at the first newline: any replacement spanning
+# two lines was silently truncated back to its own search string, so the
+# mutation applied cleanly and changed nothing. It reported "caught" while
+# testing an unmutated file. Records are parsed by python here for that reason.
+MUTATIONS=$(cat <<'RECORDS'
+shipped: coverage floor short by one hour
+%%%%
+app/src/lib/planner.ts
+%%%%
+shares.map((share) => [share.area.id, effectiveFloor + share.whole] as const),
+%%%%
+shares.map((share) => [share.area.id, Math.max(0, effectiveFloor - 1) + share.whole] as const),
+%%%%%%%%
+shipped: guard flag ignored, floor always applied
+%%%%
+app/src/lib/planner.ts
+%%%%
+const effectiveFloor = guardEnabled ? floor : 0;
+%%%%
+const effectiveFloor = floor;
+%%%%%%%%
+shipped: largest-remainder order reversed
+%%%%
+app/src/lib/planner.ts
+%%%%
+.sort((a, b) => b.fraction - a.fraction || a.index - b.index)
+%%%%
+.sort((a, b) => a.fraction - b.fraction || a.index - b.index)
+%%%%%%%%
+shipped: budget-conservation check disabled
+%%%%
+app/src/lib/planner.ts
+%%%%
+if (allocatedTotal !== normalizedBudget) {
+%%%%
+if (false && allocatedTotal !== normalizedBudget) {
+%%%%%%%%
+shipped: a coordinator lock loses to the computed value
+%%%%
+app/src/lib/planner.ts
+%%%%
+hours: locks.get(area.id) ?? unlockedHours.get(area.id) ?? 0,
+%%%%
+hours: unlockedHours.get(area.id) ?? locks.get(area.id) ?? 0,
+%%%%%%%%
+domain: complaint-signal guard neutered
+%%%%
+app/src/domain/planner/planner.ts
+%%%%
+  for (const [key, value] of Object.entries(record)) {
+%%%%
+  for (const [key, value] of Object.entries(record)) {
+    if (key !== undefined) continue;
+%%%%%%%%
+domain: continuity reserve never granted
+%%%%
+app/src/domain/planner/planner.ts
+%%%%
+      area.drop_test === "possible_displacement" ? policy.continuity_reserve_hours : 0;
+%%%%
+      area.drop_test === "never_matches_anything" ? policy.continuity_reserve_hours : 0;
+%%%%%%%%
+domain: guaranteed hours rounded down instead of up
+%%%%
+app/src/domain/planner/planner.ts
+%%%%
+    return Math.ceil(((m?.floor ?? 0) + (m?.continuity ?? 0)) / increment - 1e-9);
+%%%%
+    return Math.floor(((m?.floor ?? 0) + (m?.continuity ?? 0)) / increment - 1e-9);
+%%%%%%%%
+domain: the "not a need estimate" disclosure dropped
+%%%%
+app/src/domain/planner/planner.ts
+%%%%
+      "Complaint volume was not used. These hours describe available capacity. They do not estimate need.",
+%%%%
+      "Hours allocated.",
+%%%%%%%%
+domain: infeasible plan reported as planned
+%%%%
+app/src/domain/planner/planner.ts
+%%%%
+      status: "infeasible",
+%%%%
+      status: "planned",
+RECORDS
 )
+
+COUNT=$(printf '%s' "$MUTATIONS" | grep -c '^%%%%%%%%$')
+COUNT=$((COUNT + 1))
 
 pass=0
 survived=()
 
-for entry in "${MUTATIONS[@]}"; do
-  IFS=$'\t' read -r name file needle replacement <<<"$entry"
-
-  if ! MUT_FILE="$file" MUT_NEEDLE="$needle" MUT_REPL="$replacement" python3 - <<'PY'
+for index in $(seq 0 $((COUNT - 1))); do
+  record=$(printf '%s' "$MUTATIONS" | MUT_INDEX="$index" python3 -c '
 import os, sys
-path = os.environ["MUT_FILE"]
-needle = os.environ["MUT_NEEDLE"]
-repl = os.environ["MUT_REPL"].replace("\\n", "\n")
+records = sys.stdin.read().split("\n%%%%%%%%\n")
+sys.stdout.write(records[int(os.environ["MUT_INDEX"])])
+')
+  name=$(printf '%s' "$record" | python3 -c 'import sys; print(sys.stdin.read().split("\n%%%%\n")[0])')
+
+  if ! printf '%s' "$record" | python3 -c '
+import sys
+name, path, needle, repl = sys.stdin.read().split("\n%%%%\n")
 text = open(path, encoding="utf-8").read()
+if needle == repl:
+    sys.stderr.write("mutation is a no-op: replacement equals search string\n"); sys.exit(1)
 if text.count(needle) != 1:
-    sys.stderr.write(f"anchor not found exactly once in {path}: {needle!r}\n")
-    sys.exit(1)
+    sys.stderr.write(f"anchor appears {text.count(needle)} times in {path}, need exactly 1\n"); sys.exit(1)
 open(path, "w", encoding="utf-8").write(text.replace(needle, repl))
-PY
-  then
+'; then
     echo "SETUP FAILED  $name"
-    echo "  the anchor text no longer exists; update scripts/mutation_check.sh" >&2
-    survived+=("$name (anchor missing)")
+    survived+=("$name (could not apply)")
     restore
     continue
   fi
@@ -79,7 +160,7 @@ PY
 done
 
 echo ""
-echo "$pass of ${#MUTATIONS[@]} mutations caught."
+echo "$pass of $COUNT mutations caught."
 
 if ((${#survived[@]} > 0)); then
   echo ""

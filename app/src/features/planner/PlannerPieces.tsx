@@ -3,7 +3,7 @@ import { CostAssumptionControl, PlanCostSummary } from "../../features/cost/Cost
 import { ExportActions } from "../../features/export/ExportActions";
 import { ShareLink } from "../../features/share/ShareLink";
 import { useShell } from "../../features/shell/ShellContext";
-import { formatNumber } from "../../lib/format";
+import { useTranslation } from "../../i18n/context";
 
 export function PlanState() {
   const {
@@ -16,22 +16,20 @@ export function PlanState() {
     planTotal,
     unmetTotal,
   } = useShell();
+  const { t } = useTranslation();
   return (
-    <div aria-label="Live plan state" className="plan-state" role="status">
+    <div aria-label={t("state.liveAria")} className="plan-state" role="status">
+      <span>{t("state.allocated", { allocated: planTotal, budget })}</span>
       <span>
-        {planTotal}/{budget}h allocated
+        {guardEnabled ? t("state.floor", { floor: coverageFloor }) : t("state.noMinimumShort")}
       </span>
-      <span>{guardEnabled ? `${coverageFloor}h floor` : "no minimum"}</span>
-      <span>{unmetTotal > 0 ? `${unmetTotal}h unmet load` : "0h unmet"}</span>
-      {lockedIds.size > 0 && (
-        <span>
-          {lockedIds.size} lock{lockedIds.size > 1 ? "s" : ""}
-        </span>
-      )}
+      <span>{unmetTotal > 0 ? t("state.unmet", { hours: unmetTotal }) : t("state.noUnmet")}</span>
+      {lockedIds.size > 0 && <span>{t("state.locks", { count: lockedIds.size })}</span>}
       {intervention && (
         <span className="plan-state-assumption">
-          assumption: {data.areas.find((area) => area.id === intervention.areaId)?.name ?? ""}{" "}
-          cleared
+          {t("state.assumption", {
+            area: data.areas.find((area) => area.id === intervention.areaId)?.name ?? "",
+          })}
         </span>
       )}
     </div>
@@ -46,20 +44,19 @@ export function PlannerControls() {
     data,
     deployment,
     guardEnabled,
+    placeText,
+    places,
     plan,
     setBudgetHours,
     setCoveragePolicy,
   } = useShell();
+  const { t, tx } = useTranslation();
   return (
     <>
-      <div
-        className="coverage-policy"
-        aria-label="Coverage-continuity floor sensitivity"
-        role="group"
-      >
+      <div className="coverage-policy" aria-label={t("controls.floorAria")} role="group">
         <div>
-          <span className="eyebrow">You set this · the tool never picks it</span>
-          <strong>Guaranteed minimum hours for every {deployment.areaNoun}</strong>
+          <span className="eyebrow">{t("controls.youSetThis")}</span>
+          <strong>{t("controls.floorTitle", { areaNoun: places.noun })}</strong>
         </div>
         <div className="floor-options">
           {deployment.floorOptions.map((floor) => (
@@ -70,29 +67,33 @@ export function PlannerControls() {
               onClick={() => setCoveragePolicy(floor)}
               type="button"
             >
-              <strong>{floor}h</strong>
+              <strong>{t("controls.floorHours", { floor })}</strong>
               <span>
                 {floor === 0
-                  ? "no minimum"
+                  ? t("controls.floorNone")
                   : floor === deployment.coverageFloor
-                    ? "default"
-                    : "compare"}
+                    ? t("controls.floorDefault")
+                    : t("controls.floorCompare")}
               </span>
             </button>
           ))}
         </div>
       </div>
       <p aria-live="polite" className="policy-lens">
-        <strong>Policy lens:</strong>{" "}
         {coverageFloor === 0
-          ? `with no minimum, hours follow the forecast alone. Use this to see which ${deployment.areaNounPlural} would be left with almost nothing; it is a comparison view, not a recommendation.`
-          : `${data.areas.length * coverageFloor} of ${budget} hours are set aside first (${coverageFloor} per ${deployment.areaNoun}); the rest follows the forecast.`}
+          ? tx("controls.policyLensNoFloor", placeText)
+          : tx("controls.policyLensWithFloor", {
+              ...placeText,
+              setAside: data.areas.length * coverageFloor,
+              budget,
+              floor: coverageFloor,
+            })}
       </p>
 
       {plan && (
         <div className="whatif-control">
           <label htmlFor="whatif-budget">
-            <span className="eyebrow">What-if · drag to stress-test the budget</span>
+            <span className="eyebrow">{t("controls.whatIfLabel")}</span>
           </label>
           <div className="whatif-row">
             <input
@@ -106,14 +107,10 @@ export function PlannerControls() {
               value={budgetValid ? budget : 0}
             />
             <output aria-live="off" htmlFor="whatif-budget">
-              {budget}h
+              {t("controls.whatIfHours", { hours: budget })}
             </output>
           </div>
-          <p id="whatif-help">
-            Recomputes live under the same floors and locks. Watch the map and bars; when the budget
-            cannot cover the floors and locks, the tool says so instead of silently repairing the
-            plan.
-          </p>
+          <p id="whatif-help">{t("controls.whatIfHelp")}</p>
         </div>
       )}
 
@@ -134,23 +131,22 @@ export function ScenarioBench() {
     scenarios,
     setCompareId,
   } = useShell();
+  const { t, tx } = useTranslation();
   return (
     <div className="scenario-bench">
       <div className="scenario-bench-head">
-        <span className="eyebrow">Scenario workbench · saved only in this browser</span>
+        <span className="eyebrow">{t("bench.eyebrow")}</span>
         <button
           className="button button-quiet"
           disabled={!planReady}
           onClick={saveScenario}
           type="button"
         >
-          Save scenario
+          {t("bench.save")}
         </button>
       </div>
       {scenarios.length === 0 ? (
-        <p className="scenario-empty">
-          Save this plan, change the policy, then compare the two side by side.
-        </p>
+        <p className="scenario-empty">{t("bench.empty")}</p>
       ) : (
         <ul className="scenario-list">
           {scenarios.map((scenario) => (
@@ -170,10 +166,10 @@ export function ScenarioBench() {
                 }
                 type="button"
               >
-                {compareId === scenario.id ? "Comparing" : "Compare"}
+                {compareId === scenario.id ? t("bench.comparing") : t("bench.compare")}
               </button>
               <button
-                aria-label={`Delete scenario ${scenario.name}`}
+                aria-label={t("bench.delete", { name: scenario.name })}
                 className="scenario-delete"
                 onClick={() => deleteScenario(scenario.id)}
                 type="button"
@@ -186,17 +182,9 @@ export function ScenarioBench() {
       )}
       {compareScenario && (
         <p className="scenario-compare-note" role="status">
-          {compareById ? (
-            <>
-              Comparing with <strong>{compareScenario.name}</strong> — each area shows how many
-              hours the current plan shifts against it.
-            </>
-          ) : (
-            <>
-              <strong>{compareScenario.name}</strong> is infeasible against the current data, so no
-              comparison is shown.
-            </>
-          )}
+          {compareById
+            ? tx("bench.comparingWith", { name: compareScenario.name })
+            : tx("bench.infeasible", { name: compareScenario.name })}
         </p>
       )}
     </div>
@@ -205,22 +193,23 @@ export function ScenarioBench() {
 
 export function PlannerStart() {
   const { budget, budgetValid, coverageFloor, data, deployment, runPlan } = useShell();
+  const { t } = useTranslation();
   return (
     <div className="planner-start">
       <div className="constraint-equation">
         <span>
           {budget}
-          <small>available</small>
+          <small>{t("start.available")}</small>
         </span>
         <b>=</b>
         <span>
           {data.areas.length * coverageFloor}
-          <small>guaranteed minimums</small>
+          <small>{t("start.guaranteedMinimums")}</small>
         </span>
         <b>+</b>
         <span>
           {Math.max(0, budget - data.areas.length * coverageFloor)}
-          <small>follow the forecast</small>
+          <small>{t("start.followTheForecast")}</small>
         </span>
       </div>
       <button
@@ -229,12 +218,11 @@ export function PlannerStart() {
         onClick={() => runPlan()}
         type="button"
       >
-        <SparkIcon /> Generate coverage scenario
+        <SparkIcon /> {t("start.generate")}
       </button>
       {!budgetValid && (
         <p className="budget-invalid" role="status">
-          Enter a whole number of hours between {deployment.minBudget} and {deployment.maxBudget} to
-          generate a plan.
+          {t("start.budgetInvalid", { min: deployment.minBudget, max: deployment.maxBudget })}
         </p>
       )}
     </div>
@@ -258,7 +246,9 @@ export function PlanRows() {
     lockValues,
     lockedIds,
     maxHours,
+    placeText,
     plan,
+    planSentence,
     planTotal,
     planningAreas,
     runPlan,
@@ -271,21 +261,13 @@ export function PlanRows() {
     toggleLock,
     unmetByArea,
   } = useShell();
+  const { t, tx, number } = useTranslation();
   if (!plan?.feasible) return null;
-  // The planner's own sentence, with the deployment's word for its places.
-  // The numbers stay the planner's — only the noun is swapped, because
-  // `allocateHours` writes "neighborhoods" and its exact text is pinned by
-  // lib/planner.characterization.test.ts. A profile that plans service areas
-  // must not be told it plans neighborhoods.
-  const planSentence = plan.message.replace(" neighborhoods ", ` ${deployment.areaNounPlural} `);
   return (
     <>
       <div className="plan-toolbar">
         <p>
-          <strong>
-            {planTotal}/{budget} hours allocated.
-          </strong>{" "}
-          {planSentence}
+          <strong>{t("rows.allocated", { allocated: planTotal, budget })}</strong> {planSentence}
         </p>
         <div>
           <button
@@ -294,8 +276,10 @@ export function PlanRows() {
             type="button"
           >
             {guardEnabled
-              ? "Compare with no minimum"
-              : `Restore the ${coverageFloor || deployment.coverageFloor}h minimum`}
+              ? t("rows.compareNoMinimum")
+              : t("rows.restoreMinimum", {
+                  floor: coverageFloor || deployment.coverageFloor,
+                })}
           </button>
           <button
             className="button button-quiet"
@@ -306,68 +290,66 @@ export function PlanRows() {
             }}
             type="button"
           >
-            Reset locks
+            {t("rows.resetLocks")}
           </button>
         </div>
       </div>
 
       {!guardEnabled && (
         <div className="audit-banner" role="status">
-          <strong>Comparison view, not a recommendation.</strong>{" "}
           {coverageFloor > 0
-            ? `With no minimum enforced, areas below ${coverageFloor}h would lose their guaranteed visit.`
-            : `This shows what happens with no guaranteed minimum: some ${deployment.areaNounPlural} get almost nothing.`}
+            ? tx("rows.auditBannerFloor", { floor: coverageFloor })
+            : tx("rows.auditBannerNoFloor", placeText)}
         </div>
       )}
 
       {intervention && interventionResult && (
         <div className="intervention-banner" role="status">
           <div>
-            <strong>
-              Assumption explorer:{" "}
-              {data.areas.find((area) => area.id === intervention.areaId)?.name ??
-                intervention.areaId}{" "}
-              modeled as cleared.
-            </strong>{" "}
-            Under your assumption, {formatNumber(intervention.share * 100)}% of its planning load (
-            {formatNumber(interventionResult.shifted, 1)}) shifts to adjacent areas and{" "}
-            {formatNumber(interventionResult.assumedResolved, 1)} is assumed resolved — assumed, not
-            observed.
-            {interventionHourChurn !== null
-              ? ` The plan reallocates ${formatNumber(interventionHourChurn, 1)} staff-hours in response.`
-              : ""}{" "}
-            The counts cannot show who moves where or why, so this explores your stated assumption;
-            it is not a prediction and does not endorse the action.
+            {tx("rows.assumptionBanner", {
+              area:
+                data.areas.find((area) => area.id === intervention.areaId)?.name ??
+                intervention.areaId,
+              pct: number(intervention.share * 100),
+              shifted: number(interventionResult.shifted, 1),
+              resolved: number(interventionResult.assumedResolved, 1),
+              churn:
+                interventionHourChurn !== null
+                  ? t("rows.assumptionChurn", { hours: number(interventionHourChurn, 1) })
+                  : "",
+            })}
           </div>
           <button
             className="button button-quiet"
             onClick={() => setInterventionScenario(null)}
             type="button"
           >
-            Clear assumption
+            {t("rows.clearAssumption")}
           </button>
         </div>
       )}
 
       <div className="area-accuracy-warning" role="note">
-        <strong>Illustrative and human-review-only.</strong> Aggregate audit WAPE is{" "}
-        {formatNumber(data.forecast.wape, 1)}%.{" "}
         {auditedAreas.length
-          ? `Area-level held-out WAPE ranges ${formatNumber(Math.min(...auditedAreaWapes), 1)}%–${formatNumber(Math.max(...auditedAreaWapes), 1)}%; small areas are noisier.`
-          : "Area-level held-out WAPE is unavailable in this artifact."}{" "}
-        The aggregate score does not imply equal area accuracy; a coordinator must review every
-        assignment.
+          ? tx("rows.accuracyWarningWithAreas", {
+              wape: number(data.forecast.wape, 1),
+              min: number(Math.min(...auditedAreaWapes), 1),
+              max: number(Math.max(...auditedAreaWapes), 1),
+            })
+          : tx("rows.accuracyWarningNoAreas", { wape: number(data.forecast.wape, 1) })}
       </div>
 
       <div
         className={`allocation-list ${compareById ? "with-compare" : ""}`}
         role="list"
-        aria-label="Illustrative staff-hour allocation"
+        aria-label={t("rows.listAria")}
       >
         {planningAreas.map((area) => {
           const hours = allocationById.get(area.id) ?? 0;
           const locked = lockedIds.has(area.id);
           const belowFloor = hours < coverageFloor;
+          const unmet = unmetByArea.get(area.id) ?? 0;
+          const compareDelta = compareById ? hours - (compareById.get(area.id) ?? 0) : 0;
           return (
             <article
               className={`allocation-row ${belowFloor ? "below-floor" : ""} ${selectedAreaId === area.id ? "is-selected" : ""}`}
@@ -377,24 +359,27 @@ export function PlanRows() {
               <div className="area-name">
                 <strong>{area.name}</strong>
                 <span>
-                  Planning for up to {formatNumber(area.planningLoad, 1)} observations ·{" "}
-                  {locked
-                    ? `human lock at ${hours}h`
-                    : guardEnabled
-                      ? `${Math.min(hours, coverageFloor)}h minimum + ${Math.max(0, hours - coverageFloor)}h forecast share`
-                      : `${hours}h forecast share, no minimum`}
-                  {(unmetByArea.get(area.id) ?? 0) > 0
-                    ? ` · ${unmetByArea.get(area.id)}h moved away by the floor`
-                    : ""}
+                  {t("rows.planningFor", {
+                    load: number(area.planningLoad, 1),
+                    split: locked
+                      ? t("rows.splitLocked", { hours })
+                      : guardEnabled
+                        ? t("rows.splitGuarded", {
+                            floorHours: Math.min(hours, coverageFloor),
+                            extraHours: Math.max(0, hours - coverageFloor),
+                          })
+                        : t("rows.splitUnguarded", { hours }),
+                  })}
+                  {unmet > 0 ? t("rows.movedAway", { hours: unmet }) : ""}
                 </span>
               </div>
               <div aria-hidden="true" className="allocation-bar-track">
                 <i style={{ width: `${(hours / maxHours) * 100}%` }} />
               </div>
               <label className="hours-input">
-                <span className="sr-only">Hours for {area.name}</span>
+                <span className="sr-only">{t("rows.hoursFor", { area: area.name })}</span>
                 <input
-                  aria-label={`Hours for ${area.name}`}
+                  aria-label={t("rows.hoursFor", { area: area.name })}
                   disabled={!locked}
                   min="0"
                   onChange={(event) => {
@@ -407,41 +392,37 @@ export function PlanRows() {
                   type="number"
                   value={locked ? (lockValues[area.id] ?? hours) : hours}
                 />
-                <span>h</span>
+                <span>{t("rows.hourUnit")}</span>
               </label>
               <label className="lock-control">
                 <input
-                  aria-label={`Lock ${area.name} at ${hours} hours`}
+                  aria-label={t("rows.lockAt", { area: area.name, hours })}
                   checked={locked}
                   onChange={() => toggleLock(area.id)}
                   type="checkbox"
                 />
-                <span>{locked ? "Locked" : "Lock"}</span>
+                <span>{locked ? t("rows.locked") : t("rows.lock")}</span>
               </label>
               <span
                 className={`constraint-chip ${belowFloor ? "constraint-fail" : "constraint-pass"}`}
               >
                 {!guardEnabled
-                  ? "No minimum"
+                  ? t("rows.chipNoMinimum")
                   : belowFloor
-                    ? "Below minimum"
-                    : `${coverageFloor}h minimum met`}
+                    ? t("rows.chipBelowMinimum")
+                    : t("rows.chipMinimumMet", { floor: coverageFloor })}
               </span>
               {compareById && (
                 <span
                   className={`compare-delta ${
-                    hours - (compareById.get(area.id) ?? 0) > 0
-                      ? "delta-up"
-                      : hours - (compareById.get(area.id) ?? 0) < 0
-                        ? "delta-down"
-                        : "delta-same"
+                    compareDelta > 0 ? "delta-up" : compareDelta < 0 ? "delta-down" : "delta-same"
                   }`}
                 >
-                  {hours - (compareById.get(area.id) ?? 0) > 0
-                    ? `+${hours - (compareById.get(area.id) ?? 0)}h vs saved`
-                    : hours - (compareById.get(area.id) ?? 0) < 0
-                      ? `${hours - (compareById.get(area.id) ?? 0)}h vs saved`
-                      : "same as saved"}
+                  {compareDelta > 0
+                    ? t("rows.deltaUp", { hours: compareDelta })
+                    : compareDelta < 0
+                      ? t("rows.deltaDown", { hours: compareDelta })
+                      : t("rows.deltaSame")}
                 </span>
               )}
             </article>
@@ -457,20 +438,15 @@ export function PlanRows() {
 export function InterventionControl() {
   const { intervention, selectedArea, setInterventionScenario, setShareDraft, shareDraft } =
     useShell();
+  const { t } = useTranslation();
   return (
     selectedArea && (
       <div className="intervention-control">
         <div>
-          <span className="eyebrow">Stress-test an action · assumption explorer</span>
-          <p>
-            What if {selectedArea.name} were cleared? The counts cannot show who moves where or why,
-            so you state the assumption and the plan shows its consequences. Clearing an area adds
-            no shelter capacity.
-          </p>
+          <span className="eyebrow">{t("intervention.eyebrow")}</span>
+          <p>{t("intervention.lede", { area: selectedArea.name })}</p>
         </div>
-        <label htmlFor="displaced-share">
-          Assumed share of its planning load that shifts to adjacent areas instead of being resolved
-        </label>
+        <label htmlFor="displaced-share">{t("intervention.shareLabel")}</label>
         <div className="intervention-row">
           <input
             id="displaced-share"
@@ -501,7 +477,7 @@ export function InterventionControl() {
               onClick={() => setInterventionScenario(null)}
               type="button"
             >
-              Clear assumption
+              {t("intervention.clear")}
             </button>
           ) : (
             <button
@@ -514,7 +490,7 @@ export function InterventionControl() {
               }
               type="button"
             >
-              Explore this assumption
+              {t("intervention.explore")}
             </button>
           )}
         </div>
@@ -525,42 +501,25 @@ export function InterventionControl() {
 
 export function BriefCluster() {
   const { budget, copyBrief, copyStatus, decisionBrief, planReady } = useShell();
+  const { t, number } = useTranslation();
   return (
     <>
       <details className="data-table-disclosure capacity-context">
-        <summary>Capacity context: staff-hours in staffing terms</summary>
+        <summary>{t("brief.capacitySummary")}</summary>
         <p>
-          The assumed {formatNumber(budget)}-hour budget equals {formatNumber(budget / 40, 1)}{" "}
-          forty-hour staff-weeks. The budget, and the forty-hour week used to restate it, are stated
-          assumptions, not staffing data.
+          {t("brief.capacityWeeks", {
+            hours: number(budget),
+            weeks: number(budget / 40, 1),
+          })}
         </p>
-        <p>
-          For scale only: HUD case-management guidance suggests roughly 20 to 30 clients per case
-          manager for housing-focused navigation and 10 to 12 for intensive support (HUD, Homeless
-          System Response: Case Management Ratios, HUD Exchange). That guidance describes
-          community-based case management, not street outreach; no street-outreach caseload standard
-          appears in the primary federal guidance we reviewed, and HUD publishes these ratios as
-          planning help, not binding rules.
-        </p>
-        <p>
-          Locally: a City of San Diego public-records release includes a 2023-era Alpha Project
-          shelter proposal that contracts case management at one worker per 15 single adults and one
-          per 12.5 families. Those are proposed shelter staffing ratios, not street outreach and not
-          observed practice (City PRA release, pinned in the source ledger).
-        </p>
-        <p>
-          These benchmarks are context for a capacity conversation only. No benchmark number enters
-          the allocation, and nothing here estimates any person&apos;s service need, eligibility, or
-          availability.
-        </p>
+        <p>{t("brief.capacityHud")}</p>
+        <p>{t("brief.capacityLocal")}</p>
+        <p>{t("brief.capacityBoundary")}</p>
       </details>
       <div className="brief-action">
         <div>
-          <span className="eyebrow">Portable output</span>
-          <p>
-            Copies the allocation with source, model, constraints, caveats, and human changes
-            attached.
-          </p>
+          <span className="eyebrow">{t("brief.portableEyebrow")}</span>
+          <p>{t("brief.portableLede")}</p>
         </div>
         <button
           className="button button-primary button-large"
@@ -568,7 +527,7 @@ export function BriefCluster() {
           onClick={copyBrief}
           type="button"
         >
-          Copy decision brief
+          {t("brief.copy")}
         </button>
       </div>
       {copyStatus && (
@@ -578,7 +537,7 @@ export function BriefCluster() {
       )}
       {copyStatus && (
         <details className="brief-preview" open>
-          <summary>Full decision brief</summary>
+          <summary>{t("brief.full")}</summary>
           <pre>{decisionBrief}</pre>
         </details>
       )}

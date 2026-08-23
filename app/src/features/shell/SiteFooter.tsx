@@ -1,11 +1,14 @@
+import { useTranslation } from "../../i18n/context";
+
 export function SiteFooter() {
+  const { t } = useTranslation();
   return (
     <footer className="footer">
       <div>
         <strong>Still Here SD</strong>
-        <span>See beyond the count. Plan the next shift.</span>
+        <span>{t("footer.tagline")}</span>
       </div>
-      <p>Aggregate places. Explicit uncertainty. Human decisions.</p>
+      <p>{t("footer.principles")}</p>
     </footer>
   );
 }

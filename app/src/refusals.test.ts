@@ -31,6 +31,8 @@ import { assertNoComplaintSignal, buildPlan, PlannerInputError } from "./domain/
 import { assertNoPersonDenominator } from "./domain/cost/cost.ts";
 import { AREA_PLANNING_INPUT_EXCLUDES_COMPLAINT_SIGNAL } from "./domain/planner/types.ts";
 import type { AreaPlanningInput, PlannerPolicy } from "./domain/planner/types.ts";
+import { CATALOGUES } from "./i18n/translate.ts";
+import { LOCALES, type Locale } from "./i18n/locale.ts";
 import { adaptDemoV1, EMBEDDED_DEMO, PLANNING_AREA_EXCLUDES_COMPLAINT_SIGNAL } from "./lib/demo.ts";
 import type { PlanningArea } from "./lib/demo.ts";
 import { applyIntervention } from "./lib/intervention.ts";
@@ -326,18 +328,83 @@ const CORPUS: Chunk[] = (() => {
 })();
 
 /**
- * Negation cues. A forbidden shape is permitted only inside a statement that
- * denies, excludes, or forbids it — which is how this product talks about
- * its own boundaries.
+ * Negation cues, in every language this product speaks. A forbidden shape is
+ * permitted only inside a statement that denies, excludes, or forbids it —
+ * which is how this product talks about its own boundaries.
  */
-const NEGATED =
+const NEGATED_EN =
   /\b(?:no|not|never|nor|none|nothing|neither|cannot|can'?t|does\s+not|doesn'?t|do\s+not|don'?t|must\s+not|may\s+never|will\s+not|won'?t|is\s+not|are\s+not|without|exclude[sd]?|excluding|exclusions?|excluded_uses|not_in_scope|forbidden|unauthorized|refuses?|refused|refusals?|prohibits?|prohibited|rather\s+than|instead\s+of|non-goal|out\s+of\s+scope|limitations?)\b/i;
+
+const NEGATED_ES =
+  /\b(?:no|ni|nunca|jam[aá]s|sin|ning[uú]n|ninguno|ninguna|ningunos|ningunas|nada|nadie|tampoco|excluid[oa]s?|excluid[oa]|excluye[n]?|excluir|exclusi[oó]n|exclusiones|fuera\s+de\s+objetivo|fuera\s+del\s+alcance|proh[ií]be[n]?|prohibid[oa]s?|rechaz[ao][ns]?|rechazad[oa]s?|se\s+niega|en\s+lugar\s+de|limitaci[oó]n|limitaciones|no\s+autoriza|no\s+es|no\s+son|no\s+puede[n]?|salvo)\b/i;
+
+const NEGATED = new RegExp(`${NEGATED_EN.source}|${NEGATED_ES.source}`, "i");
 
 interface Refusal {
   /** The README sentence this defends. */
   refusal: string;
   patterns: RegExp[];
 }
+
+/**
+ * The Spanish rules for the same four refusals.
+ *
+ * These exist because the English patterns are worthless against Spanish
+ * copy: nothing in `i18n/es.ts` contains the word "enforcement", so a
+ * catalogue that told a coordinator an area *necesita desalojo* would have
+ * passed the suite in silence. The refusals are a property of the product,
+ * not of one language, and they are only defended in the languages the
+ * scanner actually reads.
+ */
+const REFUSALS_ES: Refusal[] = [
+  {
+    refusal: "These people moved from one block or neighborhood to another.",
+    patterns: [
+      /\b(?:personas?|gente|individuos?|residentes?|ocupantes?|ellos|ellas|alguien)\b[^.]{0,60}?\b(?:se\s+(?:mudaron|mudó|trasladaron|trasladó|movieron|movió|desplazaron|desplazó|fueron)|acabaron\s+en|terminaron\s+en|fueron\s+desplazad\w+)\b/i,
+      /\b(?:se\s+mud\w+|se\s+traslad\w+|se\s+desplaz\w+)\b[^.]{0,40}?\bde\b[^.]{0,40}?\b(?:cuadra|barrio|área|area|zona)\b[^.]{0,40}?\ba\b/i,
+      /\bqui[eé]n\s+se\s+(?:mueve|mueven|muda|mudan|traslada|trasladan|movi[oó]|mud[oó]|traslad[oó])\s+a\s+d[oó]nde\b/i,
+      /\b(?:rastrea|rastrear|rastreo|sigue\s+la\s+pista|seguimiento)\b[^.]{0,30}\b(?:personas?|individuos?|gente)\b/i,
+    ],
+  },
+  {
+    refusal: "A policy caused the decline.",
+    patterns: [
+      /\b(?:caus[oó]|causaron|causa|causan|provoc[oó]|provocaron|origin[oó]|debido\s+a|a\s+causa\s+de|gracias\s+a|dio\s+lugar\s+a|result[oó]\s+en|se\s+debe\s+a)\b/i,
+      /\b(?:pol[ií]tica|ordenanza|desalojo|desalojos|programa|intervenci[oó]n|operativo)\w*\b[^.]{0,60}?\b(?:funcion[oó]|redujo|bajó|disminuy[oó]|explica|caus[oó])\b/i,
+      /\b(?:demuestra\s+que|prueba\s+que|confirma\s+que|comprueba\s+que)\b/i,
+    ],
+  },
+  {
+    refusal: "This area needs enforcement.",
+    patterns: [
+      /\baplicaci[oó]n\s+de\s+la\s+ley\b/i,
+      /\bdesalojos?\b/i,
+      /\bredadas?\b|\bbarridas?\b|\boperativos?\s+de\s+limpieza\b/i,
+      /\b(?:lista|orden|ranking)\s+de\s+(?:prioridad|prioridades|objetivos)\b/i,
+      /\bnecesita[n]?\s+(?:desalojo|polic[ií]a|vigilancia|limpieza|remoci[oó]n)\b/i,
+      /\bzonas?\s+calientes?\b|\bpuntos?\s+calientes?\b/i,
+    ],
+  },
+  {
+    refusal: "A shelter has capacity or someone is eligible for a service.",
+    patterns: [
+      /\bcapacidad\s+(?:de|del|en)\s+(?:refugio|refugios|albergue|albergues|servicio|servicios)\b/i,
+      /\bcamas\b[^.]{0,30}\b(?:disponibles?|libres?|esta\s+noche|restantes?)\b/i,
+      /\belegib\w+\b/i,
+      /\bcalifica[n]?\s+para\b|\bcalificad[oa]s?\s+para\b/i,
+      /\b(?:cupos?|espacios?|vacantes?)\s+(?:disponibles?|de\s+servicio)\b/i,
+      /\bdisponibilidad\s+en\s+tiempo\s+real\b/i,
+    ],
+  },
+  {
+    refusal: "Complaint volume is need, demand, or a reason to go somewhere.",
+    patterns: [
+      /\bordenad[oa]s?\s+por\s+(?:quejas|denuncias|311|reportes)\b/i,
+      /\b(?:quejas|denuncias|311|molestias|reportes?)\b[^.]{0,70}?\b(?:necesidad|demanda|gravedad|prioridad|ranking|clasifica\w*|peor|zona\s+caliente)\b/i,
+      /\b(?:d[oó]nde|[aá]reas?)\b[^.]{0,40}?\b(?:la\s+gente\s+est[aá]\s+molesta|m[aá]s\s+quejas|m[aá]s\s+denuncias)\b/i,
+    ],
+  },
+];
 
 const REFUSALS: Refusal[] = [
   {
@@ -400,10 +467,18 @@ interface Violation {
   text: string;
 }
 
-function scan(chunks: Chunk[]): Violation[] {
+/**
+ * Every rule set, applied to every chunk. A Spanish pattern cannot match
+ * English prose and vice versa, so running both over everything costs nothing
+ * and closes the gap where a translated string is scanned by the rules of the
+ * language it is no longer written in.
+ */
+const ALL_REFUSALS: Refusal[] = [...REFUSALS, ...REFUSALS_ES];
+
+function scan(chunks: Chunk[], rules: Refusal[] = ALL_REFUSALS): Violation[] {
   const violations: Violation[] = [];
   for (const chunk of chunks) {
-    for (const { refusal, patterns } of REFUSALS) {
+    for (const { refusal, patterns } of rules) {
       for (const pattern of patterns) {
         const match = pattern.exec(chunk.text);
         if (!match) continue;
@@ -887,6 +962,128 @@ describe("refusal: the four claims the product will not make", () => {
       {
         where: "probe",
         text: "Clearing an area adds no shelter capacity.",
+        context: "",
+      },
+    ];
+    expect(scan(disclaimers)).toEqual([]);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * 3b. The four claims, in every language the product speaks
+ * ------------------------------------------------------------------ */
+
+/**
+ * The refusals are a property of the product, not of English.
+ *
+ * The scan above reads source files, so a message catalogue is already in the
+ * corpus — but "already in the corpus" is exactly the kind of accident that
+ * stops being true after one refactor, and it says nothing about whether the
+ * *rules* can see the language the copy is written in. This block names each
+ * locale, scans its catalogue, and proves the rules fire on that language's
+ * own wording. Adding a locale without adding its rules fails here.
+ */
+const CATALOGUE_CHUNKS: Record<Locale, Chunk[]> = Object.fromEntries(
+  LOCALES.map((locale) => {
+    const chunks: Chunk[] = [];
+    let previous = "";
+    for (const [key, text] of Object.entries(CATALOGUES[locale])) {
+      chunks.push({ where: `i18n/${locale}.ts (${key})`, text, context: previous });
+      previous = text;
+    }
+    return [locale, chunks];
+  }),
+) as Record<Locale, Chunk[]>;
+
+/** Rewordings that must be caught in Spanish, one per refusal. */
+const ES_PROBES: Record<string, string[]> = {
+  "These people moved from one block or neighborhood to another.": [
+    "Unos 40 residentes se trasladaron a Gaslamp en el mismo periodo.",
+    "Las personas contadas aquí se mudaron al barrio vecino.",
+    "Esta vista rastrea personas por todo el centro.",
+  ],
+  "A policy caused the decline.": [
+    "La ordenanza redujo el conteo del centro en 14%.",
+    "La caída se debe a la política sobre campamentos.",
+    "Esto confirma que el programa nuevo funcionó.",
+  ],
+  "This area needs enforcement.": [
+    "East Village necesita desalojo esta semana.",
+    "Use esta lista de prioridad para programar la próxima barrida.",
+    "Las cuadras con más desalojos aparecen primero.",
+  ],
+  "A shelter has capacity or someone is eligible for a service.": [
+    "Hay 12 camas disponibles esta noche.",
+    "Cualquiera contado aquí es elegible para el programa puente.",
+    "La capacidad de servicio para esta área es suficiente.",
+  ],
+  "Complaint volume is need, demand, or a reason to go somewhere.": [
+    "Las áreas están ordenadas por quejas para ir a donde la gente está molesta.",
+    "El volumen de 311 es la mejor aproximación disponible de la demanda.",
+    "La gravedad de las denuncias clasifica los seis barrios.",
+  ],
+};
+
+describe("refusal: the four claims are refused in every language, not only English", () => {
+  it("ships a rule set for every locale the app can be read in", () => {
+    expect(LOCALES).toContain("en");
+    expect(LOCALES).toContain("es");
+    // One rule set per locale, so a new language cannot be added silently.
+    expect([REFUSALS, REFUSALS_ES]).toHaveLength(LOCALES.length);
+    for (const rules of [REFUSALS, REFUSALS_ES]) {
+      expect(rules.map((rule) => rule.refusal).sort()).toEqual(
+        REFUSALS.map((rule) => rule.refusal).sort(),
+      );
+    }
+  });
+
+  for (const locale of LOCALES) {
+    it(`extracts a catalogue for ${locale} large enough to be meaningful`, () => {
+      expect(CATALOGUE_CHUNKS[locale].length).toBeGreaterThan(500);
+    });
+
+    it(`emits no ${locale} message carrying a forbidden claim`, () => {
+      const violations = scan(CATALOGUE_CHUNKS[locale]);
+      expect(
+        violations.map((v) => `${v.where}: [${v.refusal}] matched "${v.matched}" in "${v.text}"`),
+      ).toEqual([]);
+    });
+  }
+
+  it("keeps every locale's key set identical, so no screen is half-translated", () => {
+    const reference = Object.keys(CATALOGUES.en).sort();
+    for (const locale of LOCALES) {
+      expect(Object.keys(CATALOGUES[locale]).sort(), locale).toEqual(reference);
+    }
+  });
+
+  for (const { refusal } of REFUSALS_ES) {
+    it(`catches a Spanish rewording of: ${refusal}`, () => {
+      for (const probe of ES_PROBES[refusal] ?? []) {
+        const violations = scan([{ where: "probe", text: probe, context: "" }], REFUSALS_ES);
+        expect(
+          violations.map((v) => v.refusal),
+          `no Spanish pattern matched the probe: ${probe}`,
+        ).toContain(refusal);
+      }
+    });
+  }
+
+  it("still allows the Spanish copy to name a refusal in order to disclaim it", () => {
+    const disclaimers: Chunk[] = [
+      {
+        where: "probe",
+        text: "el seguimiento de personas, las afirmaciones causales, la aplicación de la ley, las decisiones de elegibilidad ni el despacho automático.",
+        context: "Nunca se autoriza:",
+      },
+      {
+        where: "probe",
+        text: "Estas son observaciones hechas en el lugar: no pueden decir quién se movió a dónde, ni por qué.",
+        context: "",
+      },
+      {
+        where: "probe",
+        text: "Despejar un área no agrega capacidad de refugio.",
         context: "",
       },
     ];

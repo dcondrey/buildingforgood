@@ -1,5 +1,6 @@
 import { AREA_MAP_GEOMETRY } from "./areaGeometry";
 import type { DemoData } from "../../lib/demo";
+import { useTranslation } from "../../i18n/context";
 
 export function AreaMap({
   areas,
@@ -18,6 +19,7 @@ export function AreaMap({
   selectedId?: string | null;
   onSelect?: (areaId: string) => void;
 }) {
+  const { t } = useTranslation();
   if (!areas.every((area) => AREA_MAP_GEOMETRY[area.id])) {
     return (
       <div aria-label={ariaLabel} className="area-map" role="img">
@@ -60,7 +62,9 @@ export function AreaMap({
         const selected = selectedId === area.id;
         return (
           <g
-            aria-label={interactive ? `${area.name}: ${value.text}` : undefined}
+            aria-label={
+              interactive ? t("map.areaValue", { area: area.name, value: value.text }) : undefined
+            }
             aria-pressed={interactive ? selected : undefined}
             className={`map-area map-${value.tone} ${selected ? "map-selected" : ""}`}
             key={area.id}
@@ -92,15 +96,15 @@ export function AreaMap({
             <text className="map-value" textAnchor="middle" x={cell.label.x} y={cell.label.y + 13}>
               {value.text}
             </text>
-            <title>{`${area.name}: ${value.text}`}</title>
+            <title>{t("map.areaValue", { area: area.name, value: value.text })}</title>
           </g>
         );
       })}
       <text className="map-edge" textAnchor="middle" transform="rotate(-42 22 122)" x="22" y="122">
-        San Diego Bay
+        {t("map.bay")}
       </text>
       <text className="map-edge" textAnchor="middle" transform="rotate(90 155 100)" x="155" y="100">
-        I-5
+        {t("map.freeway")}
       </text>
     </svg>
   );

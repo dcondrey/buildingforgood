@@ -11,16 +11,17 @@ import { ShellProvider } from "./features/shell/ShellContext";
 import { SiteFooter } from "./features/shell/SiteFooter";
 import { TopBar } from "./features/shell/TopBar";
 import { useShellState } from "./features/shell/useShellState";
+import { translate } from "./i18n/translate";
 import { WorkspaceView } from "./features/workspace/WorkspaceView";
 
 function App() {
   const shell = useShellState();
-  const { disclosuresOpen, guideIndex, projectorMode, view } = shell;
+  const { disclosuresOpen, guideIndex, locale, projectorMode, view } = shell;
   return (
     <ShellProvider value={shell}>
       <div className={`app-shell ${projectorMode ? "projector-mode" : ""}`}>
         <a className="skip-link" href={view === "workspace" ? "#workspace" : "#drop-test"}>
-          Skip to decision
+          {translate(locale, "app.skipToDecision")}
         </a>
 
         <TopBar />

@@ -11,7 +11,8 @@ import { useShell } from "../../features/shell/ShellContext";
 import { AreaDetailPanel } from "../../features/spatial/AreaDetailPanel";
 import { AreaMap } from "../../features/spatial/AreaMap";
 import { MapValueTable } from "../../features/spatial/MapValueTable";
-import { formatNumber } from "../../lib/format";
+import { useTranslation } from "../../i18n/context";
+import { planReason } from "../../i18n/plannerText";
 
 export function WorkspaceView() {
   const {
@@ -20,15 +21,16 @@ export function WorkspaceView() {
     compareById,
     coverageFloor,
     data,
-    deployment,
     guardEnabled,
     intervention,
     interventionResult,
     lockedIds,
     mapLayer,
     maxHours,
+    placeText,
     plan,
     planDirty,
+    planSentence,
     planningAreas,
     runPlan,
     selectedArea,
@@ -39,16 +41,17 @@ export function WorkspaceView() {
     unmetByArea,
     wsTab,
   } = useShell();
+  const { t, number, signed } = useTranslation();
   return (
     <div className="workspace" id="workspace">
-      <section aria-label="Plan map stage" className="ws-stage">
+      <section aria-label={t("workspace.stageAria")} className="ws-stage">
         <div className="ws-stage-head">
-          <div aria-label="Map layer" className="ws-layers" role="group">
+          <div aria-label={t("workspace.layerAria")} className="ws-layers" role="group">
             {(
               [
-                ["hours", "Planned hours"],
-                ["change", "Observed change"],
-                ["unmet", "Unmet load"],
+                ["hours", "workspace.layerHours"],
+                ["change", "workspace.layerChange"],
+                ["unmet", "workspace.layerUnmet"],
               ] as const
             ).map(([layer, label]) => (
               <button
@@ -58,7 +61,7 @@ export function WorkspaceView() {
                 onClick={() => setMapLayer(layer)}
                 type="button"
               >
-                {label}
+                {t(label)}
               </button>
             ))}
           </div>
@@ -66,13 +69,14 @@ export function WorkspaceView() {
         </div>
         <AreaMap
           areas={mapLayer === "change" ? data.areas : planningAreas}
-          ariaLabel={
+          ariaLabel={t(
             mapLayer === "hours"
-              ? `Map of the ${deployment.areaCountWord} ${deployment.areaNounPlural} showing planned staff-hours; select one for detail`
+              ? "map.ariaHours"
               : mapLayer === "change"
-                ? `Map of the ${deployment.areaCountWord} ${deployment.areaNounPlural} showing the change in raw field observations; select one for detail`
-                : `Map of the ${deployment.areaCountWord} ${deployment.areaNounPlural} showing unmet planning load in hours; select one for detail`
-          }
+                ? "map.ariaChange"
+                : "map.ariaUnmet",
+            placeText,
+          )}
           onSelect={(areaId) => {
             toggleAreaSelection(areaId);
             setWsTab("area");
@@ -80,10 +84,10 @@ export function WorkspaceView() {
           selectedId={selectedAreaId}
           valueFor={(area) => {
             if (mapLayer === "change") {
-              if (area.latest === null) return { text: "no data", tone: "missing" };
+              if (area.latest === null) return { text: t("map.noData"), tone: "missing" };
               const maxDelta = Math.max(1, ...data.areas.map((row) => Math.abs(row.delta)));
               return {
-                text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                text: signed(area.delta),
                 tone: area.delta > 0 ? "up" : "down",
                 intensity: Math.abs(area.delta) / maxDelta,
               };
@@ -92,7 +96,7 @@ export function WorkspaceView() {
               const unmet = unmetByArea.get(area.id) ?? 0;
               const maxUnmet = Math.max(1, ...Array.from(unmetByArea.values()));
               return {
-                text: `${unmet}h`,
+                text: t("map.hoursValue", { hours: unmet }),
                 tone: unmet > 0 ? "down" : "neutral",
                 intensity: unmet / maxUnmet,
               };
@@ -100,78 +104,82 @@ export function WorkspaceView() {
             const hours = allocationById.get(area.id) ?? 0;
             const belowFloor = guardEnabled && hours < coverageFloor;
             return {
-              text: `${hours}h${belowFloor ? " !" : ""}`,
+              text: t(belowFloor ? "map.hoursBelowFloor" : "map.hoursValue", { hours }),
               tone: belowFloor ? "down" : "neutral",
               intensity: hours / maxHours,
             };
           }}
         />
         <p className="map-caption">
-          {mapLayer === "hours"
-            ? "Planned staff-hours by neighborhood"
-            : mapLayer === "change"
-              ? "Change in raw field observations, latest same-month comparison"
-              : "Hours the minimums moved away from the forecast split"}
-          {" · simplified neighborhood boundaries · not a count of people"}
+          {t(
+            mapLayer === "hours"
+              ? "workspace.captionHours"
+              : mapLayer === "change"
+                ? "workspace.captionChange"
+                : "workspace.captionUnmet",
+          )}
+          {t("workspace.captionTail")}
           {intervention
-            ? ` · ${data.areas.find((area) => area.id === intervention.areaId)?.name ?? ""} modeled as cleared (assumption)`
+            ? t("map.captionAssumption", {
+                area: data.areas.find((area) => area.id === intervention.areaId)?.name ?? "",
+              })
             : ""}
         </p>
         <details className="ws-table">
-          <summary>View map values as a table</summary>
+          <summary>{t("table.viewAsTable")}</summary>
           <MapValueTable
-            caption={
+            caption={t(
               mapLayer === "hours"
-                ? "Planned staff-hours by neighborhood"
+                ? "table.captionPlanned"
                 : mapLayer === "change"
-                  ? "Observed change by neighborhood"
-                  : "Unmet planning load by neighborhood"
-            }
+                  ? "table.captionObservedChange"
+                  : "table.captionUnmet",
+            )}
             rows={(mapLayer === "change" ? data.areas : planningAreas).map((area) => {
               if (mapLayer === "change") {
                 return {
                   name: area.name,
-                  value: area.latest === null ? "—" : `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                  value: area.latest === null ? "—" : signed(area.delta),
                   state:
                     area.latest === null
-                      ? "No recent observation"
+                      ? t("state.noRecentObservation")
                       : area.delta > 0
-                        ? "More observed units"
-                        : "Fewer observed units",
+                        ? t("state.moreObservedUnits")
+                        : t("state.fewerObservedUnits"),
                 };
               }
               if (mapLayer === "unmet") {
                 const unmet = unmetByArea.get(area.id) ?? 0;
                 return {
                   name: area.name,
-                  value: `${unmet}h`,
-                  state: unmet > 0 ? "Load moved by minimums" : "Follows forecast",
+                  value: t("map.hoursValue", { hours: unmet }),
+                  state: unmet > 0 ? t("state.loadMovedByMinimums") : t("state.followsForecast"),
                 };
               }
               const hours = allocationById.get(area.id) ?? 0;
               return {
                 name: area.name,
-                value: `${hours}h`,
+                value: t("map.hoursValue", { hours }),
                 state: lockedIds.has(area.id)
-                  ? "Human lock"
+                  ? t("state.humanLock")
                   : !guardEnabled
-                    ? "No minimum"
+                    ? t("state.noMinimum")
                     : hours < coverageFloor
-                      ? "Below minimum"
-                      : "Minimum met",
+                      ? t("state.belowMinimum")
+                      : t("state.minimumMet"),
               };
             })}
           />
         </details>
       </section>
-      <aside aria-label="Inspector" className="ws-inspector">
-        <div aria-label="Inspector sections" className="ws-tabs" role="group">
+      <aside aria-label={t("workspace.inspectorAria")} className="ws-inspector">
+        <div aria-label={t("workspace.tabsAria")} className="ws-tabs" role="group">
           {(
             [
-              ["plan", "Plan"],
-              ["area", "Area"],
-              ["scenarios", "Scenarios"],
-              ["brief", "Brief"],
+              ["plan", "workspace.tabPlan"],
+              ["area", "workspace.tabArea"],
+              ["scenarios", "workspace.tabScenarios"],
+              ["brief", "workspace.tabBrief"],
             ] as const
           ).map(([tab, label]) => (
             <button
@@ -181,7 +189,7 @@ export function WorkspaceView() {
               onClick={() => setWsTab(tab)}
               type="button"
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </div>
@@ -195,9 +203,9 @@ export function WorkspaceView() {
                 <div className="infeasible" role="alert">
                   <span>!</span>
                   <div>
-                    <h3>No feasible plan</h3>
-                    <p>{plan.message}</p>
-                    <p>Increase the budget, remove a lock, or explicitly revise the floor.</p>
+                    <h3>{t("planner.infeasibleTitle")}</h3>
+                    <p>{planSentence}</p>
+                    <p>{t("planner.infeasibleAdvice")}</p>
                   </div>
                 </div>
               ) : (
@@ -210,7 +218,7 @@ export function WorkspaceView() {
                       onClick={() => runPlan()}
                       type="button"
                     >
-                      Recompute unlocked hours
+                      {t("planner.recompute")}
                     </button>
                   )}
                 </>
@@ -221,75 +229,82 @@ export function WorkspaceView() {
             <>
               <AreaDetailPanel
                 area={selectedArea}
-                empty="Select a neighborhood on the map to open its dossier."
-                kicker="Area dossier"
-                note={selectedArea?.reason}
+                empty={t("detail.emptyDossier")}
+                kicker={t("detail.kickerDossier")}
+                note={selectedArea ? planReason(t, selectedArea.reason) : undefined}
                 rows={
                   selectedArea
                     ? [
                         {
-                          label: "Observed change",
+                          label: t("detail.observedChange"),
                           value:
                             selectedArea.latest === null
-                              ? "no recent observation"
-                              : `${selectedArea.delta > 0 ? "+" : ""}${selectedArea.delta} units`,
-                          hint: "raw field observations, same month",
+                              ? t("detail.noRecentObservation")
+                              : t("detail.unitsDelta", { delta: signed(selectedArea.delta) }),
+                          hint: t("detail.hintRawSameMonth"),
                         },
                         {
-                          label: "Latest count",
-                          value:
-                            selectedArea.latest === null ? "—" : formatNumber(selectedArea.latest),
-                          hint: "latest monthly observation",
+                          label: t("detail.latestCount"),
+                          value: selectedArea.latest === null ? "—" : number(selectedArea.latest),
+                          hint: t("detail.hintLatestMonthly"),
                         },
                         {
-                          label: "Planning load",
-                          value: formatNumber(
+                          label: t("detail.planningLoad"),
+                          value: number(
                             planningAreas.find((area) => area.id === selectedArea.id)
                               ?.planningLoad ?? selectedArea.planningLoad,
                             1,
                           ),
                           hint:
                             intervention && interventionResult
-                              ? "adjusted by the active assumption"
-                              : "weights the remaining hours",
+                              ? t("detail.hintAdjustedByAssumption")
+                              : t("detail.hintWeightsRemaining"),
                         },
                         {
-                          label: "Planned hours",
-                          value: `${allocationById.get(selectedArea.id) ?? 0}h`,
+                          label: t("detail.plannedHours"),
+                          value: t("map.hoursValue", {
+                            hours: allocationById.get(selectedArea.id) ?? 0,
+                          }),
                           hint: lockedIds.has(selectedArea.id)
-                            ? "human lock"
+                            ? t("detail.hintHumanLock")
                             : guardEnabled
-                              ? `${coverageFloor}h minimum guaranteed`
-                              : "no minimum enforced",
+                              ? t("detail.hintMinimumGuaranteed", { floor: coverageFloor })
+                              : t("detail.hintNoMinimumEnforced"),
                         },
                         {
-                          label: "Unmet load",
-                          value: `${unmetByArea.get(selectedArea.id) ?? 0}h`,
-                          hint: "hours moved by minimums and locks",
+                          label: t("detail.unmetLoad"),
+                          value: t("map.hoursValue", {
+                            hours: unmetByArea.get(selectedArea.id) ?? 0,
+                          }),
+                          hint: t("detail.hintMovedByMinimums"),
                         },
                         {
-                          label: "Held-out WAPE",
+                          label: t("detail.heldOutWape"),
                           value:
                             selectedArea.auditWape === null
-                              ? "not audited"
-                              : `${formatNumber(selectedArea.auditWape, 1)}%`,
+                              ? t("detail.notAudited")
+                              : t("detail.wapeValue", {
+                                  wape: number(selectedArea.auditWape, 1),
+                                }),
                           hint:
                             selectedArea.auditWape !== null && selectedArea.auditWape > 30
-                              ? "noisy — human review required"
-                              : "2025 held-out audit",
+                              ? t("detail.hintNoisyReview")
+                              : t("detail.hint2025Audit"),
                           flagged: selectedArea.auditWape !== null && selectedArea.auditWape > 30,
                         },
                         ...(compareById
                           ? [
                               {
-                                label: "Vs saved scenario",
+                                label: t("detail.vsSavedScenario"),
                                 value: (() => {
                                   const delta =
                                     (allocationById.get(selectedArea.id) ?? 0) -
                                     (compareById.get(selectedArea.id) ?? 0);
-                                  return delta === 0 ? "same" : `${delta > 0 ? "+" : ""}${delta}h`;
+                                  return delta === 0
+                                    ? t("detail.same")
+                                    : t("detail.deltaHours", { delta: signed(delta) });
                                 })(),
-                                hint: "current plan minus pinned scenario",
+                                hint: t("detail.hintVsPinned"),
                               },
                             ]
                           : []),

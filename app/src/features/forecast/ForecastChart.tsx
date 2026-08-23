@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { DemoData, HistoryPoint } from "../../lib/demo";
-import { formatNumber } from "../../lib/format";
+import { useTranslation } from "../../i18n/context";
 
 export function ForecastChart({
   history,
@@ -12,6 +12,7 @@ export function ForecastChart({
   // Hover crosshair for sighted mouse users; index into history, or -1 for the
   // scenario point. Keyboard and screen-reader users get the same values from
   // the svg label and per-point titles, so nothing here is focusable.
+  const { t, number: formatNumber } = useTranslation();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const width = 760;
   const height = 300;
@@ -47,16 +48,18 @@ export function ForecastChart({
   return (
     <div className="chart-wrap">
       <svg
-        aria-label={`Historical one-step-ahead planning scenario for ${data.targetPeriod}, using data frozen December 2025: point ${formatNumber(data.point)}, with a ${formatNumber(data.lower)} to ${formatNumber(data.upper)} residual interval.`}
+        aria-label={t("chart.aria", {
+          period: data.targetPeriod,
+          point: formatNumber(data.point),
+          lower: formatNumber(data.lower),
+          upper: formatNumber(data.upper),
+        })}
         className="forecast-chart"
         role="img"
         viewBox={`0 0 ${width} ${height}`}
       >
-        <title>Historical one-step-ahead planning scenario and residual interval</title>
-        <desc>
-          Observed monthly history with missing periods shown as gaps, followed by a historical
-          scenario point and its residual interval.
-        </desc>
+        <title>{t("chart.title")}</title>
+        <desc>{t("chart.desc")}</desc>
         {[0, maxValue / 2, maxValue].map((tick) => (
           <g key={tick}>
             <line
@@ -117,7 +120,7 @@ export function ForecastChart({
           point.value === null ? (
             <g key={point.period}>
               <circle className="missing-point" cx={x(index)} cy={y(0)} r="5" />
-              <title>{point.period}: missing</title>
+              <title>{t("chart.pointMissing", { period: point.period })}</title>
             </g>
           ) : (
             <circle
@@ -127,9 +130,7 @@ export function ForecastChart({
               key={point.period}
               r="4"
             >
-              <title>
-                {point.period}: {point.value}
-              </title>
+              <title>{t("chart.pointValue", { period: point.period, value: point.value })}</title>
             </circle>
           ),
         )}
@@ -143,15 +144,19 @@ export function ForecastChart({
                 ? {
                     px: forecastX,
                     py: y(data.point),
-                    label: `${data.targetPeriod} scenario`,
-                    value: `${formatNumber(data.point)} (${formatNumber(data.lower)}–${formatNumber(data.upper)})`,
+                    label: t("chart.scenarioLabel", { period: data.targetPeriod }),
+                    value: t("chart.scenarioValue", {
+                      point: formatNumber(data.point),
+                      lower: formatNumber(data.lower),
+                      upper: formatNumber(data.upper),
+                    }),
                   }
                 : history[hoverIndex].value === null
                   ? {
                       px: x(hoverIndex),
                       py: y(0),
                       label: history[hoverIndex].period,
-                      value: "not reported",
+                      value: t("chart.notReported"),
                     }
                   : {
                       px: x(hoverIndex),
@@ -235,7 +240,7 @@ export function ForecastChart({
           y={height - 22}
           textAnchor="middle"
         >
-          {data.targetPeriod.replace(/\s\d{4}$/, "")} scenario
+          {t("chart.scenarioLabel", { period: data.targetPeriod.replace(/\s\d{4}$/, "") })}
         </text>
         <text
           className="interval-label"
@@ -243,21 +248,24 @@ export function ForecastChart({
           y={Math.max(14, y(data.upper) - 8)}
           textAnchor="end"
         >
-          {formatNumber(data.lower)}–{formatNumber(data.upper)} range
+          {t("chart.rangeLabel", {
+            lower: formatNumber(data.lower),
+            upper: formatNumber(data.upper),
+          })}
         </text>
       </svg>
       <div aria-hidden="true" className="chart-legend">
         <span>
           <i className="legend-observed" />
-          Observed
+          {t("chart.legendObserved")}
         </span>
         <span>
           <i className="legend-forecast" />
-          Forecast (rehearsal)
+          {t("chart.legendForecast")}
         </span>
         <span>
           <i className="legend-range" />
-          Likely range, from past errors
+          {t("chart.legendRange")}
         </span>
       </div>
     </div>

@@ -11,9 +11,13 @@
  * Presentational and self-contained on purpose: it takes everything it says
  * as props, holds no state, imports no styling, and reaches for no globals,
  * so the workstream that owns the shell can drop it in without untangling it.
+ * The one thing it does read is the locale, which defaults to English when it
+ * is rendered outside the shell.
  */
 
 import { useId } from "react";
+
+import { useTranslation } from "../../i18n/context";
 
 export interface ActualsEmptyStateProps {
   /** The operator's own name for their engagement measure, e.g. `street contacts`. */
@@ -27,52 +31,40 @@ export interface ActualsEmptyStateProps {
 }
 
 export function ActualsEmptyState({
-  measureLabel = "contacts or engagements",
+  measureLabel,
   organizationName,
   docsHref = "docs/project/ACTUALS.md",
   headingLevel = 3,
 }: ActualsEmptyStateProps) {
   const headingId = useId();
+  const { t, tx } = useTranslation();
   const Heading = `h${headingLevel}` as "h2" | "h3" | "h4";
-  const who = organizationName ?? "The operating organization";
+  const who = organizationName ?? t("actuals.defaultWho");
+  const measure = measureLabel ?? t("actuals.defaultMeasure");
 
   return (
     <section aria-labelledby={headingId} data-state="actuals-empty">
-      <Heading id={headingId}>No actuals recorded yet</Heading>
+      <Heading id={headingId}>{t("actuals.title")}</Heading>
 
-      <p>
-        Nothing here is missing or broken. No one has reported delivered hours to this deployment,
-        so there is nothing to show — and an empty month is not a month with zero outreach.
-      </p>
+      <p>{t("actuals.lede")}</p>
 
-      <p>{who} would supply, once a month, one row per planning area:</p>
+      <p>{t("actuals.wouldSupply", { who })}</p>
       <ul>
         <li>
-          <strong>Planned hours</strong> — the staff hours the plan called for in that area.
+          <strong>{t("actuals.plannedHours")}</strong> — {t("actuals.plannedHoursText")}
         </li>
         <li>
-          <strong>Delivered hours</strong> — the staff hours actually worked there. Zero is a real
-          answer and the one most worth recording honestly.
+          <strong>{t("actuals.deliveredHours")}</strong> — {t("actuals.deliveredHoursText")}
         </li>
         <li>
-          <strong>One engagement count</strong> — {measureLabel}, in whatever the organization
-          already counts. A number of encounters, never a list of people. Counts of one to four are
-          withheld under the same small-cell rule that governs every other number here, and show as
-          withheld rather than as zero.
+          <strong>{t("actuals.engagementCount")}</strong> —{" "}
+          {t("actuals.engagementCountText", { measure })}
         </li>
       </ul>
 
-      <p>
-        The format is one JSON file against <code>config/schema/actuals.v1.schema.json</code>, at
-        area-and-month grain. Names, dates of birth, client or case identifiers, case-management
-        exports, addresses, coordinates, and any per-person or per-encounter row are refused at
-        import: this tool has no concept of a person as an entity and is not the place to build one.
-      </p>
+      <p>{tx("actuals.format")}</p>
 
-      <p>
-        Full instructions, including what will and will not later be computed from these numbers,
-        are in <code>{docsHref}</code>.
-      </p>
+      <p>{tx("actuals.instructions", { docs: docsHref })}</p>
     </section>
   );
 }

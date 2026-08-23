@@ -1,4 +1,6 @@
 import { useShell } from "./ShellContext";
+import { useTranslation } from "../../i18n/context";
+import { shareRefusalDetail } from "../../i18n/shareText";
 import "./shell-notices.css";
 
 /**
@@ -13,24 +15,18 @@ import "./shell-notices.css";
  */
 export function ShareRefusalNotice() {
   const { shareRefusal } = useShell();
+  const { t } = useTranslation();
   if (!shareRefusal) return null;
   const geography = shareRefusal.field === "geography";
+  const detail = shareRefusalDetail(t, shareRefusal.detail);
   return (
-    <aside aria-label="Shared link" className="share-refusal">
-      <span className="eyebrow">Shared link</span>
-      {geography ? (
-        <p>
-          This link was built against a different list of areas ({shareRefusal.detail}). Hours and
-          area names do not carry across geographies, so it was not applied. You are looking at the
-          default plan for this deployment, not the sender&apos;s.
-        </p>
-      ) : (
-        <p>
-          This link could not be read ({shareRefusal.field}: {shareRefusal.detail}). You are looking
-          at the default plan, not the sender&apos;s. Ask them to send the link again, unwrapped and
-          unshortened.
-        </p>
-      )}
+    <aside aria-label={t("share.refusalAria")} className="share-refusal">
+      <span className="eyebrow">{t("share.refusalEyebrow")}</span>
+      <p>
+        {geography
+          ? t("share.refusalGeography", { detail })
+          : t("share.refusalUnreadable", { field: shareRefusal.field, detail })}
+      </p>
     </aside>
   );
 }

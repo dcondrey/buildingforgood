@@ -1,94 +1,90 @@
 import { useShell } from "../../features/shell/ShellContext";
-import { formatDate } from "../../lib/format";
+import { useTranslation } from "../../i18n/context";
 
 export function DisclosurePanel() {
-  const { data, deployment, setDisclosuresOpen } = useShell();
+  const { data, deployment, places, setDisclosuresOpen } = useShell();
+  const { t, tx, date } = useTranslation();
+  const currency = data.currency;
   return (
-    <aside
-      aria-label="Data and limitation disclosures"
-      className="disclosure-drawer"
-      id="disclosures"
-    >
+    <aside aria-label={t("disclosure.aria")} className="disclosure-drawer" id="disclosures">
       <div>
-        <span className="eyebrow">Local artifact</span>
-        <h2>Traceable by design</h2>
+        <span className="eyebrow">{t("disclosure.eyebrow")}</span>
+        <h2>{t("disclosure.title")}</h2>
       </div>
       <dl>
         <div>
-          <dt>Source</dt>
+          <dt>{t("disclosure.source")}</dt>
           <dd>{data.source.label}</dd>
         </div>
         <div>
-          <dt>Currency</dt>
+          <dt>{t("disclosure.currency")}</dt>
           <dd>
-            {data.currency
-              ? `Source data through ${data.currency.sourceDataThrough}; ${
-                  data.currency.status === "stale"
-                    ? "publication overdue"
-                    : "publication on cadence"
-                }.`
-              : "This artifact states no currency. Freshness is unknown and is not inferred."}
+            {currency
+              ? t(
+                  currency.status === "stale"
+                    ? "disclosure.currencyOverdue"
+                    : "disclosure.currencyOnCadence",
+                  { month: currency.sourceDataThrough },
+                )
+              : t("disclosure.currencyNone")}
           </dd>
         </div>
         <div>
-          <dt>Coverage through</dt>
-          <dd>{formatDate(data.source.retrievedAt)}</dd>
+          <dt>{t("disclosure.coverageThrough")}</dt>
+          <dd>{date(data.source.retrievedAt)}</dd>
         </div>
         <div>
-          <dt>Loaded from</dt>
+          <dt>{t("disclosure.loadedFrom")}</dt>
           <dd>
             <code>{data.source.artifact}</code>
           </dd>
         </div>
         <div>
-          <dt>Organization profile</dt>
+          <dt>{t("disclosure.organizationProfile")}</dt>
           <dd>
-            {deployment.organizationName} · <code>{deployment.profileId}</code>. Owned by the{" "}
-            {deployment.ownerRole.toLowerCase()}.
+            {tx("disclosure.organizationProfileValue", {
+              organization: deployment.organizationName,
+              profileId: deployment.profileId,
+              role: deployment.ownerRole.toLowerCase(),
+            })}
           </dd>
         </div>
         <div>
-          <dt>Operating parameters</dt>
+          <dt>{t("disclosure.operatingParameters")}</dt>
           <dd>
-            {deployment.areaCount} {deployment.areaNounPlural} in scope; {deployment.defaultBudget}
-            -staff-hour default budget over the {deployment.planningHorizonLabel} (
-            {deployment.planningHorizonDays} days); {deployment.coverageFloor}h coverage floor;{" "}
-            {deployment.continuityReserve}h continuity reserve; {deployment.allocationIncrement}
-            -hour allocation increments; {deployment.teamCount} teams on{" "}
-            {deployment.shiftLengthHours}-hour shifts. Every one of these is a profile value, not a
-            constant in this build.
+            {t("disclosure.operatingParametersValue", {
+              areaCount: deployment.areaCount,
+              areaNounPlural: places.nounPlural,
+              budget: deployment.defaultBudget,
+              horizonLabel: deployment.planningHorizonLabel,
+              horizonDays: deployment.planningHorizonDays,
+              floor: deployment.coverageFloor,
+              reserve: deployment.continuityReserve,
+              increment: deployment.allocationIncrement,
+              teams: deployment.teamCount,
+              shift: deployment.shiftLengthHours,
+            })}
           </dd>
         </div>
         <div>
-          <dt>Privacy</dt>
-          <dd>
-            No block records or block-level geometry; the map draws simplified neighborhood
-            boundaries only. Small per-area component cells are omitted.
-          </dd>
+          <dt>{t("disclosure.privacy")}</dt>
+          <dd>{t("disclosure.privacyValue")}</dd>
         </div>
         <div>
-          <dt>AI use</dt>
-          <dd>
-            Development assistance only; no AI runs in the product or determines evidence,
-            forecasts, or allocations.
-          </dd>
+          <dt>{t("disclosure.aiUse")}</dt>
+          <dd>{t("disclosure.aiUseValue")}</dd>
         </div>
         <div>
-          <dt>Non-goal</dt>
-          <dd>No tracking, enforcement, eligibility, or automatic dispatch.</dd>
+          <dt>{t("disclosure.nonGoal")}</dt>
+          <dd>{t("disclosure.nonGoalValue")}</dd>
         </div>
         <div>
-          <dt>Pending requests</dt>
-          <dd>
-            Data requests are pending with the San Diego Housing Commission, the Regional Task Force
-            on Homelessness, the City&apos;s Homelessness Strategies &amp; Solutions department, and
-            DSDP Clean &amp; Safe. Responsive records enter the source ledger&apos;s documented
-            lanes before any analytical use.
-          </dd>
+          <dt>{t("disclosure.pendingRequests")}</dt>
+          <dd>{t("disclosure.pendingRequestsValue")}</dd>
         </div>
       </dl>
       <button
-        aria-label="Close data and limits"
+        aria-label={t("disclosure.close")}
         className="drawer-close"
         onClick={() => setDisclosuresOpen(false)}
         type="button"

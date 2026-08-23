@@ -5,18 +5,18 @@ import { useShell } from "../../features/shell/ShellContext";
 import { AreaDetailPanel } from "../../features/spatial/AreaDetailPanel";
 import { AreaMap } from "../../features/spatial/AreaMap";
 import { MapValueTable } from "../../features/spatial/MapValueTable";
-import { formatDate, formatNumber } from "../../lib/format";
+import { useTranslation } from "../../i18n/context";
 import { type CSSProperties } from "react";
 
 export function DropTestSection() {
   const {
     classificationLabel,
     data,
-    deployment,
     dropRevealed,
     individualOne,
     individualSpatial,
     individualTwo,
+    placeText,
     resultHeading,
     revealDrop,
     selectedArea,
@@ -27,68 +27,65 @@ export function DropTestSection() {
     structureTwo,
     toggleAreaSelection,
   } = useShell();
+  const { t, tx, number, signed, date } = useTranslation();
   return (
     <section className="decision-section" id="drop-test" aria-labelledby="drop-title">
       <div aria-hidden="true" className="section-number">
         01
       </div>
       <div className="section-intro">
-        <p className="eyebrow">What actually changed</p>
-        <h2 id="drop-title">Test the drop</h2>
-        <p>
-          The falling estimate is built from three things counted in the field: people, tents, and
-          vehicles. Compare each on the same {signal.panelSize} blocks, one January to the next, and
-          see which actually dropped.
-        </p>
+        <p className="eyebrow">{t("drop.eyebrow")}</p>
+        <h2 id="drop-title">{t("drop.title")}</h2>
+        <p>{t("drop.intro", { panel: signal.panelSize })}</p>
       </div>
 
       <div className="metric-grid composition-metrics">
         <Metric
-          label="People seen in the field"
+          label={t("drop.metricPeople")}
           value={`${signal.components.individuals.from} → ${signal.components.individuals.to}`}
-          detail={`+${formatNumber(signal.components.individuals.changePct, 1)}%`}
+          detail={`+${number(signal.components.individuals.changePct, 1)}%`}
           tone="teal"
         />
         <Metric
-          label="Tents & structures"
+          label={t("drop.metricTents")}
           value={`${signal.components.structures.from} → ${signal.components.structures.to}`}
-          detail={`${formatNumber(signal.components.structures.changePct, 1)}%`}
+          detail={`${number(signal.components.structures.changePct, 1)}%`}
           tone="amber"
         />
         <Metric
-          label="Vehicles"
+          label={t("drop.metricVehicles")}
           value={`${signal.components.vehicles.from} → ${signal.components.vehicles.to}`}
-          detail={`${formatNumber(signal.components.vehicles.changePct, 1)}%`}
+          detail={`${number(signal.components.vehicles.changePct, 1)}%`}
         />
         <Metric
-          label={individualOne ? "Blocks with at least one person" : "Active footprint"}
-          value={`${formatNumber(individualOne?.fromBlocks ?? signal.activeFrom)} → ${formatNumber(individualOne?.toBlocks ?? signal.activeTo)}`}
+          label={individualOne ? t("drop.metricBlocksOnePerson") : t("drop.metricActiveFootprint")}
+          value={`${number(individualOne?.fromBlocks ?? signal.activeFrom)} → ${number(individualOne?.toBlocks ?? signal.activeTo)}`}
           detail={
             individualOne
-              ? `+${individualOne.change} blocks · like-for-like`
-              : `+${formatNumber(signal.activeChangePct, 1)}% active blocks`
+              ? t("drop.blocksLikeForLike", { blocks: individualOne.change })
+              : t("drop.activeBlocksPct", { pct: number(signal.activeChangePct, 1) })
           }
           tone="teal"
         />
       </div>
       <details className="context-details">
         <summary>
-          <span>How to read this comparison</span>
-          <small>Panel, units, and date checks</small>
+          <span>{t("drop.howToRead")}</span>
+          <small>{t("drop.howToReadSub")}</small>
         </summary>
         <p className="mixed-index-note">
-          <strong>Secondary mixed-component context:</strong> all active blocks {signal.activeFrom}
-          {" → "}
-          {signal.activeTo} (+{formatNumber(signal.activeChangePct, 1)}%); mixed-unit index{" "}
-          {signal.fromValue} → {signal.toValue} ({formatNumber(signal.changePct, 1)}%). The index
-          arithmetically sums unlike observation units—individuals, structures, and vehicles—and is
-          not a count of unique people or an estimated person total. Panel fixed at{" "}
-          {signal.panelSize} blocks.
+          {tx("drop.mixedIndexNote", {
+            activeFrom: signal.activeFrom,
+            activeTo: signal.activeTo,
+            activePct: number(signal.activeChangePct, 1),
+            fromValue: signal.fromValue,
+            toValue: signal.toValue,
+            changePct: number(signal.changePct, 1),
+            panel: signal.panelSize,
+          })}
         </p>
         <p className="comparison-defense">
-          <CheckIcon /> This is the latest available same-month year-over-year pair in the supplied
-          panel: January 2025 is its final date, both months use the POST2020 method, and the exact
-          same {signal.panelSize} blocks are compared.
+          <CheckIcon /> {t("drop.comparisonDefense", { panel: signal.panelSize })}
         </p>
       </details>
 
@@ -99,9 +96,9 @@ export function DropTestSection() {
             onClick={() => revealDrop()}
             type="button"
           >
-            <SparkIcon /> Test the drop
+            <SparkIcon /> {t("drop.revealButton")}
           </button>
-          <span>Same result every run · bundled local data · no AI in the loop</span>
+          <span>{t("drop.revealNote")}</span>
         </div>
       ) : (
         <div aria-live="polite" className="evidence-result reveal" id="evidence-result">
@@ -110,179 +107,177 @@ export function DropTestSection() {
               <ArrowDownIcon />
             </div>
             <div>
-              <p className="eyebrow">What the same-blocks comparison shows</p>
+              <p className="eyebrow">{t("drop.resultEyebrow")}</p>
               <h3 ref={resultHeading} tabIndex={-1}>
                 {classificationLabel}
               </h3>
               <p>
-                {individualSpatial
-                  ? "People were seen on more blocks than last year, spread about as evenly as before. Tents disappeared from many blocks and bunched up in fewer."
-                  : "Field activity reached more blocks while becoming more concentrated where it remained."}{" "}
-                These are on-site observations: they cannot say who moved where, or why.
+                {individualSpatial ? t("drop.resultWithSpatial") : t("drop.resultWithoutSpatial")}
               </p>
             </div>
-            <span className="confidence-chip">Human review required</span>
+            <span className="confidence-chip">{t("drop.humanReviewRequired")}</span>
           </div>
 
           {individualSpatial && individualOne && individualTwo && structureOne && structureTwo && (
-            <div
-              className="component-proof"
-              aria-label="Like-for-like observed individual and tent footprint sensitivity"
-              role="group"
-            >
+            <div className="component-proof" aria-label={t("drop.componentProofAria")} role="group">
               <div className="distribution-heading">
                 <div>
-                  <span className="eyebrow">The key check · same blocks, one year apart</span>
-                  <strong>People were seen on more blocks, however strictly you count</strong>
+                  <span className="eyebrow">{t("drop.keyCheckEyebrow")}</span>
+                  <strong>{t("drop.keyCheckTitle")}</strong>
                 </div>
-                <span>Same 261 blocks both years</span>
+                <span>{t("drop.sameBlocksBothYears")}</span>
               </div>
               <div className="component-thresholds">
                 {[
-                  { label: "Blocks with ≥1 person seen", value: individualOne, tone: "up" },
-                  { label: "Blocks with ≥2 people seen", value: individualTwo, tone: "up" },
-                  { label: "Blocks with ≥1 tent", value: structureOne, tone: "down" },
-                  { label: "Blocks with ≥2 tents", value: structureTwo, tone: "down" },
+                  { label: t("drop.thresholdOnePerson"), value: individualOne, tone: "up" },
+                  { label: t("drop.thresholdTwoPeople"), value: individualTwo, tone: "up" },
+                  { label: t("drop.thresholdOneTent"), value: structureOne, tone: "down" },
+                  { label: t("drop.thresholdTwoTents"), value: structureTwo, tone: "down" },
                 ].map((item) => (
                   <div className={`component-threshold component-${item.tone}`} key={item.label}>
                     <small>{item.label}</small>
                     <strong>
                       {item.value.fromBlocks} → {item.value.toBlocks}
                     </strong>
-                    <span>
-                      {item.value.change > 0 ? "+" : ""}
-                      {item.value.change} blocks
-                    </span>
+                    <span>{t("drop.blocksDelta", { delta: signed(item.value.change) })}</span>
                   </div>
                 ))}
               </div>
               {structureSpatial && (
                 <div className="component-concentration">
                   <span>
-                    <strong>Individuals: similar concentration</strong>
-                    HHI {individualSpatial.hhiFrom.toFixed(6)} →{" "}
-                    {individualSpatial.hhiTo.toFixed(6)} · effective blocks{" "}
-                    {formatNumber(individualSpatial.effectiveBlocksFrom, 1)} →{" "}
-                    {formatNumber(individualSpatial.effectiveBlocksTo, 1)}
+                    <strong>{t("drop.individualsConcentration")}</strong>
+                    {t("drop.hhiWithEffectiveBlocks", {
+                      hhiFrom: individualSpatial.hhiFrom.toFixed(6),
+                      hhiTo: individualSpatial.hhiTo.toFixed(6),
+                      blocksFrom: number(individualSpatial.effectiveBlocksFrom, 1),
+                      blocksTo: number(individualSpatial.effectiveBlocksTo, 1),
+                    })}
                   </span>
                   <span>
-                    <strong>Tents: sharper concentration</strong>
-                    HHI {structureSpatial.hhiFrom.toFixed(6)} → {structureSpatial.hhiTo.toFixed(6)}{" "}
-                    · effective blocks {formatNumber(structureSpatial.effectiveBlocksFrom, 1)} →{" "}
-                    {formatNumber(structureSpatial.effectiveBlocksTo, 1)}
+                    <strong>{t("drop.tentsConcentration")}</strong>
+                    {t("drop.hhiWithEffectiveBlocks", {
+                      hhiFrom: structureSpatial.hhiFrom.toFixed(6),
+                      hhiTo: structureSpatial.hhiTo.toFixed(6),
+                      blocksFrom: number(structureSpatial.effectiveBlocksFrom, 1),
+                      blocksTo: number(structureSpatial.effectiveBlocksTo, 1),
+                    })}
                   </span>
                 </div>
               )}
               {signal.componentDistribution?.derivedEstimate && (
                 <div className="derived-bridge">
                   <div>
-                    <span className="eyebrow">Why the adjusted estimate can fall</span>
+                    <span className="eyebrow">{t("drop.derivedEyebrow")}</span>
                     <strong>
-                      {formatNumber(signal.componentDistribution.derivedEstimate.from, 1)} →{" "}
-                      {formatNumber(signal.componentDistribution.derivedEstimate.to, 1)}{" "}
+                      {number(signal.componentDistribution.derivedEstimate.from, 1)} →{" "}
+                      {number(signal.componentDistribution.derivedEstimate.to, 1)}{" "}
                       <em>
-                        ({formatNumber(signal.componentDistribution.derivedEstimate.changePct, 1)}
+                        ({number(signal.componentDistribution.derivedEstimate.changePct, 1)}
                         %)
                       </em>
                     </strong>
-                    <small>Secondary POST2020 multiplier-derived estimate</small>
+                    <small>{t("drop.derivedNote")}</small>
                   </div>
                   <div className="decomposition-values">
                     <span>
-                      Individuals{" "}
+                      {t("drop.individuals")}{" "}
                       <strong>
                         +
-                        {formatNumber(
+                        {number(
                           signal.componentDistribution.derivedEstimate.individualsContribution,
                           1,
                         )}
                       </strong>
                     </span>
                     <span>
-                      Structures{" "}
+                      {t("drop.structures")}{" "}
                       <strong>
-                        {formatNumber(
+                        {number(
                           signal.componentDistribution.derivedEstimate.structuresContribution,
                           1,
                         )}
                       </strong>
                     </span>
                     <span>
-                      Vehicles{" "}
+                      {t("drop.vehicles")}{" "}
                       <strong>
-                        {formatNumber(
+                        {number(
                           signal.componentDistribution.derivedEstimate.vehiclesContribution,
                           1,
                         )}
                       </strong>
                     </span>
                   </div>
-                  <p>
-                    The derived decline is structure-driven and partly offset by more observed
-                    individuals. Components were digitized from maps; this is not a unique-person
-                    count or the published total series.
-                  </p>
+                  <p>{t("drop.derivedExplain")}</p>
                 </div>
               )}
-              <p>{signal.componentDistribution?.interpretation}</p>
+              {/* The artifact's own interpretation sentence, rendered unedited. */}
+              <p lang="en">{signal.componentDistribution?.interpretation}</p>
             </div>
           )}
 
           <details className="evidence-details">
             <summary>
-              <span>Explore supporting evidence</span>
-              <small>Thresholds, geography, limits, and review triggers</small>
+              <span>{t("drop.exploreEvidence")}</span>
+              <small>{t("drop.exploreEvidenceSub")}</small>
             </summary>
 
             {signal.distributionSensitivity && (
               <div
                 className="distribution-proof distribution-secondary"
-                aria-label="Secondary mixed-unit active-block threshold and concentration sensitivity"
+                aria-label={t("drop.distributionAria")}
                 role="group"
               >
                 <div className="distribution-heading">
                   <div>
-                    <span className="eyebrow">Secondary mixed-unit sensitivity</span>
-                    <strong>Mixed threshold dependence and composition-driven HHI</strong>
+                    <span className="eyebrow">{t("drop.secondaryEyebrow")}</span>
+                    <strong>{t("drop.secondaryTitle")}</strong>
                   </div>
-                  <span>Not a person count</span>
+                  <span>{t("drop.notAPersonCount")}</span>
                 </div>
                 <div className="threshold-row">
                   {signal.distributionSensitivity.thresholds.map((threshold) => (
                     <div key={threshold.minimumUnits}>
                       <small>
-                        Active blocks ≥{threshold.minimumUnits} unit
-                        {threshold.minimumUnits > 1 ? "s" : ""}
+                        {t("drop.activeBlocksAtLeast", { count: threshold.minimumUnits })}
                       </small>
                       <strong>
                         {threshold.fromBlocks} → {threshold.toBlocks}
                       </strong>
                       <span className={threshold.change > 0 ? "delta-up" : "threshold-flat"}>
-                        {threshold.change > 0 ? "+" : ""}
-                        {threshold.change} · {threshold.entered} entered / {threshold.exited} exited
+                        {t("drop.thresholdChurn", {
+                          delta: signed(threshold.change),
+                          entered: threshold.entered,
+                          exited: threshold.exited,
+                        })}
                       </span>
                     </div>
                   ))}
                   <div className="concentration-result">
-                    <small>Intensity concentration</small>
+                    <small>{t("drop.intensityConcentration")}</small>
                     <strong>
-                      HHI +{formatNumber(signal.distributionSensitivity.hhiChangePct, 1)}%
+                      {t("drop.hhiPct", {
+                        pct: number(signal.distributionSensitivity.hhiChangePct, 1),
+                      })}
                     </strong>
                     <span>
-                      effective blocks{" "}
-                      {formatNumber(signal.distributionSensitivity.effectiveBlocksFrom, 1)} →{" "}
-                      {formatNumber(signal.distributionSensitivity.effectiveBlocksTo, 1)}
+                      {t("drop.effectiveBlocks", {
+                        from: number(signal.distributionSensitivity.effectiveBlocksFrom, 1),
+                        to: number(signal.distributionSensitivity.effectiveBlocksTo, 1),
+                      })}
                     </span>
                   </div>
                 </div>
                 <p>
-                  Single-unit blocks grew {signal.distributionSensitivity.singleUnitFrom} →{" "}
-                  {signal.distributionSensitivity.singleUnitTo} (+
-                  {signal.distributionSensitivity.singleUnitChange}), but do not alone explain the +
-                  {signal.activeChange} at ≥1 because ≥2 still rises. HHI{" "}
-                  {signal.distributionSensitivity.hhiFrom.toFixed(6)} →{" "}
-                  {signal.distributionSensitivity.hhiTo.toFixed(6)} is composition-driven; this
-                  secondary mixed index does not establish uniform spread or track movement.
+                  {t("drop.singleUnitNote", {
+                    from: signal.distributionSensitivity.singleUnitFrom,
+                    to: signal.distributionSensitivity.singleUnitTo,
+                    change: signal.distributionSensitivity.singleUnitChange,
+                    activeChange: signal.activeChange,
+                    hhiFrom: signal.distributionSensitivity.hhiFrom.toFixed(6),
+                    hhiTo: signal.distributionSensitivity.hhiTo.toFixed(6),
+                  })}
                 </p>
               </div>
             )}
@@ -291,8 +286,8 @@ export function DropTestSection() {
               <div className="churn-card">
                 <div className="card-heading">
                   <div>
-                    <span className="eyebrow">Secondary mixed-unit index</span>
-                    <h4>Index churn inside the stable panel</h4>
+                    <span className="eyebrow">{t("drop.churnEyebrow")}</span>
+                    <h4>{t("drop.churnTitle")}</h4>
                   </div>
                   <span className="formula">
                     +{signal.grossIncreases} − {signal.grossDecreases} = {signal.change}
@@ -300,7 +295,11 @@ export function DropTestSection() {
                 </div>
                 <div
                   className="churn-visual"
-                  aria-label={`${signal.grossIncreases} increases, ${signal.grossDecreases} decreases, net ${signal.change}`}
+                  aria-label={t("drop.churnAria", {
+                    increases: signal.grossIncreases,
+                    decreases: signal.grossDecreases,
+                    net: signal.change,
+                  })}
                   role="img"
                 >
                   <div
@@ -311,7 +310,7 @@ export function DropTestSection() {
                       } as CSSProperties
                     }
                   >
-                    <span>Gross increases</span>
+                    <span>{t("drop.grossIncreases")}</span>
                     <strong>+{signal.grossIncreases}</strong>
                   </div>
                   <div
@@ -322,99 +321,98 @@ export function DropTestSection() {
                       } as CSSProperties
                     }
                   >
-                    <span>Gross decreases</span>
+                    <span>{t("drop.grossDecreases")}</span>
                     <strong>−{signal.grossDecreases}</strong>
                   </div>
                 </div>
                 <p className="method-note">
-                  <CheckIcon /> Individuals, tents/structures, and vehicles each count as one raw
-                  unit here. This is not a person estimate; the footprint is fixed at{" "}
-                  {signal.panelSize} blocks.
+                  <CheckIcon /> {t("drop.churnMethodNote", { panel: signal.panelSize })}
                 </p>
               </div>
 
               <div className="area-view-card">
                 <div className="card-heading">
                   <div>
-                    <span className="eyebrow">Aggregate context</span>
-                    <h4>Where the signal changed</h4>
+                    <span className="eyebrow">{t("drop.aggregateContext")}</span>
+                    <h4>{t("drop.whereSignalChanged")}</h4>
                   </div>
-                  <span className="formula positive">Active blocks +{signal.activeChange}</span>
+                  <span className="formula positive">
+                    {t("drop.activeBlocksFormula", { change: signal.activeChange })}
+                  </span>
                 </div>
                 <div className="map-detail-row">
                   <div>
                     <AreaMap
                       areas={data.areas}
-                      ariaLabel={`Map of the ${deployment.areaCountWord} ${deployment.areaNounPlural} showing the change in raw field observations; select one for detail`}
+                      ariaLabel={t("map.ariaChange", placeText)}
                       onSelect={toggleAreaSelection}
                       selectedId={selectedAreaId}
                       valueFor={(area) => {
-                        if (area.latest === null) return { text: "no data", tone: "missing" };
+                        if (area.latest === null) return { text: t("map.noData"), tone: "missing" };
                         const maxDelta = Math.max(
                           1,
                           ...data.areas.map((row) => Math.abs(row.delta)),
                         );
                         return {
-                          text: `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                          text: signed(area.delta),
                           tone: area.delta > 0 ? "up" : "down",
                           intensity: Math.abs(area.delta) / maxDelta,
                         };
                       }}
                     />
-                    <div className="map-legend" aria-label="Map legend" role="group">
+                    <div className="map-legend" aria-label={t("map.legendAria")} role="group">
                       <span>
-                        <i className="map-legend-up" /> More observed units
+                        <i className="map-legend-up" /> {t("map.legendMore")}
                       </span>
                       <span>
-                        <i className="map-legend-down" /> Fewer observed units
+                        <i className="map-legend-down" /> {t("map.legendFewer")}
                       </span>
                       {data.areas.some((area) => area.latest === null) && (
                         <span>
-                          <i className="map-legend-missing" /> No recent observation
+                          <i className="map-legend-missing" /> {t("map.legendMissing")}
                         </span>
                       )}
                     </div>
-                    <p className="map-caption">
-                      Change in raw field observations by neighborhood · simplified neighborhood
-                      boundaries, aggregate values only · not a count of people
-                    </p>
+                    <p className="map-caption">{t("map.captionChange")}</p>
                   </div>
                   <AreaDetailPanel
                     area={selectedArea}
-                    empty="Select a neighborhood — click, or Tab and Enter — to see what changed there."
-                    kicker="Neighborhood detail"
-                    note="Raw observed units on the fixed like-for-like panel. Aggregate area values, not unique people; components are digitized from the same maps."
+                    empty={t("detail.emptyChange")}
+                    kicker={t("detail.kickerNeighborhood")}
+                    note={t("detail.noteChange")}
                     rows={
                       selectedArea
                         ? [
                             {
-                              label: "Observed change",
-                              value: `${selectedArea.delta > 0 ? "+" : ""}${selectedArea.delta} units`,
-                              hint: "Jan 2024 → Jan 2025, same blocks",
+                              label: t("detail.observedChange"),
+                              value: t("detail.unitsDelta", { delta: signed(selectedArea.delta) }),
+                              hint: t("detail.hintSameBlocks"),
                             },
                             {
-                              label: "Latest observations",
+                              label: t("detail.latestObservations"),
                               value:
                                 selectedArea.latest === null
-                                  ? "no data"
-                                  : formatNumber(selectedArea.latest),
-                              hint: "most recent monthly street count",
+                                  ? t("map.noData")
+                                  : number(selectedArea.latest),
+                              hint: t("detail.hintMonthlyStreetCount"),
                             },
                             {
-                              label: "Planning load",
-                              value: formatNumber(selectedArea.planningLoad),
-                              hint: "upper forecast bound",
+                              label: t("detail.planningLoad"),
+                              value: number(selectedArea.planningLoad),
+                              hint: t("detail.hintUpperForecastBound"),
                             },
                             {
-                              label: "Held-out WAPE",
+                              label: t("detail.heldOutWape"),
                               value:
                                 selectedArea.auditWape === null
-                                  ? "not audited"
-                                  : `${formatNumber(selectedArea.auditWape, 1)}%`,
+                                  ? t("detail.notAudited")
+                                  : t("detail.wapeValue", {
+                                      wape: number(selectedArea.auditWape, 1),
+                                    }),
                               hint:
                                 selectedArea.auditWape !== null && selectedArea.auditWape > 30
-                                  ? "noisy — treat with caution"
-                                  : "2025 held-out audit",
+                                  ? t("detail.hintNoisyCaution")
+                                  : t("detail.hint2025Audit"),
                               flagged:
                                 selectedArea.auditWape !== null && selectedArea.auditWape > 30,
                             },
@@ -424,19 +422,16 @@ export function DropTestSection() {
                   />
                 </div>
                 <MapValueTable
-                  caption="Change in raw field observations by neighborhood"
+                  caption={t("table.captionChange")}
                   rows={data.areas.map((area) => ({
                     name: area.name,
-                    value:
-                      area.latest === null
-                        ? "no data"
-                        : `${area.delta > 0 ? "+" : ""}${area.delta}`,
+                    value: area.latest === null ? t("map.noData") : signed(area.delta),
                     state:
                       area.latest === null
-                        ? "No recent observation"
+                        ? t("state.noRecentObservation")
                         : area.delta > 0
-                          ? "More observed units"
-                          : "Fewer observed units",
+                          ? t("state.moreObservedUnits")
+                          : t("state.fewerObservedUnits"),
                   }))}
                 />
               </div>
@@ -446,22 +441,22 @@ export function DropTestSection() {
               <div>
                 <span className="evidence-icon evidence-for">+</span>
                 <p>
-                  <strong>Evidence for</strong>Observed individuals increased while structures fell;
-                  individual observations reached more fixed-panel blocks at both tested thresholds.
+                  <strong>{t("drop.evidenceFor")}</strong>
+                  {t("drop.evidenceForText")}
                 </p>
               </div>
               <div>
                 <span className="evidence-icon evidence-against">!</span>
                 <p>
-                  <strong>Evidence boundary</strong>No identities, movement paths, or causal
-                  explanation are observed.
+                  <strong>{t("drop.evidenceBoundary")}</strong>
+                  {t("drop.evidenceBoundaryText")}
                 </p>
               </div>
               <div>
                 <span className="evidence-icon evidence-check">✓</span>
                 <p>
-                  <strong>Validity check</strong>Stable panel, explicit missingness, source-era
-                  labels kept separate.
+                  <strong>{t("drop.validityCheck")}</strong>
+                  {t("drop.validityCheckText")}
                 </p>
               </div>
             </div>
@@ -469,26 +464,24 @@ export function DropTestSection() {
             <aside aria-labelledby="challenge-title" className="challenge-card">
               <div className="challenge-heading">
                 <div>
-                  <span className="eyebrow">Adversarial checkpoint</span>
-                  <h4 id="challenge-title">What would change our mind?</h4>
+                  <span className="eyebrow">{t("drop.challengeEyebrow")}</span>
+                  <h4 id="challenge-title">{t("drop.challengeTitle")}</h4>
                 </div>
-                <span className="challenge-badge">Open to revision</span>
+                <span className="challenge-badge">{t("drop.challengeBadge")}</span>
               </div>
-              <p>
-                This result is useful because its failure conditions are explicit. Any one of these
-                findings would downgrade the conclusion or trigger a new review.
-              </p>
+              <p>{t("drop.challengeLede")}</p>
               <ul>
-                <li>One of the matched months is later found to be incomplete or misclassified.</li>
-                <li>A boundary or method change makes the 261-block comparison non-comparable.</li>
-                <li>Source review explains the 2023–2024 discontinuity as collection change.</li>
-                <li>New held-out data materially weakens forecast error or interval coverage.</li>
+                <li>{t("drop.challengeMonths")}</li>
+                <li>{t("drop.challengeBoundary")}</li>
+                <li>{t("drop.challengeDiscontinuity")}</li>
+                <li>{t("drop.challengeHeldOut")}</li>
                 <li>
-                  Digitization error measured by the field-sheet audit (two readings currently
-                  disagree on{" "}
-                  {(100 - (DIGITIZATION_AGREEMENT.summary.agreement_share ?? 0) * 100).toFixed(1)}%
-                  of recovered values) grows large enough to account for the downtown change being
-                  interpreted.
+                  {t("drop.challengeDigitization", {
+                    pct: (
+                      100 -
+                      (DIGITIZATION_AGREEMENT.summary.agreement_share ?? 0) * 100
+                    ).toFixed(1),
+                  })}
                 </li>
               </ul>
             </aside>
@@ -498,111 +491,105 @@ export function DropTestSection() {
             <details className="bias-diagnostic">
               <summary>
                 <span>
-                  <small>Optional attention-bias check</small>
-                  Encampment report share rose{" "}
-                  {formatNumber(
-                    data.reportingBias.matchedCalendar?.shareChangePoints ??
-                      data.reportingBias.shareChangePoints,
-                    1,
-                  )}{" "}
-                  points
+                  <small>{t("bias.summaryLabel")}</small>
+                  {t("bias.summaryText", {
+                    points: number(
+                      data.reportingBias.matchedCalendar?.shareChangePoints ??
+                        data.reportingBias.shareChangePoints,
+                      1,
+                    ),
+                  })}
                 </span>
-                <strong>Excluded from planner</strong>
+                <strong>{t("bias.excludedChip")}</strong>
               </summary>
               <div className="bias-body">
                 <div className="bias-heading">
                   <div>
-                    <span className="eyebrow">Get It Done · descriptive diagnostic</span>
-                    <h4>Did public reporting attention change?</h4>
+                    <span className="eyebrow">{t("bias.eyebrow")}</span>
+                    <h4>{t("bias.title")}</h4>
                   </div>
-                  <span className="diagnostic-only">Diagnostic only · no causal claim</span>
+                  <span className="diagnostic-only">{t("bias.diagnosticOnly")}</span>
                 </div>
 
                 {data.reportingBias.matchedCalendar && (
                   <div className="matched-calendar">
                     <div>
-                      <span className="eyebrow">Matched calendar · same Aug–Jan months YoY</span>
-                      <strong>Seasonality check strengthens the reporting-pattern shift</strong>
+                      <span className="eyebrow">{t("bias.matchedEyebrow")}</span>
+                      <strong>{t("bias.matchedTitle")}</strong>
                     </div>
                     <div className="bias-metrics">
                       <div>
-                        <span>Encampment rows</span>
+                        <span>{t("bias.encampmentRows")}</span>
                         <strong>
-                          +{formatNumber(data.reportingBias.matchedCalendar.rawChangePct, 1)}%
+                          +{number(data.reportingBias.matchedCalendar.rawChangePct, 1)}%
                         </strong>
                       </div>
                       <div>
-                        <span>Top-level requests</span>
+                        <span>{t("bias.topLevelRequests")}</span>
                         <strong>
-                          +
-                          {formatNumber(
-                            data.reportingBias.matchedCalendar.uniqueParentChangePct,
-                            1,
-                          )}
-                          %
+                          +{number(data.reportingBias.matchedCalendar.uniqueParentChangePct, 1)}%
                         </strong>
                       </div>
                       <div>
-                        <span>All GID rows</span>
+                        <span>{t("bias.allGidRows")}</span>
                         <strong>
-                          +{formatNumber(data.reportingBias.matchedCalendar.allReportsChangePct, 1)}
-                          %
+                          +{number(data.reportingBias.matchedCalendar.allReportsChangePct, 1)}%
                         </strong>
                       </div>
                       <div>
-                        <span>Encampment share</span>
+                        <span>{t("bias.encampmentShare")}</span>
                         <strong>
-                          {formatNumber(data.reportingBias.matchedCalendar.sharePrePct, 1)} →{" "}
-                          {formatNumber(data.reportingBias.matchedCalendar.sharePostPct, 1)}%
+                          {number(data.reportingBias.matchedCalendar.sharePrePct, 1)} →{" "}
+                          {number(data.reportingBias.matchedCalendar.sharePostPct, 1)}%
                         </strong>
                       </div>
                     </div>
-                    <p>{data.reportingBias.matchedCalendar.interpretation}</p>
+                    <p lang="en">{data.reportingBias.matchedCalendar.interpretation}</p>
                   </div>
                 )}
 
-                <span className="eyebrow diagnostic-subhead">
-                  Prepared pre/post windows · July 2023 excluded
-                </span>
+                <span className="eyebrow diagnostic-subhead">{t("bias.preparedWindows")}</span>
                 <div className="bias-metrics">
                   <div>
-                    <span>Encampment rows</span>
-                    <strong>+{formatNumber(data.reportingBias.rawChangePct, 1)}%</strong>
+                    <span>{t("bias.encampmentRows")}</span>
+                    <strong>+{number(data.reportingBias.rawChangePct, 1)}%</strong>
                   </div>
                   <div>
-                    <span>Unique parents</span>
-                    <strong>+{formatNumber(data.reportingBias.uniqueParentChangePct, 1)}%</strong>
+                    <span>{t("bias.uniqueParents")}</span>
+                    <strong>+{number(data.reportingBias.uniqueParentChangePct, 1)}%</strong>
                   </div>
                   <div>
-                    <span>All GID rows</span>
-                    <strong>+{formatNumber(data.reportingBias.allReportsChangePct, 1)}%</strong>
+                    <span>{t("bias.allGidRows")}</span>
+                    <strong>+{number(data.reportingBias.allReportsChangePct, 1)}%</strong>
                   </div>
                   <div>
-                    <span>Encampment share</span>
+                    <span>{t("bias.encampmentShare")}</span>
                     <strong>
-                      {formatNumber(data.reportingBias.sharePrePct, 1)} →{" "}
-                      {formatNumber(data.reportingBias.sharePostPct, 1)}%
+                      {number(data.reportingBias.sharePrePct, 1)} →{" "}
+                      {number(data.reportingBias.sharePostPct, 1)}%
                     </strong>
                   </div>
                   <div>
-                    <span>Placebo basket</span>
-                    <strong>{formatNumber(data.reportingBias.placeboChangePct, 1)}%</strong>
+                    <span>{t("bias.placeboBasket")}</span>
+                    <strong>{number(data.reportingBias.placeboChangePct, 1)}%</strong>
                   </div>
                 </div>
 
                 <div className="checkpoint-block">
                   <div>
-                    <span className="eyebrow">Cross-source checkpoints</span>
-                    <p>Raw reports per published total unit—not reports per person.</p>
+                    <span className="eyebrow">{t("bias.checkpointsEyebrow")}</span>
+                    <p>{t("bias.checkpointsNote")}</p>
                   </div>
                   <div className="checkpoint-list">
                     {data.reportingBias.checkpoints.map((checkpoint) => (
                       <div key={checkpoint.month}>
                         <span>{checkpoint.month}</span>
-                        <strong>{formatNumber(checkpoint.rawPerPublishedUnit, 2)}×</strong>
+                        <strong>{number(checkpoint.rawPerPublishedUnit, 2)}×</strong>
                         <small>
-                          {formatNumber(checkpoint.rawReports)} raw reports /{" "}
-                          {formatNumber(checkpoint.publishedTotal)} published units
+                          {t("bias.checkpointDetail", {
+                            raw: number(checkpoint.rawReports),
+                            published: number(checkpoint.publishedTotal),
+                          })}
                         </small>
                       </div>
                     ))}
@@ -613,135 +600,136 @@ export function DropTestSection() {
                   <section className="robustness-section" aria-labelledby="robustness-title">
                     <div className="robustness-section-title">
                       <span className="eyebrow" id="robustness-title">
-                        Alternative explanations tested
+                        {t("robust.eyebrow")}
                       </span>
-                      <strong>Two descriptive sensitivity checks</strong>
+                      <strong>{t("robust.title")}</strong>
                     </div>
                     <div className="robustness-grid">
                       <article className="robustness-card">
                         <div className="robustness-title">
-                          <span className="eyebrow">Footfall sensitivity</span>
-                          <strong>Paid-parking proxy</strong>
+                          <span className="eyebrow">{t("robust.footfallEyebrow")}</span>
+                          <strong>{t("robust.parkingTitle")}</strong>
                           <small>
                             {data.robustness.parking.matchedCalendar
-                              ? "Same six calendar months one year apart"
-                              : "Aligned six-month means · July 2023 excluded"}
+                              ? t("robust.parkingMatched")
+                              : t("robust.parkingAligned")}
                           </small>
                         </div>
                         <div className="parking-result">
                           <span>
                             <small>
-                              {formatNumber(
-                                data.robustness.parking.matchedCalendar?.verifiedPoles ??
-                                  data.robustness.parking.verifiedPoles,
-                              )}{" "}
-                              historically verified poles
+                              {t("robust.verifiedPoles", {
+                                poles: number(
+                                  data.robustness.parking.matchedCalendar?.verifiedPoles ??
+                                    data.robustness.parking.verifiedPoles,
+                                ),
+                              })}
                             </small>
                             <strong>
-                              {formatNumber(
+                              {number(
                                 data.robustness.parking.matchedCalendar?.preMonthlyMean ??
                                   data.robustness.parking.preMonthlyMean,
                               )}{" "}
                               →{" "}
-                              {formatNumber(
+                              {number(
                                 data.robustness.parking.matchedCalendar?.postMonthlyMean ??
                                   data.robustness.parking.postMonthlyMean,
                               )}
                             </strong>
                             <small>
-                              transactions / month ·{" "}
-                              {formatNumber(
-                                data.robustness.parking.matchedCalendar?.changePct ??
-                                  data.robustness.parking.changePct,
-                                1,
-                              )}
-                              %
+                              {t("robust.transactionsPerMonth", {
+                                pct: number(
+                                  data.robustness.parking.matchedCalendar?.changePct ??
+                                    data.robustness.parking.changePct,
+                                  1,
+                                ),
+                              })}
                             </small>
                           </span>
                           <span>
                             <small>
                               {data.robustness.parking.matchedCalendar
-                                ? "All observed Downtown meters"
-                                : "Per meter-month"}
+                                ? t("robust.allDowntownMeters")
+                                : t("robust.perMeterMonth")}
                             </small>
                             <strong>
                               {data.robustness.parking.matchedCalendar
-                                ? `${formatNumber(data.robustness.parking.matchedCalendar.allMeterChangePct, 1)}%`
-                                : `${formatNumber(data.robustness.parking.prePerMeter, 1)} → ${formatNumber(data.robustness.parking.postPerMeter, 1)}`}
+                                ? `${number(data.robustness.parking.matchedCalendar.allMeterChangePct, 1)}%`
+                                : `${number(data.robustness.parking.prePerMeter, 1)} → ${number(data.robustness.parking.postPerMeter, 1)}`}
                             </strong>
                             <small>
                               {data.robustness.parking.matchedCalendar
-                                ? "matched-calendar sensitivity"
-                                : `all observed meters ${formatNumber(data.robustness.parking.allMeterChangePct, 1)}%`}
+                                ? t("robust.matchedCalendarSensitivity")
+                                : t("robust.allObservedMeters", {
+                                    pct: number(data.robustness.parking.allMeterChangePct, 1),
+                                  })}
                             </small>
                           </span>
                         </div>
-                        <p>
+                        <p lang="en">
                           {data.robustness.parking.matchedCalendar?.interpretation ??
                             data.robustness.parking.interpretation}
                         </p>
-                        <small className="robustness-caveat">
-                          Transactions ≠ people or visits. Rates, hours, inventory, payment
-                          substitution, free parking, events, transit, economy, and seasonality
-                          remain possible; the parking zone is not a proven GID-boundary match.
-                        </small>
+                        <small className="robustness-caveat">{t("robust.parkingCaveat")}</small>
                       </article>
 
                       <article className="robustness-card">
                         <div className="robustness-title">
-                          <span className="eyebrow">Count-day sensitivity</span>
-                          <strong>NOAA weather was nearly matched</strong>
+                          <span className="eyebrow">{t("robust.countDayEyebrow")}</span>
+                          <strong>{t("robust.weatherTitle")}</strong>
                         </div>
                         <div className="weather-dates">
-                          {data.robustness.weather.dates.map((date) => (
-                            <span key={date.date}>
-                              <small>{formatDate(date.date)}</small>
-                              <strong>{formatNumber(date.maximumTemperature)}°F</strong>
-                              <small>{formatNumber(date.precipitation, 2)} in rain</small>
+                          {data.robustness.weather.dates.map((point) => (
+                            <span key={point.date}>
+                              <small>{date(point.date)}</small>
+                              <strong>
+                                {t("robust.tempF", { value: number(point.maximumTemperature) })}
+                              </strong>
+                              <small>
+                                {t("robust.rainIn", { value: number(point.precipitation, 2) })}
+                              </small>
                             </span>
                           ))}
                         </div>
-                        <p>{data.robustness.weather.interpretation}</p>
+                        <p lang="en">{data.robustness.weather.interpretation}</p>
                         <small className="robustness-caveat">
-                          {data.robustness.weather.station}. This rules out only an obvious same-day
-                          rain/TMAX contrast; airport conditions and prior weather may differ.
+                          {t("robust.weatherCaveat", {
+                            station: data.robustness.weather.station,
+                          })}
                         </small>
                       </article>
                     </div>
                   </section>
                 ) : (
                   <p className="diagnostic-unavailable" role="note">
-                    Alternative-explanation checks are unavailable in this artifact. They remain
-                    excluded from forecasting and allocation.
+                    {t("robust.unavailable")}
                   </p>
                 )}
 
-                <p className="bias-interpretation">{data.reportingBias.interpretation}</p>
+                <p className="bias-interpretation" lang="en">
+                  {data.reportingBias.interpretation}
+                </p>
                 <div className="sensitivity-row">
                   <span>
-                    Duplicate-child share {formatNumber(data.reportingBias.duplicatePrePct, 1)} →{" "}
-                    {formatNumber(data.reportingBias.duplicatePostPct, 1)}%
+                    {t("bias.duplicateShare", {
+                      from: number(data.reportingBias.duplicatePrePct, 1),
+                      to: number(data.reportingBias.duplicatePostPct, 1),
+                    })}
                   </span>
                   <span>
-                    Mobile-origin share {formatNumber(data.reportingBias.mobilePrePct, 1)} →{" "}
-                    {formatNumber(data.reportingBias.mobilePostPct, 1)}%
+                    {t("bias.mobileShare", {
+                      from: number(data.reportingBias.mobilePrePct, 1),
+                      to: number(data.reportingBias.mobilePostPct, 1),
+                    })}
                   </span>
-                  <span>
-                    <code>comm_plan_name=DOWNTOWN</code> · <code>date_requested</code> · July 2023
-                    excluded
-                  </span>
+                  <span>{tx("bias.queryNote")}</span>
                 </div>
-                <p className="bias-exclusion">
-                  <strong>Never used for:</strong> planning load, outreach allocation, people or
-                  movement, abatement, case response, intervention effects, or the forecast.
-                </p>
+                <p className="bias-exclusion">{tx("bias.neverUsedFor")}</p>
               </div>
             </details>
           ) : (
             <div className="diagnostic-unavailable" role="note">
-              <strong>Optional reporting diagnostic unavailable.</strong> The loaded artifact did
-              not contain a complete validated diagnostic, so no partial values are shown. This lane
-              remains excluded from forecasting and allocation.
+              {tx("bias.unavailable")}
             </div>
           )}
         </div>
@@ -750,44 +738,31 @@ export function DropTestSection() {
       <div className="digitization-audit" id="digitization-audit">
         <div className="digitization-audit-head">
           <div>
-            <span className="eyebrow">The ruler gets audited too · computer vision</span>
-            <strong>Field-sheet digitization audit</strong>
+            <span className="eyebrow">{t("digit.eyebrow")}</span>
+            <strong>{t("digit.title")}</strong>
           </div>
           <span className="selected-chip">
             {DIGITIZATION_AUDIT.engine === "local"
-              ? "Engine: Apple Vision · offline"
+              ? t("digit.engineLocal")
               : DIGITIZATION_AUDIT.engine === "eyepop-vlm"
-                ? "Engine: EyePop.ai VLM · hosted"
-                : "Engine: EyePop.ai OCR · hosted"}
+                ? t("digit.engineVlm")
+                : t("digit.engineOcr")}
           </span>
         </div>
-        <p>
-          The published counts are digitized by hand from scanned, hand-annotated field sheets. This
-          audit recovers the sheets&apos; own written totals from the pinned public June 2026 report
-          — per page, area-scale values only; anything block-scale is counted but withheld.
-        </p>
-        <p className="digitization-audit-finding">
-          <strong>Recovered, misread, and caught:</strong> the shipped 200-DPI pass reads the City
-          Center sheet&apos;s handwritten total as 157 (page 4 below); the same engine re-rastered
-          at 300 DPI reads 152, which is what the sheet shows. The sheet reconciles through the
-          published multipliers to the published area total: 152 + 14 × 1.75 = 176.5 ≈ 177.
-          Handwriting recognition is unstable across scan resolutions — surfacing that instability
-          is the audit&apos;s job, and it is why recovered values are candidates for human
-          verification, never counts.
-        </p>
+        <p>{t("digit.intro")}</p>
+        <p className="digitization-audit-finding">{tx("digit.finding")}</p>
         <details className="digitization-audit-pages">
-          <summary>Per-page recovery across {DIGITIZATION_AUDIT.pages.length} pages</summary>
+          <summary>{t("digit.perPage", { pages: DIGITIZATION_AUDIT.pages.length })}</summary>
           <table>
             <caption>
-              Recovered integer tokens and area-scale values (≥
-              {DIGITIZATION_AUDIT.value_threshold}) by page
+              {t("digit.tableCaption", { threshold: DIGITIZATION_AUDIT.value_threshold })}
             </caption>
             <thead>
               <tr>
-                <th scope="col">Page</th>
-                <th scope="col">Integer tokens</th>
-                <th scope="col">Area-scale values</th>
-                <th scope="col">Withheld</th>
+                <th scope="col">{t("digit.thPage")}</th>
+                <th scope="col">{t("digit.thIntegerTokens")}</th>
+                <th scope="col">{t("digit.thAreaScaleValues")}</th>
+                <th scope="col">{t("digit.thWithheld")}</th>
               </tr>
             </thead>
             <tbody>
@@ -799,7 +774,10 @@ export function DropTestSection() {
                     {page.values.length === 0
                       ? "—"
                       : page.values.length > 6
-                        ? `${page.values.slice(0, 6).join(", ")} … +${page.values.length - 6} more`
+                        ? t("digit.valuesTruncated", {
+                            values: page.values.slice(0, 6).join(", "),
+                            more: page.values.length - 6,
+                          })
                         : page.values.join(", ")}
                   </td>
                   <td>{page.withheld_below_threshold}</td>
@@ -810,41 +788,42 @@ export function DropTestSection() {
         </details>
         <div className="digitization-audit-head">
           <div>
-            <span className="eyebrow">Do two readings agree? · cross-check</span>
-            <strong>Reading-vs-reading agreement</strong>
+            <span className="eyebrow">{t("digit.agreementEyebrow")}</span>
+            <strong>{t("digit.agreementTitle")}</strong>
           </div>
           <span className="selected-chip">
             {DIGITIZATION_AGREEMENT.runs
-              .map(
-                (run) => `${run.engine === "local" ? "Apple Vision" : run.engine} · ${run.dpi} DPI`,
+              .map((run) =>
+                t("digit.runLabel", {
+                  engine: run.engine === "local" ? t("digit.engineAppleVision") : run.engine,
+                  dpi: run.dpi,
+                }),
               )
               .join(" vs ")}
           </span>
         </div>
         <p className="digitization-audit-finding">
-          Two full readings of the same pinned report — the shipped 200-DPI pass and a 300-DPI
-          re-raster — agree on {DIGITIZATION_AGREEMENT.summary.shared_total} of the{" "}
-          {DIGITIZATION_AGREEMENT.summary.first_total} and{" "}
-          {DIGITIZATION_AGREEMENT.summary.second_total} area-scale values they each recovered (
-          {((DIGITIZATION_AGREEMENT.summary.agreement_share ?? 0) * 100).toFixed(1)}%). The
-          disagreements are the City Center misread above plus a handful of single-token
-          differences. Same engine read twice is a floor on digitization instability, not an
-          independent second opinion; the engine-vs-engine version of this card — Apple Vision
-          against EyePop&apos;s hosted OCR or its image-contents VLM reading — is one comparison run
-          away once a key lands.
+          {t("digit.agreementFinding", {
+            shared: DIGITIZATION_AGREEMENT.summary.shared_total,
+            first: DIGITIZATION_AGREEMENT.summary.first_total,
+            second: DIGITIZATION_AGREEMENT.summary.second_total,
+            pct: ((DIGITIZATION_AGREEMENT.summary.agreement_share ?? 0) * 100).toFixed(1),
+          })}
         </p>
         <details className="digitization-audit-pages">
           <summary>
-            Per-page agreement across {DIGITIZATION_AGREEMENT.summary.pages_compared} pages
+            {t("digit.agreementPerPage", {
+              pages: DIGITIZATION_AGREEMENT.summary.pages_compared,
+            })}
           </summary>
           <table>
-            <caption>Values recovered by both readings, and by only one, per page</caption>
+            <caption>{t("digit.agreementTableCaption")}</caption>
             <thead>
               <tr>
-                <th scope="col">Page</th>
-                <th scope="col">Shared</th>
-                <th scope="col">Only 200 DPI</th>
-                <th scope="col">Only 300 DPI</th>
+                <th scope="col">{t("digit.thPage")}</th>
+                <th scope="col">{t("digit.thShared")}</th>
+                <th scope="col">{t("digit.thOnlyFirst")}</th>
+                <th scope="col">{t("digit.thOnlySecond")}</th>
               </tr>
             </thead>
             <tbody>
@@ -860,8 +839,7 @@ export function DropTestSection() {
           </table>
         </details>
         <p className="digitization-audit-boundary">
-          {DIGITIZATION_AUDIT.boundary} The OCR engine is swappable; EyePop.ai&apos;s hosted
-          abilities are a drop-in replacement. {DIGITIZATION_AGREEMENT.boundary}
+          {t("digit.auditBoundary")} {t("digit.swappable")} {t("digit.agreementBoundary")}
         </p>
       </div>
     </section>

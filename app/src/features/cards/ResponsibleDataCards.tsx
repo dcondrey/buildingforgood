@@ -15,6 +15,8 @@
 
 import { useId, useState } from "react";
 
+import { useTranslation } from "../../i18n/context";
+
 export type CardVariant = "inline" | "disclosure";
 
 export interface ResponsibleDataCardProps {
@@ -35,6 +37,7 @@ export function ResponsibleDataCard({
   variant = "inline",
   caveat,
 }: ResponsibleDataCardProps) {
+  const { t } = useTranslation();
   const headingId = useId();
   const [open, setOpen] = useState(false);
   const expanded = variant === "inline" || open;
@@ -46,7 +49,7 @@ export function ResponsibleDataCard({
 
       {variant === "disclosure" && (
         <button type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-          {open ? "Hide details" : "Show details"} for {title}
+          {t(open ? "cards.hideDetails" : "cards.showDetails", { title })}
         </button>
       )}
 
@@ -59,7 +62,7 @@ export function ResponsibleDataCard({
           </ul>
           {caveat && (
             <p>
-              <strong>Note.</strong> {caveat}
+              <strong>{t("cards.noteLabel")}</strong> {caveat}
             </p>
           )}
         </>
@@ -87,11 +90,14 @@ export function SuppressionNotice({
   suppressedRows,
   threshold,
 }: SuppressionNoticeProps) {
+  const { tx } = useTranslation();
   return (
     <p role="note">
-      <strong>◇ Some counts are withheld.</strong> {suppressedCells} values and {suppressedRows}{" "}
-      whole months are withheld because they fall below {threshold}. A withheld count is not zero.
-      It means too few people were observed to publish the number without identifying someone.
+      {tx("cards.suppression", {
+        cells: suppressedCells,
+        rows: suppressedRows,
+        threshold,
+      })}
     </p>
   );
 }
@@ -102,16 +108,14 @@ export interface AiDisclosureProps {
 }
 
 export function AiDisclosure({ generativeUses = [] }: AiDisclosureProps) {
+  const { t } = useTranslation();
   return (
     <section aria-labelledby="ai-disclosure-heading">
-      <h3 id="ai-disclosure-heading">How this was produced</h3>
-      <p>
-        No generative model determines the evidence result, the forecast, or the allocation. All
-        three are deterministic rules, and the same inputs produce the same output every run.
-      </p>
+      <h3 id="ai-disclosure-heading">{t("cards.aiTitle")}</h3>
+      <p>{t("cards.aiBody")}</p>
       {generativeUses.length > 0 && (
         <>
-          <p>A generative model was used for the following, each reviewed by a person:</p>
+          <p>{t("cards.aiUses")}</p>
           <ul>
             {generativeUses.map((use) => (
               <li key={use}>{use}</li>

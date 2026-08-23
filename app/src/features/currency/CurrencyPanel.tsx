@@ -1,23 +1,22 @@
 import { useShell } from "../shell/ShellContext";
-import { formatNumber } from "../../lib/format";
+import { useTranslation } from "../../i18n/context";
+import { readableToken } from "../../i18n/plannerText";
 import "./currency.css";
-
-function readable(token: string): string {
-  return token.replaceAll("_", " ");
-}
 
 /**
  * What the artifact says about its own age, and what has been observed since
  * it froze without being allowed to change it.
  *
  * Every sentence in the excluded lane is the artifact's own, rendered
- * unedited. The one paragraph written here says what the rows are not,
- * because that is the reading the rows invite and the one that would do
- * damage: a reader who takes them for a correction, a forecast, or fresher
- * truth has been misled by the interface, not by the publisher.
+ * unedited — and therefore in the artifact's own language. The one paragraph
+ * written here says what the rows are not, because that is the reading the
+ * rows invite and the one that would do damage: a reader who takes them for a
+ * correction, a forecast, or fresher truth has been misled by the interface,
+ * not by the publisher.
  */
 export function CurrencyPanel() {
   const { data } = useShell();
+  const { t, tx, number, list } = useTranslation();
   const currency = data.currency;
   const excluded = currency?.excluded ?? null;
   const stale = currency?.status === "stale";
@@ -25,58 +24,52 @@ export function CurrencyPanel() {
     <section aria-labelledby="currency-title" className="currency-panel" id="currency">
       <div className="currency-head">
         <div>
-          <span className="eyebrow">Artifact currency</span>
+          <span className="eyebrow">{t("currency.eyebrow")}</span>
           <h3 id="currency-title">
-            {currency ? `Current through ${currency.sourceDataThrough}` : "Currency unknown"}
+            {currency
+              ? t("currency.currentThrough", { month: currency.sourceDataThrough })
+              : t("currency.unknownBadge")}
           </h3>
         </div>
         <span className={!currency ? "review-status" : stale ? "wide-warning" : "selected-chip"}>
-          {!currency ? "No currency stated" : stale ? "Publication overdue" : "Publication current"}
+          {!currency
+            ? t("currency.chipNone")
+            : stale
+              ? t("currency.chipOverdue")
+              : t("currency.chipCurrent")}
         </span>
       </div>
 
-      {!currency && (
-        <p>
-          This artifact carries no currency block, so this build cannot say how far behind the
-          calendar it is. The offline snapshot compiled into the bundle is always in this state. Run
-          the monthly refresh to produce an artifact that states its own age.
-        </p>
-      )}
+      {!currency && <p>{t("currency.noBlock")}</p>}
 
       {currency && currency.stalenessReason && <p>{currency.stalenessReason}</p>}
 
       {currency?.nextPublication && (
         <p className="currency-next">
-          {`Next refresh expected ${currency.nextPublication.month} on ${currency.nextPublication.basis}.`}{" "}
+          {t("currency.nextRefresh", {
+            month: currency.nextPublication.month,
+            basis: currency.nextPublication.basis,
+          })}{" "}
           {currency.nextPublication.scheduled ? null : currency.nextPublication.note}
         </p>
       )}
 
-      <p className="currency-frozen">
-        <strong>The January 2026 replay stays frozen, permanently.</strong> It is the methods
-        exhibit — the one month this project grades itself on, using only data that existed before
-        it. A newer artifact never replaces it, and nothing below is allowed to regrade it.
-      </p>
+      <p className="currency-frozen">{tx("currency.frozen")}</p>
 
       {excluded && (
         <div className="currency-excluded">
           <div className="currency-excluded-head">
-            <span className="eyebrow">Observed · not model-eligible</span>
+            <span className="eyebrow">{t("currency.excludedEyebrow")}</span>
             <h4>{excluded.headline}</h4>
           </div>
 
           <p>{excluded.summary}</p>
 
-          <p className="currency-guard">
-            These are excluded observations. They are not a forecast, not a correction, and not
-            newer data that supersedes the replay above. The values are multiplier-adjusted
-            person-equivalents from a publisher whose cadence broke. No row here trains a model,
-            selects a model, or moves a staff-hour.
-          </p>
+          <p className="currency-guard">{t("currency.guard")}</p>
 
           {excluded.grounds.length > 0 && (
             <>
-              <p className="currency-grounds-lead">Why they are excluded:</p>
+              <p className="currency-grounds-lead">{t("currency.groundsLead")}</p>
               <ul className="currency-grounds">
                 {excluded.grounds.map((ground) => (
                   <li key={ground}>{ground}</li>
@@ -87,29 +80,31 @@ export function CurrencyPanel() {
 
           {excluded.promotionRule && (
             <p className="currency-rule">
-              <strong>Promotion rule.</strong> {excluded.promotionRule}
+              <strong>{t("currency.promotionRuleLabel")}</strong> {excluded.promotionRule}
             </p>
           )}
 
           <details className="context-details">
             <summary>
-              <span>View the {excluded.rows.length} excluded rows</span>
+              <span>{t("currency.viewRows", { count: excluded.rows.length })}</span>
               <small>{excluded.months.join(" · ")}</small>
             </summary>
             <div className="table-scroll">
               <table>
                 <caption>
-                  Observed and excluded from {excluded.excludedFrom.map(readable).join(", ")}.
-                  Values are {readable(excluded.unit)}, not counts of people.
+                  {t("currency.tableCaption", {
+                    uses: list(excluded.excludedFrom.map((token) => readableToken(t, token))),
+                    unit: readableToken(t, excluded.unit),
+                  })}
                 </caption>
                 <thead>
                   <tr>
-                    <th>Month</th>
-                    <th>Area</th>
-                    <th>Series</th>
-                    <th>Value</th>
-                    <th>Reported as</th>
-                    <th>Model input</th>
+                    <th>{t("currency.thMonth")}</th>
+                    <th>{t("currency.thArea")}</th>
+                    <th>{t("currency.thSeries")}</th>
+                    <th>{t("currency.thValue")}</th>
+                    <th>{t("currency.thReportedAs")}</th>
+                    <th>{t("currency.thModelInput")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -117,10 +112,10 @@ export function CurrencyPanel() {
                     <tr key={`${row.month}-${row.series}-${row.geography}`}>
                       <th scope="row">{row.month}</th>
                       <td>{row.geography}</td>
-                      <td>{readable(row.series)}</td>
-                      <td>{formatNumber(row.value)}</td>
-                      <td>{readable(row.valueStatus)}</td>
-                      <td>Excluded</td>
+                      <td>{readableToken(t, row.series)}</td>
+                      <td>{number(row.value)}</td>
+                      <td>{readableToken(t, row.valueStatus)}</td>
+                      <td>{t("currency.excludedCell")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -130,8 +125,7 @@ export function CurrencyPanel() {
 
           {excluded.source && (
             <p className="currency-source">
-              Transcription, provenance, and the update protocol are recorded in{" "}
-              <code>{excluded.source}</code>.
+              {tx("currency.sourceNote", { file: excluded.source })}
             </p>
           )}
         </div>

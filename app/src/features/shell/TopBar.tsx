@@ -1,6 +1,8 @@
 import { SparkIcon } from "../../components/Icons";
 import { CurrencyBadge } from "../currency/CurrencyBadge";
 import { useShell } from "../../features/shell/ShellContext";
+import { useTranslation } from "../../i18n/context";
+import { LOCALES, LOCALE_LABEL } from "../../i18n/locale";
 
 export function TopBar() {
   const {
@@ -17,6 +19,7 @@ export function TopBar() {
     switchView,
     view,
   } = useShell();
+  const { t, locale, setLocale } = useTranslation();
   return (
     <header className="topbar" id="main-content">
       <div className="brand-lockup">
@@ -27,20 +30,20 @@ export function TopBar() {
           <strong>
             Still Here <span>SD</span>
           </strong>
-          <small>Outreach continuity planner</small>
+          <small>{t("topbar.tagline")}</small>
         </div>
       </div>
       <div className="decision-controls">
         <div className="header-context">
-          <span className="eyebrow">Decision horizon</span>
+          <span className="eyebrow">{t("topbar.decisionHorizon")}</span>
           <strong>{data.scenario.decisionHorizon}</strong>
         </div>
         <CurrencyBadge />
         <label className="budget-control" htmlFor="budget-hours">
-          <span className="eyebrow">Available capacity</span>
+          <span className="eyebrow">{t("topbar.availableCapacity")}</span>
           <span className="budget-input-wrap">
             <input
-              aria-label="Available staff-hours"
+              aria-label={t("topbar.availableStaffHours")}
               aria-describedby="budget-help"
               id="budget-hours"
               inputMode="numeric"
@@ -51,21 +54,20 @@ export function TopBar() {
               type="number"
               value={budget}
             />
-            <span>hours</span>
+            <span>{t("topbar.hours")}</span>
           </span>
           <span className="sr-only" id="budget-help">
-            Enter a whole number from {deployment.minBudget} to {deployment.maxBudget}. This is a
-            demonstration scenario, not staffing capacity data.
+            {t("topbar.budgetHelp", { min: deployment.minBudget, max: deployment.maxBudget })}
           </span>
         </label>
-        <div aria-label="View" className="view-toggle" role="group">
+        <div aria-label={t("topbar.view")} className="view-toggle" role="group">
           <button
             aria-pressed={view === "story"}
             className={view === "story" ? "active" : ""}
             onClick={() => switchView("story")}
             type="button"
           >
-            Story
+            {t("topbar.viewStory")}
           </button>
           <button
             aria-pressed={view === "workspace"}
@@ -73,15 +75,31 @@ export function TopBar() {
             onClick={() => switchView("workspace")}
             type="button"
           >
-            Map workspace
+            {t("topbar.viewWorkspace")}
           </button>
+        </div>
+        {/* Each language names itself, because a reader who cannot read the
+            current language cannot read a translated name for their own. */}
+        <div aria-label={t("topbar.language")} className="view-toggle locale-toggle" role="group">
+          {LOCALES.map((option) => (
+            <button
+              aria-pressed={locale === option}
+              className={locale === option ? "active" : ""}
+              key={option}
+              lang={option}
+              onClick={() => setLocale(option)}
+              type="button"
+            >
+              {LOCALE_LABEL[option]}
+            </button>
+          ))}
         </div>
         <button
           className={`button button-quiet guide-button ${guideUsed ? "" : "guide-button-new"}`}
           onClick={beginGuide}
           type="button"
         >
-          <SparkIcon /> Guide demo
+          <SparkIcon /> {t("topbar.guide")}
         </button>
         <button
           aria-pressed={projectorMode}
@@ -89,7 +107,7 @@ export function TopBar() {
           onClick={() => setProjectorMode((mode) => !mode)}
           type="button"
         >
-          {projectorMode ? "Exit projector" : "Projector mode"}
+          {projectorMode ? t("topbar.exitProjector") : t("topbar.projectorMode")}
         </button>
         <button
           aria-expanded={disclosuresOpen}
@@ -98,7 +116,7 @@ export function TopBar() {
           onClick={() => setDisclosuresOpen((open) => !open)}
           type="button"
         >
-          Data & limits
+          {t("topbar.dataAndLimits")}
         </button>
       </div>
     </header>

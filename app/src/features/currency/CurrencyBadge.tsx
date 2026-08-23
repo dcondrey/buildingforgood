@@ -1,4 +1,5 @@
 import { useShell } from "../shell/ShellContext";
+import { useTranslation } from "../../i18n/context";
 import "./currency.css";
 
 /**
@@ -10,12 +11,13 @@ import "./currency.css";
  */
 export function CurrencyBadge() {
   const { data } = useShell();
+  const { t } = useTranslation();
   const currency = data.currency;
   if (!currency) {
     return (
       <span className="currency-badge currency-unknown">
-        Currency unknown
-        <small>this artifact states no currency</small>
+        {t("currency.unknownBadge")}
+        <small>{t("currency.unknownBadgeNote")}</small>
       </span>
     );
   }
@@ -25,8 +27,8 @@ export function CurrencyBadge() {
       className={`currency-badge ${stale ? "currency-stale" : "currency-current"}`}
       href="#currency"
     >
-      Current through {currency.sourceDataThrough}
-      <small>{stale ? "publication overdue" : "publication on cadence"}</small>
+      {t("currency.currentThrough", { month: currency.sourceDataThrough })}
+      <small>{stale ? t("currency.overdue") : t("currency.onCadence")}</small>
     </a>
   );
 }

@@ -14,13 +14,13 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { printWithBodyClass } from "../export/clientFile";
-import { PLAN_DISCLOSURE_LINE } from "../export/disclosure";
 import { useShell } from "../shell/ShellContext";
-import { formatDate, formatNumber } from "../../lib/format";
+import { useTranslation } from "../../i18n/context";
+import { INTL_LOCALE, type Locale } from "../../i18n/locale";
 import "./shift-sheet.css";
 
-function today(): string {
-  return new Date().toLocaleDateString("en-US", {
+function today(locale: Locale): string {
+  return new Date().toLocaleDateString(INTL_LOCALE[locale], {
     day: "numeric",
     month: "long",
     weekday: "long",
@@ -39,6 +39,7 @@ export function ShiftSheet({ onClose }: { onClose: () => void }) {
     planExportRows,
     planTotal,
   } = useShell();
+  const { t, locale, number, date } = useTranslation();
   const panel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,27 +67,27 @@ export function ShiftSheet({ onClose }: { onClose: () => void }) {
       <div className="shift-sheet">
         <div className="shift-sheet-bar">
           <button onClick={onClose} type="button">
-            Close
+            {t("sheet.close")}
           </button>
           <button
             className="is-primary"
             onClick={() => printWithBodyClass("shift-sheet-open")}
             type="button"
           >
-            Print / save as PDF
+            {t("sheet.print")}
           </button>
         </div>
 
-        <h2 id="shift-sheet-title">Shift sheet</h2>
+        <h2 id="shift-sheet-title">{t("sheet.title")}</h2>
         <p className="shift-sheet-meta">
-          <span>{today()}</span>
+          <span>{today(locale)}</span>
           <span>
-            {budget} staff-hours ·{" "}
-            {guardEnabled
-              ? `${coverageFloor}h guaranteed minimum per neighborhood`
-              : "no guaranteed minimum — comparison view"}
+            {t(guardEnabled ? "sheet.metaFloor" : "sheet.metaNoFloor", {
+              budget,
+              floor: coverageFloor,
+            })}
           </span>
-          <span className="quiet">Draft for coordinator review. Nobody is dispatched by it.</span>
+          <span className="quiet">{t("sheet.draftNote")}</span>
         </p>
 
         <ul className="shift-sheet-areas">
@@ -96,21 +97,27 @@ export function ShiftSheet({ onClose }: { onClose: () => void }) {
               <li className="shift-sheet-area" key={row.areaId}>
                 <div className="shift-sheet-area-head">
                   <span className="shift-sheet-area-name">{row.areaName}</span>
-                  <span className="shift-sheet-hours">{row.hours} h</span>
+                  <span className="shift-sheet-hours">
+                    {t("sheet.hours", { hours: row.hours })}
+                  </span>
                 </div>
                 <p className="shift-sheet-why">
-                  <b>Why this amount:</b> {row.reason}
+                  <b>{t("sheet.whyLabel")}</b> {row.reason}
                 </p>
                 <div className="shift-sheet-tags">
-                  {row.locked && <span className="shift-sheet-tag is-strong">Set by a person</span>}
+                  {row.locked && (
+                    <span className="shift-sheet-tag is-strong">{t("sheet.setByPerson")}</span>
+                  )}
                   {guardEnabled && (
                     <span className={`shift-sheet-tag ${belowFloor ? "is-strong" : ""}`}>
-                      {belowFloor ? "Below the minimum" : `${coverageFloor}h minimum met`}
+                      {belowFloor
+                        ? t("sheet.belowMinimum")
+                        : t("sheet.minimumMet", { floor: coverageFloor })}
                     </span>
                   )}
                   {row.unmetHours > 0 && (
                     <span className="shift-sheet-tag">
-                      {row.unmetHours}h moved away by the minimum
+                      {t("sheet.movedAway", { hours: row.unmetHours })}
                     </span>
                   )}
                 </div>
@@ -120,26 +127,27 @@ export function ShiftSheet({ onClose }: { onClose: () => void }) {
         </ul>
 
         <p className="shift-sheet-total">
-          <span>All neighborhoods</span>
-          <span>
-            {planTotal} / {budget} h
-          </span>
+          <span>{t("sheet.allNeighborhoods")}</span>
+          <span>{t("sheet.total", { allocated: planTotal, budget })}</span>
         </p>
 
         {intervention && interventionResult && assumedArea && (
           <p className="shift-sheet-disclosure">
-            These hours include an assumption you stated: {assumedArea} modeled as cleared, with{" "}
-            {formatNumber(intervention.share * 100)}% of its planning load assumed to shift to
-            adjacent areas. Assumed, not observed.
+            {t("sheet.assumption", {
+              area: assumedArea,
+              pct: number(intervention.share * 100),
+            })}
           </p>
         )}
 
-        <p className="shift-sheet-disclosure">{PLAN_DISCLOSURE_LINE}</p>
+        <p className="shift-sheet-disclosure">{t("export.disclosureLine")}</p>
 
         <p className="shift-sheet-source">
-          {data.source.label} · {data.source.artifact} · source data through{" "}
-          {formatDate(data.source.retrievedAt)}. Aggregate place-level evidence only: no block
-          records, no block-level geometry, no person-level data.
+          {t("sheet.source", {
+            label: data.source.label,
+            artifact: data.source.artifact,
+            date: date(data.source.retrievedAt),
+          })}
         </p>
       </div>
     </div>,
@@ -149,6 +157,7 @@ export function ShiftSheet({ onClose }: { onClose: () => void }) {
 
 export function ShiftSheetLauncher() {
   const { planReady } = useShell();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -158,7 +167,7 @@ export function ShiftSheetLauncher() {
         onClick={() => setOpen(true)}
         type="button"
       >
-        Open shift sheet
+        {t("sheet.open")}
       </button>
       {open && <ShiftSheet onClose={() => setOpen(false)} />}
     </>

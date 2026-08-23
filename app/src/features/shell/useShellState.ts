@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { EMBEDDED_DEMO, loadDemoData, type DemoData } from "../../lib/demo";
-import {
-  floorCostSentence,
-  formatCurrency,
-  formatRate,
-  summarizePlanCost,
-} from "../../domain/cost/index.ts";
-import { formatDate, formatNumber, titleCase } from "../../lib/format";
+import { summarizePlanCost } from "../../domain/cost/index.ts";
+import { createTranslator } from "../../i18n/context";
+import { readStoredLocale, writeStoredLocale, type Locale } from "../../i18n/locale";
+import { placeParams, placeWords } from "../../i18n/places";
+import { planMessage, planReason } from "../../i18n/plannerText";
+import { titleCase } from "../../lib/format";
 import { applyIntervention } from "../../lib/intervention";
 import { allocateHours, type PlanResult } from "../../lib/planner";
 import { buildGuideSteps } from "../guide/guideSteps";
@@ -79,6 +78,28 @@ export function useShellState() {
       return "story";
     }
   });
+  // The reader's language, persisted exactly like the view preference and
+  // mirrored onto <html lang> so assistive technology switches voice with it.
+  const [locale, setLocaleState] = useState<Locale>(readStoredLocale);
+  const setLocale = useMemo(
+    () => (next: Locale) => {
+      setLocaleState(next);
+      writeStoredLocale(next);
+    },
+    [],
+  );
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+  const i18n = useMemo(() => createTranslator(locale, setLocale), [locale, setLocale]);
+  const { t, number: formatNumber, date: formatDate, money } = i18n;
+  // The deployment's own word for its places, in the reader's language and in
+  // every grammatical form the copy needs.
+  const places = useMemo(
+    () => placeWords(t, deployment.areaNoun, deployment.areaCount),
+    [t, deployment],
+  );
+  const placeText = useMemo(() => placeParams(places), [places]);
   const [mapLayer, setMapLayer] = useState<"hours" | "change" | "unmet">("hours");
   const [wsTab, setWsTab] = useState<"area" | "plan" | "scenarios" | "brief">("plan");
   const [guideUsed, setGuideUsed] = useState(() => {
@@ -243,7 +264,21 @@ export function useShellState() {
       }),
     [planningAreas, allocationById, unmetByArea, loadedHourlyRate],
   );
-  const floorCostLine = floorCostSentence(planCost);
+  // The domain's `floorCostSentence` is fixed at en-US and is not this
+  // workstream's to change; this is the same sentence, from the same numbers,
+  // in the reader's language. `i18n.test.tsx` pins the two together at `en`.
+  const floorCostLine = useMemo(() => {
+    const floor = planCost.floor;
+    if (floor.topLoadAreaLabel === null) return null;
+    const cost = money(floor.cost, planCost.currency);
+    return floor.hours <= 0
+      ? t("cost.floorSentenceNoHours", { money: cost, area: floor.topLoadAreaLabel })
+      : t("cost.floorSentenceHours", {
+          money: cost,
+          hours: floor.topLoadAreaHours,
+          area: floor.topLoadAreaLabel,
+        });
+  }, [planCost, money, t]);
   const budgetValid =
     Number.isInteger(budget) && budget >= deployment.minBudget && budget <= deployment.maxBudget;
   const planReady = Boolean(
@@ -344,53 +379,142 @@ export function useShellState() {
   }
 
   const decisionBrief = useMemo(() => {
+    // Every line is one whole message with named holes. The numbers are the
+    // planner's and the artifact's, carried across untouched.
     const rows = data.areas
-      .map(
-        (area) =>
-          `${area.name}: ${allocationById.get(area.id) ?? "—"}h${lockedIds.has(area.id) ? " (human lock)" : ""}`,
-      )
+      .map((area) => {
+        const hours = allocationById.get(area.id);
+        const locked = lockedIds.has(area.id);
+        const key =
+          hours === undefined
+            ? locked
+              ? "decision.scenarioRowNoHoursLocked"
+              : "decision.scenarioRowNoHours"
+            : locked
+              ? "decision.scenarioRowLocked"
+              : "decision.scenarioRow";
+        return t(key, { area: area.name, hours: hours ?? 0 });
+      })
       .join("; ");
+    const thresholds =
+      individualOne && individualTwo
+        ? t("decision.evidenceThresholds", {
+            oneFrom: individualOne.fromBlocks,
+            oneTo: individualOne.toBlocks,
+            twoFrom: individualTwo.fromBlocks,
+            twoTo: individualTwo.toBlocks,
+          })
+        : t("decision.evidenceActiveBlocks", {
+            from: signal.activeFrom,
+            to: signal.activeTo,
+            pct: formatNumber(signal.activeChangePct, 1),
+          });
+    const audit = auditedAreaWapes.length
+      ? t("decision.auditRange", {
+          min: formatNumber(Math.min(...auditedAreaWapes), 1),
+          max: formatNumber(Math.max(...auditedAreaWapes), 1),
+        })
+      : t("decision.auditUnavailable");
+    const rate = t("cost.perStaffHour", { money: money(planCost.rate, planCost.currency) });
     return [
-      `STILL HERE SD · NEXT-SHIFT DECISION BRIEF`,
-      `Status: ${data.scenario.status === "ready" ? "READY FOR COORDINATOR REVIEW" : "PROVISIONAL OFFLINE SNAPSHOT"} — not automatic dispatch`,
-      `Source: ${data.source.label}. Artifact: ${data.source.artifact}; source data through ${formatDate(data.source.retrievedAt)}; ${data.origin === "generated" ? "generated analysis" : "embedded offline fallback"}.`,
-      `Method: same-month comparison on the fixed ${signal.panelSize}-block panel under the POST2020 method; block-map components are separately digitized observations, not unique people.`,
-      `Evidence: ${signal.classification === "wider_footprint" ? "Wider observed-individual footprint" : titleCase(signal.classification)}. ${signal.fromPeriod} to ${signal.toPeriod}: observed individuals ${signal.components.individuals.from} → ${signal.components.individuals.to} (+${formatNumber(signal.components.individuals.changePct, 1)}%); tents/structures ${signal.components.structures.from} → ${signal.components.structures.to} (${formatNumber(signal.components.structures.changePct, 1)}%).${individualOne && individualTwo ? ` Blocks with ≥1 observed individual ${individualOne.fromBlocks} → ${individualOne.toBlocks}; blocks with ≥2 ${individualTwo.fromBlocks} → ${individualTwo.toBlocks}.` : ` Active mixed-component blocks ${signal.activeFrom} → ${signal.activeTo} (+${formatNumber(signal.activeChangePct, 1)}%).`} The mixed-unit index is secondary, not a person count.${individualSpatial ? ` Individual HHI was nearly unchanged (${individualSpatial.hhiFrom.toFixed(6)} → ${individualSpatial.hhiTo.toFixed(6)}).` : ""}`,
-      `Historical one-step-ahead planning scenario (data frozen Dec 2025): ${data.forecast.targetPeriod} ${formatNumber(data.forecast.point)}; historical 80% residual interval ${formatNumber(data.forecast.lower)}–${formatNumber(data.forecast.upper)}. ${data.forecast.model}; rolling-origin MAE ${formatNumber(data.forecast.mae)}; empirical coverage ${formatNumber(data.forecast.coverage)}% across ${data.forecast.intervalPoints} folds. Not a live future forecast or a guaranteed probability interval.`,
-      `Illustrative coverage-continuity scenario for human review: ${budget} staff-hours; user-set guard ${guardEnabled ? `on (${coverageFloor}h demo-policy minimum)` : "off — audit only"}. ${rows}.${auditedAreaWapes.length ? ` Area forecasts are noisier than the aggregate (held-out WAPE ranges ${formatNumber(Math.min(...auditedAreaWapes), 1)}%–${formatNumber(Math.max(...auditedAreaWapes), 1)}%).` : " Area-level audit WAPE is unavailable in this artifact; do not infer equal accuracy."}`,
+      t("decision.heading"),
+      data.scenario.status === "ready"
+        ? t("decision.statusReady")
+        : t("decision.statusProvisional"),
+      t(data.origin === "generated" ? "decision.sourceGenerated" : "decision.sourceEmbedded", {
+        label: data.source.label,
+        artifact: data.source.artifact,
+        date: formatDate(data.source.retrievedAt),
+      }),
+      t("decision.method", { panel: signal.panelSize }),
+      t("decision.evidence", {
+        classification:
+          signal.classification === "wider_footprint"
+            ? t("decision.classificationWiderFootprint")
+            : titleCase(signal.classification),
+        fromPeriod: signal.fromPeriod,
+        toPeriod: signal.toPeriod,
+        indFrom: signal.components.individuals.from,
+        indTo: signal.components.individuals.to,
+        indPct: formatNumber(signal.components.individuals.changePct, 1),
+        strFrom: signal.components.structures.from,
+        strTo: signal.components.structures.to,
+        strPct: formatNumber(signal.components.structures.changePct, 1),
+        thresholds,
+        hhi: individualSpatial
+          ? t("decision.evidenceHhi", {
+              from: individualSpatial.hhiFrom.toFixed(6),
+              to: individualSpatial.hhiTo.toFixed(6),
+            })
+          : "",
+      }),
+      t("decision.forecast", {
+        period: data.forecast.targetPeriod,
+        point: formatNumber(data.forecast.point),
+        lower: formatNumber(data.forecast.lower),
+        upper: formatNumber(data.forecast.upper),
+        model: data.forecast.model,
+        mae: formatNumber(data.forecast.mae),
+        coverage: formatNumber(data.forecast.coverage),
+        folds: data.forecast.intervalPoints,
+      }),
+      t(guardEnabled ? "decision.scenarioGuardOn" : "decision.scenarioGuardOff", {
+        budget,
+        floor: coverageFloor,
+        rows,
+        audit,
+      }),
       ...(intervention && interventionResult
         ? [
-            `Stress-test assumption active: ${data.areas.find((area) => area.id === intervention.areaId)?.name ?? intervention.areaId} modeled as cleared, with ${formatNumber(intervention.share * 100)}% of its planning load assumed to shift to adjacent areas (${formatNumber(interventionResult.shifted, 1)} shifted, ${formatNumber(interventionResult.assumedResolved, 1)} assumed resolved). An explored assumption for review, not a prediction: the source data cannot verify displacement (April 2026 City Auditor).`,
+            t("decision.assumption", {
+              area:
+                data.areas.find((area) => area.id === intervention.areaId)?.name ??
+                intervention.areaId,
+              pct: formatNumber(intervention.share * 100),
+              shifted: formatNumber(interventionResult.shifted, 1),
+              resolved: formatNumber(interventionResult.assumedResolved, 1),
+            }),
           ]
         : []),
-      `Cost view — operator-set assumption, not a measured or published figure: at an assumed ${formatRate(planCost.rate, planCost.currency)}, the plan's ${planCost.totalHours} staff-hours cost ${formatCurrency(planCost.totalCost, planCost.currency)}.${floorCostLine ? ` ${floorCostLine} That is ${planCost.floor.hours} hours moved plan-wide by the guaranteed minimum, priced at the same assumed rate.` : ""} The rate is set by the operating organization, is derived from no source in this artifact, and enters no allocation: identical plans are produced at every rate. Costs are stated per staff-hour, per area, and per plan only; nothing here is a cost per person, per contact, or per anyone covered.`,
-      `Review triggers: new month, budget or boundary change, wider interval, infeasible floor, or local knowledge conflict.`,
-      `Privacy and authorization boundary: aggregate place-level evidence only; no block records or block-level geometry ship (the map draws simplified neighborhood boundaries only). This does not track people, establish causality, authorize enforcement, or dispatch staff automatically.`,
+      t("decision.cost", {
+        rate,
+        hours: planCost.totalHours,
+        total: money(planCost.totalCost, planCost.currency),
+        floorLine: floorCostLine
+          ? t("decision.costFloor", { sentence: floorCostLine, hours: planCost.floor.hours })
+          : "",
+      }),
+      t("decision.triggers"),
+      t("decision.privacy"),
     ].join("\n");
   }, [
     allocationById,
+    auditedAreaWapes,
     budget,
     coverageFloor,
     data,
+    floorCostLine,
+    formatDate,
+    formatNumber,
     guardEnabled,
     individualOne,
     individualSpatial,
     individualTwo,
-    lockedIds,
-    signal,
-    auditedAreaWapes,
     intervention,
     interventionResult,
+    lockedIds,
+    money,
     planCost,
-    floorCostLine,
+    signal,
+    t,
   ]);
 
   async function copyBrief() {
     try {
       await navigator.clipboard.writeText(decisionBrief);
-      setCopyStatus("Decision brief copied with assumptions and review triggers.");
+      setCopyStatus(t("brief.copied"));
     } catch {
-      setCopyStatus("Clipboard unavailable. The full brief is open below for manual copy.");
+      setCopyStatus(t("brief.copyFailed"));
     }
   }
 
@@ -399,7 +523,9 @@ export function useShellState() {
     const lockCount = lockedIds.size;
     const entry: SavedScenario = {
       id: `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
-      name: `${budget}h · ${coverageFloor}h floor${lockCount ? ` · ${lockCount} lock${lockCount > 1 ? "s" : ""}` : ""}`,
+      name: lockCount
+        ? t("bench.scenarioNameWithLocks", { budget, floor: coverageFloor, count: lockCount })
+        : t("bench.scenarioName", { budget, floor: coverageFloor }),
       budget,
       floor: coverageFloor,
       guard: guardEnabled,
@@ -477,12 +603,12 @@ export function useShellState() {
   const guideSteps = useMemo(
     () =>
       buildGuideSteps(data, {
-        countWord: deployment.areaCountWord,
-        noun: deployment.areaNoun,
-        nounPlural: deployment.areaNounPlural,
+        t,
+        number: formatNumber,
+        places: placeText,
         coverageFloor: deployment.coverageFloor,
       }),
-    [data, deployment],
+    [data, deployment, formatNumber, placeText, t],
   );
 
   // Whether the viewer has completed the step's task with the app's own
@@ -780,12 +906,12 @@ export function useShellState() {
         areaId: area.id,
         areaName: area.name,
         hours: allocationById.get(area.id) ?? 0,
-        reason: area.reason,
+        reason: planReason(t, area.reason),
         locked: lockedIds.has(area.id),
         floorHours: guardEnabled ? coverageFloor : 0,
         unmetHours: unmetByArea.get(area.id) ?? 0,
       })),
-    [allocationById, coverageFloor, guardEnabled, lockedIds, planningAreas, unmetByArea],
+    [allocationById, coverageFloor, guardEnabled, lockedIds, planningAreas, t, unmetByArea],
   );
 
   // In-scope areas this artifact carries no row for. Empty for the reference
@@ -798,11 +924,17 @@ export function useShellState() {
   const classificationLabel =
     signal.classification === "wider_footprint"
       ? individualSpatial
-        ? "People were seen in more places, not fewer"
-        : "Field activity spread across more blocks"
+        ? t("classification.widerFootprintPeople")
+        : t("classification.widerFootprintActivity")
       : titleCase(signal.classification);
   return {
     advanceGuide,
+    i18n,
+    locale,
+    places,
+    placeText,
+    planSentence: planMessage(t, places, plan?.message ?? ""),
+    setLocale,
     allocationById,
     auditedAreaWapes,
     auditedAreas,

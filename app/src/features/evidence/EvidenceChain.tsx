@@ -1,32 +1,36 @@
 import type { DemoData } from "../../lib/demo";
-import { formatNumber } from "../../lib/format";
+import { useTranslation } from "../../i18n/context";
 
 export function EvidenceChain({ data }: { data: DemoData }) {
+  const { t, number } = useTranslation();
   const steps = [
     {
-      label: "Verified source",
+      label: t("chain.verifiedSource"),
       detail: data.source.artifact.split("/").pop() ?? data.source.artifact,
       tone: "teal",
     },
     {
-      label: "Comparable panel",
-      detail: `${data.signal.panelSize} fixed blocks · same method`,
+      label: t("chain.comparablePanel"),
+      detail: t("chain.comparablePanelDetail", { panel: data.signal.panelSize }),
       tone: "teal",
     },
     {
-      label: "Audited scenario",
-      detail: `${data.forecast.intervalPoints} held-out folds · ${formatNumber(data.forecast.coverage)}% coverage`,
+      label: t("chain.auditedScenario"),
+      detail: t("chain.auditedScenarioDetail", {
+        folds: data.forecast.intervalPoints,
+        coverage: number(data.forecast.coverage),
+      }),
       tone: "amber",
     },
     {
-      label: "Human review",
-      detail: "Coordinator decides",
+      label: t("chain.humanReview"),
+      detail: t("chain.humanReviewDetail"),
       tone: "amber",
     },
   ];
 
   return (
-    <ol aria-label="Evidence and decision chain" className="evidence-chain">
+    <ol aria-label={t("chain.aria")} className="evidence-chain">
       {steps.map((step, index) => (
         <li className={`evidence-chain-step chain-${step.tone}`} key={step.label}>
           <span aria-hidden="true" className="chain-node">

@@ -48,6 +48,21 @@
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      The reader's saved language, applied before the bundle parses.
+      `<html lang>` is what assistive technology chooses a voice from, so a
+      Spanish reader returning to the tool must not get a paint of `lang="en"`
+      first. Deliberately inline, deliberately tiny, and it fails silently in
+      a private window with no storage: the default is already correct there.
+    -->
+    <script>
+      try {
+        var saved = localStorage.getItem("stillhere-locale");
+        if (saved === "en" || saved === "es") document.documentElement.lang = saved;
+      } catch (error) {
+        /* no storage; the document keeps its declared default */
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

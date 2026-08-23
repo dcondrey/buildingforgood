@@ -10,8 +10,8 @@ import { useShell } from "../../features/shell/ShellContext";
 import { AreaDetailPanel } from "../../features/spatial/AreaDetailPanel";
 import { AreaMap } from "../../features/spatial/AreaMap";
 import { MapValueTable } from "../../features/spatial/MapValueTable";
-import { formatCurrency, formatRate } from "../../domain/cost/index.ts";
-import { formatNumber } from "../../lib/format";
+import { useTranslation } from "../../i18n/context";
+import { planReason } from "../../i18n/plannerText";
 
 export function PlannerSection() {
   const {
@@ -20,15 +20,17 @@ export function PlannerSection() {
     budgetValid,
     coverageFloor,
     data,
-    deployment,
     guardEnabled,
     intervention,
     interventionResult,
     lockedIds,
     maxHours,
+    placeText,
+    places,
     plan,
     planCost,
     planDirty,
+    planSentence,
     planTotal,
     planningAreas,
     runPlan,
@@ -37,6 +39,10 @@ export function PlannerSection() {
     toggleAreaSelection,
     unmetTotal,
   } = useShell();
+  const { t, number, money } = useTranslation();
+  const assumedAreaName = intervention
+    ? (data.areas.find((area) => area.id === intervention.areaId)?.name ?? "")
+    : "";
   return (
     <section className="decision-section" id="planner" aria-labelledby="planner-title">
       <div aria-hidden="true" className="section-number">
@@ -44,20 +50,18 @@ export function PlannerSection() {
       </div>
       <div className="section-intro split-intro planner-intro">
         <div>
-          <p className="eyebrow">The staffing plan</p>
-          <h2 id="planner-title">Plan {budget} staff-hours</h2>
-          <p>
-            Split the hours across the {deployment.areaCountWord} {deployment.areaNounPlural}.
-            First, every area gets a minimum you choose, so no place goes unvisited. Whatever
-            remains goes where the forecast expects the most people.
-          </p>
+          <p className="eyebrow">{t("planner.eyebrow")}</p>
+          <h2 id="planner-title">{t("planner.title", { hours: budget })}</h2>
+          <p>{t("planner.intro", placeText)}</p>
         </div>
         <div className={`guard-status ${guardEnabled ? "guard-on" : "guard-off"}`}>
           <span>{guardEnabled ? "✓" : "!"}</span>
           <div>
-            <small>Guaranteed minimum</small>
+            <small>{t("planner.guaranteedMinimum")}</small>
             <strong>
-              {guardEnabled ? `ON · ${coverageFloor}h per area` : "OFF · COMPARISON ONLY"}
+              {guardEnabled
+                ? t("planner.guardOn", { floor: coverageFloor })
+                : t("planner.guardOff")}
             </strong>
           </div>
         </div>
@@ -73,9 +77,9 @@ export function PlannerSection() {
         <div className="infeasible" role="alert">
           <span>!</span>
           <div>
-            <h3>No feasible plan</h3>
-            <p>{plan.message}</p>
-            <p>Increase the budget, remove a lock, or explicitly revise the floor.</p>
+            <h3>{t("planner.infeasibleTitle")}</h3>
+            <p>{planSentence}</p>
+            <p>{t("planner.infeasibleAdvice")}</p>
           </div>
         </div>
       ) : (
@@ -84,79 +88,82 @@ export function PlannerSection() {
 
           <div className="plan-map">
             <div className="plan-map-heading">
-              <span className="eyebrow">The plan on the map</span>
-              <p>
-                Every {deployment.areaNoun} keeps its guaranteed minimum; the extra hours go where
-                the forecast expects the most people.
-              </p>
+              <span className="eyebrow">{t("planner.mapHeading")}</span>
+              <p>{t("planner.mapLede", { areaNoun: places.noun })}</p>
             </div>
             <div className="map-detail-row">
               <div>
                 <AreaMap
                   areas={planningAreas}
-                  ariaLabel={`Map of the ${deployment.areaCountWord} ${deployment.areaNounPlural} showing planned staff-hours; select one for detail`}
+                  ariaLabel={t("map.ariaHours", placeText)}
                   onSelect={toggleAreaSelection}
                   selectedId={selectedAreaId}
                   valueFor={(area) => {
                     const hours = allocationById.get(area.id) ?? 0;
                     const belowFloor = guardEnabled && hours < coverageFloor;
                     return {
-                      text: `${hours}h${belowFloor ? " !" : ""}`,
+                      text: t(belowFloor ? "map.hoursBelowFloor" : "map.hoursValue", { hours }),
                       tone: belowFloor ? "down" : "neutral",
                       intensity: hours / maxHours,
                     };
                   }}
                 />
                 <p className="map-caption">
-                  Planned staff-hours by neighborhood · simplified neighborhood boundaries
-                  {guardEnabled ? " · ! marks hours below the minimum" : ""}
-                  {intervention
-                    ? ` · ${data.areas.find((area) => area.id === intervention.areaId)?.name ?? ""} modeled as cleared (assumption)`
-                    : ""}
+                  {t("map.captionPlanned")}
+                  {guardEnabled ? t("map.captionBelowMinimum") : ""}
+                  {intervention ? t("map.captionAssumption", { area: assumedAreaName }) : ""}
                 </p>
               </div>
               <AreaDetailPanel
                 area={selectedArea}
-                empty="Select a neighborhood on the map — click, or Tab and press Enter — to inspect its share of the plan, or to stress-test an action there."
-                kicker="Allocation detail"
-                note={selectedArea?.reason}
+                empty={t("detail.emptyPlan")}
+                kicker={t("detail.kickerAllocation")}
+                note={selectedArea ? planReason(t, selectedArea.reason) : undefined}
                 rows={
                   selectedArea
                     ? [
                         {
-                          label: "Planned hours",
-                          value: `${allocationById.get(selectedArea.id) ?? 0}h`,
+                          label: t("detail.plannedHours"),
+                          value: t("map.hoursValue", {
+                            hours: allocationById.get(selectedArea.id) ?? 0,
+                          }),
                           hint: lockedIds.has(selectedArea.id)
-                            ? "human lock — edit in the list above"
-                            : "recompute updates this",
+                            ? t("detail.hintHumanLockEditAbove")
+                            : t("detail.hintRecomputeUpdates"),
                         },
                         {
-                          label: "Coverage floor",
-                          value: guardEnabled ? `${coverageFloor}h minimum` : "off — audit only",
-                          hint: guardEnabled ? "user-set continuity floor" : "no minimum enforced",
+                          label: t("detail.coverageFloor"),
+                          value: guardEnabled
+                            ? t("detail.floorValue", { floor: coverageFloor })
+                            : t("detail.floorOff"),
+                          hint: guardEnabled
+                            ? t("detail.hintUserSetFloor")
+                            : t("detail.hintNoMinimumEnforced"),
                         },
                         {
-                          label: "Planning load",
-                          value: formatNumber(
+                          label: t("detail.planningLoad"),
+                          value: number(
                             planningAreas.find((area) => area.id === selectedArea.id)
                               ?.planningLoad ?? selectedArea.planningLoad,
                             1,
                           ),
                           hint:
                             intervention && interventionResult
-                              ? "adjusted by the active assumption"
-                              : "weights the remaining hours",
+                              ? t("detail.hintAdjustedByAssumption")
+                              : t("detail.hintWeightsRemaining"),
                         },
                         {
-                          label: "Held-out WAPE",
+                          label: t("detail.heldOutWape"),
                           value:
                             selectedArea.auditWape === null
-                              ? "not audited"
-                              : `${formatNumber(selectedArea.auditWape, 1)}%`,
+                              ? t("detail.notAudited")
+                              : t("detail.wapeValue", {
+                                  wape: number(selectedArea.auditWape, 1),
+                                }),
                           hint:
                             selectedArea.auditWape !== null && selectedArea.auditWape > 30
-                              ? "noisy — human review required"
-                              : "2025 held-out audit",
+                              ? t("detail.hintNoisyReview")
+                              : t("detail.hint2025Audit"),
                           flagged: selectedArea.auditWape !== null && selectedArea.auditWape > 30,
                         },
                       ]
@@ -167,19 +174,19 @@ export function PlannerSection() {
             <InterventionControl />
             <GeographyProvenance />
             <MapValueTable
-              caption="Planned staff-hours by neighborhood"
+              caption={t("table.captionPlanned")}
               rows={planningAreas.map((area) => {
                 const hours = allocationById.get(area.id) ?? 0;
                 return {
                   name: area.name,
-                  value: `${hours}h`,
+                  value: t("map.hoursValue", { hours }),
                   state: lockedIds.has(area.id)
-                    ? "Human lock"
+                    ? t("state.humanLock")
                     : !guardEnabled
-                      ? "No minimum"
+                      ? t("state.noMinimum")
                       : hours < coverageFloor
-                        ? "Below minimum"
-                        : "Minimum met",
+                        ? t("state.belowMinimum")
+                        : t("state.minimumMet"),
                 };
               })}
             />
@@ -187,32 +194,36 @@ export function PlannerSection() {
 
           <div className="plan-footer">
             <div>
-              <span className="eyebrow">Constraint check</span>
+              <span className="eyebrow">{t("planner.constraintCheck")}</span>
               <strong>
-                {planTotal === budget ? "Budget conserved exactly" : "Budget mismatch"}
+                {planTotal === budget ? t("planner.budgetConserved") : t("planner.budgetMismatch")}
               </strong>
             </div>
             <div>
-              <span className="eyebrow">Unmet planning load</span>
+              <span className="eyebrow">{t("planner.unmetPlanningLoad")}</span>
               <strong>
                 {unmetTotal > 0
-                  ? `${unmetTotal}h moved to minimums and locks`
-                  : "0h · hours follow the forecast"}
+                  ? t("planner.unmetMoved", { hours: unmetTotal })
+                  : t("planner.unmetNone")}
               </strong>
             </div>
             <div>
-              <span className="eyebrow">Cost of the floor · assumed</span>
+              <span className="eyebrow">{t("planner.floorCostEyebrow")}</span>
               <strong>
-                {formatCurrency(planCost.floor.cost, planCost.currency)} at an assumed{" "}
-                {formatRate(planCost.rate, planCost.currency)}
+                {t("planner.floorCostValue", {
+                  cost: money(planCost.floor.cost, planCost.currency),
+                  rate: t("cost.perStaffHour", {
+                    money: money(planCost.rate, planCost.currency),
+                  }),
+                })}
               </strong>
             </div>
             <div>
-              <span className="eyebrow">Human changes</span>
+              <span className="eyebrow">{t("planner.humanChanges")}</span>
               <strong>
                 {lockedIds.size
-                  ? `${lockedIds.size} locked assignment${lockedIds.size > 1 ? "s" : ""}`
-                  : "None yet"}
+                  ? t("planner.lockedAssignments", { count: lockedIds.size })
+                  : t("planner.noneYet")}
               </strong>
             </div>
             {planDirty && (
@@ -222,7 +233,7 @@ export function PlannerSection() {
                 onClick={() => runPlan()}
                 type="button"
               >
-                Recompute unlocked hours
+                {t("planner.recompute")}
               </button>
             )}
           </div>

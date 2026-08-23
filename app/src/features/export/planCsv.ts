@@ -17,6 +17,7 @@
  * export rather than emitting a header that prices a person.
  */
 
+import type { Translator } from "../../i18n/context";
 import { PLAN_DISCLOSURE_LINE } from "./disclosure.ts";
 
 export interface PlanExportRow {
@@ -41,11 +42,13 @@ export const PLAN_CSV_COLUMNS = [
 ] as const;
 
 /* The denominators a column may never have, and the signal it may never
- * carry. Patterns rather than lists, so they never read as copy. */
+ * carry. Patterns rather than lists, so they never read as copy — and in every
+ * language this file can emit a header in, because a guard that only reads
+ * English stops guarding the moment the header is translated. */
 const PERSON_DENOMINATOR_COLUMN =
-  /per[_-]?(person|people|contact|client|individual|capita|head|covered|served|encounter|resident|participant)/i;
+  /per[_-]?(person|people|contact|client|individual|capita|head|covered|served|encounter|resident|participant)|por[_-]?(persona|personas|contacto|cliente|individuo|habitante|atendido|atendida|encuentro|residente|participante)/i;
 const REPORT_VOLUME_COLUMN =
-  /(complaint|311|service_request|call_volume|report_volume|nuisance|hotline)/i;
+  /(complaint|311|service_request|call_volume|report_volume|nuisance|hotline|queja|quejas|denuncia|denuncias|reportes_recibidos|linea_de_atencion)/i;
 
 export class PlanExportError extends Error {
   constructor(message: string) {
@@ -70,8 +73,8 @@ export function assertReviewableColumns(columns: readonly string[]): void {
   }
 }
 
-function csvField(value: string | number | boolean): string {
-  const text = typeof value === "boolean" ? (value ? "yes" : "no") : String(value);
+function csvField(value: string | number): string {
+  const text = String(value);
   return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
@@ -81,27 +84,74 @@ export interface PlanCsvContext {
   coverageFloor: number;
 }
 
-export function buildPlanCsv(rows: readonly PlanExportRow[], context: PlanCsvContext): string {
-  assertReviewableColumns(PLAN_CSV_COLUMNS);
+/**
+ * The header row, the total-row label, and the disclosure, in the reader's
+ * language. A spreadsheet a coordinator has to read is copy, not machine
+ * interchange: an export whose columns only exist in English is an export half
+ * this city's outreach workforce has to translate by hand at 6am.
+ */
+export interface PlanCsvText {
+  columns: readonly string[];
+  allAreasLabel: string;
+  totalReason: (budget: number) => string;
+  yes: string;
+  no: string;
+  disclosure: string;
+}
+
+export const EN_PLAN_CSV_TEXT: PlanCsvText = {
+  columns: PLAN_CSV_COLUMNS,
+  allAreasLabel: "All neighborhoods",
+  totalReason: (budget) => `sum of the rows above, against the ${budget} staff-hours you set`,
+  yes: "yes",
+  no: "no",
+  disclosure: PLAN_DISCLOSURE_LINE,
+};
+
+export function planCsvText(t: Translator["t"]): PlanCsvText {
+  return {
+    columns: [
+      t("csv.colNeighborhood"),
+      t("csv.colPlannedStaffHours"),
+      t("csv.colWhyThisAmount"),
+      t("csv.colSetByAPerson"),
+      t("csv.colGuaranteedMinimumHours"),
+      t("csv.colMovedByMinimumHours"),
+      t("csv.colLimits"),
+    ],
+    allAreasLabel: t("print.allNeighborhoods"),
+    totalReason: (budget) => t("print.totalReason", { budget }),
+    yes: t("print.yes"),
+    no: t("print.no"),
+    disclosure: t("export.disclosureLine"),
+  };
+}
+
+export function buildPlanCsv(
+  rows: readonly PlanExportRow[],
+  context: PlanCsvContext,
+  text: PlanCsvText = EN_PLAN_CSV_TEXT,
+): string {
+  assertReviewableColumns(text.columns);
   const floorPerArea = context.guardEnabled ? context.coverageFloor : 0;
-  const table: Array<Array<string | number | boolean>> = rows.map((row) => [
+  const table: Array<Array<string | number>> = rows.map((row) => [
     row.areaName,
     row.hours,
     row.reason,
-    row.locked,
+    row.locked ? text.yes : text.no,
     floorPerArea,
     row.unmetHours,
-    PLAN_DISCLOSURE_LINE,
+    text.disclosure,
   ]);
   table.push([
-    "All neighborhoods",
+    text.allAreasLabel,
     rows.reduce((sum, row) => sum + row.hours, 0),
-    `sum of the rows above, against the ${context.budget} staff-hours you set`,
-    false,
+    text.totalReason(context.budget),
+    text.no,
     floorPerArea * rows.length,
     rows.reduce((sum, row) => sum + row.unmetHours, 0),
-    PLAN_DISCLOSURE_LINE,
+    text.disclosure,
   ]);
-  const lines = [PLAN_CSV_COLUMNS.join(","), ...table.map((row) => row.map(csvField).join(","))];
+  const lines = [text.columns.join(","), ...table.map((row) => row.map(csvField).join(","))];
   return `${lines.join("\r\n")}\r\n`;
 }

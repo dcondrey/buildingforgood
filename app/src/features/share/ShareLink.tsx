@@ -11,33 +11,28 @@
 import { useState } from "react";
 
 import { useShell } from "../shell/ShellContext";
+import { useTranslation } from "../../i18n/context";
 import "../export/handoff.css";
 
 export function ShareLink() {
   const { planReady, shareUrl } = useShell();
+  const { t } = useTranslation();
   const [status, setStatus] = useState("");
 
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      setStatus(
-        "Link copied. Opening it rebuilds this plan exactly, with no account and no server.",
-      );
+      setStatus(t("link.copied"));
     } catch {
-      setStatus("Clipboard unavailable. Select the link below and copy it by hand.");
+      setStatus(t("link.copyFailed"));
     }
   }
 
   return (
     <div className="handoff">
       <div>
-        <span className="eyebrow">Send this plan</span>
-        <p>
-          The whole plan travels in the link: the hours you set, the guaranteed minimum, every human
-          lock, and the two assumptions you stated. Nothing is stored anywhere, and the link carries
-          neighborhood names and hour counts only — no records, no locations, nothing about any
-          person.
-        </p>
+        <span className="eyebrow">{t("link.eyebrow")}</span>
+        <p>{t("link.lede")}</p>
       </div>
       <div className="handoff-actions">
         <button
@@ -46,12 +41,12 @@ export function ShareLink() {
           onClick={copyLink}
           type="button"
         >
-          Copy link to this plan
+          {t("link.copy")}
         </button>
       </div>
       {shareUrl !== "" && (
         <div className="handoff-link">
-          <span className="eyebrow">Read it before you send it</span>
+          <span className="eyebrow">{t("link.readBeforeSending")}</span>
           <code>{shareUrl}</code>
         </div>
       )}

@@ -1,5 +1,6 @@
 import { CheckIcon } from "../../components/Icons";
 import { useShell } from "../../features/shell/ShellContext";
+import { useTranslation } from "../../i18n/context";
 
 export function GuidePanel() {
   const {
@@ -13,6 +14,7 @@ export function GuidePanel() {
     stepComplete,
     stopGuide,
   } = useShell();
+  const { t } = useTranslation();
   if (guideIndex === null) return null;
   return (
     <div
@@ -27,7 +29,7 @@ export function GuidePanel() {
         <span style={{ width: `${((guideIndex + 1) / guideSteps.length) * 100}%` }} />
       </div>
       <p className="eyebrow guide-step-count">
-        Step {guideIndex + 1} of {guideSteps.length} · ← → keys · Esc stops
+        {t("guide.stepCount", { step: guideIndex + 1, total: guideSteps.length })}
       </p>
       <h2 id="guide-title">{guideSteps[guideIndex].title}</h2>
       <p>{guideSteps[guideIndex].body}</p>
@@ -35,18 +37,18 @@ export function GuidePanel() {
         <p className="guide-task">
           {stepComplete(guideIndex) ? (
             <>
-              <CheckIcon /> Done — press Next to continue.
+              <CheckIcon /> {t("guide.done")}
             </>
           ) : (
             <>
-              <strong>Your turn:</strong> {guideSteps[guideIndex].task}
+              <strong>{t("guide.yourTurn")}</strong> {guideSteps[guideIndex].task}
             </>
           )}
         </p>
       )}
       <div className="guide-actions">
         <button className="button button-quiet" onClick={stopGuide} type="button">
-          Stop
+          {t("guide.stop")}
         </button>
         <button
           aria-pressed={guideAuto}
@@ -54,7 +56,7 @@ export function GuidePanel() {
           onClick={() => setGuideAuto((auto) => !auto)}
           type="button"
         >
-          {guideAuto ? "Pause" : "Play"}
+          {guideAuto ? t("guide.pause") : t("guide.play")}
         </button>
         <button
           className="button button-quiet"
@@ -65,7 +67,7 @@ export function GuidePanel() {
           }}
           type="button"
         >
-          Back
+          {t("guide.back")}
         </button>
         <button
           className="button button-primary"
@@ -76,10 +78,10 @@ export function GuidePanel() {
           type="button"
         >
           {guideIndex === guideSteps.length - 1
-            ? "Finish"
+            ? t("guide.finish")
             : guideSteps[guideIndex].task && !stepComplete(guideIndex)
-              ? "Do it for me"
-              : "Next"}
+              ? t("guide.doItForMe")
+              : t("guide.next")}
         </button>
       </div>
     </div>

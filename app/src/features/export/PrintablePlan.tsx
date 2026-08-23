@@ -16,60 +16,67 @@
 
 import { createPortal } from "react-dom";
 
-import { PLAN_DISCLOSURE_LINE } from "./disclosure";
 import { useShell } from "../shell/ShellContext";
-import { formatDate } from "../../lib/format";
+import { useTranslation } from "../../i18n/context";
 import "./handoff.css";
 
 export function PrintablePlan() {
   const { budget, coverageFloor, data, decisionBrief, guardEnabled, planExportRows, planTotal } =
     useShell();
+  const { t, date } = useTranslation();
   return createPortal(
     <div aria-hidden="true" className="plan-print-doc">
-      <h1>Still Here SD · coverage plan</h1>
+      <h1>{t("print.title")}</h1>
       <p className="plan-print-meta">
-        {budget} staff-hours ·{" "}
-        {guardEnabled
-          ? `${coverageFloor}h guaranteed minimum per neighborhood`
-          : "no guaranteed minimum — comparison view"}{" "}
-        · {planTotal} of {budget} hours allocated
+        {t(guardEnabled ? "print.metaFloor" : "print.metaNoFloor", {
+          budget,
+          floor: coverageFloor,
+          allocated: planTotal,
+        })}
       </p>
       <p className="plan-print-meta">
-        {data.source.label} · {data.source.artifact} · source data through{" "}
-        {formatDate(data.source.retrievedAt)}.
+        {t("print.source", {
+          label: data.source.label,
+          artifact: data.source.artifact,
+          date: date(data.source.retrievedAt),
+        })}
       </p>
-      <p className="plan-print-disclosure">{PLAN_DISCLOSURE_LINE}</p>
+      <p className="plan-print-disclosure">{t("export.disclosureLine")}</p>
       <table>
-        <caption>Planned staff-hours by neighborhood, with the reason for each amount.</caption>
+        <caption>{t("print.tableCaption")}</caption>
         <thead>
           <tr>
-            <th scope="col">Neighborhood</th>
-            <th scope="col">Planned staff-hours</th>
-            <th scope="col">Why this amount</th>
-            <th scope="col">Set by a person</th>
-            <th scope="col">Hours moved away by the minimum</th>
+            <th scope="col">{t("print.thNeighborhood")}</th>
+            <th scope="col">{t("print.thPlannedHours")}</th>
+            <th scope="col">{t("print.thWhy")}</th>
+            <th scope="col">{t("print.thSetByPerson")}</th>
+            <th scope="col">{t("print.thMovedByMinimum")}</th>
           </tr>
         </thead>
         <tbody>
           {planExportRows.map((row) => (
             <tr key={row.areaId}>
               <th scope="row">{row.areaName}</th>
-              <td>{row.hours}h</td>
+              <td>{t("map.hoursValue", { hours: row.hours })}</td>
               <td>{row.reason}</td>
-              <td>{row.locked ? "yes" : "no"}</td>
-              <td>{row.unmetHours}h</td>
+              <td>{row.locked ? t("print.yes") : t("print.no")}</td>
+              <td>{t("map.hoursValue", { hours: row.unmetHours })}</td>
             </tr>
           ))}
           <tr>
-            <th scope="row">All neighborhoods</th>
-            <td>{planTotal}h</td>
-            <td>sum of the rows above, against the {budget} staff-hours you set</td>
-            <td>no</td>
-            <td>{planExportRows.reduce((sum, row) => sum + row.unmetHours, 0)}h</td>
+            <th scope="row">{t("print.allNeighborhoods")}</th>
+            <td>{t("map.hoursValue", { hours: planTotal })}</td>
+            <td>{t("print.totalReason", { budget })}</td>
+            <td>{t("print.no")}</td>
+            <td>
+              {t("map.hoursValue", {
+                hours: planExportRows.reduce((sum, row) => sum + row.unmetHours, 0),
+              })}
+            </td>
           </tr>
         </tbody>
       </table>
-      <h2>Decision brief</h2>
+      <h2>{t("print.briefHeading")}</h2>
       <pre className="plan-print-brief">{decisionBrief}</pre>
     </div>,
     document.body,

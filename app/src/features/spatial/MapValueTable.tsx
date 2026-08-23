@@ -1,3 +1,5 @@
+import { useTranslation } from "../../i18n/context";
+
 export function MapValueTable({
   caption,
   rows,
@@ -5,17 +7,18 @@ export function MapValueTable({
   caption: string;
   rows: Array<{ name: string; value: string; state: string }>;
 }) {
+  const { t } = useTranslation();
   return (
     <details className="data-table-disclosure map-table-disclosure">
-      <summary>View map values as a table</summary>
+      <summary>{t("table.viewAsTable")}</summary>
       <div className="table-scroll">
         <table>
           <caption>{caption}</caption>
           <thead>
             <tr>
-              <th>Neighborhood</th>
-              <th>Value</th>
-              <th>State</th>
+              <th>{t("table.thNeighborhood")}</th>
+              <th>{t("table.thValue")}</th>
+              <th>{t("table.thState")}</th>
             </tr>
           </thead>
           <tbody>

@@ -1,12 +1,13 @@
+import type { Translator } from "../../i18n/context";
 import type { DemoData } from "../../lib/demo";
-import { formatNumber } from "../../lib/format";
 
 // The guide is hands-on onboarding, not a slideshow: each step asks the
 // viewer to work the real control, watches the app state to see that they
 // did, and only performs the action itself if they ask ("Do it for me") or
 // hands-free playback is on. Copy interpolates the loaded artifact so the
 // numbers on the panel always match the numbers on screen, including in the
-// embedded offline fallback.
+// embedded offline fallback — and it comes from the catalogue, so the tour
+// narrates in whatever language the viewer is reading.
 export type GuideStep = {
   id:
     | "reveal"
@@ -27,18 +28,19 @@ export type GuideStep = {
 };
 
 /**
- * What the loaded organization profile calls its places, and the floor it
- * ships. Passed in rather than imported so the guide narrates whichever
- * geography is running instead of a hardcoded six.
+ * The catalogue, the number formatter, and the place words of whichever
+ * organization profile is running — passed in rather than imported so the
+ * guide narrates the geography and the language actually on screen.
  */
-export interface GuidePlaces {
-  countWord: string;
-  noun: string;
-  nounPlural: string;
+export interface GuideContext {
+  t: Translator["t"];
+  number: Translator["number"];
+  places: Record<string, string>;
   coverageFloor: number;
 }
 
-export function buildGuideSteps(data: DemoData, places: GuidePlaces): GuideStep[] {
+export function buildGuideSteps(data: DemoData, context: GuideContext): GuideStep[] {
+  const { t, number, places } = context;
   const individuals = data.signal.components.individuals;
   const structures = data.signal.components.structures;
   const individualSpatial = data.signal.componentDistribution?.components.find(
@@ -48,78 +50,93 @@ export function buildGuideSteps(data: DemoData, places: GuidePlaces): GuideStep[
     (threshold) => threshold.minimumUnits === 1,
   );
   const forecast = data.forecast;
-  const firstArea = data.areas[0]?.name ?? "the first area";
+  const firstArea = data.areas[0]?.name ?? t("guide.firstArea");
   return [
     {
       id: "reveal",
-      title: "Start with the question",
+      title: t("guide.revealTitle"),
       targetId: "drop-test",
-      task: "Press “Test the drop”.",
-      body: "A coordinator's real question: the headline estimate fell, so is that good news? Open the evidence behind the drop before treating it as an answer.",
+      task: t("guide.revealTask"),
+      body: t("guide.revealBody"),
     },
     {
       id: "evidence",
-      title: "Read what actually moved",
+      title: t("guide.evidenceTitle"),
       targetId: "evidence-result",
       body:
-        `The parts moved in opposite directions: observed individuals rose from ${formatNumber(individuals.from)} to ${formatNumber(individuals.to)} (+${formatNumber(individuals.changePct, 1)}%) while tents and structures fell from ${formatNumber(structures.from)} to ${formatNumber(structures.to)}.` +
+        t("guide.evidenceBody", {
+          indFrom: number(individuals.from),
+          indTo: number(individuals.to),
+          indPct: number(individuals.changePct, 1),
+          strFrom: number(structures.from),
+          strTo: number(structures.to),
+        }) +
         (individualOne
-          ? ` People were seen in more places, not fewer: blocks with at least one observed individual went from ${formatNumber(individualOne.fromBlocks)} to ${formatNumber(individualOne.toBlocks)}.`
+          ? t("guide.evidenceBlocks", {
+              from: number(individualOne.fromBlocks),
+              to: number(individualOne.toBlocks),
+            })
           : "") +
-        " What dropped was tents. A conventional dashboard reports where a count rose or fell; this tool tests whether the ruler itself changed before anyone acts on it.",
+        t("guide.evidenceTail"),
     },
     {
       id: "forecast",
-      title: "A forecast rehearsal, not a prophecy",
+      title: t("guide.forecastTitle"),
       targetId: "forecast",
-      body: `Everything here is frozen at December 2025. Three simple models compete on rolling held-out months, and the winner projects ${formatNumber(forecast.point, 1)} for ${forecast.targetPeriod} with a historical 80% residual band of ${formatNumber(forecast.lower)}–${formatNumber(forecast.upper, 1)}. That band covered only ${formatNumber(forecast.coverage)}% of past checks — the miss stays on screen instead of becoming false confidence.`,
+      body: t("guide.forecastBody", {
+        point: number(forecast.point, 1),
+        period: forecast.targetPeriod,
+        lower: number(forecast.lower),
+        upper: number(forecast.upper, 1),
+        coverage: number(forecast.coverage),
+      }),
     },
     {
       id: "generate",
-      title: "The plan is already on the table",
+      title: t("guide.generateTitle"),
       targetId: "planner",
-      body: `The tool opened mid-work: ${data.scenario.defaultBudget} assumed staff-hours are already split across the ${places.countWord} ${places.nounPlural} — every area keeps the guaranteed minimum you set, and the rest follows where more people are expected. Change the budget or the floor and it recomputes instantly. It proposes; it never dispatches.`,
+      body: t("guide.generateBody", { ...places, budget: data.scenario.defaultBudget }),
     },
     {
       id: "compare",
-      title: "See what the minimum protects",
+      title: t("guide.compareTitle"),
       targetId: "planner",
-      task: "Select the “0h · no minimum” floor.",
-      body: `With no minimum, hours follow the forecast alone and some ${places.nounPlural} are left with almost nothing. That view is an audit of the tradeoff, never a recommendation.`,
+      task: t("guide.compareTask"),
+      body: t("guide.compareBody", places),
     },
     {
       id: "restore",
-      title: "Never leave the audit view on",
+      title: t("guide.restoreTitle"),
       targetId: "planner",
-      task: `Select the “${places.coverageFloor}h · default” floor to restore the minimum.`,
-      body: `Restoring the minimum guarantees every ${places.noun} keeps a visit. The floor is a visible policy you chose, not something the model learned.`,
+      task: t("guide.restoreTask", { floor: context.coverageFloor }),
+      body: t("guide.restoreBody", places),
     },
     {
       id: "lock",
-      title: "Override it like a coordinator",
+      title: t("guide.lockTitle"),
       targetId: "planner",
-      task: `Lock ${places.noun === "area" ? "an" : "a"} ${places.noun} (try ${firstArea}), then press “Recompute unlocked hours”.`,
-      body: "Local knowledge outranks the model. A locked line is preserved exactly and disclosed in the brief; recomputing rebalances only the unlocked hours and never silently repairs your choice.",
+      task: t("guide.lockTask", { ...places, area: firstArea }),
+      body: t("guide.lockBody"),
     },
     {
       id: "explore",
-      title: "Stress-test the obvious action",
+      title: t("guide.exploreTitle"),
       targetId: "planner",
-      task: `Select ${places.noun === "area" ? "an" : "a"} ${places.noun} on the plan map, then press “Explore this assumption”.`,
-      body: "The most reached-for action is a clearance. Here you audit one honestly: you state how much of that area's load shifts next door instead of being resolved, and the plan reacts. No setting makes the need smaller without assuming it away in the open — the data cannot show who moves where, and this tool refuses to pretend otherwise.",
+      task: t("guide.exploreTask", places),
+      body: t("guide.exploreBody"),
     },
     {
       id: "audit",
-      title: "The ruler gets audited too",
+      title: t("guide.auditTitle"),
       targetId: "digitization-audit",
-      body: "Even the measuring instrument gets checked: computer vision reads the scanned field sheets behind the published counts — fully offline — and it catches its own mistakes. Read at one scan resolution, the City Center handwritten total comes back 157; read at another, 152, which is what the sheet shows, and 152 plus 14 tents times 1.75 is 176.5, published 177. Two full readings agree on 97.5 percent of recovered values; the gap is the instrument's own error bar, surfaced instead of hidden. The OCR engine is swappable, so EyePop's hosted abilities drop in with one flag. Vision that audits the instrument, never the people.",
+      body: t("guide.auditBody"),
     },
     {
       id: "brief",
-      title: "Leave with the brief",
+      title: t("guide.briefTitle"),
       targetId: "review",
-      task: "Press “Copy decision brief”.",
-      body: "The brief carries the evidence, the uncertainty, the policy settings, your overrides, and any assumption you explored. No login, no live API, no person-level model, and no LLM behind any number. Aggregate places only: nothing here tracks people, infers movement, or dispatches staff automatically. You decide which ruler governs the next shift.",
+      task: t("guide.briefTask"),
+      body: t("guide.briefBody"),
     },
   ];
 }

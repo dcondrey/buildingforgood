@@ -242,6 +242,10 @@ function unobservedArea(id: string, name: string): PlanningArea {
     planningLoad: 0,
     loadDerivation: "coverage_floor_only",
     auditWape: null,
+    // English here, translated at the display boundary by `i18n/plannerText`,
+    // for the same reason the planner's own sentences are: this string is a
+    // planning-input value the export and the characterization suites read,
+    // not a piece of interface copy.
     reason:
       "The loaded artifact carries no observation for this area. It receives the guaranteed minimum and no forecast weight.",
   };

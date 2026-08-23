@@ -1,6 +1,6 @@
 import { BriefCluster } from "../../features/planner/PlannerPieces";
 import { useShell } from "../../features/shell/ShellContext";
-import { formatNumber } from "../../lib/format";
+import { useTranslation } from "../../i18n/context";
 
 export function ReviewSection() {
   const {
@@ -15,6 +15,12 @@ export function ReviewSection() {
     planTotal,
     signal,
   } = useShell();
+  const { t, tx, number } = useTranslation();
+  const limitationLabels = [
+    t("review.boundaryCard"),
+    t("review.modelCard"),
+    t("review.claimLimits"),
+  ];
   return (
     <section className="decision-section review-section" id="review" aria-labelledby="review-title">
       <div aria-hidden="true" className="section-number">
@@ -22,92 +28,96 @@ export function ReviewSection() {
       </div>
       <div className="section-intro split-intro">
         <div>
-          <p className="eyebrow">You decide</p>
-          <h2 id="review-title">Review before the next shift</h2>
-          <p>
-            The tool writes the plan up with its caveats attached. A coordinator decides what local
-            context changes.
-          </p>
+          <p className="eyebrow">{t("review.eyebrow")}</p>
+          <h2 id="review-title">{t("review.title")}</h2>
+          <p>{t("review.intro")}</p>
         </div>
         <span className={`review-status ${planReady ? "review-ready" : ""}`}>
           {planReady
-            ? "Ready for coordinator review"
+            ? t("review.statusReady")
             : plan?.feasible && !guardEnabled
-              ? "Comparison view · restore a minimum to continue"
+              ? t("review.statusComparison")
               : plan?.feasible && planTotal !== budget
-                ? "Budget mismatch · cannot copy"
+                ? t("review.statusMismatch")
                 : planDirty
-                  ? "Recompute human changes"
-                  : "Waiting for a feasible plan"}
+                  ? t("review.statusDirty")
+                  : t("review.statusWaiting")}
         </span>
       </div>
 
       <div className="brief-grid">
         <div className="brief-summary">
           <div>
-            <span>What changed</span>
+            <span>{t("review.whatChanged")}</span>
             <strong>
-              Individuals +{formatNumber(signal.components.individuals.changePct, 1)}% · structures{" "}
-              {formatNumber(signal.components.structures.changePct, 1)}%
+              {t("review.whatChangedValue", {
+                individuals: number(signal.components.individuals.changePct, 1),
+                structures: number(signal.components.structures.changePct, 1),
+              })}
             </strong>
           </div>
           <div>
-            <span>What may be hidden</span>
+            <span>{t("review.whatMayBeHidden")}</span>
             <strong>
-              Active blocks +{signal.activeChange}
               {signal.distributionSensitivity
-                ? ` · HHI +${formatNumber(signal.distributionSensitivity.hhiChangePct, 1)}%`
-                : ""}
+                ? t("review.activeBlocksWithHhi", {
+                    change: signal.activeChange,
+                    hhi: number(signal.distributionSensitivity.hhiChangePct, 1),
+                  })
+                : t("review.activeBlocks", { change: signal.activeChange })}
             </strong>
           </div>
           <div>
-            <span>Historical Jan 2026 range</span>
+            <span>{t("review.historicalRange")}</span>
             <strong>
-              {formatNumber(data.forecast.lower)}–{formatNumber(data.forecast.upper)}
+              {t("review.rangeValue", {
+                lower: number(data.forecast.lower),
+                upper: number(data.forecast.upper),
+              })}
             </strong>
           </div>
           <div>
-            <span>Illustrative capacity</span>
-            <strong>{plan?.feasible ? `${planTotal} staff-hours` : "Run planner"}</strong>
+            <span>{t("review.illustrativeCapacity")}</span>
+            <strong>
+              {plan?.feasible
+                ? t("review.capacityValue", { hours: planTotal })
+                : t("review.runPlanner")}
+            </strong>
           </div>
           <div>
-            <span>Coverage-continuity policy</span>
+            <span>{t("review.coveragePolicy")}</span>
             <strong>
               {guardEnabled
-                ? `${coverageFloor}h demo-policy minimum`
-                : "No minimum · comparison only"}
+                ? t("review.floorValue", { floor: coverageFloor })
+                : t("review.noFloorValue")}
             </strong>
           </div>
           <div>
-            <span>Human overrides</span>
-            <strong>{lockedIds.size || "None"}</strong>
+            <span>{t("review.humanOverrides")}</span>
+            <strong>{lockedIds.size || t("review.none")}</strong>
           </div>
         </div>
 
         <div className="review-triggers">
-          <span className="eyebrow">Review again when</span>
+          <span className="eyebrow">{t("review.triggersEyebrow")}</span>
           <div className="trigger-list">
-            <span>New month</span>
-            <span>Budget changes</span>
-            <span>Boundary changes</span>
-            <span>Interval widens</span>
-            <span>Floor infeasible</span>
-            <span>Local knowledge conflicts</span>
+            <span>{t("review.triggerNewMonth")}</span>
+            <span>{t("review.triggerBudget")}</span>
+            <span>{t("review.triggerBoundary")}</span>
+            <span>{t("review.triggerInterval")}</span>
+            <span>{t("review.triggerFloor")}</span>
+            <span>{t("review.triggerLocal")}</span>
           </div>
-          <p>
-            <strong>Never authorized:</strong> person tracking, causal claims, enforcement,
-            eligibility decisions, or automatic dispatch.
-          </p>
+          <p>{tx("review.neverAuthorized")}</p>
         </div>
       </div>
 
+      {/* The artifact's own limitation sentences, rendered unedited. */}
       <div className="limitations-row">
         {data.limitations.slice(0, 3).map((limitation, index) => (
           <details key={limitation}>
-            <summary>
-              {["Boundary card", "Model card", "Claim limits"][index] ?? "Limitation"}
-            </summary>
-            <p>{limitation}</p>
+            <summary>{limitationLabels[index] ?? t("review.limitation")}</summary>
+            <p lang="en">{limitation}</p>
           </details>
         ))}
       </div>

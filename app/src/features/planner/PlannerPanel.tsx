@@ -21,6 +21,8 @@
 import { useCallback, useMemo, useState } from "react";
 
 import { buildPlan } from "../../domain/planner/planner.ts";
+import { useTranslation } from "../../i18n/context";
+import type { Translator } from "../../i18n/context";
 import type {
   AreaAllocation,
   AreaLock,
@@ -35,11 +37,13 @@ export interface PlannerPanelProps {
   floorDominanceThreshold?: number;
 }
 
-function formatHours(hours: number): string {
-  return `${hours} h`;
+function hoursFormatter(t: Translator["t"]): (hours: number) => string {
+  return (hours) => t("panel.hoursUnit", { hours });
 }
 
 export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: PlannerPanelProps) {
+  const { t } = useTranslation();
+  const formatHours = useMemo(() => hoursFormatter(t), [t]);
   const [budget, setBudget] = useState(policy.budget_hours);
   const [budgetError, setBudgetError] = useState<string | null>(null);
   const [locks, setLocks] = useState<AreaLock[]>([]);
@@ -83,9 +87,9 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
   if ("error" in plan) {
     return (
       <section aria-labelledby="planner-heading">
-        <h2 id="planner-heading">3. Plan the next shift</h2>
+        <h2 id="planner-heading">{t("panel.errorTitle")}</h2>
         <p role="alert">
-          <strong>✕ This plan cannot be produced.</strong> {plan.error}
+          <strong>{t("panel.cannotProduce")}</strong> {plan.error}
         </p>
       </section>
     );
@@ -104,10 +108,10 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
 
   return (
     <section aria-labelledby="planner-heading">
-      <h2 id="planner-heading">3. Plan {formatHours(budget)}</h2>
+      <h2 id="planner-heading">{t("panel.title", { hours: formatHours(budget) })}</h2>
 
       <div>
-        <label htmlFor="planner-budget">Available staff-hours</label>
+        <label htmlFor="planner-budget">{t("panel.budgetLabel")}</label>
         <input
           id="planner-budget"
           type="number"
@@ -123,11 +127,11 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
             // staff time gets told the input is invalid instead.
             const next = Number(e.target.value);
             if (e.target.value.trim() === "" || !Number.isFinite(next)) {
-              setBudgetError("Enter the number of staff-hours available.");
+              setBudgetError(t("panel.budgetEmpty"));
               return;
             }
             if (next < 0) {
-              setBudgetError("Available hours cannot be negative.");
+              setBudgetError(t("panel.budgetNegative"));
               return;
             }
             setBudgetError(null);
@@ -136,20 +140,22 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
         />
         {budgetError && (
           <p id="planner-budget-error" role="alert">
-            <strong>✕ {budgetError}</strong> The plan below still reflects {formatHours(budget)}.
+            <strong>✕ {budgetError}</strong>{" "}
+            {t("panel.budgetErrorTail", { hours: formatHours(budget) })}
           </p>
         )}
         <p>
-          Coverage guard: ON · Minimum {formatHours(policy.minimum_coverage_floor_hours)} per
-          included area · {included.length} areas included
+          {t("panel.guardLine", {
+            floor: formatHours(policy.minimum_coverage_floor_hours),
+            count: included.length,
+          })}
         </p>
       </div>
 
       {plan.status === "infeasible" ? (
         <div role="alert">
           <p>
-            <strong>✕ No plan was produced.</strong> The coverage floor was not lowered to fit the
-            budget.
+            <strong>{t("panel.noPlanProduced")}</strong>
           </p>
           <ul>
             {plan.infeasible_reasons.map((reason) => (
@@ -161,24 +167,24 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
         <>
           {floorDominant && (
             <p role="status">
-              <strong>⚠ The coverage floor is deciding most of this plan, not the forecast.</strong>{" "}
-              Only {formatHours(budget - guaranteed)} of {formatHours(budget)} is distributed by
-              relative load. Read the split as coverage, not as a ranking of need.
+              <strong>
+                {t("panel.floorDominant", {
+                  discretionary: formatHours(budget - guaranteed),
+                  budget: formatHours(budget),
+                })}
+              </strong>
             </p>
           )}
 
           <table>
-            <caption>
-              Suggested hours per area, ordered by area name. This table shows a coverage plan. It
-              does not set priority order.
-            </caption>
+            <caption>{t("panel.tableCaption")}</caption>
             <thead>
               <tr>
-                <th scope="col">Area</th>
-                <th scope="col">Suggested</th>
-                <th scope="col">Set by coordinator</th>
-                {showUnguarded && <th scope="col">Without the guard (audit view)</th>}
-                <th scope="col">Why this amount?</th>
+                <th scope="col">{t("panel.thArea")}</th>
+                <th scope="col">{t("panel.thSuggested")}</th>
+                <th scope="col">{t("panel.thSetByCoordinator")}</th>
+                {showUnguarded && <th scope="col">{t("panel.thUnguarded")}</th>}
+                <th scope="col">{t("panel.thWhy")}</th>
               </tr>
             </thead>
             <tbody>
@@ -193,7 +199,7 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
                       {allocation.unmet_hours > 0 && (
                         <span>
                           {" "}
-                          ({formatHours(allocation.unmet_hours)} moved away by the floor)
+                          {t("panel.movedAway", { hours: formatHours(allocation.unmet_hours) })}
                         </span>
                       )}
                     </td>
@@ -205,12 +211,14 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
                           onChange={() => toggleLock(allocation)}
                         />
                         <span>
-                          {lock ? "Locked" : "Lock"} {allocation.label}
+                          {t(lock ? "panel.lockedLabel" : "panel.lockLabel", {
+                            area: allocation.label,
+                          })}
                         </span>
                       </label>
                       {lock && (
                         <label>
-                          <span>Hours for {allocation.label}</span>
+                          <span>{t("panel.hoursFor", { area: allocation.label })}</span>
                           <input
                             type="number"
                             min={0}
@@ -230,7 +238,7 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
                         aria-expanded={isOpen}
                         onClick={() => setExpanded(isOpen ? null : allocation.area_id)}
                       >
-                        Why this amount?
+                        {t("panel.whyButton")}
                       </button>
                       {isOpen && (
                         <ul>
@@ -247,15 +255,22 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
           </table>
 
           <p>
-            Allocated {formatHours(plan.total_allocated_hours)} of {formatHours(budget)} ·{" "}
-            <strong>Unmet planning load {formatHours(plan.unmet_hours_total)}</strong>
+            {t("panel.allocatedLine", {
+              allocated: formatHours(plan.total_allocated_hours),
+              budget: formatHours(budget),
+            })}{" "}
+            <strong>{t("panel.unmetLine", { hours: formatHours(plan.unmet_hours_total) })}</strong>
             {plan.rounding_residue_hours > 0 &&
-              ` · ${formatHours(plan.rounding_residue_hours)} unallocated by rounding`}
+              t("panel.roundingResidue", {
+                hours: formatHours(plan.rounding_residue_hours),
+              })}
           </p>
           {plan.locked_area_count > 0 && (
             <p>
-              ✎ {plan.locked_area_count} of {included.length} assignments were set by the
-              coordinator and preserved through recomputation.
+              {t("panel.coordinatorSet", {
+                locked: plan.locked_area_count,
+                total: included.length,
+              })}
             </p>
           )}
           <ul>
@@ -273,18 +288,13 @@ export function PlannerPanel({ areas, policy, floorDominanceThreshold = 0.25 }: 
 
       <div>
         <button type="button" onClick={() => setShowUnguarded((v) => !v)}>
-          {showUnguarded ? "Hide" : "Compare"} without the coverage guard
+          {t(showUnguarded ? "panel.hideGuardColumn" : "panel.showGuardColumn")}
         </button>
         <button type="button" onClick={reset}>
-          Reset
+          {t("panel.reset")}
         </button>
       </div>
-      {showUnguarded && (
-        <p>
-          The unguarded column is an audit view showing what a purely proportional split would give.
-          It is shown for comparison only.
-        </p>
-      )}
+      {showUnguarded && <p>{t("panel.unguardedNote")}</p>}
     </section>
   );
 }

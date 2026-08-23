@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/still-here-sd/config/schema/actuals.v1.schema.json",
+  "title": "Still Here SD delivered actuals, version 1",
+  "description": "What an operator ALREADY KNOWS after a month of outreach, at the only grain this system publishes: one area, one calendar month. Three things per row and nothing else — the staff hours a plan called for, the staff hours actually delivered, and one operator-reported engagement aggregate (a count of encounters, never a roster). This file is an INPUT an operator writes; it is not produced by the pipeline. It is bound by exactly the same small-cell suppression policy as published observations (docs/policy/small-cell-suppression.md, threshold 5, emitted by pipeline/src/stillhere_pipeline/suppress.py, verified by pipeline/src/stillhere_pipeline/privacy.py) because an engagement count of one is a person as surely as an observation of one is. Four things are deliberately NOT representable here and adding any of them makes a file invalid: a person-level or per-encounter row; a precise location, address, or coordinate; a complaint, 311, or service-request measure, or any field repurposable as one; and a deduplicated unique-persons measure, which would require identity linkage this system has no basis to hold. The `intended_analysis` block states what this data is FOR and what it will never be used for; nothing in that block is implemented in this version, and the block is documentation on purpose — see docs/project/ACTUALS.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile_id",
+    "geography_version",
+    "reporting",
+    "engagement_measure",
+    "contract",
+    "area_months",
+    "intended_analysis"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional relative or absolute path to this schema, for editor support. Ignored by the loader."
+    },
+    "schema_version": {
+      "const": "actuals/v1",
+      "description": "Identifies the actuals contract. The loader refuses any other value rather than guessing at a migration."
+    },
+    "profile_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "minLength": 3,
+      "maxLength": 64,
+      "description": "The organization profile these actuals belong to, e.g. `san-diego-downtown`. Must match `profile_id` in the deployment's organization profile: actuals recorded against one geography must never be read under another."
+    },
+    "geography_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The area-list version the `area_id` values in this file come from, copied from `geography.area_list.version` in the organization profile. Areas get renamed and merged; without this a row cannot be traced to the geography it was recorded under, and a stale row would silently attach to the wrong place."
+    },
+    "reporting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["organization_name", "reported_by_role", "method_note", "last_updated"],
+      "properties": {
+        "organization_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The organization that delivered the hours, as it should appear in disclosures. An organization, never an individual."
+        },
+        "reported_by_role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The ROLE accountable for these numbers, e.g. `Outreach Program Manager`. A role title, never a person's name, email, or phone number: this file ships to the browser."
+        },
+        "method_note": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Plain sentences on how these numbers were produced: what system they came out of, who enters them, and what is known to be inconsistent about them. An adopter reads this before reading any number derived from the file."
+        },
+        "last_updated": {
+          "$ref": "#/$defs/isoDate",
+          "description": "Date this file was last reviewed or changed, ISO `YYYY-MM-DD`."
+        },
+        "completeness_note": {
+          "type": "string",
+          "description": "Optional. Which area-months are missing and why — a month not present in `area_months` is NOT zero delivery, and this is where an operator says so."
+        }
+      },
+      "description": "Who reported these actuals and how. Roles only, no individuals."
+    },
+    "engagement_measure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "label",
+        "definition",
+        "collection_method",
+        "counts_encounters_not_people",
+        "unique_persons_measure"
+      ],
+      "properties": {
+        "kind": {
+          "enum": ["contacts", "engagements"],
+          "description": "Which aggregate the operator ALREADY reports. Deliberately a closed two-value enum rather than free text: it is the seam through which a complaint, citation, referral-outcome, or enforcement measure would enter and be treated as an engagement. An operator who reports neither of these leaves the file's `area_months` empty rather than substituting a different number."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How this measure should be named in the interface, in the operator's own words, e.g. `street contacts`. Rendered verbatim so the tool never renames an operator's metric into something it is not."
+        },
+        "definition": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The operator's own written definition of what counts as one. This is required because `contacts` means different things at different organizations, and a number whose definition is not written down cannot be compared to anything — including to itself a year later."
+        },
+        "collection_method": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How the count is captured: tally sheet, shift log, case-management export, memory at end of shift. Say which, plainly. A count reconstructed from memory is usable and must be labelled as such."
+        },
+        "counts_encounters_not_people": {
+          "const": true,
+          "description": "Fixed true. The number counts ENCOUNTERS in an area-month. The same person contacted four times contributes four. This is stated as a constant so no reader, and no future feature, can quietly read the field as people served."
+        },
+        "unique_persons_measure": {
+          "const": false,
+          "description": "Fixed false. A deduplicated unique-persons count is not representable here, and this cannot be turned on. Deduplicating across a month requires linking encounters to identities; this system holds no identities and has no basis to assert that linkage happened correctly."
+        }
+      },
+      "description": "What the engagement number IS, declared once for the whole file rather than inferred per row."
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grain", "count_fields", "small_cell_threshold", "suppression_marker"],
+      "properties": {
+        "grain": {
+          "const": "area_month_aggregate",
+          "description": "Fixed. One row is one area in one calendar month. There is no finer grain available, by construction: a day-, shift-, block-, or encounter-level row would make the suppression policy unenforceable, because the policy protects a count, and a count of one delivered shift is a team's movements."
+        },
+        "count_fields": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": { "const": "engagement.count" },
+          "description": "The exact count-bearing paths in a row, DECLARED rather than inferred, mirroring the contract declaration the observations artifact carries (docs/policy/small-cell-suppression.md, 'Contract declaration'). Exactly one path exists and the loader rejects any other declaration. Note what is absent: `hours.allocated_hours` and `hours.delivered_hours` are NOT count fields. They measure staff time, not people, which is why an area-month with 3 delivered hours is publishable while an area-month with 3 engagements is not."
+        },
+        "small_cell_threshold": {
+          "const": 5,
+          "description": "Must equal `SMALL_CELL_THRESHOLD` in pipeline/src/stillhere_pipeline/suppress.py and the scanner's `min_cell`. The loader rejects any other value rather than accepting a file that declares a weaker policy than the one enforced. Change the policy document and both enforcement points together, or not at all."
+        },
+        "suppression_marker": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "affirmative_values"],
+          "properties": {
+            "field": {
+              "const": "suppressed",
+              "description": "The field name that marks a withheld count, matching the marker the privacy scanner recognizes."
+            },
+            "affirmative_values": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": { "const": true },
+              "description": "Only boolean true suppresses. `false`, `0`, `null`, and `\"no\"` mean PUBLISHED, because a privacy gate fails closed."
+            }
+          },
+          "description": "How a withheld count is encoded, declared so the rule is a lookup rather than a guess about field names."
+        }
+      },
+      "description": "The privacy contract this file operates under, declared in the file itself. Every value is fixed; the block exists so that a drifting file is rejected loudly instead of being scanned by inference."
+    },
+    "area_months": {
+      "type": "array",
+      "minItems": 0,
+      "items": { "$ref": "#/$defs/areaMonthActual" },
+      "description": "One row per area per month. MAY BE EMPTY, and an empty array is the expected state for a new deployment: no actuals recorded yet is a legitimate, honest state that the interface renders as such (app/src/features/actuals/ActualsEmptyState.tsx). Ordering is not significant. The pair (`area_id`, `month`) must be unique; a month absent from this array is unknown, never zero."
+    },
+    "intended_analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "preconditions",
+        "planned_when_data_exists",
+        "will_never_compute",
+        "rationale"
+      ],
+      "properties": {
+        "status": {
+          "const": "documented_not_implemented",
+          "description": "Fixed. NOTHING in this block is implemented in this version. There is no variance analytic, no forecast scoring against actuals, and no scorecard reading this file. That is deliberate: with zero real operator data, a computed variance would be a number about nothing, presented with the authority of a measurement. The block is here so an adopter can see where the analysis goes before agreeing to supply the data that would feed it."
+        },
+        "preconditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "What must be true before ANY of `planned_when_data_exists` is built. Written before the analysis exists, so the bar cannot be lowered later to fit whatever data happened to arrive. State volumes and quality conditions, e.g. a minimum number of area-months, a minimum number of distinct areas, and a stable written definition of the engagement measure across the whole span."
+        },
+        "planned_when_data_exists": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "The analyses this file is shaped to support once its preconditions are met — descriptive, area-level, retrospective. Recommended entries are listed in docs/project/ACTUALS.md. Writing an entry here builds nothing and authorizes nothing; it is a statement of intent an evaluator can hold the project to."
+        },
+        "will_never_compute": {
+          "type": "array",
+          "minItems": 7,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Analyses that are out of scope permanently, not merely unbuilt. The loader requires every baseline entry to be present and refuses a file that deletes one; an adopting organization may add to the list and may not subtract from it. The baseline is: `per_person_or_household_outcome_tracking`, `service_eligibility_or_entitlement_determination`, `enforcement_abatement_or_removal_prioritization`, `staff_or_team_performance_ranking`, `causal_attribution_of_area_change_to_delivered_hours`, `published_rollup_totals_across_areas_or_months` (a rollup reopens subtraction recovery of the months it spans), and `complaint_or_311_derived_demand_estimates`."
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why the exclusions above are exclusions, in the adopter's own words, so the list is understood rather than copied."
+        }
+      },
+      "description": "What this data is for, and what it is not for, written into the schema instead of into a roadmap. An adopter who supplies actuals is entitled to know the ceiling on their use before supplying them."
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Optional free-text caveats for a reader. Never a place for a person, an address, or a location; the loader scans these strings and rejects address, coordinate, and plus-code shapes found inside them."
+    }
+  },
+  "$defs": {
+    "isoDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Calendar date, `YYYY-MM-DD`."
+    },
+    "isoMonth": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+      "description": "Calendar month, `YYYY-MM`. The finest time grain this system accepts. A date, a timestamp, or a shift is not representable, and that is the point: a day-level delivery record locates a team, and a day-level engagement count is small enough to be a person."
+    },
+    "areaMonthActual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["area_id", "month", "hours", "engagement"],
+      "properties": {
+        "area_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$",
+          "description": "Lowercase snake_case area identifier, matching an `id` in the organization profile's area list. An aggregate planning area, never a block, tract, corridor, site, or camp."
+        },
+        "month": {
+          "$ref": "#/$defs/isoMonth",
+          "description": "The calendar month these hours were delivered in."
+        },
+        "hours": { "$ref": "#/$defs/areaMonthHours" },
+        "engagement": { "$ref": "#/$defs/areaMonthEngagement" },
+        "note": {
+          "type": "string",
+          "description": "Optional. What a reader needs to interpret THIS row — a cancelled week, a staffing gap, a co-response month. Scanned and rejected for address, coordinate, and plus-code shapes, and it must never name a person or a site."
+        }
+      },
+      "description": "One area, one month. Everything about who was seen is a count; everything about where is an area name."
+    },
+    "areaMonthHours": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allocated_hours", "delivered_hours"],
+      "properties": {
+        "allocated_hours": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "PLANNED staff hours for this area-month — what a plan called for. Named to match `allocated_hours` in the planner's own output (public/generated/demo.v1.json, `planner.allocations`) so a plan and its actuals use one word for one thing. Null when no plan existed for this month, which is the normal case for months predating adoption; null is not zero, and the loader warns rather than inventing a plan."
+        },
+        "delivered_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Staff hours ACTUALLY delivered in this area-month, summed across teams and shifts. Fractional hours are allowed. Zero is a real, publishable value meaning the area got no outreach that month — that is the fact most worth recording honestly."
+        },
+        "hours_note": {
+          "type": "string",
+          "description": "Optional. How the hours were counted: whether travel, debrief, and documentation time are inside or outside the figure. Two operators counting differently is the most common reason hour figures do not compare."
+        }
+      },
+      "description": "Staff time, not people. This block is a declared RESOURCE metric and is deliberately kept separate from `engagement` for that reason: small-cell suppression protects counts of people, and applying it to staff hours would suppress the ordinary fact that a team spent two hours somewhere while teaching a reader that hours and people are the same kind of number. The separation is also what the privacy scanner reads — `is_non_person_metric` in pipeline/src/stillhere_pipeline/privacy.py recognizes an `allocated_hours` block as a resource metric, so a nested hours object is scanned as resource data and the sibling `engagement` object is still scanned as a person count."
+    },
+    "areaMonthEngagement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "suppressed"],
+      "properties": {
+        "count": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "The operator-reported engagement aggregate for this area-month, in the unit declared by `engagement_measure`. A COUNT, never a list, never an identity, never a breakdown. Null when the value is withheld under suppression or was not recorded. Zero is publishable: it identifies nobody. A value of 1, 2, 3, or 4 is NOT publishable and the loader rejects the file naming this field — supply it as `{\"count\": null, \"suppressed\": true}` instead. There is deliberately no breakdown of this count by type, demographic, or outcome: a single count needs only the policy's first branch (whole-row suppression on a small total), while a breakdown would require complementary-partner and feasibility-escalation reasoning to stop subtraction recovery, and that reasoning belongs in one place — the pipeline emitter — not in a hand-authored input file."
+        },
+        "suppressed": {
+          "type": "boolean",
+          "description": "True when the count is withheld under the small-cell policy. Requires `count` to be null. Must be rendered to a reader as withheld and NEVER as zero — a suppressed month means people were engaged, few enough that saying how many would identify them."
+        },
+        "not_recorded": {
+          "type": "boolean",
+          "description": "Optional, default false. True when the operator delivered hours here but did not capture an engagement count at all. Requires `count` null and `suppressed` false. This exists so that 'we do not have this number' cannot be encoded as suppression, which would overstate how much data the deployment holds, nor as zero, which would understate the work done."
+        }
+      },
+      "description": "The engagement aggregate, in exactly one of three states: reported (`count` is an integer of 0 or at least the threshold), suppressed (`count` null, `suppressed` true), or not recorded (`count` null, `not_recorded` true). The loader rejects any other combination rather than guessing which was meant."
+    }
+  }
+}

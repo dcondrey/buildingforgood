@@ -1,0 +1,144 @@
+{
+  "$schema": "../schema/organization-profile.v1.schema.json",
+  "schema_version": "organization-profile/v1",
+  "profile_id": "san-diego-downtown",
+  "profile_status": "reference_deployment",
+  "last_updated": "2026-08-23",
+  "organization": {
+    "name": "Still Here SD reference deployment",
+    "profile_owner_role": "Outreach or community-services coordinator",
+    "scope_statement": "Distributes a fixed pool of outreach staff-hours across the six core downtown San Diego areas that the Downtown San Diego Partnership reports monthly. It plans staff time against aggregate place observations. It does not identify people, infer movement, establish causation, or measure service need.",
+    "jurisdiction_note": "Downtown San Diego only. The published series also carries an Outside Perimeter area and four East Village sub-areas; neither is in scope here, because Outside Perimeter falls outside the consistent core and the sub-areas overlap the East Village total."
+  },
+  "observations": {
+    "grain": "area_month_aggregate",
+    "precise_locations_publishable": false,
+    "individual_records_publishable": false
+  },
+  "geography": {
+    "area_list": {
+      "version": "dsdp-core-six/2026-08-21",
+      "areas": [
+        { "id": "city_center", "label": "City Center", "in_scope": true },
+        { "id": "columbia", "label": "Columbia", "in_scope": true },
+        { "id": "cortez", "label": "Cortez", "in_scope": true },
+        { "id": "east_village", "label": "East Village", "in_scope": true },
+        { "id": "gaslamp", "label": "Gaslamp", "in_scope": true },
+        { "id": "marina", "label": "Marina", "in_scope": true }
+      ],
+      "provenance": {
+        "resolution_status": "resolved",
+        "source_name": "Downtown San Diego Partnership Clean & Safe Unsheltered Sleep Count report, June 2026",
+        "publisher": "Downtown San Diego Partnership",
+        "source_url": "https://downtownsandiego.org/wp-content/uploads/2026/08/June-2026-Unsheltered-Sleep-Count.1.pdf",
+        "source_version": "June 2026 Unsheltered Sleep Count report",
+        "retrieved_at": "2026-08-21",
+        "resolution_note": "These six names are the publisher's own, not this project's. The publisher reports seven areas; the seventh, Outside Perimeter, is excluded here and that exclusion is stated rather than hidden. The same six names appear independently in the San Diego Regional Data Library downtown-homeless analysis package 2.1.1 neighborhood totals, which is why the name list is treated as resolved even though the boundaries below are not.",
+        "resolution_rule": "Re-audit whenever the publisher adds, removes, renames, or re-partitions a reported area, or whenever the six-area core restriction changes."
+      }
+    },
+    "boundaries": {
+      "provenance": {
+        "resolution_status": "unresolved",
+        "source_name": null,
+        "publisher": null,
+        "source_url": null,
+        "source_version": null,
+        "retrieved_at": null,
+        "resolution_note": "The publisher names these areas and reports totals for them, but publishes no boundary file. The only geometry this project holds is a block-centroid grid supplied privately, and those coordinates are on the deployment deny-list, so they cannot be turned into a published boundary either. Area membership is therefore traceable through a label crosswalk but not through any boundary a reader could inspect. Anything that would depend on exactly where one area stops and the next begins is out of reach here.",
+        "resolution_rule": "Resolve by obtaining a published or licensed boundary definition for these six areas, with a version and a retrieval date, that can be cited without republishing precise locations."
+      }
+    },
+    "adjacency": {
+      "version": null,
+      "pairs": [],
+      "provenance": {
+        "resolution_status": "unresolved",
+        "source_name": null,
+        "publisher": null,
+        "source_url": null,
+        "source_version": null,
+        "retrieved_at": null,
+        "resolution_note": "No adjacency table for these areas has been published by any source this project can cite, and none has been derived, because deriving one would rest on the same precise coordinates the boundary entry above rules out. The consequence is deliberate and visible: the drop test runs with adjacency unavailable, so a sustained decline with no adjacent evidence returns insufficient evidence instead of possible displacement. An unresolved adjacency makes the product say less, which is the correct direction.",
+        "resolution_rule": "Resolve by publishing a versioned adjacency table reviewed against a resolved boundary definition. Adjacency cannot resolve before boundaries do."
+      }
+    }
+  },
+  "operations": {
+    "planning_horizon": {
+      "value": 7,
+      "unit": "day",
+      "label": "next scheduled outreach shift"
+    },
+    "budget": {
+      "value": 80,
+      "unit": "staff_hour",
+      "user_editable": true,
+      "minimum": 0
+    },
+    "shift": {
+      "length_hours": 8,
+      "allocation_increment_hours": 1
+    },
+    "team_count": 2,
+    "coverage_floor_hours": 8,
+    "continuity_reserve_hours": 4,
+    "uncertainty_weight": 0.5,
+    "floor_dominance_warning_threshold": 0.25
+  },
+  "cost_assumptions": {
+    "loaded_hourly_rate": {
+      "value": 45,
+      "currency": "USD",
+      "unit": "cost_per_staff_hour",
+      "assumption": {
+        "status": "operator_set_assumption",
+        "set_by_role": "Program director",
+        "basis": "Placeholder for the reference scenario; not a measured or derived rate. San Diego's public contract releases publish outreach personnel totals (for example the FY23 Family Reunification agreement's $582,079 personnel line) but no fielded-FTE or field-hour denominator, so no hourly rate can honestly be derived from them. Any organization adopting this profile must replace this value with its own budgeted figure before any cost figure is shown to a decision-maker.",
+        "effective_date": "2026-08-23",
+        "review_by": "2027-08-23",
+        "includes": [
+          "outreach worker wages",
+          "payroll taxes",
+          "benefits",
+          "field supervision time",
+          "vehicle and fuel"
+        ],
+        "excludes": [
+          "client assistance funds",
+          "capital and facilities",
+          "organization-wide indirect administration",
+          "contracted clinical or medical services"
+        ]
+      }
+    }
+  },
+  "language_boundaries": {
+    "permitted_examples": [
+      "Aggregate changes are consistent with possible displacement.",
+      "The available evidence is insufficient.",
+      "This forecast has a wide uncertainty interval.",
+      "This plan distributes staff time. It does not establish who is served or on what terms."
+    ],
+    "prohibited_claim_types": [
+      "identified_people_moved_between_areas",
+      "policy_caused_observed_decline",
+      "area_needs_enforcement",
+      "live_shelter_capacity_or_eligibility",
+      "automatic_operational_authorization"
+    ]
+  },
+  "review_triggers": [
+    "new_monthly_observation",
+    "available_budget_changed",
+    "missing_or_incomparable_area",
+    "forecast_interval_warning",
+    "fairness_floor_infeasible",
+    "local_operational_knowledge_conflicts",
+    "source_boundary_or_method_revision"
+  ],
+  "notes": [
+    "This profile reproduces the scenario the released interface already ships: six in-scope areas, an 80 staff-hour budget, and an 8-hour coverage floor per area, matching public/generated/demo.v1.json.",
+    "The superseded design record config/decision.v1.json carries a different, earlier scenario — seven candidate areas and a 6-hour floor — from a period when the area list was still an open question. The shipped numbers, not the design record, are what this profile reproduces. See config/README.md."
+  ]
+}

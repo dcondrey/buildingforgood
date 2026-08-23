@@ -1,0 +1,452 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/still-here-sd/config/schema/organization-profile.v1.schema.json",
+  "title": "Still Here SD organization profile, version 1",
+  "description": "A deployment-specific configuration for one adopting organization. An organization instantiates a profile; it does not fork the application. Everything the tool needs to run somewhere other than downtown San Diego lives here: the areas in scope, the versioned geography reference and its provenance, the operating budget and shift shape, the fairness constraints, the language boundaries that bound what the interface may say, and the operator-set cost assumption. Two things are deliberately NOT representable in this schema and adding them makes a profile invalid: any measure of complaint or 311 or service-request volume, and any person-level or precise-location field. The observation grain is fixed at area-month aggregate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile_id",
+    "profile_status",
+    "last_updated",
+    "organization",
+    "observations",
+    "geography",
+    "operations",
+    "cost_assumptions",
+    "language_boundaries"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional relative or absolute path to this schema, for editor support. Ignored by the loader."
+    },
+    "schema_version": {
+      "const": "organization-profile/v1",
+      "description": "Identifies the profile contract. The loader refuses any other value rather than guessing at a migration."
+    },
+    "profile_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "minLength": 3,
+      "maxLength": 64,
+      "description": "Stable lowercase slug for this deployment, e.g. `san-diego-downtown`. Used in filenames and as a disclosure label; never a person's name."
+    },
+    "profile_status": {
+      "enum": ["draft", "illustrative_example", "reference_deployment", "adopted"],
+      "description": "How much weight this profile carries. `draft` is being filled in and must not be run for real decisions. `illustrative_example` is a teaching artifact describing a place that does not exist. `reference_deployment` is the scenario this repository itself ships. `adopted` is an organization's live configuration."
+    },
+    "last_updated": {
+      "$ref": "#/$defs/isoDate",
+      "description": "Date this profile was last reviewed or changed, ISO `YYYY-MM-DD`."
+    },
+    "organization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "profile_owner_role", "scope_statement"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The adopting organization, as it should appear in disclosures. An organization, never an individual."
+        },
+        "profile_owner_role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The ROLE accountable for the values in this file, e.g. `Director of Outreach Programs`. A role title, never a person's name, email, or phone number: this file ships to the browser."
+        },
+        "scope_statement": {
+          "type": "string",
+          "minLength": 1,
+          "description": "One or two plain sentences an evaluator can read: what this deployment covers and what it does not. Rendered in the interface's disclosure surface."
+        },
+        "jurisdiction_note": {
+          "type": "string",
+          "description": "Optional. Anything a reader needs about the jurisdiction that the scope statement does not carry, e.g. that the areas span two counties."
+        }
+      },
+      "description": "Who runs this deployment and what it is for. Roles only, no individuals."
+    },
+    "observations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grain", "precise_locations_publishable", "individual_records_publishable"],
+      "properties": {
+        "grain": {
+          "const": "area_month_aggregate",
+          "description": "Fixed. Observations enter the tool as one aggregate value per area per month. There is no finer grain available to a profile, by construction: a block-, day-, or person-level grain would make the privacy posture unenforceable."
+        },
+        "precise_locations_publishable": {
+          "const": false,
+          "description": "Fixed false. No coordinate, block, address, or route may be published. An adopting organization cannot turn this on from a profile."
+        },
+        "individual_records_publishable": {
+          "const": false,
+          "description": "Fixed false. No person-level record may be published. An adopting organization cannot turn this on from a profile."
+        }
+      },
+      "description": "The observation contract, stated as constants so a profile can restate it but never relax it."
+    },
+    "geography": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["area_list", "boundaries", "adjacency"],
+      "properties": {
+        "area_list": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["version", "areas", "provenance"],
+          "properties": {
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Version identifier for this exact set of area names, e.g. `dsdp-core-six/2026-08-21`. Change it whenever an area is added, removed, or renamed, so a saved plan can be traced to the geography it was made under."
+            },
+            "areas": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/area" },
+              "description": "Every area the organization plans across, including areas currently out of scope. Ordering is not significant. Area ids must be unique."
+            },
+            "provenance": {
+              "$ref": "#/$defs/provenance",
+              "description": "Where these area NAMES come from. Required and structured: an adopter cannot leave it null by accident."
+            }
+          },
+          "description": "The versioned list of planning areas and the source of its names."
+        },
+        "boundaries": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["provenance"],
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance",
+              "description": "Where the area BOUNDARIES come from. Separate from the name list on purpose: a publisher very often names its areas without publishing their geometry, and a profile that conflates the two overstates what it knows. No geometry is ever stored in a profile — only the citation for it."
+            }
+          },
+          "description": "Provenance for the boundary definition behind the area names. Geometry itself never enters a profile or the browser bundle."
+        },
+        "adjacency": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["version", "pairs", "provenance"],
+          "properties": {
+            "version": {
+              "type": ["string", "null"],
+              "description": "Version identifier for the adjacency table, or null when adjacency is unresolved. Must be null when `provenance.resolution_status` is `unresolved`."
+            },
+            "pairs": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": { "$ref": "#/$defs/areaId" }
+              },
+              "description": "Unordered pairs of area ids that share a boundary, e.g. `[[\"gaslamp\", \"east_village\"]]`. List each pair once; the loader treats them as symmetric and rejects self-pairs, duplicates, and ids that are not in the area list. MUST be empty when adjacency provenance is `unresolved` — an invented adjacency table would let the interface claim displacement evidence it does not have."
+            },
+            "provenance": {
+              "$ref": "#/$defs/provenance",
+              "description": "Where the adjacency relation comes from. An adjacency table derived from a map an organization drew itself is legitimate, but it is `provisional`, not `resolved`, until someone can cite it."
+            }
+          },
+          "description": "Which areas neighbour which. Adjacency is what lets the drop test look for a matching increase next door; without it the test must return insufficient evidence rather than guess."
+        }
+      },
+      "description": "The geography reference: a versioned area list, its boundary provenance, and an adjacency table. All three carry their own provenance because they are sourced separately and are resolved separately."
+    },
+    "operations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "planning_horizon",
+        "budget",
+        "shift",
+        "team_count",
+        "coverage_floor_hours",
+        "continuity_reserve_hours",
+        "uncertainty_weight"
+      ],
+      "properties": {
+        "planning_horizon": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "unit", "label"],
+          "properties": {
+            "value": { "type": "integer", "minimum": 1, "description": "Length of the horizon." },
+            "unit": { "enum": ["day"], "description": "Fixed at days." },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "description": "What the horizon is called locally, e.g. `next scheduled outreach week`. Shown to the coordinator."
+            }
+          },
+          "description": "How far ahead one plan reaches. The budget below is the total staff time available across this whole horizon."
+        },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "unit", "user_editable", "minimum"],
+          "properties": {
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Default staff hours available across the planning horizon. This is the number the coordinator sees before they change anything."
+            },
+            "unit": { "const": "staff_hour", "description": "Fixed. Allocation is in staff hours." },
+            "user_editable": {
+              "type": "boolean",
+              "description": "Whether the coordinator may change the budget in the interface. Almost always true; false only where the budget is set outside the coordinator's authority."
+            },
+            "minimum": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Lowest budget the interface will accept. Usually 0."
+            },
+            "maximum": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Optional upper bound on the editable budget, for organizations that want a sanity ceiling."
+            }
+          },
+          "description": "Staff time available to allocate."
+        },
+        "shift": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["length_hours", "allocation_increment_hours"],
+          "properties": {
+            "length_hours": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Length of one team's shift, in hours. Used to express the budget as whole team-shifts and to keep allocations schedulable."
+            },
+            "allocation_increment_hours": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Smallest block of time the planner may assign to an area. One hour suits a compact urban geography; a rural deployment with long drives may set two or four, because a one-hour assignment two counties away is not a real instruction."
+            }
+          },
+          "description": "The shape of a shift. Governs what a schedulable allocation looks like."
+        },
+        "team_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of outreach teams that can be in the field at once. A team, not a headcount: two people in one van are one team. Used with `shift.length_hours` to check that a budget is a whole number of team-shifts."
+        },
+        "coverage_floor_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Minimum hours every in-scope area receives before any forecast-driven distribution happens. This is the fairness constraint: it is what stops a quiet area from being zeroed out because a model said so. Set it too high and the floor, not the forecast, decides the whole plan; the planner warns when discretionary hours fall below `floor_dominance_warning_threshold`."
+        },
+        "continuity_reserve_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Extra hours added for an area whose drop test returned `possible_displacement`. An apparent decline that may be displacement is a reason to keep showing up, not a reason to leave."
+        },
+        "uncertainty_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5,
+          "description": "How much the width of a forecast interval raises an area's share. 0 plans purely against the upper bound. Higher values give more time to the areas the model understands least, so uncertainty does not become neglect. The shipped reference uses 0.5."
+        },
+        "floor_dominance_warning_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Optional, default 0.25. When discretionary hours (budget minus all floors and reserves) fall below this share of the budget, the interface says so. Below it, the plan is a floor, not a forecast, and should not be presented as one."
+        }
+      },
+      "description": "What the organization actually has and how it chooses to spend it."
+    },
+    "cost_assumptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["loaded_hourly_rate"],
+      "properties": {
+        "loaded_hourly_rate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "currency", "unit", "assumption"],
+          "properties": {
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Fully loaded cost of one outreach staff hour."
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$",
+              "description": "ISO 4217 code, e.g. `USD`."
+            },
+            "unit": {
+              "const": "cost_per_staff_hour",
+              "description": "Fixed. Names what the value measures so a downstream cost display cannot silently reinterpret it."
+            },
+            "assumption": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["status", "set_by_role", "basis", "effective_date", "includes", "excludes"],
+              "properties": {
+                "status": {
+                  "const": "operator_set_assumption",
+                  "description": "Fixed. This rate is an assumption the operating organization set. It is not measured, not published, and not derived from any source in this repository. Any figure computed from it must be labeled as resting on this assumption."
+                },
+                "set_by_role": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The role that set the rate, e.g. `Finance Director`. A role, never a person."
+                },
+                "basis": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Plain sentence: where the number came from, e.g. `FY26 approved budget, outreach personnel line divided by budgeted field hours`. This is what an auditor reads first."
+                },
+                "effective_date": {
+                  "$ref": "#/$defs/isoDate",
+                  "description": "Date the rate took effect."
+                },
+                "review_by": {
+                  "$ref": "#/$defs/isoDate",
+                  "description": "Optional. Date the rate should be revisited. A cost assumption with no review date quietly becomes a claim."
+                },
+                "includes": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "type": "string", "minLength": 1 },
+                  "description": "What the loaded rate covers, e.g. wages, payroll taxes, benefits, supervision, vehicle. Required, because `loaded` means different things at different organizations."
+                },
+                "excludes": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "type": "string", "minLength": 1 },
+                  "description": "What the rate deliberately leaves out, e.g. client assistance funds, capital, indirect administration. Required for the same reason."
+                }
+              },
+              "description": "The metadata that makes the rate honest. Present so that any cost figure can be rendered as an assumption with its basis attached, rather than as a fact."
+            }
+          },
+          "description": "The one cost input a profile carries. The cost arithmetic itself lives elsewhere; this schema defines the field and the assumption metadata that must travel with it."
+        }
+      },
+      "description": "Operator-set cost assumptions. Nothing here is measured."
+    },
+    "language_boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["permitted_examples", "prohibited_claim_types"],
+      "properties": {
+        "permitted_examples": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Sentences this organization is willing to stand behind, in its own voice. These are examples of the ceiling on what the tool may assert, not a template library."
+        },
+        "prohibited_claim_types": {
+          "type": "array",
+          "minItems": 5,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "allOf": [
+            { "contains": { "const": "identified_people_moved_between_areas" } },
+            { "contains": { "const": "policy_caused_observed_decline" } },
+            { "contains": { "const": "area_needs_enforcement" } },
+            { "contains": { "const": "live_shelter_capacity_or_eligibility" } },
+            { "contains": { "const": "automatic_operational_authorization" } }
+          ],
+          "description": "Claim types the interface must never make. The five baseline entries are mandatory in every profile and cannot be removed by an adopter: person-level movement, causal attribution, enforcement framing, live service capacity or eligibility, and automatic operational authorization. An organization may add more; it may not subtract."
+        }
+      },
+      "description": "The boundary on what the product is allowed to say in this deployment. Adopters may tighten it. The schema stops them loosening it."
+    },
+    "review_triggers": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Optional. Events that should send a coordinator back to review the plan, e.g. a new monthly observation or a changed budget. Rendered as a checklist."
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Optional free-text notes for readers of this profile. Not rendered as evidence."
+    }
+  },
+  "$defs": {
+    "isoDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Calendar date, `YYYY-MM-DD`."
+    },
+    "areaId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$",
+      "minLength": 2,
+      "maxLength": 64,
+      "description": "Stable lowercase snake_case identifier for an area. Never renamed in place: a renamed id is a new area list version."
+    },
+    "area": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "in_scope"],
+      "properties": {
+        "id": { "$ref": "#/$defs/areaId" },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How the area is named to a human, as the source publisher writes it, e.g. `East Village`."
+        },
+        "in_scope": {
+          "type": "boolean",
+          "description": "Whether this area receives hours in this deployment. Out-of-scope areas stay listed so that their exclusion is visible rather than silent."
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional. Why an area is out of scope, or any comparability caveat attached to it."
+        }
+      },
+      "description": "One planning area. Aggregate place only: no population field, no need field, no demand field, no report or complaint count."
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resolution_status", "resolution_rule"],
+      "properties": {
+        "resolution_status": {
+          "enum": ["resolved", "provisional", "unresolved", "illustrative"],
+          "description": "`resolved`: a named public or licensed source with a version and a retrieval date backs this, and every source field below is filled in. `provisional`: the organization has a working definition but cannot yet cite it. `unresolved`: there is no defensible source, and the interface must disclose that rather than proceed as if there were. `illustrative`: this describes a place that does not exist and exists only to demonstrate the configuration."
+        },
+        "source_name": {
+          "type": ["string", "null"],
+          "description": "Title of the source document or dataset. Required and non-null when `resolution_status` is `resolved`."
+        },
+        "publisher": {
+          "type": ["string", "null"],
+          "description": "Who published it. Required and non-null when `resolution_status` is `resolved`."
+        },
+        "source_url": {
+          "type": ["string", "null"],
+          "description": "Direct link to the exact artifact, not a landing page where possible. Required and non-null when `resolution_status` is `resolved`."
+        },
+        "source_version": {
+          "type": ["string", "null"],
+          "description": "Version, edition, or publication date of the source, e.g. `June 2026 report` or `2.1.1`. Required and non-null when `resolution_status` is `resolved`."
+        },
+        "retrieved_at": {
+          "oneOf": [{ "$ref": "#/$defs/isoDate" }, { "type": "null" }],
+          "description": "Date the source was retrieved, `YYYY-MM-DD`. Required and non-null when `resolution_status` is `resolved`."
+        },
+        "resolution_note": {
+          "type": ["string", "null"],
+          "description": "Plain-language explanation, written for a reader outside the organization. REQUIRED and non-empty for every status except `resolved`: this is the text the interface renders as an unresolved-provenance disclosure. Say what is missing and why, not that it is pending."
+        },
+        "resolution_rule": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What would change the status. Required in every case, including `resolved`, where it states what would force a re-audit. A status with no rule for changing it is a status nobody owns."
+        }
+      },
+      "description": "Structured provenance for one geography component. There is deliberately no way to record a source as a bare version string: an adopter either cites something or discloses that they cannot."
+    }
+  }
+}

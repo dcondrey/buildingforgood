@@ -1,0 +1,169 @@
+{
+  "$schema": "../schema/organization-profile.v1.schema.json",
+  "schema_version": "organization-profile/v1",
+  "profile_id": "coldwater-valley-rural",
+  "profile_status": "illustrative_example",
+  "last_updated": "2026-08-23",
+  "organization": {
+    "name": "Coldwater Valley Continuum of Care (illustrative example — not a real organization)",
+    "profile_owner_role": "Continuum of Care outreach program director",
+    "scope_statement": "ILLUSTRATIVE EXAMPLE ONLY. This profile describes a place that does not exist. It shows what the same tool looks like when it is configured for a rural, multi-county continuum of care instead of a dense downtown: eight large service areas, a two-week planning cycle, half-day allocation blocks because of driving time, and an adjacency table the organization drew itself. Nothing in it is a real deployment, a real geography, or a real budget.",
+    "jurisdiction_note": "A fictional three-county river valley: one small city of roughly 30,000 people, a highway corridor, and dispersed settlements. Included so an evaluator can see the abstraction exercised somewhere that is not downtown San Diego."
+  },
+  "observations": {
+    "grain": "area_month_aggregate",
+    "precise_locations_publishable": false,
+    "individual_records_publishable": false
+  },
+  "geography": {
+    "area_list": {
+      "version": "coldwater-valley-illustrative/2026-08-23",
+      "areas": [
+        { "id": "coldwater_city_core", "label": "Coldwater City Core", "in_scope": true },
+        { "id": "mill_flats", "label": "Mill Flats", "in_scope": true },
+        { "id": "north_bench", "label": "North Bench", "in_scope": true },
+        { "id": "riverside_corridor", "label": "Riverside Corridor", "in_scope": true },
+        { "id": "junction_yards", "label": "Junction Yards", "in_scope": true },
+        { "id": "eastgate_township", "label": "Eastgate Township", "in_scope": true },
+        { "id": "pine_hollow", "label": "Pine Hollow", "in_scope": true },
+        { "id": "south_valley", "label": "South Valley", "in_scope": true },
+        {
+          "id": "federal_forest_margin",
+          "label": "Federal Forest Margin",
+          "in_scope": false,
+          "note": "Listed but not planned against. The land is federally managed and enumerated on a separate cycle by a separate agency, so its observations are not comparable with the eight valley areas. Kept in the list so its absence from every plan is visible rather than silent."
+        }
+      ],
+      "provenance": {
+        "resolution_status": "illustrative",
+        "source_name": null,
+        "publisher": null,
+        "source_url": null,
+        "source_version": null,
+        "retrieved_at": null,
+        "resolution_note": "These area names are invented for demonstration. There is no publisher, no source document, and no retrieval date, because there is no such valley. An organization starting from this file must replace the whole geography block with its own published area list and its own provenance before the profile is used for any real decision.",
+        "resolution_rule": "This entry never resolves. It is replaced, not upgraded."
+      }
+    },
+    "boundaries": {
+      "provenance": {
+        "resolution_status": "illustrative",
+        "source_name": null,
+        "publisher": null,
+        "source_url": null,
+        "source_version": null,
+        "retrieved_at": null,
+        "resolution_note": "Invented boundaries for an invented valley. In a real rural deployment this is usually the hardest field on the page: county service areas, school district lines, and outreach team territories rarely agree, and whichever one is chosen has to be named and cited here.",
+        "resolution_rule": "This entry never resolves. It is replaced, not upgraded."
+      }
+    },
+    "adjacency": {
+      "version": "coldwater-valley-illustrative/2026-08-23",
+      "pairs": [
+        ["coldwater_city_core", "mill_flats"],
+        ["coldwater_city_core", "riverside_corridor"],
+        ["coldwater_city_core", "north_bench"],
+        ["mill_flats", "junction_yards"],
+        ["riverside_corridor", "junction_yards"],
+        ["riverside_corridor", "south_valley"],
+        ["north_bench", "pine_hollow"],
+        ["junction_yards", "eastgate_township"],
+        ["eastgate_township", "pine_hollow"],
+        ["eastgate_township", "south_valley"]
+      ],
+      "provenance": {
+        "resolution_status": "illustrative",
+        "source_name": null,
+        "publisher": null,
+        "source_url": null,
+        "source_version": null,
+        "retrieved_at": null,
+        "resolution_note": "An invented adjacency table, present so that the populated case is demonstrated somewhere. It also shows the shape a real one takes: an organization that draws its own adjacency from its own boundary definition may legitimately use it, but it records that as provisional and says who drew it, because a self-drawn adjacency is the input to a displacement read and the reader deserves to know where it came from.",
+        "resolution_rule": "This entry never resolves. It is replaced, not upgraded."
+      }
+    }
+  },
+  "operations": {
+    "planning_horizon": {
+      "value": 14,
+      "unit": "day",
+      "label": "next two-week outreach cycle"
+    },
+    "budget": {
+      "value": 132,
+      "unit": "staff_hour",
+      "user_editable": true,
+      "minimum": 0,
+      "maximum": 240
+    },
+    "shift": {
+      "length_hours": 6,
+      "allocation_increment_hours": 2
+    },
+    "team_count": 2,
+    "coverage_floor_hours": 10,
+    "continuity_reserve_hours": 4,
+    "uncertainty_weight": 0.75,
+    "floor_dominance_warning_threshold": 0.3
+  },
+  "cost_assumptions": {
+    "loaded_hourly_rate": {
+      "value": 39.75,
+      "currency": "USD",
+      "unit": "cost_per_staff_hour",
+      "assumption": {
+        "status": "operator_set_assumption",
+        "set_by_role": "Finance director",
+        "basis": "Illustrative figure for a fictional organization. It is shaped like a real one would be — the annual outreach personnel line plus vehicle and mileage, divided by budgeted field hours rather than by paid hours, since roughly a fifth of a rural team's paid time is spent driving between areas rather than in them.",
+        "effective_date": "2026-07-01",
+        "review_by": "2027-07-01",
+        "includes": [
+          "outreach worker wages",
+          "payroll taxes",
+          "benefits",
+          "field supervision time",
+          "vehicle, fuel, and mileage reimbursement"
+        ],
+        "excludes": [
+          "client assistance and flexible funds",
+          "capital and facilities",
+          "organization-wide indirect administration",
+          "contracted behavioral health hours"
+        ]
+      }
+    }
+  },
+  "language_boundaries": {
+    "permitted_examples": [
+      "Aggregate changes are consistent with possible displacement.",
+      "The available evidence is insufficient.",
+      "This forecast has a wide uncertainty interval.",
+      "Counts in areas this sparse move for reasons a monthly total cannot separate.",
+      "This plan distributes staff time. It does not establish who is served or on what terms."
+    ],
+    "prohibited_claim_types": [
+      "identified_people_moved_between_areas",
+      "policy_caused_observed_decline",
+      "area_needs_enforcement",
+      "live_shelter_capacity_or_eligibility",
+      "automatic_operational_authorization",
+      "encampment_location_disclosure",
+      "small_area_counts_as_individual_identification"
+    ]
+  },
+  "review_triggers": [
+    "new_monthly_observation",
+    "available_budget_changed",
+    "missing_or_incomparable_area",
+    "forecast_interval_warning",
+    "fairness_floor_infeasible",
+    "local_operational_knowledge_conflicts",
+    "source_boundary_or_method_revision",
+    "seasonal_road_closure_changes_reachable_areas"
+  ],
+  "notes": [
+    "Illustrative example. Not a real deployment. Do not cite any number in this file.",
+    "Every operating value differs from the San Diego reference on purpose: 8 in-scope areas instead of 6, a 132-hour budget instead of 80, a 10-hour coverage floor instead of 8, 2-hour allocation blocks instead of 1-hour, a 14-day horizon instead of 7, and a higher uncertainty weight because sparse-area forecasts have wider intervals.",
+    "The budget is a whole number of team-shifts: 2 teams x 6 hours x 11 shifts = 132 staff-hours."
+  ]
+}

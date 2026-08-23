@@ -26,11 +26,15 @@ document, and the card carries page-level results only — a count of integer
 tokens and the recovered values at or above an area-total threshold. No block
 identifiers, no geometry, and no sub-threshold values are written.
 
-Usage:
-    .venv/bin/python -m stillhere_pipeline.eyepop_audit \
-        --pdf data/raw/dsdp_public_reports/June-2026-Unsheltered-Sleep-Count.pdf \
-        --out data/monitoring/digitization_audit.json \
-        [--engine local|eyepop|eyepop-vlm] [--dpi 200]
+Usage (``stillhere-audit`` and ``python -m stillhere_pipeline.eyepop_audit``
+are the same entry point):
+
+    stillhere-audit --pdf report.pdf --out card.json [--engine local] [--dpi 200]
+    stillhere-audit --pdf report.pdf --also-run @300 --out agreement.json
+    stillhere-audit --compare card_a.json card_b.json --out agreement.json
+    stillhere-audit --pdf report.pdf --format table
+
+See docs/project/DIGITIZATION_AUDIT_CLI.md.
 """
 
 from __future__ import annotations
@@ -67,7 +71,8 @@ def integer_values(
         if not isinstance(confidence, (int, float)) or confidence < min_confidence:
             continue
         text = str(obs.get("text", "")).strip()
-        if text.isdigit():
+        # isdecimal, not isdigit: superscripts are "digits" but not int()-able.
+        if text.isdecimal():
             values.append(int(text))
     return values
 
@@ -364,25 +369,226 @@ ENGINES: dict[str, Engine] = {
     "eyepop": eyepop_engine,
     "eyepop-vlm": eyepop_vlm_engine,
 }
+HOSTED_ENGINES = frozenset({"eyepop", "eyepop-vlm"})
 
 
-def run_audit(
-    pdf: Path, out_path: Path, engine_name: str = "local", dpi: int = DEFAULT_DPI
-) -> dict[str, object]:
+def preflight(engine_name: str) -> None:
+    """Fail closed before rasterizing rather than after every page is drawn."""
+    if engine_name not in ENGINES:
+        raise SystemExit(
+            f"Unknown engine {engine_name!r}; choose from {', '.join(sorted(ENGINES))}."
+        )
+    if engine_name in HOSTED_ENGINES:
+        _require_eyepop_credentials()
+    elif sys.platform != "darwin":  # pragma: no cover - platform-specific
+        raise SystemExit("--engine local uses Apple Vision and requires macOS.")
+
+
+def audit_pdf(pdf: Path, engine_name: str = "local", dpi: int = DEFAULT_DPI) -> dict[str, object]:
+    """Rasterize every page at ``dpi`` and return the privacy-filtered card."""
+    preflight(engine_name)
     engine = ENGINES[engine_name]
     pages: list[dict[str, object]] = []
     with tempfile.TemporaryDirectory() as scratch:
         for index, image in enumerate(rasterize(pdf, Path(scratch), dpi=dpi), start=1):
             pages.append(page_summary(index, engine(image)))
-    card = audit_card(pages, str(pdf), engine_name, dpi=dpi)
+    return audit_card(pages, str(pdf), engine_name, dpi=dpi)
+
+
+def write_card(card: dict[str, object], out_path: Path) -> None:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(card, indent=2, sort_keys=True) + "\n")
+
+
+def run_audit(
+    pdf: Path, out_path: Path | None, engine_name: str = "local", dpi: int = DEFAULT_DPI
+) -> dict[str, object]:
+    card = audit_pdf(pdf, engine_name, dpi=dpi)
+    if out_path is not None:
+        write_card(card, out_path)
     return card
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--pdf", type=Path)
-    parser.add_argument("--out", required=True, type=Path)
+def parse_run_spec(spec: str, default_engine: str, default_dpi: int) -> tuple[str, int]:
+    """``ENGINE@DPI`` for a second run; either half may be omitted. Pure; tested."""
+    engine_text, _, dpi_text = spec.partition("@")
+    engine = engine_text.strip() or default_engine
+    if engine not in ENGINES:
+        raise SystemExit(f"Unknown engine {engine!r}; choose from {', '.join(sorted(ENGINES))}.")
+    dpi_text = dpi_text.strip()
+    if not dpi_text:
+        return engine, default_dpi
+    if not dpi_text.isdecimal() or int(dpi_text) <= 0:
+        raise SystemExit(f"Bad --also-run {spec!r}: expected ENGINE@DPI, e.g. local@300.")
+    return engine, int(dpi_text)
+
+
+TABLE_VALUE_PREVIEW = 10
+
+
+def _page_rows(card: dict[str, object]) -> list[dict[str, object]]:
+    pages = card.get("pages")
+    return [p for p in pages if isinstance(p, dict)] if isinstance(pages, list) else []
+
+
+def _int_at(row: dict[str, object], key: str) -> int:
+    value = row.get(key)
+    return value if isinstance(value, int) else 0
+
+
+def _values_at(row: dict[str, object], key: str) -> list[int]:
+    values = row.get(key)
+    return [v for v in values if isinstance(v, int)] if isinstance(values, list) else []
+
+
+def _preview(values: list[int]) -> str:
+    if not values:
+        return "—"
+    head = ", ".join(str(v) for v in values[:TABLE_VALUE_PREVIEW])
+    extra = len(values) - TABLE_VALUE_PREVIEW
+    return f"{head}, +{extra} more" if extra > 0 else head
+
+
+def _grid(headers: list[str], rows: list[list[str]]) -> list[str]:
+    """Right-align every column but the last, which is free text."""
+    widths = [
+        max(len(h), *(len(r[i]) for r in rows)) if rows else len(h) for i, h in enumerate(headers)
+    ]
+    last = len(headers) - 1
+
+    def line(cells: list[str]) -> str:
+        parts = [
+            c.ljust(widths[i]) if i == last else c.rjust(widths[i]) for i, c in enumerate(cells)
+        ]
+        return "  ".join(parts).rstrip()
+
+    return [line(headers), line(["-" * w for w in widths])] + [line(r) for r in rows]
+
+
+def _run_label(run: object, fallback: object) -> str:
+    if isinstance(run, dict):
+        return f"{run.get('engine')}@{run.get('dpi', DEFAULT_DPI)}dpi"
+    return f"{fallback}@{DEFAULT_DPI}dpi"
+
+
+def format_audit_table(card: dict[str, object]) -> str:
+    """Human-readable rendering of an audit card. Pure; writes only card fields."""
+    rows = _page_rows(card)
+    threshold = card.get("value_threshold", VALUE_THRESHOLD)
+    body = [
+        [
+            str(_int_at(row, "page")),
+            str(_int_at(row, "integer_tokens")),
+            str(len(_values_at(row, "values"))),
+            str(_int_at(row, "withheld_below_threshold")),
+            _preview(_values_at(row, "values")),
+        ]
+        for row in rows
+    ]
+    dpi = card.get("dpi")
+    dpi_text = str(dpi) if dpi is not None else f"{DEFAULT_DPI} (not recorded; pre-flag card)"
+    lines = [
+        f"digitization audit · engine={card.get('engine')} "
+        f"· dpi={dpi_text} · value threshold={threshold}",
+        f"source: {card.get('source_pdf')}",
+        "",
+        *_grid(["page", "tokens", "reported", "withheld", f"values >= {threshold}"], body),
+        "",
+        f"{len(rows)} pages · "
+        f"{sum(_int_at(r, 'integer_tokens') for r in rows)} integer tokens · "
+        f"{sum(len(_values_at(r, 'values')) for r in rows)} reported · "
+        f"{sum(_int_at(r, 'withheld_below_threshold') for r in rows)} withheld below threshold",
+        "Recovered values are candidates for human verification, never counts.",
+    ]
+    return "\n".join(lines)
+
+
+def format_agreement_table(card: dict[str, object]) -> str:
+    """Human-readable rendering of an agreement card. Pure; writes only card fields."""
+    rows = _page_rows(card)
+    engines = card.get("engines")
+    engines = engines if isinstance(engines, list) else [None, None]
+    runs = card.get("runs")
+    runs = runs if isinstance(runs, list) else [None, None]
+    first, second = _run_label(runs[0], engines[0]), _run_label(runs[1], engines[1])
+    body = [
+        [
+            str(_int_at(row, "page")),
+            str(_int_at(row, "shared")),
+            str(_int_at(row, "only_in_first")),
+            str(_int_at(row, "only_in_second")),
+            _preview(_values_at(row, "shared_values")),
+        ]
+        for row in rows
+    ]
+    summary = card.get("summary")
+    summary = summary if isinstance(summary, dict) else {}
+    share = summary.get("agreement_share")
+    share_text = "n/a (no values recovered)" if share is None else f"{float(share):.1%}"
+    return "\n".join(
+        [
+            f"digitization audit agreement · {first} vs {second} "
+            f"· value threshold={card.get('value_threshold')}",
+            "",
+            *_grid(["page", "shared", f"only {first}", f"only {second}", "shared values"], body),
+            "",
+            f"{summary.get('pages_compared', len(rows))} pages compared · "
+            f"{summary.get('shared_total', 0)} shared · "
+            f"{summary.get('first_total', 0)} vs {summary.get('second_total', 0)} recovered",
+            f"agreement share: {share_text}",
+            "Disagreement is the finding: every recovered value needs human verification.",
+        ]
+    )
+
+
+def format_table(card: dict[str, object]) -> str:
+    if card.get("kind") == "digitization_audit_agreement":
+        return format_agreement_table(card)
+    return format_audit_table(card)
+
+
+def _emit(card: dict[str, object], out: Path | None, fmt: str) -> None:
+    if out is not None:
+        write_card(card, out)
+    if fmt == "table":
+        print(format_table(card))
+    elif fmt == "json":
+        print(json.dumps(card, indent=2, sort_keys=True))
+    elif card.get("kind") == "digitization_audit_agreement":
+        print(f"wrote {out} · engines={card.get('engines')} · {card.get('summary')}")
+    else:
+        print(
+            f"wrote {out} · engine={card.get('engine')} · dpi={card.get('dpi')} "
+            f"· {len(_page_rows(card))} pages"
+        )
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="stillhere-audit",
+        description=(
+            "Audit the digitization of a scanned, hand-annotated count PDF: recover "
+            "text per page and report integer-token counts plus the values at or above "
+            "the area-total threshold. Recovered values are candidates for human "
+            "verification, never counts."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "examples:\n"
+            "  stillhere-audit --pdf report.pdf --out card.json\n"
+            "  stillhere-audit --pdf report.pdf --format table\n"
+            "  stillhere-audit --pdf report.pdf --also-run @300 --out agreement.json\n"
+            "  stillhere-audit --compare card_a.json card_b.json --out agreement.json\n"
+            "  stillhere-audit --show card.json\n"
+        ),
+    )
+    parser.add_argument("--pdf", type=Path, help="The PDF to audit.")
+    parser.add_argument(
+        "--out",
+        type=Path,
+        help="Write the resulting JSON card here. Optional; without it the card is "
+        "printed as a table and nothing is written.",
+    )
     parser.add_argument("--engine", choices=sorted(ENGINES), default="local")
     parser.add_argument(
         "--dpi",
@@ -392,26 +598,65 @@ def main(argv: list[str] | None = None) -> int:
         "recognition is not stable across resolutions.",
     )
     parser.add_argument(
+        "--also-run",
+        metavar="ENGINE@DPI",
+        help="Run a second configuration over the same PDF and write their agreement "
+        "card instead of a single audit card. Either half may be omitted: "
+        "'@300' reuses --engine, 'eyepop' reuses --dpi.",
+    )
+    parser.add_argument(
+        "--card-dir",
+        type=Path,
+        help="With --also-run, also write each individual audit card into this directory.",
+    )
+    parser.add_argument(
+        "--show",
+        type=Path,
+        metavar="CARD",
+        help="Render an existing audit or agreement card, no OCR run and no write.",
+    )
+    parser.add_argument(
         "--compare",
         nargs=2,
         type=Path,
         metavar=("CARD_A", "CARD_B"),
         help="Two existing audit-card JSON files; writes their agreement card, no OCR run.",
     )
+    parser.add_argument(
+        "--format",
+        choices=("summary", "table", "json"),
+        help="Stdout rendering. Defaults to 'summary' with --out, 'table' without it.",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
     args = parser.parse_args(argv)
+    fmt: str = args.format or ("summary" if args.out else "table")
+    if args.show:
+        _emit(json.loads(args.show.read_text()), None, "table" if fmt == "summary" else fmt)
+        return 0
     if args.compare:
         first, second = (json.loads(path.read_text()) for path in args.compare)
-        card = agreement_card(first, second)
-        args.out.write_text(json.dumps(card, indent=2, sort_keys=True) + "\n")
-        summary = card["summary"]
-        print(f"wrote {args.out} · engines={card['engines']} · {summary}")
+        _emit(agreement_card(first, second), args.out, fmt)
         return 0
     if args.pdf is None:
         parser.error("--pdf is required unless --compare is given")
-    card = run_audit(args.pdf, args.out, args.engine, dpi=args.dpi)
-    pages = card["pages"]
-    page_count = len(pages) if isinstance(pages, list) else 0
-    print(f"wrote {args.out} · engine={args.engine} · dpi={args.dpi} · {page_count} pages")
+    if args.also_run is None:
+        _emit(audit_pdf(args.pdf, args.engine, dpi=args.dpi), args.out, fmt)
+        return 0
+    second_engine, second_dpi = parse_run_spec(args.also_run, args.engine, args.dpi)
+    preflight(args.engine)
+    preflight(second_engine)
+    cards = [
+        audit_pdf(args.pdf, args.engine, dpi=args.dpi),
+        audit_pdf(args.pdf, second_engine, dpi=second_dpi),
+    ]
+    if args.card_dir is not None:
+        for card in cards:
+            write_card(card, args.card_dir / f"audit_{card['engine']}_{card['dpi']}dpi.json")
+    _emit(agreement_card(cards[0], cards[1]), args.out, fmt)
     return 0
 
 

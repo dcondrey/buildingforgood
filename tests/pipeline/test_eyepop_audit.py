@@ -20,9 +20,11 @@ from stillhere_pipeline.eyepop_audit import (
     audit_card,
     eyepop_engine,
     eyepop_vlm_engine,
+    format_audit_table,
     integer_values,
     main,
     page_summary,
+    parse_run_spec,
     word_tokens,
 )
 
@@ -37,6 +39,11 @@ def test_integer_values_keeps_standalone_digits_above_confidence_floor() -> None
         {"text": "= 2.03 homeless individuals in", "confidence": 0.9},
     ]
     assert integer_values(observations) == [152, 14, 3]
+
+
+def test_integer_values_survives_superscript_digits() -> None:
+    # str.isdigit() accepts "2\u00b2", which int() then rejects; isdecimal does not.
+    assert integer_values([{"text": "2\u00b2", "confidence": 0.9}]) == []
 
 
 def test_page_summary_withholds_block_scale_values() -> None:
@@ -323,3 +330,58 @@ def test_ocr_and_vlm_engines_use_separate_worker_sessions(
     ocr_pop, vlm_pop = recorded["pops"][:2]  # type: ignore[index]
     assert ocr_pop.components[0].ability == "eyepop.text:latest"
     assert vlm_pop.components[0].ability == "eyepop.image-contents:latest"
+
+
+def test_parse_run_spec_fills_defaults_and_rejects_bad_specs() -> None:
+    assert parse_run_spec("@300", "local", DEFAULT_DPI) == ("local", 300)
+    assert parse_run_spec("eyepop", "local", 150) == ("eyepop", 150)
+    assert parse_run_spec("eyepop-vlm@400", "local", DEFAULT_DPI) == ("eyepop-vlm", 400)
+    with pytest.raises(SystemExit, match="Unknown engine"):
+        parse_run_spec("tesseract@300", "local", DEFAULT_DPI)
+    with pytest.raises(SystemExit, match="ENGINE@DPI"):
+        parse_run_spec("local@high", "local", DEFAULT_DPI)
+
+
+def test_audit_table_reports_withheld_as_a_count_and_never_as_a_value() -> None:
+    observations = [
+        {"text": "152", "confidence": 0.9},
+        {"text": "14", "confidence": 0.9},
+        {"text": "3", "confidence": 0.9},  # block-scale
+        {"text": "11", "confidence": 0.9},  # block-scale
+    ]
+    card = audit_card([page_summary(1, observations)], "report.pdf", "local", dpi=300)
+    table = format_audit_table(card)
+    header, _, values = table.splitlines()[5].partition("14")
+    assert header.split() == ["1", "4", "2", "2"]  # page, tokens, reported, withheld
+    assert values == ", 152"
+    assert "engine=local" in table and "dpi=300" in table
+    assert "candidates for human verification" in table
+
+
+def test_cli_table_output_needs_no_out_file(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    import json
+
+    a, b = tmp_path / "a.json", tmp_path / "b.json"
+    a.write_text(json.dumps(_card("local", [{"page": 1, "values": [152], "shared": 1}])))
+    b.write_text(json.dumps(dict(_card("local", [{"page": 1, "values": [152]}]), dpi=300)))
+    assert main(["--compare", str(a), str(b)]) == 0
+    out = capsys.readouterr().out
+    assert "local@200dpi vs local@300dpi" in out
+    assert "agreement share: 100.0%" in out
+    assert not list(tmp_path.glob("agreement*.json"))
+
+
+def test_cli_also_run_fails_closed_before_rasterizing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.delenv("EYEPOP_API_KEY", raising=False)
+    import stillhere_pipeline.eyepop_audit as module
+
+    def explode(*args: object, **kwargs: object) -> list[Path]:
+        raise AssertionError("rasterized before checking credentials")
+
+    monkeypatch.setattr(module, "rasterize", explode)
+    with pytest.raises(SystemExit, match="EYEPOP_API_KEY"):
+        main(["--pdf", str(tmp_path / "r.pdf"), "--also-run", "eyepop@300", "--format", "table"])

@@ -11,6 +11,10 @@ dependencies = [
     "pyyaml>=6",
 ]
 
+[project.scripts]
+# Same entry point as `python -m stillhere_pipeline.eyepop_audit`.
+stillhere-audit = "stillhere_pipeline.eyepop_audit:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8",

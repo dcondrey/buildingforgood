@@ -246,6 +246,17 @@ another name check: `planning_load` arrives with a declared derivation, the
 contract enumerates permitted derivations, and anything else is refused.
 Assigned to the Phase 1 workstream.
 
+**Status: closed as far as it closes, 2026-08-23.** The derivation check
+landed in `pipeline/src/stillhere_pipeline/contracts.py` and
+`assertDeclaredPlanningLoad`; the review re-ran the attack and it is refused.
+Moving the same payload one step upstream — rewriting `forecast.areas[].upper`
+so the two reconcile — is still accepted, so the boundary moved rather than
+disappeared. The claim was rewritten to match where the boundary actually
+sits, and the narrow form is recorded in `docs/project/DECISIONS.md`:
+complaint volume cannot reach allocation without also corrupting the published
+forecast interval, which is derived from checksummed inputs. Anything wider
+than that is a regression in prose.
+
 
 ## Finding F-8: the shipped map's geometry has no verifiable provenance
 

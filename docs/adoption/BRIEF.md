@@ -71,17 +71,74 @@ Not "complaint volume cannot influence planning." The narrow claim survives an
 attacker; the broad one did not. Complaint counts are still displayed as a
 diagnostic, precisely so their exclusion can be audited.
 
+## What the seventh scanner hole could actually cost you
+
+"What is not finished" below says that six rounds of review each found a real
+hole in the privacy scanner and that the security policy says to assume a
+seventh exists. That is the disclosure, and it should be read as evidence that
+the scanner is reviewed adversarially rather than as an open-ended liability.
+Counsel is owed the size of the thing, so here it is.
+
+**The residual exposure is one number, not one record.** The scanner decides
+whether an integer is a person-count from the shape of the document: an object
+counts as a cell if something on its path names a month, period, date, area,
+or neighborhood, and then every integer inside it is checked against the
+threshold. Three things can put a real count outside that reach — a count in
+an object with no month or area key anywhere above it, a count whose field
+name lands on the narrow list of structural exemptions (`index`, `rank`,
+`weight`, `version` and about a dozen others), and a count sitting beside a
+declared resource metric such as `allocated_hours`, which turns cell scope off
+for that object. The scanner also does not reason across files or across
+rollup levels, so a value withheld in one place and derivable by subtraction
+from another is not something it can see.
+
+**The worst realistic case, named.** A published area-month count between 1
+and 4 ships as a number instead of as `suppressed`. A reader learns that in
+one named neighborhood, in one named calendar month, exactly one, two, three,
+or four people were observed on the street. Someone with local knowledge may
+be able to attach that number to people they already know are there. It
+confirms; it does not reveal. That is the whole of it.
+
+**What bounds it is the architecture, not the scanner.** There are no
+person-level rows in the artifact to leak, because the pipeline aggregates
+before it writes and the system has no concept of a person as an entity. The
+published grain is one named area and one calendar month — no day, no block,
+no census tract, no coordinate, no address, no bounding street — so even a
+completely unsuppressed file says how many, never who, never where within the
+area, never which day. Counts from 1 to 4 are withheld at a stated threshold
+of 5, by an emitter that also suppresses a complementary partner cell and
+escalates to withholding the whole row when the published numbers would pin a
+withheld value. The scan runs fail-closed over the exact bundle that gets
+deployed — after the production build in `./scripts/verify.sh`, and again in
+the deploy job against the files being published, source maps included — and
+any blocking finding stops the build. Over-blocking is the chosen error
+direction, and every rejection class has a negative fixture that must keep
+producing a blocking finding, so a rule that quietly stops working fails
+loudly.
+
+**What an adopter should do about it.** Four things, in order of how much they
+matter. Never supply person-level records, coordinates, addresses, or
+block-scale counts — the bound above holds because the input rule holds, and
+that rule is yours to keep. Keep every count inside an object that carries its
+own month and area keys, and publish identifiers as strings rather than
+integers, so the scanner sees your counts as cells. Run the verification
+script on every deploy and treat a blocking finding as a stop, never as
+something to clear by widening an exemption or adding a suppression marker.
+And before your first publication, read the artifact once by eye: at area-month
+grain it is a small enough file for a person to check, and that check is the
+one thing no inference rule can be fooled about. `docs/project/DATA_GOVERNANCE.md`
+§5.3 carries the same account with the file and constant names.
+
 ## What it costs to run
 
-**Hosting is effectively free.** The deployed product is a compiled bundle of
-about 3 MB plus one 148 KB data file — no server, no database, no accounts,
-because nothing would need them. GitHub Pages publishes it, and under GitHub's
-current terms Pages hosting and Actions minutes are free on a public
-repository — the one figure in this brief that depends on someone else's price
-list rather than on this repository, so confirm it at adoption. Any static file
-host works, and the bundle is small enough that none of them will charge you
-meaningfully. Apache-2.0 costs nothing either: no seats, no tiers, no
-vendor.
+**There is no infrastructure to pay for.** The deployed product is a compiled
+bundle of about 3 MB plus one 148 KB data file: static files, no server, no
+database, no accounts, because nothing in it would need them. The only running
+cost is hosting a directory, and any static file host serves it — the
+reference deployment uses GitHub Pages, but nothing in the product depends on
+that choice. What a given host charges for a 3 MB directory is that host's
+question and changes without notice; this brief does not quote a price it
+cannot verify. Apache-2.0 adds nothing: no seats, no tiers, no vendor.
 
 **The real cost is staff time**, the only line worth budgeting: roughly 20
 minutes a month for the operator once the data is refreshed, plus the decision
@@ -175,7 +232,7 @@ notice period, no migration.
 - **The privacy scanner still infers which numbers are people-counts from
   document shape** for the shipped file; the durable fix is partially landed.
   Six rounds of review each found a real hole, and the security policy says to
-  assume a seventh exists.
+  assume a seventh exists. What that risk is bounded to is stated below.
 - **Accessibility is audited, not fully verified.** Zero automated WCAG 2.1 AA
   violations across six screens, contrast measured directly. Keyboard operation
   is a manual protocol still to be run by a person, and screen-reader

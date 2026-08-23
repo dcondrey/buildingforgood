@@ -227,6 +227,15 @@ well-intentioned change that would break what this tool is for — which is why
 it is blocked at the type level, at the schema level, and at the loader, rather
 than trusted to review.
 
+Those three blocks all match field *names*, so they do not amount to a claim
+that complaint volume can never influence a plan. That broader claim was
+tested by an independent review and falsified. What the project claims is
+narrower: complaint volume cannot reach allocation without also corrupting the
+published forecast interval, which is derived from checksummed inputs. The
+arithmetic that holds that line is the `planning_load` derivation check in
+`pipeline/src/stillhere_pipeline/contracts.py`, not the name checks above. See
+`docs/project/DECISIONS.md`.
+
 There is likewise no field for a person, a household, a case, a coordinate, a
 block, or an address. The observation grain is area-month aggregate and the
 schema cannot express anything finer.

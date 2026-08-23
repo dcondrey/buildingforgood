@@ -177,7 +177,7 @@
       "allocated_hours_equal_available_budget",
       "minimum_coverage_floor_is_satisfied_or_result_is_infeasible",
       "human_locks_are_preserved",
-      "complaint_volume_never_changes_planning_load_or_allocation"
+      "complaint_shaped_fields_are_refused_and_planning_load_declares_a_verified_derivation"
     ],
     "infeasible_result": "return_no_plan_with_reasons",
     "floor_dominance_warning_threshold": {

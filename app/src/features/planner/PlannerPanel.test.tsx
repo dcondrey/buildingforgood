@@ -60,12 +60,29 @@ describe("the plan is readable without the historical chart", () => {
   it("shows every included area with its hours", () => {
     renderPanel();
     for (const area of AREAS) {
-      expect(screen.getByRole("rowheader", { name: area.label })).toBeDefined();
+      const header = screen.getByRole("rowheader", { name: area.label });
+      // The hours were the half of this name the body never read: a row
+      // that rendered its label and nothing else used to pass.
+      const row = header.closest("tr");
+      expect(row, area.label).not.toBeNull();
+      expect(row?.textContent ?? "", area.label).toMatch(/\d/);
     }
   });
 
-  it("always shows unmet planning load next to the total", () => {
+  it("always shows unmet planning load next to the total", async () => {
+    // "Always" means every state that shows a total, not only the default
+    // one: an unmet figure that vanished when the floor dominated the plan,
+    // or in the unguarded comparison, would have passed. An infeasible plan
+    // shows no total and is covered by its own test below.
+    for (const budget of [80, 24]) {
+      cleanup();
+      render(<PlannerPanel areas={AREAS} policy={{ ...POLICY, budget_hours: budget }} />);
+      expect(screen.getByText(/Unmet planning load/i), `budget ${budget}`).toBeDefined();
+    }
+    cleanup();
+    const user = userEvent.setup();
     renderPanel();
+    await user.click(screen.getByRole("button", { name: /Compare without the coverage guard/i }));
     expect(screen.getByText(/Unmet planning load/i)).toBeDefined();
   });
 

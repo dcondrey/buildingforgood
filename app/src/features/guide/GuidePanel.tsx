@@ -21,7 +21,6 @@ export function GuidePanel() {
       className="guide-panel"
       role="dialog"
       aria-labelledby="guide-title"
-      aria-live="polite"
       ref={guidePanel}
       tabIndex={-1}
     >

@@ -25,7 +25,7 @@ Each row is a class of harm the product must be tested against, not a feature.
 | H2 | **Stigmatization of geography** | A neighborhood is rendered as a permanent "problem area", affecting property, policing, and services | Language boundary + observation-vs-condition framing | #16 |
 | H3 | **Surveillance repurposing** | Output used to monitor where people relocate over time | Aggregate-only publication; no trajectory or movement modeling | #7, #8 |
 | H4 | **Enforcement targeting** | Plan used as a sweep schedule instead of an outreach schedule | Explicit non-goal + no enforcement-usable precision | #16, #7 |
-| H5 | **Complaint bias laundering** | 311 volume treated as need, so housed complainants steer outreach hours | Hard exclusion of 311 from planning load, proven by test | #14 |
+| H5 | **Complaint bias laundering** | 311 volume treated as need, so housed complainants steer outreach hours | Complaint-shaped fields refused by type and by guard; `planning_load` must declare a derivation the artifact validator recomputes | #14 |
 | H6 | **False precision** | Hour allocations to the decimal implying knowledge the data does not support | Rounding policy + visible uncertainty reserve + unmet load | #14, #15 |
 | H7 | **Automation bias** | Coordinator defers to the number because it came from a model | Locks/overrides, "Why this amount?", disclosed human changes | #15 |
 | H8 | **Causal overclaim** | "Outreach caused the decline" / "the ordinance worked" | Three limited labels only; no causal vocabulary anywhere | #8, #16 |
@@ -68,6 +68,8 @@ Severity is the harm if the scenario succeeds: **S1** catastrophic/irreversible 
 **Rationale:** 311 measures who reports — a function of housing status, smartphone access, language, and enforcement attention. Weighting it routes outreach toward complainants and away from less-visible need. This is the single most likely well-meaning request to break the product.
 **Mitigation:** #14 must carry a test that fails if 311 volume can influence planning load through any path, including indirectly via travel burden or a tiebreak. Not a code comment — an assertion.
 **Owner:** Lucas · **Handoff:** #14 (exclusion test), #16 (state the exclusion and why)
+
+**Status correction, 2026-08-23.** The mitigation as written was never met, and this row read "Resolved" for longer than it should have. The delivered tests prove that a complaint-*named* field is refused. An independent review wrote 311 counts into `planner.allocations[].planning_load` — a legally named, correctly typed field — and the shipped allocator re-ranked the plan. The claim this row may support is the narrow one: complaint volume cannot reach allocation without also corrupting the published forecast interval, which is derived from checksummed inputs. Enforcement is the `planning_load` derivation check in `pipeline/src/stillhere_pipeline/contracts.py`, which recomputes a declared derivation against a value already published elsewhere in the artifact. See `docs/project/DECISIONS.md` and `docs/project/PHASE1_ADVERSARIAL.md`.
 
 ---
 
@@ -160,7 +162,7 @@ Severity is the harm if the scenario succeeds: **S1** catastrophic/irreversible 
 |---|---|---|---|---|---|
 | R-01 | MITIGATION NEEDED | S1 | #8, #16 | **Resolved (§7)** | The shipped shell renders the disclaimer beside every classification: "These are on-site observations: they cannot say who moved where, or why", and the copyable brief carries the same boundary. Demo script's only movement-adjacent spoken line is a negation |
 | R-02 | NON-GOAL / partial | S1 | #16, #7, #14 | **Resolved (§7)** | The shipped shell renders "Never authorized: person tracking, causal claims, enforcement, eligibility decisions, or automatic dispatch" in the review step and in the brief; the allocation list has no priority-rank column; the no-minimum view is labeled comparison-only |
-| R-03 | PROTECTED, needs test | S2 | #14, #16 | **Resolved** | Complaint volume unrepresentable in the planner input type; guard recurses objects and arrays; 5 tests |
+| R-03 | PROTECTED, needs test | S2 | #14, #16 | **Partly resolved — see the note under R-03** | Complaint volume unrepresentable in the planner input type; guard recurses objects and arrays; 5 tests. All of that matches field names, and a later review defeated it with an unnamed value |
 | R-04 | MITIGATION NEEDED | S3→S2 | #8, #16 | **Resolved (§7)** | The shipped evidence panel decomposes the drop into components with no causal attribution; the script says the tool "cannot prove movement or policy impact" |
 | R-05 | NON-GOAL / PROTECTED | S1 | #7 | **Resolved** | Deny-list, geometry-type rule, and grain rule implemented; 7 declared planning areas scan clean, 382 source blocks raise 1529 findings |
 | R-06 | MITIGATION NEEDED (new gap) | S1 | #7, #6, #16 | **Resolved** | Suppression in the emitter (#45) plus small-cell and recoverability rules in the scan; 0 exact recoveries, 0 pinned cells, 0 unique multisets on the real artifact |

@@ -43,7 +43,7 @@ export function WorkspaceView() {
   } = useShell();
   const { t, number, signed } = useTranslation();
   return (
-    <div className="workspace" id="workspace">
+    <main className="workspace" id="main-content" tabIndex={-1}>
       <section aria-label={t("workspace.stageAria")} className="ws-stage">
         <div className="ws-stage-head">
           <div aria-label={t("workspace.layerAria")} className="ws-layers" role="group">
@@ -55,6 +55,7 @@ export function WorkspaceView() {
               ] as const
             ).map(([layer, label]) => (
               <button
+                aria-controls="ws-map"
                 aria-pressed={mapLayer === layer}
                 className={mapLayer === layer ? "active" : ""}
                 key={layer}
@@ -67,64 +68,66 @@ export function WorkspaceView() {
           </div>
           {plan?.feasible && <PlanState />}
         </div>
-        <AreaMap
-          areas={mapLayer === "change" ? data.areas : planningAreas}
-          ariaLabel={t(
-            mapLayer === "hours"
-              ? "map.ariaHours"
-              : mapLayer === "change"
-                ? "map.ariaChange"
-                : "map.ariaUnmet",
-            placeText,
-          )}
-          onSelect={(areaId) => {
-            toggleAreaSelection(areaId);
-            setWsTab("area");
-          }}
-          selectedId={selectedAreaId}
-          valueFor={(area) => {
-            if (mapLayer === "change") {
-              if (area.latest === null) return { text: t("map.noData"), tone: "missing" };
-              const maxDelta = Math.max(1, ...data.areas.map((row) => Math.abs(row.delta)));
+        <div id="ws-map">
+          <AreaMap
+            areas={mapLayer === "change" ? data.areas : planningAreas}
+            ariaLabel={t(
+              mapLayer === "hours"
+                ? "map.ariaHours"
+                : mapLayer === "change"
+                  ? "map.ariaChange"
+                  : "map.ariaUnmet",
+              placeText,
+            )}
+            onSelect={(areaId) => {
+              toggleAreaSelection(areaId);
+              setWsTab("area");
+            }}
+            selectedId={selectedAreaId}
+            valueFor={(area) => {
+              if (mapLayer === "change") {
+                if (area.latest === null) return { text: t("map.noData"), tone: "missing" };
+                const maxDelta = Math.max(1, ...data.areas.map((row) => Math.abs(row.delta)));
+                return {
+                  text: signed(area.delta),
+                  tone: area.delta > 0 ? "up" : "down",
+                  intensity: Math.abs(area.delta) / maxDelta,
+                };
+              }
+              if (mapLayer === "unmet") {
+                const unmet = unmetByArea.get(area.id) ?? 0;
+                const maxUnmet = Math.max(1, ...Array.from(unmetByArea.values()));
+                return {
+                  text: t("map.hoursValue", { hours: unmet }),
+                  tone: unmet > 0 ? "down" : "neutral",
+                  intensity: unmet / maxUnmet,
+                };
+              }
+              const hours = allocationById.get(area.id) ?? 0;
+              const belowFloor = guardEnabled && hours < coverageFloor;
               return {
-                text: signed(area.delta),
-                tone: area.delta > 0 ? "up" : "down",
-                intensity: Math.abs(area.delta) / maxDelta,
+                text: t(belowFloor ? "map.hoursBelowFloor" : "map.hoursValue", { hours }),
+                tone: belowFloor ? "down" : "neutral",
+                intensity: hours / maxHours,
               };
-            }
-            if (mapLayer === "unmet") {
-              const unmet = unmetByArea.get(area.id) ?? 0;
-              const maxUnmet = Math.max(1, ...Array.from(unmetByArea.values()));
-              return {
-                text: t("map.hoursValue", { hours: unmet }),
-                tone: unmet > 0 ? "down" : "neutral",
-                intensity: unmet / maxUnmet,
-              };
-            }
-            const hours = allocationById.get(area.id) ?? 0;
-            const belowFloor = guardEnabled && hours < coverageFloor;
-            return {
-              text: t(belowFloor ? "map.hoursBelowFloor" : "map.hoursValue", { hours }),
-              tone: belowFloor ? "down" : "neutral",
-              intensity: hours / maxHours,
-            };
-          }}
-        />
-        <p className="map-caption">
-          {t(
-            mapLayer === "hours"
-              ? "workspace.captionHours"
-              : mapLayer === "change"
-                ? "workspace.captionChange"
-                : "workspace.captionUnmet",
-          )}
-          {t("workspace.captionTail")}
-          {intervention
-            ? t("map.captionAssumption", {
-                area: data.areas.find((area) => area.id === intervention.areaId)?.name ?? "",
-              })
-            : ""}
-        </p>
+            }}
+          />
+          <p className="map-caption">
+            {t(
+              mapLayer === "hours"
+                ? "workspace.captionHours"
+                : mapLayer === "change"
+                  ? "workspace.captionChange"
+                  : "workspace.captionUnmet",
+            )}
+            {t("workspace.captionTail")}
+            {intervention
+              ? t("map.captionAssumption", {
+                  area: data.areas.find((area) => area.id === intervention.areaId)?.name ?? "",
+                })
+              : ""}
+          </p>
+        </div>
         <details className="ws-table">
           <summary>{t("table.viewAsTable")}</summary>
           <MapValueTable
@@ -183,6 +186,7 @@ export function WorkspaceView() {
             ] as const
           ).map(([tab, label]) => (
             <button
+              aria-controls="ws-panel"
               aria-pressed={wsTab === tab}
               className={wsTab === tab ? "active" : ""}
               key={tab}
@@ -193,7 +197,7 @@ export function WorkspaceView() {
             </button>
           ))}
         </div>
-        <div className="ws-body">
+        <div className="ws-body" id="ws-panel">
           {wsTab === "plan" && (
             <>
               <PlannerControls />
@@ -323,6 +327,6 @@ export function WorkspaceView() {
           )}
         </div>
       </aside>
-    </div>
+    </main>
   );
 }

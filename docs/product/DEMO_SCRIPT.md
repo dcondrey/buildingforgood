@@ -69,8 +69,8 @@ and like-for-like block thresholds. Open **Optional attention-bias check**.
 
 > "In a matched-calendar reporting check, all downtown Get It Done rows rose
 > 40.9%, but Encampment rows rose 88.1% and top-level requests 96%. That is a
-> reporting-pattern shift, not a population estimate, and it never enters the
-> forecast or planner."
+> reporting-pattern shift, not a population estimate, and it is not an input
+> to the forecast or the planner."
 
 **Land:** A lower total is an observation, not an outcome claim.
 

@@ -7,8 +7,13 @@
  * unresolved provenance dressed up as a source — must be refused.
  */
 
+import { readFileSync, readdirSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
+import schema from "../../../../config/schema/organization-profile.v1.schema.json" with { type: "json" };
 import rural from "../../../../config/profiles/coldwater-valley-rural.v1.json" with { type: "json" };
 import sanDiego from "../../../../config/profiles/san-diego-downtown.v1.json" with { type: "json" };
 import {
@@ -23,12 +28,24 @@ function clone(): Record<string, unknown> {
   return JSON.parse(JSON.stringify(sanDiego)) as Record<string, unknown>;
 }
 
+const PROFILE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../config/profiles");
+
+/** Read from the directory, so a profile added later cannot ship unvalidated. */
+const SHIPPED_PROFILES = readdirSync(PROFILE_DIR)
+  .filter((name) => name.endsWith(".json"))
+  .sort()
+  .map((name) => ({
+    name,
+    document: JSON.parse(readFileSync(join(PROFILE_DIR, name), "utf8")) as unknown,
+  }));
+
 describe("the shipped example profiles", () => {
-  it("both validate with no errors", () => {
-    for (const profile of [sanDiego, rural]) {
-      const result = validateOrganizationProfile(profile);
-      expect(result.errors).toEqual([]);
-      expect(result.ok).toBe(true);
+  it("every profile in config/profiles validates with no errors", () => {
+    expect(SHIPPED_PROFILES.length).toBeGreaterThanOrEqual(2);
+    for (const { name, document } of SHIPPED_PROFILES) {
+      const result = validateOrganizationProfile(document);
+      expect(result.errors, name).toEqual([]);
+      expect(result.ok, name).toBe(true);
     }
   });
 
@@ -64,18 +81,15 @@ describe("the shipped example profiles", () => {
 });
 
 describe("a missing required field fails loudly and by name", () => {
-  const topLevel = [
-    "schema_version",
-    "profile_id",
-    "profile_status",
-    "last_updated",
-    "organization",
-    "observations",
-    "geography",
-    "operations",
-    "cost_assumptions",
-    "language_boundaries",
-  ];
+  // Read from the schema rather than hand-listed: a field added to
+  // `required` there is covered here the day it lands, and a hand-listed
+  // set silently stops covering new members.
+  const topLevel = schema.required;
+
+  it("takes its field list from the schema, not from a copy of it", () => {
+    expect(topLevel.length).toBeGreaterThan(0);
+    expect(topLevel.every((field) => field in sanDiego)).toBe(true);
+  });
 
   it.each(topLevel)("names `%s` when it is missing", (field) => {
     const document = clone();
@@ -101,13 +115,42 @@ describe("a missing required field fails loudly and by name", () => {
 
 describe("the invariants a profile cannot weaken", () => {
   it("rejects a complaint-shaped field anywhere in the document", () => {
-    const document = clone();
-    const operations = document.operations as Record<string, unknown>;
-    operations.complaint_volume_weight = 0.3;
-    const result = validateOrganizationProfile(document);
-    expect(result.ok).toBe(false);
-    const issue = result.errors.find((e) => e.field === "operations.complaint_volume_weight");
-    expect(issue?.message).toContain("not representable");
+    // "Anywhere" means every depth the walker can reach: the root, a nested
+    // block, a block two levels down, and an element of an array.
+    const placements: Array<[string, (document: Record<string, unknown>) => void]> = [
+      ["complaint_volume_weight", (d) => void (d.complaint_volume_weight = 0.3)],
+      [
+        "operations.complaint_volume_weight",
+        (d) => void ((d.operations as Record<string, unknown>).complaint_volume_weight = 0.3),
+      ],
+      [
+        "geography.adjacency.provenance.service_request_note",
+        (d) =>
+          void ((
+            (d.geography as Record<string, Record<string, unknown>>).adjacency.provenance as Record<
+              string,
+              unknown
+            >
+          ).service_request_note = "x"),
+      ],
+      [
+        "geography.area_list.areas[0].calls_311",
+        (d) =>
+          void ((
+            (d.geography as Record<string, Record<string, unknown>>).area_list.areas as Array<
+              Record<string, unknown>
+            >
+          )[0].calls_311 = 4),
+      ],
+    ];
+    for (const [field, place] of placements) {
+      const document = clone();
+      place(document);
+      const result = validateOrganizationProfile(document);
+      expect(result.ok, field).toBe(false);
+      const issue = result.errors.find((e) => e.field === field);
+      expect(issue?.message, field).toContain("not representable");
+    }
   });
 
   it("rejects a complaint field disguised as an area", () => {
@@ -119,10 +162,38 @@ describe("the invariants a profile cannot weaken", () => {
   });
 
   it("rejects any field the schema does not define", () => {
-    const document = clone();
-    document.person_records = [];
-    const result = validateOrganizationProfile(document);
-    expect(result.errors.some((e) => e.field === "person_records")).toBe(true);
+    // "Any field" includes the nested ones. A closed schema checked only at
+    // the root is a schema with an open interior.
+    const placements: Array<[string, (document: Record<string, unknown>) => void]> = [
+      ["person_records", (d) => void (d.person_records = [])],
+      [
+        "operations.mystery_knob",
+        (d) => void ((d.operations as Record<string, unknown>).mystery_knob = 1),
+      ],
+      [
+        "geography.area_list.mystery",
+        (d) =>
+          void ((d.geography as Record<string, Record<string, unknown>>).area_list.mystery = 1),
+      ],
+      [
+        "geography.area_list.areas[0].mystery",
+        (d) =>
+          void ((
+            (d.geography as Record<string, Record<string, unknown>>).area_list.areas as Array<
+              Record<string, unknown>
+            >
+          )[0].mystery = 1),
+      ],
+    ];
+    for (const [field, place] of placements) {
+      const document = clone();
+      place(document);
+      const result = validateOrganizationProfile(document);
+      expect(
+        result.errors.some((e) => e.field === field),
+        field,
+      ).toBe(true);
+    }
   });
 
   it("refuses to call provenance resolved without a named, versioned, dated source", () => {

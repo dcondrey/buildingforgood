@@ -224,7 +224,7 @@ document first.
 
 `pipeline/src/stillhere_pipeline/privacy.py` is the structural enforcement of
 the promise that nothing which could locate or identify a person reaches the
-deployment. It runs as step 3 of 3 in `./scripts/verify.sh`, after the
+deployment. It runs as the last step of `./scripts/verify.sh`, after the
 production build so it can see the real bundle, and again in
 `.github/workflows/deploy-pages.yml` against the exact bundle being published.
 A `BLOCK` finding exits non-zero and fails the build. `--require-bundle` turns
@@ -280,6 +280,120 @@ and an adopter should treat it as one.
 
 Also not enforced: recovery across files or across rollup levels. The scanner
 does not reason across files.
+
+### 5.3 What the residual exposure actually is, and what bounds it
+
+§5.2 and `SECURITY.md` say to assume a seventh hole exists. That is the right
+disclosure and it stays. It is not an unbounded one, and the size of it is
+what a general counsel needs. Everything below names the code it comes from.
+
+**The residual exposure is a small published count, not a record.**
+
+The scanner's small-cell rule is the one rule that depends on inference. It
+decides what is a person-count like this
+(`pipeline/src/stillhere_pipeline/privacy.py`):
+
+- An object enters *cell scope* if it, or anything above it on the path,
+  carries one of `CELL_CONTEXT_KEYS` — `month`, `period`, `date`, `yearmonth`,
+  `neighborhood`, `areaid`, `area`, `observations`. Scope then propagates to
+  every descendant unconditionally.
+- Inside cell scope, `_scan_counts` flags any integer `0 < v < min_cell`
+  (default 5) as a `BLOCK`, whatever the field is named.
+- Three things take a value back out of that reach. `CELL_NUMERIC_ALLOWLIST`
+  exempts about twenty structural names (`index`, `rank`, `weight`,
+  `version`, `year`, `revision`, `sortindex`, the temporal keys, and a few
+  planner constants). `is_non_person_metric` turns cell scope **off** for an
+  object carrying `activeblocks`, `rawobservationunits`, `grosschange`,
+  `allocatedhours`, `basehours`, or `variablehours`. And an affirmative
+  suppression marker (`is_suppressed`) exempts the cell and its nested
+  breakdowns.
+- Nothing on a path carrying no month/area/period key is in cell scope at all.
+
+So the concrete failure mode is a real area-month count of 1 to 4 that ships
+as a number because the object holding it names a resource metric, because its
+own field name collides with a structural exemption, or because no cell-context
+key sits above it. Two further limits, stated in §5.2 and repeated here because
+they belong in the same paragraph: the shipped `demo.v1.json` carries no
+`contract` block, so inference rather than a declared `count_fields` list
+governs the deployed artifact; and the scanner does not reason across files or
+across rollup levels, so a value withheld in one place and recoverable by
+subtraction from a coarser published rollup is outside what it can see.
+
+**Worst realistic case, named.**
+
+A published cell reads, for one of the six named areas and one calendar month,
+a value of 1, 2, 3, or 4 rather than `{"total": null, "suppressed": true}`. A
+reader learns that in that named neighborhood, in that named month, exactly
+that many people were observed on the street. Someone with local knowledge —
+an outreach worker, a property manager, a neighbor — may be able to attach
+that number to people they already know are there. The disclosure is
+confirmatory, not revelatory: it does not name anyone, place anyone on a
+block, put anyone on a date, or connect any two observations to the same
+person, because none of those things exist in the file to be leaked.
+
+**Why the aggregate-only architecture bounds it.**
+
+1. **There are no person-level rows to leak.** The pipeline aggregates before
+   it writes; the artifact has no concept of a person as an entity, and §7
+   forbids an adopter from supplying one. The largest thing that can escape is
+   a count.
+2. **The grain is area-month.** Six named areas, calendar month, no day, no
+   count date, no block, no tract, no coordinate, no address, no bounding
+   street (§3.1). Even a completely unsuppressed artifact answers "how many",
+   never "who", never "where within the area", never "which day".
+3. **Small cells are suppressed at a stated threshold.**
+   `SMALL_CELL_THRESHOLD = 5` in `pipeline/src/stillhere_pipeline/suppress.py`,
+   with the four branches in §4 — whole-row suppression on a small total, cell
+   suppression, a complementary partner so a lone suppressed cell is not
+   recoverable by arithmetic, and a feasibility escalation that suppresses the
+   whole row when the published numbers would pin a withheld value or its
+   multiset. The emitter, the scanner's `analyze_recoverability`, and
+   `docs/policy/small-cell-suppression.md` all derive from the same written
+   policy and must change together.
+4. **The scan runs fail-closed over the exact deployed bundle.** Step 4 of 4
+   in `./scripts/verify.sh`, after the production build so `app/dist` and its
+   source maps exist, with `--require-bundle` so a missing build is a failure
+   rather than a skipped check; and again in
+   `.github/workflows/deploy-pages.yml` against the exact bundle being
+   published. A `BLOCK` finding exits non-zero. Over-blocking is the accepted
+   error direction, and each rejection class has a negative fixture under
+   `tests/privacy/fixtures/fail/` — `small_cell.json`,
+   `small_cell_nested_by_type.json`, `record_identifier.json`,
+   `bare_coordinates.json`, `unlabelled_longitude.json`, `street_address.json`,
+   `point_geometry.json`, `raw_block_feature.json`,
+   `source_grain_382_blocks.json`, `block_keyed_counts.json` — that must keep
+   producing a blocking finding, so a rule that silently stops working fails
+   the build.
+
+The residual risk is therefore the difference between a suppressed small cell
+and a published one, at area-month grain, in a file that contains nothing
+finer. That is a real disclosure and it is a bounded one.
+
+**What an adopter should do about it.**
+
+1. **Keep the input rule.** The bound above holds because nothing person-level
+   is ever supplied (§7). A scanner hole matters in proportion to what was fed
+   in; that is the control an adopter holds directly and the only one that
+   changes the size of the exposure.
+2. **Publish counts where the scanner can see them.** Keep every count inside
+   an object that carries its own `month` and `area` keys, and publish
+   identifiers as strings — `"neighborhood": "barrio_logan"`, not an integer —
+   so an identifier is never mistaken for a count and a count is never missed
+   for lack of context.
+3. **Do not name a real count with a structural word.** `index`, `rank`,
+   `weight`, `revision`, `sort_index` and the temporal keys are exemptions. A
+   count named one of those is exempt by construction.
+4. **Treat a `BLOCK` as a stop.** Run `./scripts/verify.sh` on every deploy.
+   Never clear a finding by widening `CELL_NUMERIC_ALLOWLIST` or by adding a
+   suppression marker to a cell that is in fact published; a suppression
+   marker propagates to the whole cell including its breakdowns.
+5. **Read the artifact once by eye before the first publication.** Six areas
+   times the months you publish is small enough for a person to check, and a
+   person is the one reviewer no inference rule can fool.
+6. **Know the takedown path.** There is no backend: withdrawing a published
+   file means removing it from the host and rebuilding. `SECURITY.md` commits
+   to taking a confirmed live data leak down first and diagnosing second; an
+   adopter running their own deployment owns that step for their own site.
 
 ## 6. What an adopting organization must supply
 
@@ -382,7 +496,7 @@ only wording can violate this.
 **No service-capacity or eligibility claims.** The system holds no capacity
 data and no eligibility data, and §7 forbids supplying any.
 
-**311 complaint volume never enters forecasting or planning.** It measures
+**311 complaint volume is not a forecasting or planning input.** It measures
 reporting behavior, not need. Its only permitted uses are
 `source_disagreement_diagnostic` and `reporting_bias_diagnostic`; its excluded
 uses are `person_count`, `service_need`, `planning_load`, and
@@ -390,14 +504,37 @@ uses are `person_count`, `service_need`, `planning_load`, and
 `reporting_bias_diagnostic_used: false` in the planner constraints. The
 diagnostic is shown precisely so the exclusion can be audited.
 
-**Honest status on the enforcement of that last one**, finding F-1: the
-`assertNoComplaintSignal` guard lives on `app/src/domain/planner/planner.ts`,
-which is tree-shaken out of the bundle. The shipped path,
-`App.tsx` → `app/src/lib/planner.ts`, has no complaint guard. No
-complaint-shaped field reaches it today, so the invariant holds — by authorial
-discipline rather than by structure. An adopter evaluating this should read
-the invariant as "true and currently unprotected," and should treat moving the
-guard onto the shipped path as a prerequisite for their own deployment.
+**How far that refusal actually reaches, stated exactly.** The claim this
+project makes and will defend is narrower than the one it used to make:
+
+> Complaint volume cannot reach allocation without also corrupting the
+> published forecast interval, which is derived from checksummed inputs.
+
+**Not** "complaint volume cannot influence planning." An independent review
+executed that broader claim's counterexample: 311 counts written into
+`planner.allocations[].planning_load` reached the shipped allocator and
+materially re-ranked the plan, because every guard matched field *names* and a
+number carries no name. The claim was withdrawn rather than defended;
+`docs/project/DECISIONS.md` records the withdrawal and
+`docs/project/PHASE1_ADVERSARIAL.md` records the attacks.
+
+Three things are true today, and none of them is the broad claim. The planner
+input types cannot express a complaint-shaped field
+(`ExcludesComplaintSignal<T>`). `assertNoComplaintSignal` runs on the shipped
+path, `App.tsx` → `app/src/lib/planner.ts`, and rejects a complaint-shaped
+key anywhere in objects, arrays, `Map`s, and `Set`s. And every
+`planning_load` must declare a derivation from
+`PLANNING_LOAD_DERIVATIONS` (`pipeline/src/stillhere_pipeline/contracts.py`)
+that the validator recomputes arithmetically against a value already published
+elsewhere in the same artifact, so a load that does not reconcile is refused
+whatever it is called.
+
+What remains open, and an adopter should read it as open: rewriting
+`forecast.areas[].upper` to match a forged `planning_load` satisfies the
+reconciliation. That is the boundary the claim names — it moves the attack out
+of a hand-editable allocation row and into the forecast, which is produced by
+the pipeline from pinned, checksummed inputs. It is a harder place to smuggle
+a number into. It is not a place nothing can be smuggled into.
 
 ## 9. Retention
 
@@ -509,7 +646,9 @@ by a person, which is why they are written down.
 | Monitoring-lane exclusion | `data/monitoring/README.md`, update protocol rule 5 |
 | Refusals and scope | `public/generated/demo.v1.json` → `planner.not_in_scope`, `planner.constraints`, `scenario.claim_boundary`; `config/decision.v1.json` |
 | Known limitations, unvarnished | `docs/project/PHASE0_FINDINGS.md` findings F-1 through F-5 |
-| The gate itself | `./scripts/verify.sh` step 3 of 3; `.github/workflows/verify.yml`; `.github/workflows/deploy-pages.yml` |
+| The gate itself | `./scripts/verify.sh`, final step; `.github/workflows/verify.yml`; `.github/workflows/deploy-pages.yml` |
+| The complaint-volume refusal, in its actual narrow form | `docs/project/DECISIONS.md`; `pipeline/src/stillhere_pipeline/contracts.py` → `PLANNING_LOAD_DERIVATIONS`; `app/src/domain/planner/planner.ts` → `assertDeclaredPlanningLoad` |
+| Residual privacy exposure and what bounds it | §5.3 above; `docs/adoption/BRIEF.md`, "What the seventh scanner hole could actually cost you" |
 
 Run the boundary check yourself against any checkout:
 

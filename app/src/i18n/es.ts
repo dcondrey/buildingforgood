@@ -119,7 +119,7 @@ export const ES_MESSAGES: Catalogue = {
   "shareError.areaIdLowercase":
     "debe ser un identificador de área en minúsculas, como east_village",
   "shareError.reportVolume":
-    "se lee como volumen de reportes, que mide quién reporta y no quién está presente, y nunca entra en un plan",
+    "se lee como volumen de reportes, que mide quién reporta y no quién está presente; un enlace compartido no lleva ningún campo así, y ninguna carga de planificación puede derivarse de uno",
   "shareError.personOrPoint":
     "se lee como un campo a nivel de persona o de punto geográfico; un enlace lleva únicamente identificadores de área y horas",
   "shareError.object": "debe ser un objeto",
@@ -1118,4 +1118,10 @@ export const ES_MESSAGES: Catalogue = {
     "Ningún modelo generativo determina el resultado de la evidencia, el pronóstico ni la asignación. Los tres son reglas deterministas, y las mismas entradas producen la misma salida en cada ejecución.",
   "cards.aiUses":
     "Se usó un modelo generativo para lo siguiente, revisado en cada caso por una persona:",
+
+  /* ---- recursos de accesibilidad de la revisión WCAG 2.1 AA ------------- */
+  "app.skipToMain": "Saltar al contenido principal",
+  "map.provenance":
+    "Los límites son ilustrativos: contornos simplificados de una fuente que este proyecto no puede fijar ni verificar. Las formas se leen como un diagrama, no como geografía verificada.",
+  "guide.stepAnnounce": "Paso {step} de {total}: {title}",
 } as const;

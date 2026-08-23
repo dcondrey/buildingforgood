@@ -229,8 +229,15 @@ floor, and infeasibility visible.
 
 Complaint volume measures who reports, app access, and neighborhood reporting
 propensity—not the number or needs of unhoused people. Using it as demand would
-encode visibility and reporting bias into the allocation. We do use it in a
-separate diagnostic lane: all downtown Get It Done rows rose 9.2%, versus 50.7%
+encode visibility and reporting bias into the allocation. The claim we make
+about that exclusion is narrow, and deliberately so: complaint volume cannot
+reach allocation without also corrupting the published forecast interval, which
+is derived from checksummed inputs. The broader claim — that complaint volume
+cannot influence planning — was tested by an independent review, falsified, and
+withdrawn, because the guards matched field names and a number carries no name.
+Every `planning_load` now declares a derivation the artifact validator
+recomputes against a value already published elsewhere in the same document.
+We do use complaint data in a separate diagnostic lane: all downtown Get It Done rows rose 9.2%, versus 50.7%
 for Encampment rows and 54.8% for top-level parent requests; Encampment share
 rose from 41.0% to 56.6%. The diagnostic is visible and explicitly excluded from
 the forecast and planner. A matched-calendar August–January check is stronger:

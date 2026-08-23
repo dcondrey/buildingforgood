@@ -497,7 +497,27 @@ function scan(chunks: Chunk[], rules: Refusal[] = ALL_REFUSALS): Violation[] {
 }
 
 /* ------------------------------------------------------------------ *
- * 1. Complaint volume cannot influence planning load or allocation
+ * 1. A complaint-shaped field is refused, and planning load must reconcile
+ *    with the derivation it declares
+ *
+ * Read the boundary before the assertions. The claim these tests support is
+ * the narrow one recorded in `docs/project/DECISIONS.md`:
+ *
+ *   Complaint volume cannot reach allocation without also corrupting the
+ *   published forecast interval, which is derived from checksummed inputs.
+ *
+ * NOT "complaint volume cannot influence planning." That wider claim was
+ * tested, falsified, and withdrawn: 311 counts written into `planning_load`
+ * are a legally named, correctly typed, schema-legal number, and every guard
+ * below the derivation check matches field *names*, which a number does not
+ * have. An independent review executed it and re-ranked the shipped plan
+ * (`docs/project/PHASE1_ADVERSARIAL.md`, and finding F-7 in
+ * `docs/project/PHASE0_FINDINGS.md`).
+ *
+ * What holds the line is the arithmetic: attacks C and D below, and the
+ * `planning_load` derivation check in
+ * `pipeline/src/stillhere_pipeline/contracts.py`, which recomputes a declared
+ * derivation against a value already published elsewhere in the artifact.
  * ------------------------------------------------------------------ */
 
 const COMPLAINT_SHAPES: Array<[string, Record<string, unknown>]> = [
@@ -519,7 +539,7 @@ const POLICY: PlannerPolicy = {
   uncertainty_weight: 0.5,
 };
 
-describe("refusal: 311 complaint volume cannot influence planning load or allocation", () => {
+describe("refusal: a complaint-shaped field is refused, and planning load must reconcile with its declared derivation", () => {
   it("puts the guard on the path that actually ships", () => {
     // Finding F-1: the guarded planner was tree-shaken out of the bundle, so
     // the refusal held only over code no user could reach. Assert the
@@ -564,7 +584,7 @@ describe("refusal: 311 complaint volume cannot influence planning load or alloca
     expect(() => allocateHours(adjusted!.areas, 80, 8, true)).toThrow(PlannerInputError);
   });
 
-  it("makes complaint volume unrepresentable in both planner input types", () => {
+  it("makes a complaint-shaped field unrepresentable in both planner input types", () => {
     expect(PLANNING_AREA_EXCLUDES_COMPLAINT_SIGNAL).toBe(true);
     expect(AREA_PLANNING_INPUT_EXCLUDES_COMPLAINT_SIGNAL).toBe(true);
     // The compile-time proof above only binds declared keys, so pin the
@@ -817,6 +837,10 @@ const COMPLAINT_IDENTIFIER = /complaint|311|service_request|call_volume|report_v
  */
 const DECLARED_GUARD_NAMES = new Set([
   "assertNoComplaintSignal",
+  // The shared refusal vocabulary in `domain/vocabulary/refusedTerms.ts`,
+  // and the local alias each guard binds it to. One policy with several
+  // call sites, rather than a copy per guard.
+  "COMPLAINT_SIGNAL",
   "COMPLAINT_FIELD_PATTERN",
   "ComplaintShapedKey",
   "ComplaintShapedKeysOf",
@@ -846,7 +870,7 @@ describe("refusal: no complaint or 311 identifier is reachable from allocation c
     });
   }
 
-  it("no allocation module sorts or ranks areas by anything but a declared planning input", () => {
+  it("no allocation module declares a complaint, nuisance, or severity ranking helper", () => {
     for (const file of ALLOCATION_MODULES) {
       const { code } = partition(readFileSync(file, "utf8"));
       expect(code).not.toMatch(/sortBy(?:Complaint|Nuisance|Upset|Report)/i);
@@ -856,6 +880,11 @@ describe("refusal: no complaint or 311 identifier is reachable from allocation c
 
   it("neither planner exposes a rank, priority, or severity field", () => {
     const plan = buildPlan(domainAreas(), POLICY);
+    // The plan object itself, not only its rows: a plan-level `priority_order`
+    // would have passed a check that read the allocations alone.
+    for (const key of Object.keys(plan)) {
+      expect(key).not.toMatch(/rank|priority|severity|nuisance|complaint/i);
+    }
     for (const allocation of plan.allocations) {
       for (const key of Object.keys(allocation)) {
         expect(key).not.toMatch(/rank|priority|severity|nuisance|complaint/i);
@@ -936,6 +965,11 @@ describe("refusal: the four claims the product will not make", () => {
           "Complaint severity ranks the six neighborhoods.",
         ],
       };
+      // A refusal with no probe would make this test vacuous, which is the
+      // exact shape being audited out of this suite: assert the probes
+      // exist before asserting they are caught.
+      expect(probes[refusal], `no probe written for: ${refusal}`).toBeDefined();
+      expect((probes[refusal] ?? []).length).toBeGreaterThanOrEqual(3);
       for (const probe of probes[refusal] ?? []) {
         const violations = scan([{ where: "probe", text: probe, context: "" }]);
         expect(
@@ -1057,8 +1091,11 @@ describe("refusal: the four claims are refused in every language, not only Engli
     }
   });
 
-  for (const { refusal } of REFUSALS_ES) {
+  for (const { refusal, patterns } of REFUSALS_ES) {
     it(`catches a Spanish rewording of: ${refusal}`, () => {
+      expect(ES_PROBES[refusal], `no Spanish probe written for: ${refusal}`).toBeDefined();
+      expect((ES_PROBES[refusal] ?? []).length).toBeGreaterThanOrEqual(3);
+      expect(patterns.length).toBeGreaterThan(0);
       for (const probe of ES_PROBES[refusal] ?? []) {
         const violations = scan([{ where: "probe", text: probe, context: "" }], REFUSALS_ES);
         expect(
@@ -1185,7 +1222,7 @@ describe("refusal: the guards see containers and unnamed denominators", () => {
     ).not.toThrow();
   });
 
-  it("walks a Map or a Set for complaint volume", () => {
+  it("walks a Map or a Set for a complaint-shaped field", () => {
     expect(() => assertNoComplaintSignal(new Map([["complaint_count", 5]]), "probe")).toThrow();
     expect(() => assertNoComplaintSignal(new Set([{ complaint_count: 5 }]), "probe")).toThrow();
     expect(() =>

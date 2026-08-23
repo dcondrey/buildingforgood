@@ -12,6 +12,11 @@
  */
 
 import type { AreaCost, FloorMarginalCost, PlanCost } from "./types.ts";
+import {
+  declaredDenominator,
+  PERMITTED_DENOMINATORS,
+  PERSON_DENOMINATOR_PROSE,
+} from "../vocabulary/refusedTerms.ts";
 
 /** Fallback rate for the reference deployment, in `DEFAULT_RATE_CURRENCY`. */
 export const DEFAULT_LOADED_HOURLY_RATE = 45;
@@ -28,36 +33,14 @@ export const DEFAULT_RATE_CURRENCY = "USD";
  * on the actuals schema's own will-never-compute list) both passed, along with
  * `cost_per_bed`, `cost_per_case`, and `dollars_per_body`.
  */
-const PERMITTED_DENOMINATORS = new Set([
-  "hour",
-  "hours",
-  "staffhour",
-  "staffhours",
-  "area",
-  "areas",
-  "plan",
-  "plans",
-  "shift",
-  "shifts",
-]);
 
 /**
  * Keys shaped like a rate. Two forms, each requiring a real boundary before
  * "per" so ordinary words containing those letters — "hyperlink", "supervisor"
  * — are not read as rates.
  */
-const RATE_KEY_SNAKE = /[_-]per[_-]([A-Za-z_]+)$/i;
-const RATE_KEY_CAMEL = /[a-z]Per([A-Z][A-Za-z]*)$/;
 
 /** Prose that prices a person, for string values rather than key names. */
-const PERSON_DENOMINATOR_PROSE =
-  /\bper\s+(person|people|contact|client|individual|capita|head|resident|participant|sleeper|household|bed|case|enrollee|beneficiary|body|anyone|someone)\b/i;
-
-function denominatorOf(key: string): string | null {
-  const match = RATE_KEY_SNAKE.exec(key) ?? RATE_KEY_CAMEL.exec(key);
-  if (!match?.[1]) return null;
-  return match[1].replace(/[_-]/g, "").toLowerCase();
-}
 
 export class CostDenominatorError extends Error {
   constructor(message: string) {
@@ -75,7 +58,7 @@ export class CostDenominatorError extends Error {
  */
 export function assertNoPersonDenominator(value: unknown, where: string): void {
   const check = (key: string, path: string): void => {
-    const denominator = denominatorOf(key);
+    const denominator = declaredDenominator(key);
     if (denominator === null || PERMITTED_DENOMINATORS.has(denominator)) return;
     throw new CostDenominatorError(
       `${where}: "${path}${path ? "." : ""}${key}" declares a denominator of ` +

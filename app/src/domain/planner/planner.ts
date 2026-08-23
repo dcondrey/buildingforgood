@@ -25,6 +25,7 @@
  */
 
 import { isPermittedPlanningLoadDerivation, PERMITTED_PLANNING_LOAD_DERIVATIONS } from "./types.ts";
+import { COMPLAINT_SIGNAL } from "../vocabulary/refusedTerms.ts";
 
 import type {
   AreaAllocation,
@@ -35,7 +36,7 @@ import type {
 } from "./types.ts";
 
 /** Field names that must never reach the planner (C-01 finding R-03). */
-const COMPLAINT_FIELD_PATTERN = /complaint|311|service_request|call_volume|report_volume/i;
+const COMPLAINT_FIELD_PATTERN = COMPLAINT_SIGNAL;
 
 export class PlannerInputError extends Error {
   constructor(detail: string) {
@@ -50,6 +51,10 @@ export class PlannerInputError extends Error {
  * The planner types cannot express complaint volume, but artifact JSON is
  * untyped at the boundary. This is the check that keeps an extra field in a
  * generated file from becoming an allocation input by way of a spread.
+ *
+ * It reads names, so it is not a claim that complaint volume cannot influence
+ * a plan. `assertDeclaredPlanningLoad` below carries that weight, and even it
+ * supports only the narrow claim in docs/project/DECISIONS.md.
  */
 export function assertNoComplaintSignal(record: unknown, where: string): void {
   if (Array.isArray(record)) {

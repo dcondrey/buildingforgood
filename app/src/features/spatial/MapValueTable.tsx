@@ -11,20 +11,20 @@ export function MapValueTable({
   return (
     <details className="data-table-disclosure map-table-disclosure">
       <summary>{t("table.viewAsTable")}</summary>
-      <div className="table-scroll">
+      <div aria-label={caption} className="table-scroll" role="region" tabIndex={0}>
         <table>
           <caption>{caption}</caption>
           <thead>
             <tr>
-              <th>{t("table.thNeighborhood")}</th>
-              <th>{t("table.thValue")}</th>
-              <th>{t("table.thState")}</th>
+              <th scope="col">{t("table.thNeighborhood")}</th>
+              <th scope="col">{t("table.thValue")}</th>
+              <th scope="col">{t("table.thState")}</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
               <tr key={row.name}>
-                <th>{row.name}</th>
+                <th scope="row">{row.name}</th>
                 <td>{row.value}</td>
                 <td>{row.state}</td>
               </tr>

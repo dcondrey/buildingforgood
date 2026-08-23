@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { COMPLAINT_SIGNAL } from "../vocabulary/refusedTerms.ts";
 import { assertNoComplaintSignal, buildPlan, PlannerInputError, relativeLoad } from "./planner.ts";
 import type { AreaPlanningInput, PlannerPolicy } from "./types.ts";
 
@@ -43,7 +44,9 @@ describe("budget conservation", () => {
 
   it("conserves the budget at every feasible budget level", () => {
     // 6 areas x 6h floor + 4h continuity for east_village = 40h guaranteed.
-    for (let budget = 40; budget <= 400; budget += 7) {
+    // Every whole budget in the range, not every seventh: "every" in the
+    // name should mean every.
+    for (let budget = 40; budget <= 400; budget += 1) {
       const plan = buildPlan(SIX_AREAS, { ...POLICY, budget_hours: budget });
       expect(plan.status).toBe("planned");
       expect(plan.total_allocated_hours + plan.rounding_residue_hours).toBe(budget);
@@ -120,7 +123,13 @@ describe("infeasibility is declared, never absorbed", () => {
   });
 });
 
-describe("complaint volume cannot influence planning", () => {
+// The name of this block is the narrow claim, not the wide one. "Complaint
+// volume cannot influence planning" was tested, falsified, and withdrawn:
+// 311 counts written into `planning_load` are a legally named, correctly
+// typed number and no name-based guard can see them. See
+// `docs/project/DECISIONS.md`. What is asserted here is that a
+// complaint-SHAPED FIELD is refused.
+describe("a complaint-shaped field is refused on the domain planner", () => {
   it("rejects an area carrying a complaint field", () => {
     const contaminated = [
       { ...area("east_village", 150, 110), complaint_count: 900 },
@@ -132,18 +141,53 @@ describe("complaint volume cannot influence planning", () => {
     for (const key of ["complaints", "311_calls", "service_request_count", "call_volume"]) {
       expect(() => assertNoComplaintSignal({ [key]: 1 }, "area x")).toThrow(PlannerInputError);
     }
+    // "Every" is checked against the shared refusal vocabulary rather than a
+    // hand-listed four: a term added to COMPLAINT_SIGNAL but never wired into
+    // the walk shows up here instead of shipping unchecked, and a term added
+    // in a new language is covered the day it lands.
+    const tokens = COMPLAINT_SIGNAL.source.split("|").map((term) => term.replace(/\?/g, ""));
+    expect(tokens.length).toBeGreaterThanOrEqual(5);
+    for (const token of tokens) {
+      expect(() => assertNoComplaintSignal({ [token]: 1 }, "area x"), token).toThrow(
+        PlannerInputError,
+      );
+      expect(
+        () => assertNoComplaintSignal({ [`area_${token}_total`]: 1 }, "area x"),
+        token,
+      ).toThrow(PlannerInputError);
+    }
   });
 
-  it("produces an identical plan whatever the complaint picture is", () => {
-    // The proof of exclusion: complaint volume has no representation in the
-    // input type, so two areas differing only in real-world complaint volume
-    // are literally the same input. Load depends solely on forecast bounds.
+  it("refuses an undeclared complaint-shaped field and ignores an undeclared neutral one", () => {
+    // Complaint volume has no representation in the input type, so two areas
+    // differing only in real-world complaint volume are literally the same
+    // input. That is a statement about the type, not about what a number in
+    // `planning_load` can do — see the block comment above.
     const quiet = area("a", 100, 80);
     const loud = area("a", 100, 80);
     expect(relativeLoad(quiet, POLICY)).toBe(relativeLoad(loud, POLICY));
     expect(buildPlan([quiet, area("b", 50, 40)], POLICY)).toEqual(
       buildPlan([loud, area("b", 50, 40)], POLICY),
     );
+
+    // Identical inputs proving each other equal would pass with the guard
+    // deleted, so assert the two halves that actually carry the claim: a
+    // complaint-shaped field is refused outright, and an undeclared field
+    // that is not complaint-shaped changes nothing about the plan.
+    const baseline = buildPlan(SIX_AREAS, POLICY);
+    const withComplaints = SIX_AREAS.map(
+      (input) => ({ ...input, complaint_count: 900 }) as unknown as AreaPlanningInput,
+    );
+    expect(() => buildPlan(withComplaints, POLICY)).toThrow(PlannerInputError);
+    const withNeutralExtras = SIX_AREAS.map(
+      (input) =>
+        ({
+          ...input,
+          operator_note: "called in by a neighbor",
+          shift_index: 3,
+        }) as AreaPlanningInput,
+    );
+    expect(buildPlan(withNeutralExtras, POLICY)).toEqual(baseline);
   });
 });
 
@@ -255,10 +299,17 @@ describe("guarded versus unguarded comparison", () => {
 
 describe("explanations", () => {
   it("gives every included area a reason for its hours", () => {
-    const plan = buildPlan(SIX_AREAS, POLICY);
-    for (const a of plan.allocations.filter((x) => x.included && !x.locked)) {
-      expect(a.reasons.length).toBeGreaterThan(0);
-      expect(a.reasons.join(" ")).toMatch(/minimum-coverage floor/);
+    // Locked areas were outside this check while the name covered them.
+    // They carry a reason too; only the floor sentence is specific to the
+    // areas the planner actually computed.
+    for (const locks of [[], [{ area_id: "gaslamp", hours: 20 }]]) {
+      const plan = buildPlan(SIX_AREAS, POLICY, locks);
+      for (const a of plan.allocations.filter((x) => x.included)) {
+        expect(a.reasons.length, a.area_id).toBeGreaterThan(0);
+      }
+      for (const a of plan.allocations.filter((x) => x.included && !x.locked)) {
+        expect(a.reasons.join(" "), a.area_id).toMatch(/minimum-coverage floor/);
+      }
     }
   });
 
@@ -268,13 +319,28 @@ describe("explanations", () => {
   });
 
   it("never uses causal, enforcement, or individual-movement language", () => {
-    const plan = buildPlan(SIX_AREAS, POLICY);
-    const prose = [...plan.constraint_notes, ...plan.allocations.flatMap((a) => a.reasons)].join(
-      " ",
-    );
-    expect(prose).not.toMatch(
-      /\b(caused|because of|due to|sweep|enforce|cleared|moved to|relocat)/i,
-    );
+    // "Never" over every prose surface the planner emits — infeasible
+    // reasons included, which the one-plan version never read — and over
+    // every plan shape a coordinator can produce.
+    const shapes: Array<[string, () => ReturnType<typeof buildPlan>]> = [
+      ["default", () => buildPlan(SIX_AREAS, POLICY)],
+      ["infeasible", () => buildPlan(SIX_AREAS, { ...POLICY, budget_hours: 12 })],
+      ["locked", () => buildPlan(SIX_AREAS, POLICY, [{ area_id: "gaslamp", hours: 20 }])],
+      ["lock below floor", () => buildPlan(SIX_AREAS, POLICY, [{ area_id: "gaslamp", hours: 0 }])],
+      ["excess capacity", () => buildPlan(SIX_AREAS, { ...POLICY, budget_hours: 100_000 })],
+      ["zero load", () => buildPlan([area("a", 0), area("b", 0)], { ...POLICY, budget_hours: 30 })],
+    ];
+    for (const [name, make] of shapes) {
+      const plan = make();
+      const prose = [
+        ...plan.constraint_notes,
+        ...plan.infeasible_reasons,
+        ...plan.allocations.flatMap((a) => a.reasons),
+      ].join(" ");
+      expect(prose, name).not.toMatch(
+        /\b(caused|because of|due to|sweep|enforce|cleared|moved to|relocat)/i,
+      );
+    }
   });
 });
 

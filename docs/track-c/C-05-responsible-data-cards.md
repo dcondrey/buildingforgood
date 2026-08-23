@@ -56,7 +56,7 @@ Withholding a number is not enough on its own. If a published total and its publ
 
 **The coverage floor.** Every included area receives a minimum number of hours before anything is distributed by forecast. This is a minimum-coverage rule, not a claim that the result is fair or just. When the floor is consuming most of the budget, the interface says so, because a floor-driven plan and a forecast-driven plan look identical otherwise.
 
-**Complaint volume is not used.** 311 reports measure who reports: housing status, phone access, language, and enforcement attention. Routing outreach by complaint volume routes it toward complainants and away from less visible need. Complaint data cannot reach the planner, and that is enforced in the type system rather than by a check someone could delete.
+**Complaint volume is not used.** 311 reports measure who reports: housing status, phone access, language, and enforcement attention. Routing outreach by complaint volume routes it toward complainants and away from less visible need. No complaint-shaped field is representable in the planner's input type, and that is enforced in the type system rather than by a check someone could delete. The refusal is stated no wider than it holds: complaint volume cannot reach allocation without also corrupting the published forecast interval, which is derived from checksummed inputs (`docs/project/DECISIONS.md`).
 
 **A human owns this plan.** Assignments can be locked and overridden, changes survive recomputation, and the number of assignments set by a person is disclosed on the result.
 

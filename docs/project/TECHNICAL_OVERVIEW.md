@@ -78,8 +78,9 @@ Here SD encodes those measurement realities instead of smoothing them away.
   learned, optimal, or fair by itself.
 - **Reporting bias is tested, not fused away.** Get It Done is analyzed in a
   separate diagnostic lane with raw-versus-parent, intake-channel, overall-
-  platform, and placebo-category checks. It never enters the forecast or
-  planner.
+  platform, and placebo-category checks. It is not an input to the forecast or
+  the planner; "Responsible-data principles as product behavior" below states
+  how far that refusal is claimed to reach.
 
 ### Architecture
 
@@ -214,6 +215,10 @@ It may say:
 
 Complaint or 311 volume is intentionally excluded from forecasting and planning
 load: it measures reporting behavior, not people or need. Its aggregate
-diagnostic is visible precisely so judges can audit that boundary. Small counts
-and precise locations do not ship. A human can question, edit, lock, or reject
-every plan.
+diagnostic is visible precisely so judges can audit that boundary. The refusal
+is stated narrowly, because the broad version was falsified by an independent
+review and withdrawn: complaint volume cannot reach allocation without also
+corrupting the published forecast interval, which is derived from checksummed
+inputs. That is the claim to test; "complaint volume cannot influence planning"
+is not (`docs/project/DECISIONS.md`). Small counts and precise locations do not
+ship. A human can question, edit, lock, or reject every plan.

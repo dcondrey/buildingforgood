@@ -138,6 +138,20 @@ describe("aggregate spatial view (#13)", () => {
       return caption?.textContent?.includes("by neighborhood") ?? false;
     });
     expect(tables.length).toBe(2);
+    // Every table, not only the plan one: the name covers each schematic
+    // map, and a cell whose only content was a colour swatch would have
+    // passed while the other table was never read.
+    const COLOUR_ONLY = /^(?:red|green|amber|orange|yellow|blue|grey|gray|purple)$/i;
+    for (const table of tables) {
+      const cells = within(table).getAllByRole("cell");
+      expect(cells.length).toBeGreaterThan(0);
+      for (const cell of cells) {
+        const text = (cell.textContent ?? "").trim();
+        expect(text, table.querySelector("caption")?.textContent ?? "").not.toBe("");
+        expect(text).not.toMatch(COLOUR_ONLY);
+      }
+    }
+
     const planTable = tables.find((table) =>
       table.querySelector("caption")?.textContent?.includes("staff-hours"),
     );

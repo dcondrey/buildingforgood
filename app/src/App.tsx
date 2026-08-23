@@ -16,13 +16,22 @@ import { WorkspaceView } from "./features/workspace/WorkspaceView";
 
 function App() {
   const shell = useShellState();
-  const { disclosuresOpen, guideIndex, locale, projectorMode, view } = shell;
+  const { disclosuresOpen, guideIndex, guideSteps, locale, projectorMode, view } = shell;
   return (
     <ShellProvider value={shell}>
       <div className={`app-shell ${projectorMode ? "projector-mode" : ""}`}>
-        <a className="skip-link" href={view === "workspace" ? "#workspace" : "#drop-test"}>
+        {/* Two bypasses, both landing on an element that takes focus: the
+            decision the reader came for, and the whole main landmark for a
+            reader who does not want to be skipped past what precedes it. */}
+        <a className="skip-link" href={view === "workspace" ? "#main-content" : "#drop-test"}>
           {translate(locale, "app.skipToDecision")}
         </a>
+
+        {view === "story" && (
+          <a className="skip-link" href="#main-content">
+            {translate(locale, "app.skipToMain")}
+          </a>
+        )}
 
         <TopBar />
 
@@ -33,7 +42,7 @@ function App() {
         {view === "workspace" && <WorkspaceView />}
 
         {view === "story" && (
-          <main>
+          <main id="main-content" tabIndex={-1}>
             <HeroSection />
 
             <DropTestSection />
@@ -49,6 +58,20 @@ function App() {
         )}
 
         {guideIndex !== null && <GuidePanel />}
+
+        {/* The guide panel takes focus, which announces it. It is deliberately
+            not also a live region: that announced it twice and re-read the
+            whole panel on every step. This says only what changed, and it
+            stays mounted so the region exists before the text arrives. */}
+        <p className="sr-only" role="status">
+          {guideIndex === null
+            ? ""
+            : translate(locale, "guide.stepAnnounce", {
+                step: guideIndex + 1,
+                total: guideSteps.length,
+                title: guideSteps[guideIndex].title,
+              })}
+        </p>
       </div>
     </ShellProvider>
   );

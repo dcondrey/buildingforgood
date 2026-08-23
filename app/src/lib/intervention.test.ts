@@ -28,21 +28,26 @@ describe("applyIntervention", () => {
   });
 
   it("distributes shifted load to adjacent areas proportional to their load", () => {
-    const result = applyIntervention(areas, { targetAreaId: "east_village", displacedShare: 1 });
-    const neighborIds = AREA_ADJACENCY.east_village;
-    const weightTotal = neighborIds.reduce((sum, id) => sum + load(id), 0);
-    for (const id of neighborIds) {
-      expect(result?.loadDelta.get(id) ?? Number.NaN).toBeCloseTo(
-        load("east_village") * (load(id) / weightTotal),
-        6,
-      );
-    }
-    // Non-adjacent areas are untouched.
-    for (const area of areas) {
-      if (area.id === "east_village" || neighborIds.includes(area.id)) continue;
-      expect(result?.areas.find((entry) => entry.id === area.id)?.planningLoad).toBe(
-        area.planningLoad,
-      );
+    // Every area in the adjacency table, not only East Village: the name is
+    // a property of the distribution rule, not of one neighbourhood.
+    for (const targetId of Object.keys(AREA_ADJACENCY)) {
+      const result = applyIntervention(areas, { targetAreaId: targetId, displacedShare: 1 });
+      const neighborIds = AREA_ADJACENCY[targetId];
+      const weightTotal = neighborIds.reduce((sum, id) => sum + load(id), 0);
+      for (const id of neighborIds) {
+        expect(result?.loadDelta.get(id) ?? Number.NaN, `${targetId}->${id}`).toBeCloseTo(
+          load(targetId) * (load(id) / weightTotal),
+          6,
+        );
+      }
+      // Non-adjacent areas are untouched.
+      for (const area of areas) {
+        if (area.id === targetId || neighborIds.includes(area.id)) continue;
+        expect(
+          result?.areas.find((entry) => entry.id === area.id)?.planningLoad,
+          `${targetId}: ${area.id}`,
+        ).toBe(area.planningLoad);
+      }
     }
   });
 
@@ -66,8 +71,14 @@ describe("applyIntervention", () => {
   });
 
   it("never mutates its inputs", () => {
+    // "Never" across every target and every share the slider can produce,
+    // plus the unknown-target path that returns null.
     const snapshot = JSON.stringify(areas);
-    applyIntervention(areas, { targetAreaId: "city_center", displacedShare: 0.8 });
-    expect(JSON.stringify(areas)).toBe(snapshot);
+    for (const targetAreaId of [...Object.keys(AREA_ADJACENCY), "nowhere"]) {
+      for (const displacedShare of [-3, 0, 0.25, 0.8, 1, 1.7]) {
+        applyIntervention(areas, { targetAreaId, displacedShare });
+        expect(JSON.stringify(areas), `${targetAreaId}@${displacedShare}`).toBe(snapshot);
+      }
+    }
   });
 });

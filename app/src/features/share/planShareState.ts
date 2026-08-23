@@ -23,6 +23,7 @@
  */
 
 import { MAX_LOADED_HOURLY_RATE } from "../../domain/cost/index.ts";
+import { COMPLAINT_SIGNAL } from "../../domain/vocabulary/refusedTerms.ts";
 import { MAX_BUDGET_HOURS } from "../../lib/constants";
 
 export const PLAN_SHARE_VERSION = "1";
@@ -84,8 +85,7 @@ const AREA_ID_SHAPE = /^[a-z0-9]+(_[a-z0-9]+)*$/;
 const MAX_AREA_ID_LENGTH = 40;
 /* The two shapes that must never become an area identifier. Written as
  * patterns, not lists, so neither ever renders as user-facing copy. */
-const REPORT_VOLUME_TOKEN =
-  /(complaint|311|servicerequest|service_request|getitdone|callvolume|call_volume|reportsreceived|nuisance|hotline)/;
+const REPORT_VOLUME_TOKEN = COMPLAINT_SIGNAL;
 const PERSON_OR_POINT_SEGMENT =
   /^(id|lat|lon|lng|latitude|longitude|coord|coords|coordinates|geometry|block|blockid|parcel|parcelid|address|street|streetaddress|email|phone|ssn|dob|dateofbirth|name|firstname|lastname|fullname|person|personid|personname|client|clientid|clientname|patient|case|caseid|household|householdid|user|userid|uuid|guid)$/;
 
@@ -300,9 +300,29 @@ function readWhole(params: URLSearchParams, key: string, fallback: number | null
  * the link is harmless and a smuggled field is inert.
  */
 export function decodePlanShare(search: string): PlanShareState | null {
-  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  // Mail clients wrap a bare URL in angle brackets (RFC 3986 appendix C) and
+  // leave whitespace around a pasted one. Both damaged the `v` parameter
+  // specifically, so the link decoded as "no link at all" and the reader was
+  // handed a default plan in silence — the exact failure the refusal notice
+  // exists to prevent.
+  let raw = search.trim();
+  if (raw.startsWith("<") && raw.endsWith(">")) raw = raw.slice(1, -1).trim();
+  const params = new URLSearchParams(raw.startsWith("?") ? raw.slice(1) : raw);
   const version = single(params, "v");
-  if (version === null) return null;
+  if (version === null) {
+    // Absence of `v` means "this is not a share link". But if any other
+    // share parameter is present, the link was meant to carry a plan and
+    // arrived damaged, and saying nothing is what SH-1 was about.
+    const stray = SHARE_STATE_KEYS.filter((key) => params.has(key));
+    if (stray.length > 0) {
+      throw new PlanShareError(
+        "v",
+        `is missing, but the link still carries ${stray.join(", ")}. It looks like a shared ` +
+          "plan that was truncated or reformatted in transit",
+      );
+    }
+    return null;
+  }
   if (version !== PLAN_SHARE_VERSION) {
     throw new PlanShareError("v", `is version ${version}; this build reads version 1 links`);
   }

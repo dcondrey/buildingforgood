@@ -21,6 +21,8 @@ The contract forbids complaint volume from touching planning load, and C-01 find
 
 **Complaint volume is not representable in the planner input type.** A runtime guard can be deleted by a later edit; a missing field cannot be weighted by accident. `assertNoComplaintSignal` then guards the boundary where untyped artifact JSON crosses in, rejecting any key matching `complaint | 311 | service_request | call_volume | report_volume`. Three tests cover it, including one asserting that two areas differing only in real-world complaint volume are literally the same input.
 
+**Both checks read names, not values, and that bounds what this section may claim.** Complaint counts placed in `planning_load` pass both and re-rank the plan; an independent review executed it. The line the project defends is that complaint volume cannot reach allocation without also corrupting the published forecast interval, which is derived from checksummed inputs — enforced by the `planning_load` derivation check in `pipeline/src/stillhere_pipeline/contracts.py`, which recomputes a declared derivation arithmetically. The exclusion of 311 from the planner input type is real and is not that claim.
+
 ## Infeasibility
 
 When the budget cannot cover the guarantees, the planner returns `status: "infeasible"`, allocates nothing, and names the shortfall in hours with the three ways out (raise the budget, exclude an area, lower the floor). It never weakens a constraint to produce a number.
@@ -71,7 +73,7 @@ The planner test fixture documents itself as mirroring the contract, so it was u
 
 - [x] Allocations sum to the budget within the documented tolerance — tolerance is one increment, reported explicitly as `rounding_residue_hours`; tested across every feasible budget from 52h to 400h.
 - [x] No allocation is negative and the floor is met or the plan is marked infeasible.
-- [x] Tests demonstrate that 311 volume cannot affect planning load — three tests, plus type-level unrepresentability.
+- [x] Tests demonstrate that a complaint-shaped field is refused by the planner — three tests, plus type-level unrepresentability. They do not demonstrate that 311 volume cannot affect planning load; a value carrying no complaint-shaped name defeats both checks, which is why the artifact boundary now checks a declared derivation by arithmetic.
 - [x] Synthetic tests cover scarcity, excess capacity, rounding, uncertainty reserves, and infeasibility.
 
 Also delivered ahead of #15, because the planner computes them anyway: `unguarded_hours` per area (the guarded-versus-unguarded comparison), `unmet_hours` (what the floor redistributed away), and per-area `reasons` (the "Why this amount?" content). #15 becomes a rendering task rather than a second calculation.

@@ -6,6 +6,15 @@
  * reimplemented: a second copy of a safety check drifts into the weaker of
  * the two. See docs/project/PHASE0_FINDINGS.md finding F-1 for why this
  * import exists at all, and app/src/refusals.test.ts for what it must hold.
+ *
+ * The two checks below are not the same claim. The name check refuses a
+ * complaint-shaped field. The derivation check refuses a number whose stated
+ * origin does not reconcile with the artifact it claims to come from, which
+ * is the only one of the two that a complaint count under an innocent name
+ * fails. Together they support this and nothing wider: complaint volume
+ * cannot reach allocation without also corrupting the published forecast
+ * interval, which is derived from checksummed inputs
+ * (docs/project/DECISIONS.md).
  */
 
 import { assertDeclaredPlanningLoad, assertNoComplaintSignal } from "../domain/planner/planner.ts";

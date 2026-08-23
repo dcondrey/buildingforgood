@@ -158,7 +158,11 @@ and RTFH releases sit in a monitoring lane that never touches the model.
 **"Where does 311 data fit?"**
 As a bias diagnostic only. Complaints measure reporting behavior, not need —
 encampment reports rose 88% in a matched-calendar window while observations
-didn't. We show it precisely so its exclusion can be audited.
+didn't. We show it precisely so its exclusion can be audited. If pressed on how
+strong that exclusion is, give the exact claim: complaint volume cannot reach
+allocation without also corrupting the published forecast interval, which is
+derived from checksummed inputs. Do not say complaint volume cannot influence
+planning — a review falsified that and we withdrew it.
 
 **"What about privacy and misuse?"**
 Aggregate places only. No person records, no block geometry ships, a

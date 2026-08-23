@@ -11,6 +11,18 @@
  * be weighted by accident. The exclusion is therefore enforced by the type,
  * and `assertNoComplaintSignal` guards the boundary where untyped artifact
  * JSON crosses into the planner.
+ *
+ * **Both of those match field names, so neither is the guarantee.** Complaint
+ * counts placed in `planning_load` carry no complaint-shaped name and defeat
+ * both; that was executed, not theorised (docs/project/PHASE1_ADVERSARIAL.md,
+ * attacks C and D). What this file may claim, and what the project defends,
+ * is narrower: complaint volume cannot reach allocation without also
+ * corrupting the published forecast interval, which is derived from
+ * checksummed inputs. That line is held by
+ * `PERMITTED_PLANNING_LOAD_DERIVATIONS` below and the reconciliation in
+ * `pipeline/src/stillhere_pipeline/contracts.py`, not by the name checks.
+ * Do not restate this as "complaint volume cannot influence planning"; see
+ * docs/project/DECISIONS.md.
  */
 
 /** The three limited conclusions the drop test is allowed to reach. */
@@ -120,7 +132,19 @@ export type ComplaintShapedKey<K extends string> =
             ? true
             : Lowercase<K> extends `${string}nuisance${string}`
               ? true
-              : false;
+              : Lowercase<K> extends `${string}hotline${string}`
+                ? true
+                : Lowercase<K> extends `${string}queja${string}`
+                  ? true
+                  : Lowercase<K> extends `${string}denuncia${string}`
+                    ? true
+                    : Lowercase<K> extends `${string}reportes_recibidos${string}`
+                      ? true
+                      : Lowercase<K> extends `${string}linea_de_atencion${string}`
+                        ? true
+                        : Lowercase<K> extends `${string}molestia${string}`
+                          ? true
+                          : false;
 
 /** The complaint-shaped keys of `T`, or `never` when it has none. */
 export type ComplaintShapedKeysOf<T> = {

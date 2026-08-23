@@ -112,7 +112,7 @@ export const EN_MESSAGES = {
   "shareError.areaIdLength": "must be 1 to {max} characters",
   "shareError.areaIdLowercase": "must be a lowercase area id such as east_village",
   "shareError.reportVolume":
-    "reads as report volume, which measures who reports rather than who is present and never enters a plan",
+    "reads as report volume, which measures who reports rather than who is present; a shared link carries no such field, and no planning load may be derived from one",
   "shareError.personOrPoint":
     "reads as a person-level or point-location field; a link carries area identifiers and hours only",
   "shareError.object": "must be an object",
@@ -1082,6 +1082,12 @@ export const EN_MESSAGES = {
   "cards.aiBody":
     "No generative model determines the evidence result, the forecast, or the allocation. All three are deterministic rules, and the same inputs produce the same output every run.",
   "cards.aiUses": "A generative model was used for the following, each reviewed by a person:",
+
+  /* ---- accessibility affordances added in the WCAG 2.1 AA pass ---------- */
+  "app.skipToMain": "Skip to main content",
+  "map.provenance":
+    "Boundaries are illustrative: simplified outlines from a source this project cannot pin or verify. Read the shapes as a diagram, not as verified geography.",
+  "guide.stepAnnounce": "Step {step} of {total}: {title}",
 } as const;
 
 export type MessageKey = keyof typeof EN_MESSAGES;

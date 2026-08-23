@@ -10,6 +10,7 @@
 
 import { describe, expect, it } from "vitest";
 
+import schema from "../../../../config/schema/actuals.v1.schema.json" with { type: "json" };
 import {
   ActualsError,
   BASELINE_WILL_NEVER_COMPUTE,
@@ -108,16 +109,15 @@ describe("a well-formed actuals file", () => {
 });
 
 describe("a missing required field fails loudly and by name", () => {
-  const topLevel = [
-    "schema_version",
-    "profile_id",
-    "geography_version",
-    "reporting",
-    "engagement_measure",
-    "contract",
-    "area_months",
-    "intended_analysis",
-  ];
+  // Read from the schema rather than hand-listed: a field added to
+  // `required` there is covered here the day it lands, and a hand-listed
+  // set silently stops covering new members.
+  const topLevel = schema.required;
+
+  it("takes its field list from the schema, not from a copy of it", () => {
+    expect(topLevel.length).toBeGreaterThan(0);
+    expect(topLevel.every((field) => field in VALID)).toBe(true);
+  });
 
   it.each(topLevel)("names `%s` when it is missing", (field) => {
     const document = clone();
@@ -186,12 +186,25 @@ describe("the suppression policy applies exactly as it does to observations", ()
 
 describe("the invariants an actuals file cannot weaken", () => {
   it("rejects a person-level identifier anywhere in the document", () => {
-    const document = clone();
-    rows(document)[0].client_id = "44913" as unknown as Record<string, unknown>;
-    const result = validateActuals(document);
-    expect(result.ok).toBe(false);
-    const issue = result.errors.find((e) => e.field === "area_months[0].client_id");
-    expect(issue?.message).toContain("not representable");
+    // "Anywhere" means every depth the walker reaches: the root, a nested
+    // block, an array element, and a block inside an array element.
+    const placements: Array<[string, (document: Record<string, unknown>) => void]> = [
+      ["client_id", (d) => void (d.client_id = "44913")],
+      [
+        "reporting.client_name",
+        (d) => void ((d.reporting as Record<string, unknown>).client_name = "x"),
+      ],
+      ["area_months[0].client_id", (d) => void (rows(d)[0].client_id = "44913" as never)],
+      ["area_months[0].hours.person_id", (d) => void (rows(d)[0].hours.person_id = "x")],
+    ];
+    for (const [field, place] of placements) {
+      const document = clone();
+      place(document);
+      const result = validateActuals(document);
+      expect(result.ok, field).toBe(false);
+      const issue = result.errors.find((e) => e.field === field);
+      expect(issue?.message, field).toContain("not representable");
+    }
   });
 
   it("rejects a street address hidden in a free-text note", () => {
@@ -202,9 +215,15 @@ describe("the invariants an actuals file cannot weaken", () => {
   });
 
   it("rejects a complaint-shaped field, and a complaint measure in disguise", () => {
-    const withField = clone();
-    rows(withField)[0].complaint_count = 12 as never;
-    expect(validateActuals(withField).ok).toBe(false);
+    for (const place of [
+      (d: Record<string, unknown>) => void (d.complaint_count = 12),
+      (d: Record<string, unknown>) => void (rows(d)[0].complaint_count = 12 as never),
+      (d: Record<string, unknown>) => void (rows(d)[0].hours.calls_311 = 12),
+    ]) {
+      const withField = clone();
+      place(withField);
+      expect(validateActuals(withField).ok).toBe(false);
+    }
 
     const withMeasure = clone();
     (withMeasure.engagement_measure as Record<string, unknown>).definition =
@@ -214,9 +233,21 @@ describe("the invariants an actuals file cannot weaken", () => {
   });
 
   it("rejects any field the schema does not define", () => {
-    const document = clone();
-    document.encounters = [];
-    expect(validateActuals(document).errors.some((e) => e.field === "encounters")).toBe(true);
+    // "Any field" includes the nested ones. A closed schema checked only at
+    // the root is a schema with an open interior.
+    const placements: Array<[string, (document: Record<string, unknown>) => void]> = [
+      ["encounters", (d) => void (d.encounters = [])],
+      ["reporting.mystery", (d) => void ((d.reporting as Record<string, unknown>).mystery = 1)],
+      ["area_months[0].hours.mystery", (d) => void (rows(d)[0].hours.mystery = 1)],
+    ];
+    for (const [field, place] of placements) {
+      const document = clone();
+      place(document);
+      expect(
+        validateActuals(document).errors.some((e) => e.field === field),
+        field,
+      ).toBe(true);
+    }
   });
 
   it("refuses to let an adopter delete a baseline exclusion", () => {

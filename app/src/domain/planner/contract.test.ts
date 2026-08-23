@@ -43,16 +43,38 @@ function areasFromContract(displacementCount: number): AreaPlanningInput[] {
 
 describe("the shipped contract", () => {
   it("defines every value the planner reads", () => {
-    expect(planner.minimum_coverage_floor.value).toBeGreaterThan(0);
-    expect(planner.uncertainty_policy.uncertainty_weight).toBeGreaterThanOrEqual(0);
-    expect(planner.time_increment.value).toBeGreaterThan(0);
-    expect(planner.possible_displacement_continuity_reserve.value).toBeGreaterThanOrEqual(0);
+    // The policy object is what the planner reads, so read it back rather
+    // than naming four of its fields: a policy field the contract stops
+    // supplying arrives here as `undefined` instead of passing unnoticed.
+    const policy = policyFromContract();
+    const keys = Object.keys(policy) as Array<keyof PlannerPolicy>;
+    expect(keys.length).toBeGreaterThanOrEqual(5);
+    for (const key of keys) {
+      expect(Number.isFinite(policy[key]), key).toBe(true);
+      expect(policy[key], key).toBeGreaterThanOrEqual(0);
+    }
+    expect(policy.minimum_coverage_floor_hours).toBeGreaterThan(0);
+    expect(policy.time_increment_hours).toBeGreaterThan(0);
   });
 
   it("carries no unresolved planner field", () => {
-    expect(planner.minimum_coverage_floor.status).toBe("fixed");
-    expect(planner.uncertainty_policy.status).toBe("fixed");
-    expect(planner.travel_burden_policy.status).toBe("fixed");
+    // Every `status` anywhere under `planner`, found by walking the block —
+    // three named fields left the other three unchecked.
+    const statuses: Array<[string, unknown]> = [];
+    const walk = (node: unknown, path: string): void => {
+      if (Array.isArray(node)) {
+        node.forEach((item, index) => walk(item, `${path}[${index}]`));
+        return;
+      }
+      if (typeof node !== "object" || node === null) return;
+      for (const [key, value] of Object.entries(node)) {
+        if (key === "status") statuses.push([`${path}.status`, value]);
+        else walk(value, `${path}.${key}`);
+      }
+    };
+    walk(planner, "planner");
+    expect(statuses.length).toBeGreaterThanOrEqual(3);
+    for (const [where, status] of statuses) expect(status, where).toBe("fixed");
   });
 
   it("no longer lists a Track C release blocker", () => {

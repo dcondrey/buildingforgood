@@ -8,6 +8,7 @@ export function TopBar() {
   const {
     beginGuide,
     budget,
+    budgetValid,
     data,
     deployment,
     disclosuresOpen,
@@ -21,7 +22,7 @@ export function TopBar() {
   } = useShell();
   const { t, locale, setLocale } = useTranslation();
   return (
-    <header className="topbar" id="main-content">
+    <header className="topbar">
       <div className="brand-lockup">
         <div aria-hidden="true" className="brand-mark">
           SH
@@ -39,12 +40,18 @@ export function TopBar() {
           <strong>{data.scenario.decisionHorizon}</strong>
         </div>
         <CurrencyBadge />
+        {/* The accessible name is the visible label, not a second wording of
+            it (WCAG 2.5.3): aria-labelledby points at the text on screen so a
+            voice-control user can say what they can read. */}
         <label className="budget-control" htmlFor="budget-hours">
-          <span className="eyebrow">{t("topbar.availableCapacity")}</span>
+          <span className="eyebrow" id="budget-label">
+            {t("topbar.availableStaffHours")}
+          </span>
           <span className="budget-input-wrap">
             <input
-              aria-label={t("topbar.availableStaffHours")}
               aria-describedby="budget-help"
+              aria-invalid={!budgetValid}
+              aria-labelledby="budget-label"
               id="budget-hours"
               inputMode="numeric"
               max={deployment.maxBudget}
@@ -62,6 +69,7 @@ export function TopBar() {
         </label>
         <div aria-label={t("topbar.view")} className="view-toggle" role="group">
           <button
+            aria-controls="main-content"
             aria-pressed={view === "story"}
             className={view === "story" ? "active" : ""}
             onClick={() => switchView("story")}
@@ -70,6 +78,7 @@ export function TopBar() {
             {t("topbar.viewStory")}
           </button>
           <button
+            aria-controls="main-content"
             aria-pressed={view === "workspace"}
             className={view === "workspace" ? "active" : ""}
             onClick={() => switchView("workspace")}

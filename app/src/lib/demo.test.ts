@@ -278,8 +278,15 @@ describe("generated demo adapter", () => {
     delete incompleteReporting.reporting_bias.comparison.encampment_raw.percent_change;
     expect(adaptDemoV1(incompleteReporting)?.reportingBias).toBeUndefined();
 
-    const incompleteRobustness = structuredClone(artifact);
-    delete incompleteRobustness.evidence.robustness.count_day_weather.dates[0].precipitation_inches;
-    expect(adaptDemoV1(incompleteRobustness)?.robustness).toBeUndefined();
+    const incompleteWeather = structuredClone(artifact);
+    delete incompleteWeather.evidence.robustness.count_day_weather.dates[0].precipitation_inches;
+    expect(adaptDemoV1(incompleteWeather)?.robustness).toBeUndefined();
+
+    // Both halves of the robustness block, not only the weather one: the
+    // name is plural and the parking half was never exercised.
+    const incompleteParking = structuredClone(artifact);
+    delete incompleteParking.evidence.robustness.parking_exposure.comparison.fixed_cohort
+      .percent_change;
+    expect(adaptDemoV1(incompleteParking)?.robustness).toBeUndefined();
   });
 });

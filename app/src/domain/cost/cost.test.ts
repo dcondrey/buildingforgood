@@ -24,11 +24,7 @@ import {
   floorCostSentence,
   summarizePlanCost,
 } from "./index.ts";
-import {
-  AREA_COST_EXCLUDES_PERSON_DENOMINATOR,
-  FLOOR_MARGINAL_COST_EXCLUDES_PERSON_DENOMINATOR,
-  PLAN_COST_EXCLUDES_PERSON_DENOMINATOR,
-} from "./types.ts";
+import * as costTypes from "./types.ts";
 
 const SRC = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -107,9 +103,19 @@ describe("marginal cost of the continuity floor", () => {
 
 describe("refusal: no cost figure is divided by a human being", () => {
   it("makes a person denominator unrepresentable in every cost type", () => {
-    expect(AREA_COST_EXCLUDES_PERSON_DENOMINATOR).toBe(true);
-    expect(PLAN_COST_EXCLUDES_PERSON_DENOMINATOR).toBe(true);
-    expect(FLOOR_MARGINAL_COST_EXCLUDES_PERSON_DENOMINATOR).toBe(true);
+    // Derived from the module rather than hand-listed: a cost type added
+    // later without its compile-time proof fails here instead of shipping
+    // unguarded. `ExcludesPersonDenominator<T>` is `never` when T can price
+    // a person, so the constant does not compile at all in that case; this
+    // asserts the constant exists for every interface the module declares.
+    const source = readFileSync(join(SRC, "domain/cost/types.ts"), "utf8");
+    const interfaces = [...source.matchAll(/^export interface (\w+)/gm)].map((m) => m[1] ?? "");
+    expect(interfaces.length).toBeGreaterThanOrEqual(3);
+    const guards = costTypes as unknown as Record<string, unknown>;
+    for (const name of interfaces) {
+      const constant = `${name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toUpperCase()}_EXCLUDES_PERSON_DENOMINATOR`;
+      expect(guards[constant], constant).toBe(true);
+    }
   });
 
   for (const shape of [
@@ -132,6 +138,17 @@ describe("refusal: no cost figure is divided by a human being", () => {
       unmetHoursByArea: new Map(),
       rate: 45,
     });
+    // The property, over the whole object at every depth, before the key
+    // pins below — which are a snapshot of one level and cannot see a
+    // per-person field added inside `byArea` or `floor`.
+    expect(() => assertNoPersonDenominator(cost, "summarizePlanCost output")).not.toThrow();
+    expect(Object.keys(cost.floor).sort()).toEqual([
+      "cost",
+      "hours",
+      "topLoadAreaHours",
+      "topLoadAreaId",
+      "topLoadAreaLabel",
+    ]);
     expect(Object.keys(cost).sort()).toEqual([
       "byArea",
       "currency",
@@ -145,13 +162,46 @@ describe("refusal: no cost figure is divided by a human being", () => {
 });
 
 describe("refusal: no cost value reaches the allocator", () => {
-  const PLANNER_FILES = ["lib/planner.ts", "domain/planner/planner.ts", "domain/planner/types.ts"];
+  /**
+   * Derived, not hand-listed: everything under `domain/planner/`, plus any
+   * module anywhere that exports an allocation entry point. A new allocator
+   * is in scope the day it is written, which a fixed list of three paths
+   * would not have been.
+   */
+  const PLANNER_FILES: string[] = (() => {
+    const found: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir)) {
+        const path = join(dir, entry);
+        if (statSync(path).isDirectory()) {
+          walk(path);
+          continue;
+        }
+        if (!/\.tsx?$/.test(entry) || /\.test\.tsx?$/.test(entry)) continue;
+        const relative = path.slice(SRC.length + 1);
+        if (
+          relative.startsWith("domain/planner/") ||
+          /export\s+function\s+(?:allocateHours|buildPlan)\b/.test(readFileSync(path, "utf8"))
+        ) {
+          found.push(relative);
+        }
+      }
+    };
+    walk(SRC);
+    return found.sort();
+  })();
+
+  it("finds every allocating module rather than trusting a fixed list", () => {
+    expect(PLANNER_FILES).toContain("lib/planner.ts");
+    expect(PLANNER_FILES).toContain("domain/planner/planner.ts");
+    expect(PLANNER_FILES).toContain("domain/planner/types.ts");
+  });
 
   it("keeps the cost layer out of every allocating module", () => {
     for (const file of PLANNER_FILES) {
       const source = readFileSync(join(SRC, file), "utf8");
-      expect(source).not.toMatch(/from\s+"[^"]*\/cost[/"]/);
-      expect(source).not.toMatch(/\b(?:rate|currency|dollar|usd)\b/i);
+      expect(source, file).not.toMatch(/from\s+"[^"]*\/cost[/"]/);
+      expect(source, file).not.toMatch(/\b(?:rate|currency|dollar|usd)\b/i);
     }
   });
 

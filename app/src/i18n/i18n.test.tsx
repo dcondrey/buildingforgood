@@ -69,9 +69,27 @@ describe("the catalogue carries every number into every language", () => {
   }
 
   it("never emits an unresolved placeholder for a message it was given values for", () => {
+    // Every message in every catalogue, not one sample key: an unresolved
+    // hole reads as `{hours}` on screen and there is nothing in the type
+    // system that stops one being introduced.
+    const unresolved: string[] = [];
+    for (const locale of LOCALES) {
+      const catalogue = CATALOGUES[locale] as Record<string, string>;
+      for (const [key, message] of Object.entries(catalogue)) {
+        const params: Record<string, string | number> = {};
+        for (const name of holes(message)) {
+          params[name] = name === "count" || name === "countedAreas" ? 4 : `<${name}>`;
+        }
+        const rendered = translate(locale, key as keyof (typeof CATALOGUES)["en"], params);
+        if (new RegExp(PLACEHOLDER.source).test(rendered)) {
+          unresolved.push(`${locale}/${key}: ${rendered}`);
+        }
+      }
+    }
+    expect(unresolved).toEqual([]);
+
     for (const locale of LOCALES) {
       const rendered = translate(locale, "planner.title", { hours: 80 });
-      expect(rendered, locale).not.toMatch(PLACEHOLDER);
       expect(rendered, locale).toContain("80");
     }
   });

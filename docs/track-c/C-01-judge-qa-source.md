@@ -51,7 +51,9 @@ Do not accept the word. The honest answer is that it is not a fairness claim.
 
 311 measures who reports: housing status, phone access, language, and enforcement attention. Routing outreach by complaint volume sends staff toward complainants and away from less visible need.
 
-**It cannot reach the planner.** Complaint volume has no representation in the planner's input type, so it cannot be weighted by accident, and a guard recursively rejects any complaint-shaped field anywhere in artifact JSON. 311 is used only as a disagreement diagnostic. Five tests cover this.
+**It is not a planner input, and the claim about that is deliberately narrow.** Complaint volume has no representation in the planner's input type, so it cannot be weighted by accident, and a guard recursively rejects any complaint-shaped field anywhere in artifact JSON. 311 is used only as a disagreement diagnostic. Five tests cover this.
+
+Both of those checks match field *names*, and a number carries no name. An independent review wrote 311 counts into `planning_load` and re-ranked the shipped plan. The answer to give now is the one the project will defend: **complaint volume cannot reach allocation without also corrupting the published forecast interval, which is derived from checksummed inputs** — because every `planning_load` must declare a derivation the validator recomputes against a value already published elsewhere in the artifact. Do not say "complaint volume cannot influence planning." That version was tested, falsified, and withdrawn (`docs/project/DECISIONS.md`).
 
 ## "Can you tell where people went?"
 

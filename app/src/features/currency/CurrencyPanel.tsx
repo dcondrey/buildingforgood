@@ -20,6 +20,12 @@ export function CurrencyPanel() {
   const currency = data.currency;
   const excluded = currency?.excluded ?? null;
   const stale = currency?.status === "stale";
+  const excludedTableCaption = excluded
+    ? t("currency.tableCaption", {
+        uses: list(excluded.excludedFrom.map((token) => readableToken(t, token))),
+        unit: readableToken(t, excluded.unit),
+      })
+    : "";
   return (
     <section aria-labelledby="currency-title" className="currency-panel" id="currency">
       <div className="currency-head">
@@ -89,22 +95,22 @@ export function CurrencyPanel() {
               <span>{t("currency.viewRows", { count: excluded.rows.length })}</span>
               <small>{excluded.months.join(" · ")}</small>
             </summary>
-            <div className="table-scroll">
+            <div
+              aria-label={excludedTableCaption}
+              className="table-scroll"
+              role="region"
+              tabIndex={0}
+            >
               <table>
-                <caption>
-                  {t("currency.tableCaption", {
-                    uses: list(excluded.excludedFrom.map((token) => readableToken(t, token))),
-                    unit: readableToken(t, excluded.unit),
-                  })}
-                </caption>
+                <caption>{excludedTableCaption}</caption>
                 <thead>
                   <tr>
-                    <th>{t("currency.thMonth")}</th>
-                    <th>{t("currency.thArea")}</th>
-                    <th>{t("currency.thSeries")}</th>
-                    <th>{t("currency.thValue")}</th>
-                    <th>{t("currency.thReportedAs")}</th>
-                    <th>{t("currency.thModelInput")}</th>
+                    <th scope="col">{t("currency.thMonth")}</th>
+                    <th scope="col">{t("currency.thArea")}</th>
+                    <th scope="col">{t("currency.thSeries")}</th>
+                    <th scope="col">{t("currency.thValue")}</th>
+                    <th scope="col">{t("currency.thReportedAs")}</th>
+                    <th scope="col">{t("currency.thModelInput")}</th>
                   </tr>
                 </thead>
                 <tbody>

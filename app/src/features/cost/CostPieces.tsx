@@ -61,20 +61,25 @@ export function PlanCostSummary() {
         })}
         <details className="data-table-disclosure">
           <summary>{t("cost.tableSummary")}</summary>
-          <div className="table-scroll">
+          <div
+            aria-label={t("cost.tableCaption")}
+            className="table-scroll"
+            role="region"
+            tabIndex={0}
+          >
             <table>
               <caption>{t("cost.tableCaption")}</caption>
               <thead>
                 <tr>
-                  <th>{t("cost.thNeighborhood")}</th>
-                  <th>{t("cost.thPlannedHours")}</th>
-                  <th>{t("cost.thAssumedCost")}</th>
+                  <th scope="col">{t("cost.thNeighborhood")}</th>
+                  <th scope="col">{t("cost.thPlannedHours")}</th>
+                  <th scope="col">{t("cost.thAssumedCost")}</th>
                 </tr>
               </thead>
               <tbody>
                 {planCost.byArea.map((row) => (
                   <tr key={row.areaId}>
-                    <th>{row.label}</th>
+                    <th scope="row">{row.label}</th>
                     <td>{t("cost.hoursValue", { hours: row.hours })}</td>
                     <td>{money(row.cost, planCost.currency)}</td>
                   </tr>

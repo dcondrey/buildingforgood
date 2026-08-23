@@ -1200,16 +1200,49 @@ main {
   grid-template-rows: repeat(3, 3.3rem);
   margin-top: 1.25rem;
 }
-.area-map-svg {
+.area-map-frame {
   background: linear-gradient(135deg, rgba(110, 195, 202, 0.08), transparent 72%);
   border: 1px solid var(--line);
   border-radius: 10px;
-  display: block;
-  height: auto;
   margin-top: 1.25rem;
-  overflow: visible;
   padding: 0.45rem;
   width: 100%;
+}
+.area-map-plot {
+  position: relative;
+}
+.area-map-svg {
+  display: block;
+  height: auto;
+  overflow: visible;
+  width: 100%;
+}
+/* The accessible interactive layer. Real buttons, so keyboard reach never
+   depends on tabindex on an SVG <g>; pointer events pass through to the
+   polygon underneath so the visible shape stays the mouse target. */
+.area-map-controls {
+  inset: 0;
+  position: absolute;
+}
+.area-map-control {
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  color: inherit;
+  height: 15%;
+  padding: 0;
+  pointer-events: none;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 22%;
+}
+.area-map-provenance {
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  line-height: 1.5;
+  margin: 0.5rem 0 0;
+  padding: 0 0.15rem;
 }
 .map-area {
   transition:
@@ -1313,7 +1346,8 @@ main {
   cursor: pointer;
   outline: none;
 }
-.area-map-interactive .map-area:focus-visible path {
+/* Focus lives on the overlay button; the polygon it names lights up with it. */
+.map-area.map-focused path {
   stroke: var(--amber-bright);
   stroke-width: 1.6;
 }
@@ -1335,7 +1369,7 @@ main {
   grid-template-columns: minmax(0, 1.15fr) minmax(15rem, 0.85fr);
   margin-top: 0.5rem;
 }
-.map-detail-row .area-map-svg {
+.map-detail-row .area-map-frame {
   margin-top: 0.75rem;
 }
 .map-detail {
@@ -2788,6 +2822,7 @@ summary {
 .guide-progress,
 .guide-actions,
 .area-map svg,
+.area-map-svg,
 summary {
   -webkit-user-select: none;
   user-select: none;
@@ -2948,7 +2983,7 @@ summary {
   background: rgba(110, 195, 202, 0.12);
   color: var(--teal-bright);
 }
-.ws-stage .area-map-svg {
+.ws-stage .area-map-frame {
   margin-top: 1rem;
 }
 .ws-stage .map-caption {
@@ -3720,7 +3755,7 @@ summary {
   margin-top: 1.5rem;
   padding: 1.25rem 1.5rem;
 }
-.plan-map .area-map-svg {
+.plan-map .area-map-frame {
   margin-inline: auto;
   max-width: 480px;
 }

@@ -12,6 +12,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  MAX_SHARED_LOCKS,
   PlanShareError,
   assertGeographyMatches,
   assertShareable,
@@ -79,6 +80,12 @@ describe("plan share links", () => {
 
 const GEO = PLAN.geography;
 
+/** Every field a link carries an area id in, so neither is checked alone. */
+const AREA_ID_FIELDS: Array<[string, (areaId: string) => PlanShareState]> = [
+  ["assume", (areaId) => ({ ...PLAN, assume: areaId })],
+  ["locks", (areaId) => ({ ...PLAN, locks: [[areaId, 16]] })],
+];
+
 describe("the shareable allowlist", () => {
   it("refuses to encode a field that is not on the allowlist", () => {
     const smuggled = { ...PLAN, siteContactPhone: "619-555-0134" };
@@ -89,22 +96,53 @@ describe("the shareable allowlist", () => {
   });
 
   it("refuses an area id that reads as person-level or point-location data", () => {
-    for (const areaId of ["client_id", "latitude", "block_id", "east_village_address"]) {
-      expect(() => encodePlanShare({ ...PLAN, assume: areaId })).toThrow(PlanShareError);
+    for (const [field, build] of AREA_ID_FIELDS) {
+      for (const areaId of ["client_id", "latitude", "block_id", "east_village_address"]) {
+        expect(() => encodePlanShare(build(areaId)), `${field}=${areaId}`).toThrow(PlanShareError);
+      }
     }
   });
 
   it("refuses an area id that reads as report volume", () => {
-    expect(() => encodePlanShare({ ...PLAN, assume: "complaint_rank" })).toThrow(PlanShareError);
-    expect(() => encodePlanShare({ ...PLAN, assume: "calls_311" })).toThrow(PlanShareError);
+    for (const [field, build] of AREA_ID_FIELDS) {
+      for (const areaId of ["complaint_rank", "calls_311", "nuisance_corridor"]) {
+        expect(() => encodePlanShare(build(areaId)), `${field}=${areaId}`).toThrow(PlanShareError);
+      }
+    }
   });
 
   it("refuses values outside the declared ranges, in either direction", () => {
-    expect(() => encodePlanShare({ ...PLAN, budget: -1 })).toThrow(/whole number/);
-    expect(() => encodePlanShare({ ...PLAN, budget: 12.5 })).toThrow(/whole number/);
-    expect(() => encodePlanShare({ ...PLAN, budget: 100000 })).toThrow(/whole number/);
-    expect(() => encodePlanShare({ ...PLAN, share: 4 })).toThrow(/fraction/);
-    expect(() => encodePlanShare({ ...PLAN, rate: 100000 })).toThrow(/number from 0 to/);
+    // Every field with a declared range, below it and above it — not only
+    // the three that happened to be listed here first.
+    const wholeNumberFields: Array<[string, (value: number) => PlanShareState]> = [
+      ["budget", (value) => ({ ...PLAN, budget: value })],
+      ["floor", (value) => ({ ...PLAN, floor: value })],
+      ["locks", (value) => ({ ...PLAN, locks: [["east_village", value]] })],
+    ];
+    for (const [field, build] of wholeNumberFields) {
+      for (const value of [-1, 12.5, 100000, Number.NaN]) {
+        expect(() => encodePlanShare(build(value)), `${field}=${value}`).toThrow(/whole number/);
+      }
+    }
+    for (const value of [-0.5, 4, Number.NaN]) {
+      expect(() => encodePlanShare({ ...PLAN, share: value }), `share=${value}`).toThrow(
+        /fraction/,
+      );
+    }
+    for (const value of [-1, 100000, Number.POSITIVE_INFINITY]) {
+      expect(() => encodePlanShare({ ...PLAN, rate: value }), `rate=${value}`).toThrow(
+        /number from 0 to/,
+      );
+    }
+    expect(() =>
+      encodePlanShare({
+        ...PLAN,
+        locks: Array.from(
+          { length: MAX_SHARED_LOCKS + 1 },
+          (_unused, index) => [`area_${index}`, 1] as [string, number],
+        ),
+      }),
+    ).toThrow(/at most/);
     expect(() => assertShareable({ ...PLAN, guard: "yes" })).toThrow(/true or false/);
   });
 

@@ -155,6 +155,9 @@ describe("parseObservationsV0", () => {
       { field: "suppressed", affirmative: [false] },
       { field: "suppressed", affirmative: [1] },
       { field: "suppressed", affirmative: [""] },
+      // The empty encoding: present in tests/pipeline/test_contracts.py and
+      // missing here, so "case-for-case" above was not true of this table.
+      { field: "suppressed", affirmative: [] },
     ])(
       "rejects a suppression_marker that doesn't match the implemented encoding (%#)",
       (marker) => {

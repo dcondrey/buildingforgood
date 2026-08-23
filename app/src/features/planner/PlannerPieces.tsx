@@ -221,7 +221,7 @@ export function PlannerStart() {
         <SparkIcon /> {t("start.generate")}
       </button>
       {!budgetValid && (
-        <p className="budget-invalid" role="status">
+        <p className="budget-invalid" role="alert">
           {t("start.budgetInvalid", { min: deployment.minBudget, max: deployment.maxBudget })}
         </p>
       )}

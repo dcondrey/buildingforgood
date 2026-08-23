@@ -108,16 +108,21 @@ export function ForecastSection() {
 
       <details className="data-table-disclosure">
         <summary>{t("forecast.viewValues")}</summary>
-        <div className="table-scroll">
+        <div
+          aria-label={t("forecast.tableCaption")}
+          className="table-scroll"
+          role="region"
+          tabIndex={0}
+        >
           <table>
             <caption>{t("forecast.tableCaption")}</caption>
             <thead>
               <tr>
-                <th>{t("forecast.thPeriod")}</th>
-                <th>{t("forecast.thStatus")}</th>
-                <th>{t("forecast.thValue")}</th>
-                <th>{t("forecast.thLower")}</th>
-                <th>{t("forecast.thUpper")}</th>
+                <th scope="col">{t("forecast.thPeriod")}</th>
+                <th scope="col">{t("forecast.thStatus")}</th>
+                <th scope="col">{t("forecast.thValue")}</th>
+                <th scope="col">{t("forecast.thLower")}</th>
+                <th scope="col">{t("forecast.thUpper")}</th>
               </tr>
             </thead>
             <tbody>

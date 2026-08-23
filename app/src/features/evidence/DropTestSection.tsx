@@ -29,7 +29,7 @@ export function DropTestSection() {
   } = useShell();
   const { t, tx, number, signed, date } = useTranslation();
   return (
-    <section className="decision-section" id="drop-test" aria-labelledby="drop-title">
+    <section className="decision-section" id="drop-test" aria-labelledby="drop-title" tabIndex={-1}>
       <div aria-hidden="true" className="section-number">
         01
       </div>

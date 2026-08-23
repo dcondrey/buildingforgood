@@ -4,20 +4,35 @@ Reads the hackathon block grid, dissolves blocks to the six canonical areas on
 a coarse occupancy grid (aggregate outlines only, no block geometry emitted),
 and prints viewBox-space SVG path strings plus label anchors.
 
-The outlines ship in app/src/App.tsx as AREA_MAP_GEOMETRY. Label anchors there
-were hand-nudged from the centroids this prints. Requires the untracked
-data/raw organizer bundle; rerun only if the block grid changes.
+The outlines ship in app/src/features/spatial/areaGeometry.ts as
+AREA_MAP_GEOMETRY. Label anchors there were hand-nudged from the centroids this
+prints. Requires the untracked data/raw organizer bundle; rerun only if the
+block grid changes.
+
+PROVENANCE GAP, stated rather than hidden. Downtown_BlockGrid.geojson is not
+listed in scripts/fetch_raw.sh and carries no entry in
+data/cards/checksums.sha256, so the geometry the shipped map derives from
+cannot be verified against a pin the way every other demo input can. Until it
+is pinned, the map's boundaries are a derived illustration with unverified
+provenance, which is why the organization profile marks
+geography.boundaries as unresolved. Pinning it requires the organizer bundle
+(finding F-2).
+
+The input path was previously hardcoded to a volume on one machine, so this
+script could not be rerun by anyone else at all. It is now an argument.
 """
 
 import json
 import logging
 import math
+import sys
 from collections import Counter, defaultdict
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 log = logging.getLogger(__name__)
 
-GEOJSON = "/Volumes/A/stillhere/data/raw/hackathon_provided/Downtown_BlockGrid.geojson"
+DEFAULT_GEOJSON = "data/raw/hackathon_provided/Downtown_BlockGrid.geojson"
+GEOJSON = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_GEOJSON
 CANONICAL = {
     "East Village": "east_village",
     "South East Village": "east_village",
@@ -30,8 +45,15 @@ CANONICAL = {
 VIEW_W, VIEW_H = 160.0, 150.0
 MARGIN = 6.0
 
-with open(GEOJSON) as fh:
-    data = json.load(fh)
+try:
+    with open(GEOJSON) as fh:
+        data = json.load(fh)
+except FileNotFoundError:
+    raise SystemExit(
+        f"block grid not found at {GEOJSON}\n"
+        f"usage: python scripts/gen_area_outlines.py [path/to/Downtown_BlockGrid.geojson]\n"
+        "This file is part of the organizer bundle and is not in the repository."
+    ) from None
 
 feats = [f for f in data["features"] if f["properties"]["neighborhood"] in CANONICAL]
 

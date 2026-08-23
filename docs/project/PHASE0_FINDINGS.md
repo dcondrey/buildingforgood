@@ -245,3 +245,35 @@ Closing it needs a value-provenance claim at the artifact boundary rather than
 another name check: `planning_load` arrives with a declared derivation, the
 contract enumerates permitted derivations, and anything else is refused.
 Assigned to the Phase 1 workstream.
+
+
+## Finding F-8: the shipped map's geometry has no verifiable provenance
+
+Raised by the independent review track.
+
+`scripts/gen_area_outlines.py` produces `AREA_MAP_GEOMETRY`, the six
+neighborhood outlines the app draws. It read
+`Downtown_BlockGrid.geojson` from `/Volumes/A/stillhere/...` — an absolute path
+on one machine — so nobody else could rerun it at all.
+
+Worse than the path: that GeoJSON appears in **neither**
+`data/cards/checksums.sha256` **nor** any file list in `scripts/fetch_raw.sh`.
+Every other demo input is pinned and verified; this one is not. So the geometry
+the deployed map derives from cannot be checked against a pin, and a changed or
+substituted grid would not be detected.
+
+Nothing here leaks: the outlines are dissolved to area level in viewBox units,
+no block geometry or coordinate ships, and the privacy scan confirms it. The
+problem is provenance, not privacy.
+
+Partially fixed. The path is now an argument defaulting to the repository-
+relative bundle location, and the script fails with a usable message rather
+than a traceback. Pinning the file requires the organizer bundle, so the gap
+stays open (see F-2).
+
+**What it bounds.** The organization profile already marks
+`geography.boundaries` as `unresolved`, which was the right call for a
+different reason — the only geometry the project holds is on the deployment
+deny-list. This adds a second reason: that geometry is itself unverified. The
+map is a derived illustration, and the provenance disclosure should not imply
+otherwise.

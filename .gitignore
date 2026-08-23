@@ -9,3 +9,6 @@ __pycache__/
 
 # Local browser-automation scratch (Playwright MCP page snapshots)
 .playwright-mcp/
+
+# Node
+node_modules/

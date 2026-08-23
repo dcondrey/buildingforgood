@@ -98,6 +98,21 @@ exclusion can be audited.
   [`pipeline/`](pipeline/) is the deterministic analysis;
   [`tests/`](tests/) holds the analytical contracts and privacy tests
 
+## Project files
+
+- [`LICENSE`](LICENSE) — Apache-2.0
+- [`SECURITY.md`](SECURITY.md) — what a vulnerability means in a system with
+  no backend, and how to report one
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — the seven non-negotiable invariants
+  and how to run the gates
+- [`CHANGELOG.md`](CHANGELOG.md) — what changed, and the limitations recorded
+  rather than papered over
+- [`docs/project/DATA_GOVERNANCE.md`](docs/project/DATA_GOVERNANCE.md) — what
+  data enters and at what grain, what an adopting organization must and must
+  never supply, what the tool refuses to do with what it holds, and why
+  retention is not a question that arises. Read this first if you are
+  evaluating the tool for your own organization.
+
 ## The pitch
 
 > Most dashboards tell us where homelessness was counted. Still Here SD asks
@@ -115,3 +130,11 @@ planning were assisted by OpenAI Codex; AI used during implementation is
 disclosed by product, purpose, and workflow, and its suggestions remain
 subject to human review, testing, and responsibility. No LLM output determines
 a drop classification, forecast, or outreach allocation.
+
+## License
+
+Apache-2.0, copyright David Condrey. See [`LICENSE`](LICENSE) for the full
+text, including the patent grant and the warranty disclaimer. The license
+covers the code and documentation in this repository; it does not convey any
+right to the source data, which stays under its own publishers' terms as
+recorded in [`data/cards/source_ledger.yaml`](data/cards/source_ledger.yaml).

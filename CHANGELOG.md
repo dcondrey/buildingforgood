@@ -13,26 +13,110 @@ version; it is not a published release. See the note under it.
 
 ## Unreleased
 
+Everything below was built on 2026-08-23 to move the project from a hackathon
+artifact to something a partner nonprofit can adopt, configure for its own
+geography, and operate monthly.
+
 ### Added
 
-- `LICENSE` — Apache-2.0, copyright David Condrey. Chosen for its explicit
-  patent grant.
-- `SECURITY.md` — what a vulnerability means in a system with no backend, no
-  accounts, and no server-side data; the four report categories that are real
-  here (supply chain, build and deploy pipeline, privacy-scan bypass,
-  data-boundary regression); reporting address and a response window sized for
-  one maintainer.
-- `CONTRIBUTING.md` — the seven non-negotiable invariants, and how to run
-  `./scripts/verify.sh` and `./scripts/mutation_check.sh`.
-- `CHANGELOG.md` — this file.
-- `docs/project/DATA_GOVERNANCE.md` — what data enters the system and at what
-  grain, what an adopting organization must and must never supply, what the
-  tool refuses to do with what it holds, and why retention is not a question
-  that arises.
-- A License section and links to the above from `README.md`.
+- **Apache-2.0 `LICENSE`**, chosen for its explicit patent grant, plus
+  `SECURITY.md`, `CONTRIBUTING.md`, this changelog, and
+  `docs/project/DATA_GOVERNANCE.md` — the document a general counsel reads
+  before a program director reaches the methodology.
+- **Organization profiles.** `config/schema/organization-profile.v1.schema.json`
+  plus two validating profiles. `?profile=coldwater-valley-rural` runs the tool
+  on a different geography with a different area count, budget, floor, and
+  increment, with no code change. Provenance is a required structured field, so
+  an adopter cannot leave it null by accident.
+- **A monthly `refresh` command** a human runs: fetch, audit, contract-check,
+  emit. `--dry-run` checks everything and writes nothing; `--source fixture`
+  works from a clean checkout with no network; `--source published` re-derives
+  currency for an artifact that already exists and refuses to change any
+  analytical value.
+- **A currency badge** distinguishing current, publication-overdue, and "this
+  artifact states no currency", and a display path for observed-but-not-
+  model-eligible months carrying the artifact's own exclusion reason verbatim.
+- **A thin cost layer**: a loaded hourly rate surfaced as an operator-set
+  assumption, cost per area, total plan cost, and the marginal cost of the
+  continuity floor. Cost per person, per contact, and per person-equivalent are
+  unrepresentable by construction.
+- **An actuals ingest contract** at area-month grain under the existing
+  suppression policy. The schema and loader only; the analysis is documented
+  and deliberately not implemented, because there is no operator data yet.
+- **Field use**: plan state encoded in a readable share link behind an
+  allowlist, CSV and print/PDF export, and a printable phone-sized shift sheet.
+- **A first-class CLI for the digitization audit** (`stillhere-audit`).
+- **The adoption packet**: `docs/adoption/BRIEF.md` for a board and
+  `docs/adoption/EVALUATION_CHECKLIST.md` for due diligence.
+- **Spanish**, with locale scaffolding and a `lang` declaration that changes.
+- `docs/project/DECISIONS.md`, `ACCESSIBILITY.md`, `REFRESH.md`,
+  `ORGANIZATION_PROFILE.md`, `ACTUALS.md`, `DIGITIZATION_AUDIT_CLI.md`,
+  and `docs/adoption/RUNBOOK.md`.
 
-This closes finding F-5 in `docs/project/PHASE0_FINDINGS.md` ("no LICENSE, no
-release tag") on the license half. There is still no release tag.
+### Changed
+
+- **`App.tsx` went from 3,799 lines to 53.** Shell state lifted into a store
+  read through context; every JSX region moved into the feature directory it
+  belongs to, filling three directories that held only `.gitkeep`. Verified by
+  rendered-output diff across an eight-step scripted interaction against
+  identical library code: zero semantic difference.
+- **`planning_load` must now declare where it came from**, and the claim is
+  checked by arithmetic against a value already in the same document.
+  `complaint_data_used` is derived from those declarations rather than asserted
+  by the writer.
+- **Cost denominators are an allowlist**, not a denylist of words meaning
+  "human being".
+- **Both refusal guards now walk `Map` and `Set`.** `Object.entries()` returns
+  `[]` for either, so every field inside one passed in silence.
+- Share links require all seven — now eight — fields rather than substituting
+  defaults for three of them.
+
+### Fixed
+
+- **A regression the test suite did not catch**: the disclosure drawer rendered
+  unconditionally instead of behind its toggle. Found by the rendered-output
+  diff.
+- **Eight `aria-label`s on roleless `<div>`s** — prohibited by ARIA, so screen
+  readers ignored them — and one real contrast failure, `--faint` at 4.13:1 on
+  panel backgrounds across 17 body-text rules. Both were classified *incomplete*
+  rather than *violation*, so a pass/fail summary called the shell compliant.
+- **`scripts/mutation_check.sh` reported a false pass.** `IFS=$'\t' read` stops
+  at the first newline, so a two-line replacement was truncated back to its own
+  search string and the script graded an unmutated file. Two further mutations
+  were proven equivalent mutants and replaced with killable ones.
+- **`main` did not compile for three commits**, because the cost layer's
+  consumer was committed without the shell producer it reads from. While that
+  stood, `ExcludesComplaintSignal` was unexported and the compile-time complaint
+  guards in two modules proved nothing.
+- `gen_area_outlines.py` read its input from an absolute path on one machine.
+
+### Security
+
+- The enumerated refusals are build-breaking rather than upheld by discipline.
+  An adversarial pass ran ten routes; two got through and were closed.
+- **The refusal claim is now stated narrowly and the narrow form is recorded**
+  in `docs/project/DECISIONS.md`: complaint volume cannot reach allocation
+  without also corrupting the published forecast interval, which is derived
+  from checksummed inputs. The former claim — that complaint volume cannot
+  influence planning — was false as stated, and an independent review proved it
+  by executing the attack.
+
+### Known limits
+
+Recorded in `docs/project/PHASE0_FINDINGS.md` and repeated in the adoption
+brief rather than left for an adopter to discover:
+
+- The shipped artifact is verifiable against pinned checksums but **not
+  regenerable from a clean checkout**, because its five source files are not
+  redistributable (F-2).
+- Geography boundaries and adjacency are **unresolved**, with documented
+  reasons, and the map outlines derive from an input carrying no pinned
+  checksum (F-8).
+- The privacy scanner still **infers** which numbers are people-counts from
+  document shape for the shipped artifact.
+- A cost divided by an engagement count yields a per-person figure no
+  field-level guard can see. The guarantee is that no such figure can be
+  stored, exported, or displayed.
 
 ## 1.0.0 - 2026-08-23 (not tagged)
 

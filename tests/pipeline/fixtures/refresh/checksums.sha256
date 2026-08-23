@@ -1,0 +1,4 @@
+# Pins for the synthetic refresh fixture. Regenerate deliberately, never casually:
+# a changed pin means the golden expectation below it must be re-reviewed.
+01fe25a71ab99161e101fb8422275f1ff3fec8e8e1d02e928c2949bbec3a7fe6  demo_base.v1.json
+0c69bc4be80a144ad3d8bd36195c124181321192b0305c83faea117766fbc7b6  dsdp_public_checkpoints.csv

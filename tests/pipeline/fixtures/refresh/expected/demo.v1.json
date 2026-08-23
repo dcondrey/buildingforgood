@@ -1,0 +1,541 @@
+{
+  "currency": {
+    "as_of": "2026-08-23",
+    "generated_at": "2026-08-23T00:00:00Z",
+    "is_stale": true,
+    "next_publication_expected": {
+      "basis": "this project's monthly operator refresh cadence",
+      "cadence": {
+        "months": 1
+      },
+      "month": "2026-09",
+      "source_publication_note": "DSDP moved to an irregular quarterly cadence in late 2025 and does not announce publication dates in advance; the month in this block is this project's own refresh cadence, not a publisher commitment.",
+      "source_publication_scheduled": false
+    },
+    "observed_not_model_eligible": {
+      "excluded_from": [
+        "demo_v1_training",
+        "demo_v1_forecast_selection",
+        "demo_v1_planner"
+      ],
+      "exclusion_reason": {
+        "grounds": [
+          "DSDP moved to an irregular quarterly cadence in late 2025.",
+          "2026 counts were run dually on paper and a piloted application.",
+          "At least one 2026 count was redone with differing results.",
+          "The 2026 count months themselves are contested: the DSDP dashboard labels 1,092 as \u201cQ1 2026,\u201d while the source PDF places that value in April and supplies no January\u2013March observation.",
+          "The values are multiplier-adjusted visual observations\u2014estimated person-equivalents, not unique people, verified service needs, or program outcomes."
+        ],
+        "promotion_rule": "Keep every row model_eligible=false. Promotion into training or planning requires a separate, documented model-version decision.",
+        "source": "data/monitoring/README.md",
+        "summary": "These are public monitoring checkpoints that postdate the frozen analytical snapshot. They are not model inputs and do not change the historical forecast replay or the planner."
+      },
+      "headline": "Observed after the frozen source window and deliberately excluded from every model and planner input.",
+      "months": [
+        "2026-03",
+        "2026-06"
+      ],
+      "rows": [
+        {
+          "geography": "Area Alpha",
+          "model_eligible": false,
+          "month": "2026-03",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 120,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Area Bravo",
+          "model_eligible": false,
+          "month": "2026-03",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 60,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Area Charlie",
+          "model_eligible": false,
+          "month": "2026-03",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 40,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Area Delta",
+          "model_eligible": false,
+          "month": "2026-03",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 30,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Area Echo",
+          "model_eligible": false,
+          "month": "2026-03",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 25,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Area Foxtrot",
+          "model_eligible": false,
+          "month": "2026-03",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 20,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Outside Perimeter",
+          "model_eligible": false,
+          "month": "2026-03",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 30,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Six-area synthetic core",
+          "model_eligible": false,
+          "month": "2026-03",
+          "series": "six_area_core_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 295,
+          "value_status": "project_derived"
+        },
+        {
+          "geography": "Synthetic published total",
+          "model_eligible": false,
+          "month": "2026-03",
+          "series": "seven_area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 325,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Area Alpha",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 110,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Area Bravo",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 55,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Area Charlie",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 35,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Area Delta",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 28,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Area Echo",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 22,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Area Foxtrot",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 18,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Outside Perimeter",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 25,
+          "value_status": "publisher_reported"
+        },
+        {
+          "geography": "Six-area synthetic core",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "six_area_core_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 268,
+          "value_status": "project_derived"
+        },
+        {
+          "geography": "Synthetic published total",
+          "model_eligible": false,
+          "month": "2026-06",
+          "series": "seven_area_total",
+          "source_id": "synthetic_public_monthly_reports",
+          "unit": "estimated_person_equivalents",
+          "value": 293,
+          "value_status": "publisher_reported"
+        }
+      ],
+      "source_ids": [
+        "synthetic_public_monthly_reports"
+      ],
+      "status": "observed_not_model_eligible",
+      "unit": "estimated_person_equivalents"
+    },
+    "refresh": {
+      "inputs": {
+        "demo_base.v1.json": "01fe25a71ab99161e101fb8422275f1ff3fec8e8e1d02e928c2949bbec3a7fe6",
+        "dsdp_public_checkpoints.csv": "0c69bc4be80a144ad3d8bd36195c124181321192b0305c83faea117766fbc7b6"
+      },
+      "mode": "fixture",
+      "pins_verified": true
+    },
+    "source_data_through": "2025-12",
+    "staleness": {
+      "elapsed": {
+        "months": 8
+      },
+      "reason": "Source data runs through 2025-12; 8 months have elapsed as of 2026-08, past the 2-month freshness threshold.",
+      "threshold": {
+        "months": 2
+      }
+    },
+    "status": "stale"
+  },
+  "evidence": {
+    "balanced_panel": {
+      "areas": [
+        {
+          "area": "Area Alpha",
+          "panel_blocks": 12
+        },
+        {
+          "area": "Area Bravo",
+          "panel_blocks": 10
+        },
+        {
+          "area": "Area Charlie",
+          "panel_blocks": 8
+        }
+      ],
+      "comparison": {
+        "from_period": "2025-06",
+        "to_period": "2025-12"
+      },
+      "panel_size": 30,
+      "validity_checks": {
+        "same_block_set": true
+      }
+    },
+    "robustness": {
+      "count_day_weather": {
+        "status": "not_requested"
+      },
+      "parking_exposure": {
+        "status": "not_requested"
+      }
+    },
+    "validity_checks": {
+      "same_block_set": true
+    }
+  },
+  "forecast": {
+    "aggregate": {
+      "area": "All included areas",
+      "backtest": {
+        "mae": 6.2,
+        "mape_pct": 4.8,
+        "origins": 12
+      },
+      "limitations": [
+        "Synthetic series; the interval is illustrative only."
+      ],
+      "lower": 118,
+      "model_scorecard": [
+        {
+          "mae": 6.2,
+          "model": "seasonal_naive",
+          "selected": true
+        }
+      ],
+      "point": 129,
+      "status": "ok",
+      "upper": 141
+    },
+    "areas": [
+      {
+        "area": "Area Alpha",
+        "backtest": {
+          "mae": 5.1,
+          "mape_pct": 8.4,
+          "origins": 12
+        },
+        "limitations": [
+          "Synthetic series; the interval is illustrative only."
+        ],
+        "lower": 55,
+        "model_scorecard": [
+          {
+            "mae": 5.1,
+            "model": "seasonal_naive",
+            "selected": true
+          }
+        ],
+        "point": 61,
+        "status": "ok",
+        "upper": 68
+      },
+      {
+        "area": "Area Bravo",
+        "backtest": {
+          "mae": 5.6,
+          "mape_pct": 9.1,
+          "origins": 12
+        },
+        "limitations": [
+          "Synthetic series; the interval is illustrative only."
+        ],
+        "lower": 35,
+        "model_scorecard": [
+          {
+            "mae": 5.6,
+            "model": "recent_three",
+            "selected": true
+          }
+        ],
+        "point": 40,
+        "status": "ok",
+        "upper": 46
+      },
+      {
+        "area": "Area Charlie",
+        "backtest": {
+          "origins": 12
+        },
+        "limitations": [
+          "Too few synthetic observations to publish an interval."
+        ],
+        "model_scorecard": [],
+        "status": "insufficient_forecast_evidence"
+      }
+    ],
+    "data_frozen_through": "2025-12",
+    "selection_rule": {
+      "holdout": "synthetic",
+      "rule": "lowest holdout error wins; ties keep the incumbent"
+    },
+    "target_month": "2026-01"
+  },
+  "generated_from": {
+    "bundle": "synthetic refresh fixture (no organizer data, no block-level rows)",
+    "deterministic": true,
+    "input_sha256": {
+      "SyntheticAreaMonthly.csv": "28462eb2066fe187f462c32501e1284cf1c20dfd6b165cd6e49b8eb37a4ddf2a"
+    },
+    "source_data_through": "2025-12"
+  },
+  "limitations": [
+    "Every number in this fixture is fabricated and describes no real place or person.",
+    "The fixture exists to pin refresh output; it is not an analytical result."
+  ],
+  "observations": {
+    "coverage": {
+      "calendar_months": 12,
+      "completeness_pct": 83.3,
+      "end_month": "2025-12",
+      "latest_reported_month": "2025-12",
+      "reported_months": 10,
+      "start_month": "2025-01"
+    },
+    "history": [
+      {
+        "month": "2025-01",
+        "status": "reported_verified_total",
+        "total": 132
+      },
+      {
+        "month": "2025-02",
+        "status": "reported_verified_total",
+        "total": 128
+      },
+      {
+        "month": "2025-03",
+        "status": "reported_verified_total",
+        "total": 135
+      },
+      {
+        "month": "2025-04",
+        "status": "reported_verified_total",
+        "total": 130
+      },
+      {
+        "month": "2025-05",
+        "status": "not_reported",
+        "total": null
+      },
+      {
+        "month": "2025-06",
+        "status": "reported_verified_total",
+        "total": 126
+      },
+      {
+        "month": "2025-07",
+        "status": "reported_verified_total",
+        "total": 124
+      },
+      {
+        "month": "2025-08",
+        "status": "reported_verified_total",
+        "total": 129
+      },
+      {
+        "month": "2025-09",
+        "status": "not_reported",
+        "total": null
+      },
+      {
+        "month": "2025-10",
+        "status": "reported_verified_total",
+        "total": 127
+      },
+      {
+        "month": "2025-11",
+        "status": "reported_verified_total",
+        "total": 131
+      },
+      {
+        "month": "2025-12",
+        "status": "reported_verified_total",
+        "total": 130
+      }
+    ],
+    "latest_by_area": [
+      {
+        "area": "Area Alpha",
+        "month": "2025-12",
+        "total": 62
+      },
+      {
+        "area": "Area Bravo",
+        "month": "2025-12",
+        "total": 40
+      },
+      {
+        "area": "Area Charlie",
+        "month": "2025-12",
+        "total": 28
+      }
+    ],
+    "missing_months": [
+      "2025-05",
+      "2025-09"
+    ],
+    "scope": {
+      "areas": [
+        "Area Alpha",
+        "Area Bravo",
+        "Area Charlie"
+      ]
+    }
+  },
+  "planner": {
+    "allocations": [
+      {
+        "allocated_hours": 24,
+        "area": "Area Alpha",
+        "base_hours": 10,
+        "planning_load": 68.0,
+        "planning_load_derivation": "forecast_upper_bound",
+        "variable_hours": 14
+      },
+      {
+        "allocated_hours": 18,
+        "area": "Area Bravo",
+        "base_hours": 10,
+        "planning_load": 46.0,
+        "planning_load_derivation": "forecast_upper_bound",
+        "variable_hours": 8
+      },
+      {
+        "allocated_hours": 18,
+        "area": "Area Charlie",
+        "base_hours": 10,
+        "planning_load": 28.0,
+        "planning_load_derivation": "latest_observed_total",
+        "variable_hours": 8
+      }
+    ],
+    "budget_hours": 60,
+    "constraints": {
+      "complaint_data_used": false,
+      "precise_location_data_used": false,
+      "reporting_bias_diagnostic_used": false
+    },
+    "decision_support_only": true,
+    "minimum_hours_per_area": 10
+  },
+  "quality_audit": {
+    "ledger": [],
+    "note": "The fixture declares no quality findings; it is fabricated, not observed."
+  },
+  "reporting_bias": {
+    "reason": "The fixture carries no optional reporting-bias lane.",
+    "status": "not_requested"
+  },
+  "scenario": {
+    "claim_boundary": "Synthetic aggregates. They describe no real place, period, or person.",
+    "decision_owner": "Pipeline maintainer",
+    "decision_question": "Does the refresh command emit exactly the artifact it is pinned to emit?",
+    "headline": "A fabricated three-area series that exists only to pin the refresh pipeline.",
+    "id": "synthetic-refresh-fixture",
+    "prepared_forecast_month": "2026-01",
+    "prepared_observation_month": "2025-12",
+    "title": "Synthetic refresh fixture"
+  },
+  "schema": "stillhere.demo.v1",
+  "technical_summary": {
+    "monthly_estimand": "Synthetic area-month aggregate totals.",
+    "validation_design": "None. The fixture pins refresh behavior, not analytical method."
+  }
+}

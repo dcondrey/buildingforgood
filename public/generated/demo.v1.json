@@ -2519,6 +2519,7 @@
         "load_share_pct": 19.0,
         "planning_load": 193.0,
         "planning_load_definition": "upper bound of the area monthly baseline",
+        "planning_load_derivation": "forecast_upper_bound",
         "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
         "variable_hours": 6
       },
@@ -2529,6 +2530,7 @@
         "load_share_pct": 3.4,
         "planning_load": 34.7,
         "planning_load_definition": "upper bound of the area monthly baseline",
+        "planning_load_derivation": "forecast_upper_bound",
         "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
         "variable_hours": 1
       },
@@ -2539,6 +2541,7 @@
         "load_share_pct": 11.1,
         "planning_load": 113.3,
         "planning_load_definition": "upper bound of the area monthly baseline",
+        "planning_load_derivation": "forecast_upper_bound",
         "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
         "variable_hours": 3
       },
@@ -2549,6 +2552,7 @@
         "load_share_pct": 58.1,
         "planning_load": 591.0,
         "planning_load_definition": "upper bound of the area monthly baseline",
+        "planning_load_derivation": "forecast_upper_bound",
         "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
         "variable_hours": 19
       },
@@ -2559,6 +2563,7 @@
         "load_share_pct": 6.1,
         "planning_load": 61.7,
         "planning_load_definition": "upper bound of the area monthly baseline",
+        "planning_load_derivation": "forecast_upper_bound",
         "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
         "variable_hours": 2
       },
@@ -2569,6 +2574,7 @@
         "load_share_pct": 2.4,
         "planning_load": 24.0,
         "planning_load_definition": "upper bound of the area monthly baseline",
+        "planning_load_derivation": "forecast_upper_bound",
         "reason": "8h user-set coverage-continuity floor plus a proportional share of the remaining hours using the uncertainty-aware planning load.",
         "variable_hours": 1
       }

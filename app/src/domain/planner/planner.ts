@@ -24,6 +24,8 @@
  * and says why. It never silently weakens a constraint to produce a number.
  */
 
+import { isPermittedPlanningLoadDerivation, PERMITTED_PLANNING_LOAD_DERIVATIONS } from "./types.ts";
+
 import type {
   AreaAllocation,
   AreaLock,
@@ -69,6 +71,32 @@ export function assertNoComplaintSignal(record: unknown, where: string): void {
     // on an area object. The planner would not have USED it, but the
     // promise made about the guard has to be true as stated.
     assertNoComplaintSignal(value, `${where}.${key}`);
+  }
+}
+
+/**
+ * Reject a planning-load value that arrives with no permitted derivation.
+ *
+ * `assertNoComplaintSignal` answers "is this field named like a complaint?".
+ * This answers the question that actually decides the plan: "does this number
+ * have a stated, permitted origin?". Complaint volume routed through
+ * `planning_load` passes the first check and fails this one.
+ */
+export function assertDeclaredPlanningLoad(
+  records: ReadonlyArray<{ id?: string; area_id?: string; loadDerivation?: unknown }>,
+  where: string,
+): void {
+  for (const record of records) {
+    if (isPermittedPlanningLoadDerivation(record.loadDerivation)) continue;
+    const which = record.id ?? record.area_id ?? "(unnamed area)";
+    throw new PlannerInputError(
+      `${where} area "${which}" carries planning load with derivation ` +
+        `${JSON.stringify(record.loadDerivation)}, which is not one of ` +
+        `${PERMITTED_PLANNING_LOAD_DERIVATIONS.join(", ")}. A planning load with no ` +
+        "permitted derivation is refused: complaint volume, service demand, and any " +
+        "other unstated basis may never become allocation weight " +
+        "(docs/project/PHASE1_ADVERSARIAL.md, attacks C and D).",
+    );
   }
 }
 

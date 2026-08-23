@@ -3,6 +3,67 @@
   "plugins": ["react", "typescript", "oxc"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/lib/planner.ts",
+        "src/lib/intervention.ts",
+        "src/domain/planner/*.ts",
+        "src/features/planner/*.ts",
+        "src/features/planner/*.tsx"
+      ],
+      "rules": {
+        "no-restricted-properties": [
+          "error",
+          {
+            "property": "complaints",
+            "message": "complaint volume may never influence planning load or allocation (config/decision.v1.json -> observations.complaint_volume_excluded_uses)"
+          },
+          {
+            "property": "complaintVolume",
+            "message": "complaint volume may never influence planning load or allocation"
+          },
+          {
+            "property": "complaint_volume",
+            "message": "complaint volume may never influence planning load or allocation"
+          },
+          {
+            "property": "complaintCount",
+            "message": "complaint volume may never influence planning load or allocation"
+          },
+          {
+            "property": "complaint_count",
+            "message": "complaint volume may never influence planning load or allocation"
+          },
+          {
+            "property": "calls311",
+            "message": "311 call volume may never influence planning load or allocation"
+          },
+          {
+            "property": "calls_311",
+            "message": "311 call volume may never influence planning load or allocation"
+          },
+          {
+            "property": "serviceRequests",
+            "message": "service-request volume may never influence planning load or allocation"
+          },
+          {
+            "property": "service_requests",
+            "message": "service-request volume may never influence planning load or allocation"
+          },
+          {
+            "property": "nuisance",
+            "message": "areas are never ranked by nuisance (C-01 red-team review, R-02 and R-03)"
+          }
+        ]
+      }
+    }
+  ]
 }

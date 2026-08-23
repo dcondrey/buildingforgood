@@ -98,3 +98,80 @@ export interface PlanResult {
   /** Populated only when `status` is `infeasible`. */
   infeasible_reasons: string[];
 }
+
+/**
+ * Key names that carry a complaint signal, matched at the type level.
+ *
+ * Mirrors `COMPLAINT_FIELD_PATTERN` in `./planner.ts`. That regex guards the
+ * runtime boundary where untyped artifact JSON crosses in; this guards the
+ * compile-time boundary where a maintainer widens an interface. Both exist
+ * because either one alone is removable by a single edit.
+ */
+export type ComplaintShapedKey<K extends string> =
+  Lowercase<K> extends `${string}complaint${string}`
+    ? true
+    : Lowercase<K> extends `${string}311${string}`
+      ? true
+      : Lowercase<K> extends `${string}service_request${string}`
+        ? true
+        : Lowercase<K> extends `${string}call_volume${string}`
+          ? true
+          : Lowercase<K> extends `${string}report_volume${string}`
+            ? true
+            : Lowercase<K> extends `${string}nuisance${string}`
+              ? true
+              : false;
+
+/** The complaint-shaped keys of `T`, or `never` when it has none. */
+export type ComplaintShapedKeysOf<T> = {
+  [K in keyof T]-?: ComplaintShapedKey<K & string> extends true ? K : never;
+}[keyof T];
+
+/**
+ * `true` when `T` cannot represent complaint volume, `never` when it can.
+ *
+ * Assign it to a `true` constant to turn "this type has no complaint field"
+ * into a compile error rather than a review comment. Optional and readonly
+ * modifiers are stripped first, so `complaint_count?: number` fails too.
+ */
+export type ExcludesComplaintSignal<T> = [ComplaintShapedKeysOf<T>] extends [never] ? true : never;
+
+/** Proof for the planner's own input type. */
+export const AREA_PLANNING_INPUT_EXCLUDES_COMPLAINT_SIGNAL: ExcludesComplaintSignal<AreaPlanningInput> = true;
+
+/**
+ * Where a planning-load number is allowed to come from.
+ *
+ * A name-based guard cannot see what a number means: complaint volume placed
+ * in `planning_load` is invisible to `COMPLAINT_FIELD_PATTERN` and to
+ * `ExcludesComplaintSignal` alike, because `planning_load` is not a
+ * complaint-shaped name. That bypass was executed, not theorised — see
+ * docs/project/PHASE1_ADVERSARIAL.md, attacks C and D.
+ *
+ * The answer is that the value has to arrive with a declared derivation, the
+ * artifact contract has to enumerate which derivations are permitted, and a
+ * value must reconcile with the artifact block it claims to come from. This
+ * union is the vocabulary; `pipeline/src/stillhere_pipeline/contracts.py`
+ * enforces the reconciliation, and `adaptDemoV1` refuses an artifact that
+ * fails it.
+ */
+export const PERMITTED_PLANNING_LOAD_DERIVATIONS = [
+  /** `planner.allocations[].planning_load` equals `forecast.areas[].upper`. */
+  "forecast_upper_bound",
+  /**
+   * The area published no forecast interval, so it plans against its most
+   * recent observed total (`observations.latest_by_area[].total`). An area
+   * the model understands least is not thereby starved of hours.
+   */
+  "latest_observed_total",
+  /** The area takes the coverage floor and no discretionary share; load is 0. */
+  "coverage_floor_only",
+  /** The offline snapshot compiled into the bundle, labelled as such. */
+  "embedded_demo_snapshot",
+] as const;
+
+export type PlanningLoadDerivation = (typeof PERMITTED_PLANNING_LOAD_DERIVATIONS)[number];
+
+export function isPermittedPlanningLoadDerivation(value: unknown): value is PlanningLoadDerivation {
+  return (PERMITTED_PLANNING_LOAD_DERIVATIONS as readonly unknown[]).includes(value);
+}

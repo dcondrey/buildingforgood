@@ -135,6 +135,61 @@ def _validate_demo_forecast_row(row: dict[str, Any]) -> None:
         raise ContractViolation("demo forecast interval must be ordered around the point")
 
 
+def _validate_currency(currency: dict[str, Any]) -> None:
+    """Validate the optional currency block emitted by the monthly refresh.
+
+    Optional by design: artifacts built before the refresh command existed
+    stay valid. Present-but-malformed is a violation, so the UI can trust the
+    block whenever it is there.
+    """
+    _require_month(currency, "source_data_through")
+    _require(currency, "as_of", str)
+    _require(currency, "generated_at", str)
+    status = _require(currency, "status", str)
+    if status not in {"current", "stale"}:
+        raise ContractViolation(f"unknown currency status {status!r}")
+    is_stale = _require(currency, "is_stale", bool)
+    if is_stale is not (status == "stale"):
+        raise ContractViolation("currency.is_stale must agree with currency.status")
+
+    staleness = _require(currency, "staleness", dict)
+    for field in ("elapsed", "threshold"):
+        span = _require(staleness, field, dict)
+        if _require(span, "months", int) < 0:
+            raise ContractViolation(f"currency.staleness.{field}.months must be non-negative")
+    _require(staleness, "reason", str)
+
+    expected = _require(currency, "next_publication_expected", dict)
+    _require_month(expected, "month")
+    _require(expected, "basis", str)
+    if _require(expected, "cadence", dict).get("months", 0) < 1:
+        raise ContractViolation("currency.next_publication_expected.cadence.months must be >= 1")
+
+    lane = _require(currency, "observed_not_model_eligible", dict)
+    if _require(lane, "status", str) != "observed_not_model_eligible":
+        raise ContractViolation("currency lane status must be observed_not_model_eligible")
+    reason = _require(lane, "exclusion_reason", dict)
+    grounds = _require(reason, "grounds", list)
+    if not grounds or not all(isinstance(item, str) and item for item in grounds):
+        raise ContractViolation("exclusion_reason.grounds must be a non-empty list of strings")
+    _require(reason, "promotion_rule", str)
+    _require(reason, "source", str)
+    excluded_from = _require(lane, "excluded_from", list)
+    if not excluded_from:
+        raise ContractViolation("observed_not_model_eligible.excluded_from must be non-empty")
+    months = _require(lane, "months", list)
+    rows = _require_object_list(lane, "rows")
+    if not rows:
+        raise ContractViolation("observed_not_model_eligible.rows must be non-empty")
+    for row in rows:
+        _require_month(row, "month")
+        _require_nonnegative_number(row, "value")
+        if _require(row, "model_eligible", bool) is not False:
+            raise ContractViolation("observed_not_model_eligible rows must be model_eligible=false")
+    if months != sorted({row["month"] for row in rows}):
+        raise ContractViolation("observed_not_model_eligible.months must summarize its rows")
+
+
 def validate_demo_v1(doc: dict[str, Any]) -> None:
     """Fail closed on the single deployment artifact used by the live demo.
 
@@ -282,12 +337,81 @@ def validate_demo_v1(doc: dict[str, Any]) -> None:
     allocations = _require_object_list(planner, "allocations")
     if sorted(_require(row, "area", str) for row in allocations) != sorted(areas):
         raise ContractViolation("planner allocations must contain each scoped area exactly once")
+    # Only rows with a published interval carry an upper bound to check
+    # against; an area whose forecast is `insufficient_forecast_evidence` has
+    # no in-artifact value to reconcile with. See the residual gap noted in
+    # docs/project/PHASE1_ADVERSARIAL.md.
+    forecast_upper_by_area = {
+        row["area"]: _require_number(row, "upper")
+        for row in forecast_areas
+        if row.get("status") == "ok"
+    }
+    latest_total_by_area = {row["area"]: row["total"] for row in latest if "total" in row}
     allocated_total = 0
+    declared_derivations: list[str] = []
     for row in allocations:
         allocated = _require(row, "allocated_hours", int)
         base = _require(row, "base_hours", int)
         variable = _require(row, "variable_hours", int)
-        _require_nonnegative_number(row, "planning_load")
+        area_name = row["area"]
+        load = _require_nonnegative_number(row, "planning_load")
+        forecast_upper = forecast_upper_by_area.get(area_name)
+
+        if forecast_upper is not None:
+            # The forecast settles it by arithmetic, so the label is optional
+            # here -- and that matters, because a label is the one thing an
+            # attacker gets to write.
+            derivation = row.get("planning_load_derivation", _FORECAST_DERIVATION)
+            if derivation != _FORECAST_DERIVATION:
+                raise ContractViolation(
+                    f"planner allocation for {area_name!r} declares planning_load_derivation "
+                    f"{derivation!r}, but that area published a forecast interval and must "
+                    f"plan against {PLANNING_LOAD_DERIVATIONS[_FORECAST_DERIVATION]}"
+                )
+            expected: int | float = forecast_upper
+        else:
+            # Nothing to reconcile against unless the artifact says which
+            # fallback it used, so here the declaration is required.
+            if "planning_load_derivation" not in row:
+                raise ContractViolation(
+                    f"planner allocation for {area_name!r} has no published forecast interval "
+                    "and declares no planning_load_derivation. An area with no forecast must "
+                    f"say what its planning load is derived from "
+                    f"(permitted: {sorted(PLANNING_LOAD_DERIVATIONS)}); an unexplained load is "
+                    "refused, because that is the shape complaint volume arrives in."
+                )
+            derivation = _require(row, "planning_load_derivation", str)
+            if derivation == _FORECAST_DERIVATION:
+                raise ContractViolation(
+                    f"planner allocation for {area_name!r} claims a forecast upper bound, but "
+                    "that area published no forecast interval"
+                )
+            if derivation == "latest_observed_total":
+                if area_name not in latest_total_by_area:
+                    raise ContractViolation(
+                        f"planner allocation for {area_name!r} claims a latest observed total "
+                        "that the observations block does not publish"
+                    )
+                expected = latest_total_by_area[area_name]
+            elif derivation == "coverage_floor_only":
+                expected = 0
+            else:
+                raise ContractViolation(
+                    f"planner allocation for {area_name!r} declares planning_load_derivation "
+                    f"{derivation!r}, which is not permitted "
+                    f"(permitted: {sorted(PLANNING_LOAD_DERIVATIONS)}). A planning load with no "
+                    "permitted derivation is refused: complaint volume, service demand, or any "
+                    "other unstated basis may never become allocation weight."
+                )
+
+        declared_derivations.append(derivation)
+        if abs(load - expected) > _PLANNING_LOAD_TOLERANCE:
+            raise ContractViolation(
+                f"planner allocation for {area_name!r} declares planning_load {load} derived "
+                f"from {PLANNING_LOAD_DERIVATIONS[derivation]}, but that value is {expected}. "
+                "A planning load must reconcile with what it is derived from; a number that "
+                "does not is refused whatever it is called and whatever it declares."
+            )
         if allocated < minimum or base < minimum or variable < 0 or allocated != base + variable:
             raise ContractViolation(
                 "planner allocation violates its declared floor or decomposition"
@@ -296,6 +420,22 @@ def validate_demo_v1(doc: dict[str, Any]) -> None:
     if allocated_total != budget:
         raise ContractViolation("planner allocated hours must equal budget_hours")
     constraints = _require(planner, "constraints", dict)
+    # complaint_data_used is checked against the value derived from the
+    # declared derivations rather than taken on the writer's word alone. This
+    # is a partial derivation, and saying so matters: rows that declare no
+    # derivation contribute nothing to it, so for those the flag remains an
+    # assertion. What is no longer possible is the artifact that passed attack
+    # C -- complaint volume in planning_load, complaint_data_used=false -- and
+    # that is stopped by the reconciliation above, not by this flag.
+    derived_complaint_use = any(
+        derivation in COMPLAINT_DERIVED_PLANNING_LOADS for derivation in declared_derivations
+    )
+    if constraints.get("complaint_data_used") is not derived_complaint_use:
+        raise ContractViolation(
+            "planner constraint complaint_data_used must equal the value derived from the "
+            f"declared planning-load derivations ({derived_complaint_use}), not an "
+            "independent assertion"
+        )
     for forbidden_input in (
         "complaint_data_used",
         "precise_location_data_used",
@@ -319,6 +459,48 @@ def validate_demo_v1(doc: dict[str, Any]) -> None:
     limitations = _require(doc, "limitations", list)
     if not limitations or not all(isinstance(item, str) and item for item in limitations):
         raise ContractViolation("limitations must be a non-empty list of strings")
+
+    if "currency" in doc:
+        _validate_currency(_require(doc, "currency", dict))
+
+
+# Permitted derivations for planner.allocations[].planning_load, mapped to the
+# block of the same artifact each one must reconcile with.
+#
+# `planning_load` is the only number the shipped allocator weights on, and
+# until this existed it was checked for nothing but "is a non-negative
+# number". Complaint volume is a non-negative number. The bypass was executed,
+# not theorised: see docs/project/PHASE1_ADVERSARIAL.md, attack C, where 311
+# counts were written straight into planning_load and this validator accepted
+# the artifact while it still declared complaint_data_used=false.
+#
+# A derivation is not taken on trust. Every entry names a value that is
+# already somewhere else in the same document, and the validator recomputes
+# the comparison rather than believing the label.
+#
+# There is no entry for "whatever number the writer felt was right". An area
+# with no usable forecast is a normal state in this product -- adjacency and
+# evidence are often insufficient -- and it still needs staffing, so it may
+# plan against its most recent observed total or take the coverage floor and
+# no discretionary share. What it may not do is carry a load with no stated,
+# checkable basis, because that is the shape complaint volume arrives in.
+PLANNING_LOAD_DERIVATIONS: dict[str, str] = {
+    "forecast_upper_bound": "forecast.areas[].upper",
+    "latest_observed_total": "observations.latest_by_area[].total",
+    "coverage_floor_only": "no discretionary load (planning_load must be 0)",
+}
+
+# The derivation an area MUST use when its forecast published an interval.
+# Without this, an area with a forecast could declare the fallback instead and
+# pick whichever number suited it.
+_FORECAST_DERIVATION = "forecast_upper_bound"
+
+# Derivations that would mean complaint volume reached the allocator. None is
+# permitted, which is why planner.constraints.complaint_data_used can be
+# DERIVED from the declared derivations instead of asserted by the writer.
+COMPLAINT_DERIVED_PLANNING_LOADS: frozenset[str] = frozenset()
+
+_PLANNING_LOAD_TOLERANCE = 1e-6
 
 
 def _validate_contract_block(doc: dict[str, Any]) -> None:

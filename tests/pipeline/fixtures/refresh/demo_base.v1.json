@@ -1,0 +1,297 @@
+{
+  "evidence": {
+    "balanced_panel": {
+      "areas": [
+        {
+          "area": "Area Alpha",
+          "panel_blocks": 12
+        },
+        {
+          "area": "Area Bravo",
+          "panel_blocks": 10
+        },
+        {
+          "area": "Area Charlie",
+          "panel_blocks": 8
+        }
+      ],
+      "comparison": {
+        "from_period": "2025-06",
+        "to_period": "2025-12"
+      },
+      "panel_size": 30,
+      "validity_checks": {
+        "same_block_set": true
+      }
+    },
+    "robustness": {
+      "count_day_weather": {
+        "status": "not_requested"
+      },
+      "parking_exposure": {
+        "status": "not_requested"
+      }
+    },
+    "validity_checks": {
+      "same_block_set": true
+    }
+  },
+  "forecast": {
+    "aggregate": {
+      "area": "All included areas",
+      "backtest": {
+        "mae": 6.2,
+        "mape_pct": 4.8,
+        "origins": 12
+      },
+      "limitations": [
+        "Synthetic series; the interval is illustrative only."
+      ],
+      "lower": 118,
+      "model_scorecard": [
+        {
+          "mae": 6.2,
+          "model": "seasonal_naive",
+          "selected": true
+        }
+      ],
+      "point": 129,
+      "status": "ok",
+      "upper": 141
+    },
+    "areas": [
+      {
+        "area": "Area Alpha",
+        "backtest": {
+          "mae": 5.1,
+          "mape_pct": 8.4,
+          "origins": 12
+        },
+        "limitations": [
+          "Synthetic series; the interval is illustrative only."
+        ],
+        "lower": 55,
+        "model_scorecard": [
+          {
+            "mae": 5.1,
+            "model": "seasonal_naive",
+            "selected": true
+          }
+        ],
+        "point": 61,
+        "status": "ok",
+        "upper": 68
+      },
+      {
+        "area": "Area Bravo",
+        "backtest": {
+          "mae": 5.6,
+          "mape_pct": 9.1,
+          "origins": 12
+        },
+        "limitations": [
+          "Synthetic series; the interval is illustrative only."
+        ],
+        "lower": 35,
+        "model_scorecard": [
+          {
+            "mae": 5.6,
+            "model": "recent_three",
+            "selected": true
+          }
+        ],
+        "point": 40,
+        "status": "ok",
+        "upper": 46
+      },
+      {
+        "area": "Area Charlie",
+        "backtest": {
+          "origins": 12
+        },
+        "limitations": [
+          "Too few synthetic observations to publish an interval."
+        ],
+        "model_scorecard": [],
+        "status": "insufficient_forecast_evidence"
+      }
+    ],
+    "data_frozen_through": "2025-12",
+    "selection_rule": {
+      "holdout": "synthetic",
+      "rule": "lowest holdout error wins; ties keep the incumbent"
+    },
+    "target_month": "2026-01"
+  },
+  "generated_from": {
+    "bundle": "synthetic refresh fixture (no organizer data, no block-level rows)",
+    "deterministic": true,
+    "input_sha256": {
+      "SyntheticAreaMonthly.csv": "28462eb2066fe187f462c32501e1284cf1c20dfd6b165cd6e49b8eb37a4ddf2a"
+    },
+    "source_data_through": "2025-12"
+  },
+  "limitations": [
+    "Every number in this fixture is fabricated and describes no real place or person.",
+    "The fixture exists to pin refresh output; it is not an analytical result."
+  ],
+  "observations": {
+    "coverage": {
+      "calendar_months": 12,
+      "completeness_pct": 83.3,
+      "end_month": "2025-12",
+      "latest_reported_month": "2025-12",
+      "reported_months": 10,
+      "start_month": "2025-01"
+    },
+    "history": [
+      {
+        "month": "2025-01",
+        "status": "reported_verified_total",
+        "total": 132
+      },
+      {
+        "month": "2025-02",
+        "status": "reported_verified_total",
+        "total": 128
+      },
+      {
+        "month": "2025-03",
+        "status": "reported_verified_total",
+        "total": 135
+      },
+      {
+        "month": "2025-04",
+        "status": "reported_verified_total",
+        "total": 130
+      },
+      {
+        "month": "2025-05",
+        "status": "not_reported",
+        "total": null
+      },
+      {
+        "month": "2025-06",
+        "status": "reported_verified_total",
+        "total": 126
+      },
+      {
+        "month": "2025-07",
+        "status": "reported_verified_total",
+        "total": 124
+      },
+      {
+        "month": "2025-08",
+        "status": "reported_verified_total",
+        "total": 129
+      },
+      {
+        "month": "2025-09",
+        "status": "not_reported",
+        "total": null
+      },
+      {
+        "month": "2025-10",
+        "status": "reported_verified_total",
+        "total": 127
+      },
+      {
+        "month": "2025-11",
+        "status": "reported_verified_total",
+        "total": 131
+      },
+      {
+        "month": "2025-12",
+        "status": "reported_verified_total",
+        "total": 130
+      }
+    ],
+    "latest_by_area": [
+      {
+        "area": "Area Alpha",
+        "month": "2025-12",
+        "total": 62
+      },
+      {
+        "area": "Area Bravo",
+        "month": "2025-12",
+        "total": 40
+      },
+      {
+        "area": "Area Charlie",
+        "month": "2025-12",
+        "total": 28
+      }
+    ],
+    "missing_months": [
+      "2025-05",
+      "2025-09"
+    ],
+    "scope": {
+      "areas": [
+        "Area Alpha",
+        "Area Bravo",
+        "Area Charlie"
+      ]
+    }
+  },
+  "planner": {
+    "allocations": [
+      {
+        "allocated_hours": 24,
+        "area": "Area Alpha",
+        "base_hours": 10,
+        "planning_load": 68.0,
+        "planning_load_derivation": "forecast_upper_bound",
+        "variable_hours": 14
+      },
+      {
+        "allocated_hours": 18,
+        "area": "Area Bravo",
+        "base_hours": 10,
+        "planning_load": 46.0,
+        "planning_load_derivation": "forecast_upper_bound",
+        "variable_hours": 8
+      },
+      {
+        "allocated_hours": 18,
+        "area": "Area Charlie",
+        "base_hours": 10,
+        "planning_load": 28.0,
+        "planning_load_derivation": "latest_observed_total",
+        "variable_hours": 8
+      }
+    ],
+    "budget_hours": 60,
+    "constraints": {
+      "complaint_data_used": false,
+      "precise_location_data_used": false,
+      "reporting_bias_diagnostic_used": false
+    },
+    "decision_support_only": true,
+    "minimum_hours_per_area": 10
+  },
+  "quality_audit": {
+    "ledger": [],
+    "note": "The fixture declares no quality findings; it is fabricated, not observed."
+  },
+  "reporting_bias": {
+    "reason": "The fixture carries no optional reporting-bias lane.",
+    "status": "not_requested"
+  },
+  "scenario": {
+    "claim_boundary": "Synthetic aggregates. They describe no real place, period, or person.",
+    "decision_owner": "Pipeline maintainer",
+    "decision_question": "Does the refresh command emit exactly the artifact it is pinned to emit?",
+    "headline": "A fabricated three-area series that exists only to pin the refresh pipeline.",
+    "id": "synthetic-refresh-fixture",
+    "prepared_forecast_month": "2026-01",
+    "prepared_observation_month": "2025-12",
+    "title": "Synthetic refresh fixture"
+  },
+  "schema": "stillhere.demo.v1",
+  "technical_summary": {
+    "monthly_estimand": "Synthetic area-month aggregate totals.",
+    "validation_design": "None. The fixture pins refresh behavior, not analytical method."
+  }
+}

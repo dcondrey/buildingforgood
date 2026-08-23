@@ -1,3 +1,5 @@
+import type { ExcludesComplaintSignal, PlanningLoadDerivation } from "../domain/planner/types.ts";
+
 export type EvidenceClassification =
   "wider_footprint" | "possible_displacement" | "likely_improvement" | "insufficient_evidence";
 
@@ -6,15 +8,33 @@ export interface HistoryPoint {
   value: number | null;
 }
 
+/**
+ * One planning area as the shipped planner sees it.
+ *
+ * Complaint volume is not representable here, and that is enforced rather
+ * than asserted: `PLANNING_AREA_EXCLUDES_COMPLAINT_SIGNAL` below fails to
+ * typecheck if any complaint-shaped field is added, and `allocateHours`
+ * runs `assertNoComplaintSignal` over the values it is actually handed.
+ * See config/decision.v1.json -> observations.complaint_volume_excluded_uses
+ * and the C-01 red-team review, finding R-03.
+ */
 export interface PlanningArea {
   id: string;
   name: string;
   latest: number | null;
   delta: number;
   planningLoad: number;
+  /**
+   * Where `planningLoad` came from. Not decoration: `allocateHours` refuses
+   * an area whose derivation is not permitted, which is what stops complaint
+   * volume from arriving as an unnamed number.
+   */
+  loadDerivation: PlanningLoadDerivation;
   auditWape: number | null;
   reason: string;
 }
+
+export const PLANNING_AREA_EXCLUDES_COMPLAINT_SIGNAL: ExcludesComplaintSignal<PlanningArea> = true;
 
 export interface ModelScore {
   model: string;
@@ -309,6 +329,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 195,
       delta: 9,
       planningLoad: 193,
+      loadDerivation: "embedded_demo_snapshot",
       auditWape: 12.9,
       reason: "upper forecast bound + 8h coverage floor",
     },
@@ -318,6 +339,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 32,
       delta: 5,
       planningLoad: 34.7,
+      loadDerivation: "embedded_demo_snapshot",
       auditWape: 19.9,
       reason: "upper forecast bound + 8h coverage floor",
     },
@@ -327,6 +349,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 83,
       delta: -63,
       planningLoad: 113.3,
+      loadDerivation: "embedded_demo_snapshot",
       auditWape: 34.2,
       reason: "upper forecast bound + 8h coverage floor",
     },
@@ -336,6 +359,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 555,
       delta: -54,
       planningLoad: 591,
+      loadDerivation: "embedded_demo_snapshot",
       auditWape: 7.8,
       reason: "upper forecast bound + 8h coverage floor",
     },
@@ -345,6 +369,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 42,
       delta: -6,
       planningLoad: 61.7,
+      loadDerivation: "embedded_demo_snapshot",
       auditWape: 22.6,
       reason: "upper forecast bound + 8h coverage floor",
     },
@@ -354,6 +379,7 @@ export const EMBEDDED_DEMO: DemoData = {
       latest: 11,
       delta: 1,
       planningLoad: 24,
+      loadDerivation: "embedded_demo_snapshot",
       auditWape: 32.7,
       reason: "upper forecast bound + 8h coverage floor",
     },
@@ -478,6 +504,16 @@ export function adaptDemoV1(input: unknown): DemoData | null {
     if (area && row) forecastByArea.set(normalizeAreaId(area), row);
   }
 
+  // Planning-load provenance is checked here, at the one place untyped
+  // artifact JSON becomes planner input. A value whose declared derivation is
+  // not permitted, or which does not reconcile with the forecast bound it
+  // claims to come from, refuses the whole artifact rather than being
+  // silently corrected: see docs/project/PHASE1_ADVERSARIAL.md attack C,
+  // where complaint volume was written into `planning_load` and every layer
+  // accepted it. Refusing returns null, so `loadDemoData` falls back to the
+  // embedded snapshot and the interface reports its origin as the offline
+  // fallback rather than as generated analysis.
+  let planningLoadRefused = false;
   const areas = array(planner.allocations)
     .map((item): PlanningArea | null => {
       const row = record(item);
@@ -488,17 +524,60 @@ export function adaptDemoV1(input: unknown): DemoData | null {
       const areaRaw = record(areaEvidence?.raw_observation_units) ?? {};
       const areaForecast = forecastByArea.get(id);
       const areaBacktest = record(areaForecast?.backtest) ?? {};
+
+      // Every planning load is checked by arithmetic against a value already
+      // published in this artifact. Mirrors PLANNING_LOAD_DERIVATIONS in
+      // pipeline/src/stillhere_pipeline/contracts.py; keep the two in step.
+      const load = row?.planning_load;
+      const upper = areaForecast?.upper;
+      const declared = row?.planning_load_derivation;
+      let derivation: PlanningLoadDerivation;
+      let expected: number;
+      if (finite(upper)) {
+        // The forecast settles it, so the label is optional here and cannot
+        // be used to choose a more convenient basis.
+        if (declared !== undefined && declared !== "forecast_upper_bound") {
+          planningLoadRefused = true;
+          return null;
+        }
+        derivation = "forecast_upper_bound";
+        expected = upper;
+      } else if (declared === "latest_observed_total") {
+        const latest = latestByArea.get(id);
+        if (latest === undefined) {
+          planningLoadRefused = true;
+          return null;
+        }
+        derivation = declared;
+        expected = latest;
+      } else if (declared === "coverage_floor_only") {
+        derivation = declared;
+        expected = 0;
+      } else {
+        // No forecast bound and no permitted fallback declared. An
+        // unexplained planning load is exactly the shape complaint volume
+        // arrives in, so the artifact is refused rather than adapted.
+        planningLoadRefused = true;
+        return null;
+      }
+      if (!finite(load) || Math.abs(load - expected) > 1e-6) {
+        planningLoadRefused = true;
+        return null;
+      }
+
       return {
         id,
         name,
         latest: latestByArea.get(id) ?? null,
         delta: number(areaRaw.change, 0),
-        planningLoad: number(row?.planning_load, 1),
+        planningLoad: load,
+        loadDerivation: derivation,
         auditWape: typeof areaBacktest.wape_pct === "number" ? areaBacktest.wape_pct : null,
         reason: text(row?.reason, "upper forecast bound + coverage floor"),
       };
     })
     .filter((item): item is PlanningArea => item !== null);
+  if (planningLoadRefused) return null;
 
   const selectedModel = text(promotion.selected_model ?? aggregate.model, "");
   const scorecard = array(aggregate.model_scorecard ?? aggregate.candidate_scores)

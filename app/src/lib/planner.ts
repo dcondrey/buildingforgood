@@ -1,3 +1,15 @@
+/**
+ * The allocation path the deployed app runs
+ * (`features/shell/useShellState.ts` -> `allocateHours`).
+ *
+ * `assertNoComplaintSignal` is imported from `domain/planner`, never
+ * reimplemented: a second copy of a safety check drifts into the weaker of
+ * the two. See docs/project/PHASE0_FINDINGS.md finding F-1 for why this
+ * import exists at all, and app/src/refusals.test.ts for what it must hold.
+ */
+
+import { assertDeclaredPlanningLoad, assertNoComplaintSignal } from "../domain/planner/planner.ts";
+
 import type { PlanningArea } from "./demo";
 
 export interface Allocation {
@@ -18,6 +30,16 @@ export function allocateHours(
   guardEnabled: boolean,
   locks: ReadonlyMap<string, number> = new Map(),
 ): PlanResult {
+  // Boundary check first: a complaint signal is rejected outright rather
+  // than validated into a friendly message, because a caller that can
+  // recover from it can also ignore it.
+  assertNoComplaintSignal(areas, "planner areas");
+  assertNoComplaintSignal(Object.fromEntries(locks), "planner locks");
+  // A complaint field is rejected by name above. This rejects a complaint
+  // NUMBER arriving under an innocent name, which is the bypass that got
+  // through the first version of this guard.
+  assertDeclaredPlanningLoad(areas, "planner areas");
+
   if (!Number.isFinite(budget) || budget < 0 || !Number.isInteger(budget)) {
     return {
       allocations: [],

@@ -19,11 +19,45 @@ export const MAX_LOADED_HOURLY_RATE = 250;
 export const DEFAULT_RATE_CURRENCY = "USD";
 
 /**
- * Key names that price a human being. Mirrors `PersonDenominatorKey` in
- * `./types.ts`, which guards the compile-time boundary.
+ * Denominators a cost figure is allowed to have. An allowlist has a bounded,
+ * checkable definition; a denylist of words meaning "human being" does not.
+ *
+ * The first version of this guard was a denylist, and an independent review
+ * defeated it with this project's own vocabulary: `cost_per_sleeper` (SleeperType
+ * is a real exported type in normalize.py) and `cost_per_household` (which is
+ * on the actuals schema's own will-never-compute list) both passed, along with
+ * `cost_per_bed`, `cost_per_case`, and `dollars_per_body`.
  */
-const PERSON_DENOMINATOR_PATTERN =
-  /per[_-]?(person|people|contact|client|individual|capita|head|covered|served|encounter|resident|participant)/i;
+const PERMITTED_DENOMINATORS = new Set([
+  "hour",
+  "hours",
+  "staffhour",
+  "staffhours",
+  "area",
+  "areas",
+  "plan",
+  "plans",
+  "shift",
+  "shifts",
+]);
+
+/**
+ * Keys shaped like a rate. Two forms, each requiring a real boundary before
+ * "per" so ordinary words containing those letters — "hyperlink", "supervisor"
+ * — are not read as rates.
+ */
+const RATE_KEY_SNAKE = /[_-]per[_-]([A-Za-z_]+)$/i;
+const RATE_KEY_CAMEL = /[a-z]Per([A-Z][A-Za-z]*)$/;
+
+/** Prose that prices a person, for string values rather than key names. */
+const PERSON_DENOMINATOR_PROSE =
+  /\bper\s+(person|people|contact|client|individual|capita|head|resident|participant|sleeper|household|bed|case|enrollee|beneficiary|body|anyone|someone)\b/i;
+
+function denominatorOf(key: string): string | null {
+  const match = RATE_KEY_SNAKE.exec(key) ?? RATE_KEY_CAMEL.exec(key);
+  if (!match?.[1]) return null;
+  return match[1].replace(/[_-]/g, "").toLowerCase();
+}
 
 export class CostDenominatorError extends Error {
   constructor(message: string) {
@@ -40,18 +74,47 @@ export class CostDenominatorError extends Error {
  * refuses a complaint signal.
  */
 export function assertNoPersonDenominator(value: unknown, where: string): void {
+  const check = (key: string, path: string): void => {
+    const denominator = denominatorOf(key);
+    if (denominator === null || PERMITTED_DENOMINATORS.has(denominator)) return;
+    throw new CostDenominatorError(
+      `${where}: "${path}${path ? "." : ""}${key}" declares a denominator of ` +
+        `"${denominator}", which is not permitted. Cost figures are stated per staff-hour, ` +
+        `per area, or per plan only; nothing here divides by a human being.`,
+    );
+  };
   const walk = (node: unknown, path: string): void => {
     if (Array.isArray(node)) {
       node.forEach((item, index) => walk(item, `${path}[${index}]`));
       return;
     }
-    if (typeof node !== "object" || node === null) return;
-    for (const [key, child] of Object.entries(node)) {
-      if (PERSON_DENOMINATOR_PATTERN.test(key)) {
+    // Object.entries() returns [] for a Map or a Set, so an unguarded walk
+    // accepts either in silence.
+    if (node instanceof Map) {
+      for (const [key, child] of node) {
+        if (typeof key === "string") check(key, path);
+        walk(key, `${path}<key>`);
+        walk(child, `${path}[${String(key)}]`);
+      }
+      return;
+    }
+    if (node instanceof Set) {
+      let index = 0;
+      for (const child of node) walk(child, `${path}{${index++}}`);
+      return;
+    }
+    if (typeof node === "string") {
+      if (PERSON_DENOMINATOR_PROSE.test(node)) {
         throw new CostDenominatorError(
-          `${where}: "${path}${path ? "." : ""}${key}" prices a person. Cost figures never use a human being as a denominator; the denominator must be an hour, an area, or a plan.`,
+          `${where}: text at "${path}" reads "${node.slice(0, 60)}", which prices a person. ` +
+            `Cost figures are stated per staff-hour, per area, or per plan only.`,
         );
       }
+      return;
+    }
+    if (typeof node !== "object" || node === null) return;
+    for (const [key, child] of Object.entries(node)) {
+      check(key, path);
       walk(child, path ? `${path}.${key}` : key);
     }
   };

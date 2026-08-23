@@ -28,6 +28,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { assertNoComplaintSignal, buildPlan, PlannerInputError } from "./domain/planner/planner.ts";
+import { assertNoPersonDenominator } from "./domain/cost/cost.ts";
 import { AREA_PLANNING_INPUT_EXCLUDES_COMPLAINT_SIGNAL } from "./domain/planner/types.ts";
 import type { AreaPlanningInput, PlannerPolicy } from "./domain/planner/types.ts";
 import { adaptDemoV1, EMBEDDED_DEMO, PLANNING_AREA_EXCLUDES_COMPLAINT_SIGNAL } from "./lib/demo.ts";
@@ -952,5 +953,46 @@ describe("refusal: no displayed number without a source-ledger entry", () => {
     expect(
       LEDGER_ARTIFACTS.some((path) => path.endsWith(`/${EMBEDDED_DEMO.source.artifact}`)),
     ).toBe(false);
+  });
+});
+
+// Found by an independent review track after the first version of both guards
+// shipped. Object.entries() returns [] for a Map or a Set, so both walks
+// accepted either in silence; and a denylist of words meaning "human being"
+// was defeated by this project's own vocabulary (SleeperType is a real
+// exported type in normalize.py; "household" is on the actuals schema's own
+// will-never-compute list).
+describe("refusal: the guards see containers and unnamed denominators", () => {
+  for (const [name, shape] of [
+    ["cost_per_sleeper", { cost_per_sleeper: 12 }],
+    ["cost_per_household", { cost_per_household: 12 }],
+    ["cost_per_bed", { cost_per_bed: 12 }],
+    ["cost_per_enrollee", { cost_per_enrollee: 12 }],
+    ["dollars_per_body", { dollars_per_body: 12 }],
+    ["costPerPerson", { costPerPerson: 12 }],
+    ["a person denominator in prose", { label: "Assumed cost per person served", value: 3.28 }],
+    ["a person denominator inside a Map", new Map([["cost_per_person", 12]])],
+    ["a person denominator inside a Set", new Set([{ cost_per_client: 3 }])],
+  ] as Array<[string, unknown]>) {
+    it(`refuses ${name}`, () => {
+      expect(() => assertNoPersonDenominator(shape, "refusal probe")).toThrow();
+    });
+  }
+
+  it("still permits per-hour, per-area, and per-plan, and ordinary words", () => {
+    expect(() =>
+      assertNoPersonDenominator(
+        { cost_per_hour: 45, costPerArea: 3, cost_per_plan: 1, hyperlink: "x", supervisor: "y" },
+        "refusal probe",
+      ),
+    ).not.toThrow();
+  });
+
+  it("walks a Map or a Set for complaint volume", () => {
+    expect(() => assertNoComplaintSignal(new Map([["complaint_count", 5]]), "probe")).toThrow();
+    expect(() => assertNoComplaintSignal(new Set([{ complaint_count: 5 }]), "probe")).toThrow();
+    expect(() =>
+      assertNoComplaintSignal({ inner: new Map([["calls_311", 5]]) }, "probe"),
+    ).toThrow();
   });
 });

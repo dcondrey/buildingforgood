@@ -56,6 +56,28 @@ export function assertNoComplaintSignal(record: unknown, where: string): void {
     record.forEach((item, index) => assertNoComplaintSignal(item, `${where}[${index}]`));
     return;
   }
+  // Object.entries() returns [] for a Map or a Set, so an unguarded walk
+  // silently accepts either. lib/planner.ts worked around that once by calling
+  // Object.fromEntries(locks) before the check, which protected one call site
+  // and left the guard wrong everywhere else.
+  if (record instanceof Map) {
+    for (const [key, value] of record) {
+      if (typeof key === "string" && COMPLAINT_FIELD_PATTERN.test(key)) {
+        throw new PlannerInputError(
+          `${where} carries a map keyed "${key}"; complaint volume may never influence ` +
+            `planning load or allocation`,
+        );
+      }
+      assertNoComplaintSignal(key, `${where}<key>`);
+      assertNoComplaintSignal(value, `${where}[${String(key)}]`);
+    }
+    return;
+  }
+  if (record instanceof Set) {
+    let index = 0;
+    for (const value of record) assertNoComplaintSignal(value, `${where}{${index++}}`);
+    return;
+  }
   if (typeof record !== "object" || record === null) return;
 
   for (const [key, value] of Object.entries(record)) {

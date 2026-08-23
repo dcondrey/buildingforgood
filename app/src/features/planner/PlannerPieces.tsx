@@ -1,4 +1,5 @@
 import { SparkIcon } from "../../components/Icons";
+import { CostAssumptionControl, PlanCostSummary } from "../../features/cost/CostPieces";
 import { useShell } from "../../features/shell/ShellContext";
 import { DEFAULT_COVERAGE_FLOOR, MAX_BUDGET_HOURS } from "../../lib/constants";
 import { formatNumber } from "../../lib/format";
@@ -49,7 +50,11 @@ export function PlannerControls() {
   } = useShell();
   return (
     <>
-      <div className="coverage-policy" aria-label="Coverage-continuity floor sensitivity">
+      <div
+        className="coverage-policy"
+        aria-label="Coverage-continuity floor sensitivity"
+        role="group"
+      >
         <div>
           <span className="eyebrow">You set this · the tool never picks it</span>
           <strong>Guaranteed minimum hours for every neighborhood</strong>
@@ -103,6 +108,8 @@ export function PlannerControls() {
           </p>
         </div>
       )}
+
+      <CostAssumptionControl />
     </>
   );
 }
@@ -425,6 +432,8 @@ export function PlanRows() {
           );
         })}
       </div>
+
+      <PlanCostSummary />
     </>
   );
 }

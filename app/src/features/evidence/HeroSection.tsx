@@ -34,6 +34,7 @@ export function HeroSection() {
           <div
             className="composition-lead"
             aria-label="Observed composition and active-block footprint comparison"
+            role="group"
           >
             <div>
               <span>People seen in the field</span>
@@ -73,7 +74,7 @@ export function HeroSection() {
             <p>Same month · same method · same {signal.panelSize} blocks</p>
           </div>
         </div>
-        <div aria-label="Prepared scenario summary" className="hero-decision">
+        <div aria-label="Prepared scenario summary" className="hero-decision" role="group">
           <span className="eyebrow">The decision at hand</span>
           <p>
             Suppose <strong>{budget} staff-hours</strong> are available for next week’s outreach

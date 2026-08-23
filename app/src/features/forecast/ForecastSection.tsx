@@ -63,7 +63,7 @@ export function ForecastSection() {
             untouched 2025 walk-forward, which is why the two error levels differ. Lower MAE and
             WAPE are better; interval coverage is audited separately.
           </p>
-          <div className="model-audit" aria-label="Final 2025 walk-forward audit">
+          <div className="model-audit" aria-label="Final 2025 walk-forward audit" role="group">
             <span>
               <small>2025 audit MAE</small>
               <strong>{formatNumber(data.forecast.mae, 1)}</strong>

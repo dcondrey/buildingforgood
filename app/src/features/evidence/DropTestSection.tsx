@@ -127,6 +127,7 @@ export function DropTestSection() {
             <div
               className="component-proof"
               aria-label="Like-for-like observed individual and tent footprint sensitivity"
+              role="group"
             >
               <div className="distribution-heading">
                 <div>
@@ -236,6 +237,7 @@ export function DropTestSection() {
               <div
                 className="distribution-proof distribution-secondary"
                 aria-label="Secondary mixed-unit active-block threshold and concentration sensitivity"
+                role="group"
               >
                 <div className="distribution-heading">
                   <div>
@@ -358,7 +360,7 @@ export function DropTestSection() {
                         };
                       }}
                     />
-                    <div className="map-legend" aria-label="Map legend">
+                    <div className="map-legend" aria-label="Map legend" role="group">
                       <span>
                         <i className="map-legend-up" /> More observed units
                       </span>

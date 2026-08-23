@@ -106,6 +106,38 @@ raw-data tests skip in a clean checkout for exactly this reason.
 
 ## 3. What leaves the system
 
+### 3.0 The four export paths
+
+Four things leave, and all four carry the same grain. Nothing else does; there
+is no backend, no telemetry, and no analytics.
+
+1. **`public/generated/demo.v1.json`**, the published artifact. Described in
+   detail below.
+2. **The clipboard decision brief**, assembled in the browser from that
+   artifact plus the coordinator's own settings.
+3. **CSV and print/PDF export**, from the same values. The CSV carries the
+   disclosure as a column rather than a footer, so a row pasted into an email
+   carries its own limits.
+4. **The share link.** A pasted URL is an export path, and it is the one an
+   adopter is most likely to overlook, because it does not feel like a file.
+
+The share link carries seven named parameters — budget, coverage floor,
+guard on/off, locks as `area_id:hours` pairs, the displaced-share assumption,
+the area that assumption applies to, and the loaded hourly rate — and nothing
+else. It is enforced in both directions by an allowlist in
+`app/src/features/share/planShareState.ts`: any key outside the seven is
+refused by name, area ids must match a strict pattern and are refused if any
+segment reads person-level or point-location, and every value must be
+alphanumeric before it is emitted. An independent adversarial pass confirmed
+that no person-level, point-location, complaint-shaped, or per-person value is
+representable in a link, and that prototype-pollution keys and duplicate
+parameters are refused.
+
+That the link is human-readable is deliberate: a coordinator can read the whole
+plan out of it before deciding to send it.
+
+### 3.1 The published artifact
+
 One file: `public/generated/demo.v1.json`. Its published grain is:
 
 - **Time grain: calendar month.** No day, no timestamp, no count date. The
@@ -124,8 +156,8 @@ and the aggregate units involved — never as per-block rows. `block identifiers
 and geometry are omitted` is asserted inside the artifact itself and enforced
 by the scan.
 
-The map is not a coordinate layer. `AREA_MAP_GEOMETRY` in `app/src/App.tsx`
-holds six simplified area outlines expressed in SVG viewBox units, derived by
+The map is not a coordinate layer. `AREA_MAP_GEOMETRY` in
+`app/src/features/spatial/areaGeometry.ts` holds six simplified area outlines expressed in SVG viewBox units, derived by
 dissolving the organizer block grid to area level. There is no latitude or
 longitude anywhere in the shipped product.
 

@@ -22,7 +22,7 @@
  * shapes outright rather than trusting that no caller will supply one.
  */
 
-import { DEFAULT_LOADED_HOURLY_RATE, MAX_LOADED_HOURLY_RATE } from "../../domain/cost/index.ts";
+import { MAX_LOADED_HOURLY_RATE } from "../../domain/cost/index.ts";
 import { MAX_BUDGET_HOURS } from "../../lib/constants";
 
 export const PLAN_SHARE_VERSION = "1";
@@ -208,16 +208,17 @@ export function encodePlanShare(state: PlanShareState): string {
     ["floor", String(safe.floor)],
     ["guard", safe.guard ? "on" : "off"],
   ];
-  if (safe.locks.length > 0) {
-    pairs.push(["locks", safe.locks.map(([areaId, hours]) => `${areaId}:${hours}`).join(",")]);
-  }
+  // All seven are always written, empty ones included, so that a parameter
+  // missing on arrival means the link was truncated or mangled rather than
+  // meaning "the sender had none". The decoder refuses on absence.
+  pairs.push(["locks", safe.locks.map(([areaId, hours]) => `${areaId}:${hours}`).join(",")]);
   pairs.push(["share", String(Math.round(safe.share * 100))]);
-  if (safe.assume !== null) pairs.push(["assume", safe.assume]);
+  pairs.push(["assume", safe.assume ?? ""]);
   pairs.push(["rate", String(safe.rate)]);
 
   for (const [key, value] of pairs) {
     if (!ALLOWED_PARAM_KEYS.has(key)) throw new PlanShareError(key, "is not a shareable parameter");
-    if (!SAFE_PARAM_VALUE.test(value)) {
+    if (value !== "" && !SAFE_PARAM_VALUE.test(value)) {
       throw new PlanShareError(key, "would need escaping, so it is not a shareable value");
     }
   }
@@ -269,9 +270,17 @@ export function decodePlanShare(search: string): PlanShareState | null {
     throw new PlanShareError("guard", "must be on or off");
   }
 
+  // Every one of the seven fields is required. encodePlanShare always writes
+  // all seven, so a link missing one was not produced by this system, and
+  // defaulting the absent ones diverges the reader's plan from the sender's
+  // without saying so: a dropped `rate` silently reinstates the placeholder
+  // rate the cost copy tells a finance lead to replace, and a dropped `share`
+  // used to decode as a 100% displaced-share assumption — the maximum the
+  // slider allows, not a neutral value.
   const rawLocks = single(params, "locks");
+  if (rawLocks === null) throw new PlanShareError("locks", "is missing from the link");
   const locks: Array<[string, number]> = [];
-  if (rawLocks !== null && rawLocks !== "") {
+  if (rawLocks !== "") {
     for (const entry of rawLocks.split(",")) {
       const [areaId, hours, ...rest] = entry.split(":");
       if (rest.length > 0 || hours === undefined || !WHOLE_NUMBER.test(hours)) {
@@ -281,14 +290,16 @@ export function decodePlanShare(search: string): PlanShareState | null {
     }
   }
 
-  const sharePercent = readWhole(params, "share", 100);
+  const sharePercent = readWhole(params, "share", null);
   if (sharePercent > 100) throw new PlanShareError("share", "must be a percentage from 0 to 100");
 
   const rawAssume = single(params, "assume");
-  const assume = rawAssume === null || rawAssume === "" ? null : rawAssume;
+  if (rawAssume === null) throw new PlanShareError("assume", "is missing from the link");
+  const assume = rawAssume === "" ? null : rawAssume;
 
   const rawRate = single(params, "rate");
-  if (rawRate !== null && !DECIMAL_NUMBER.test(rawRate)) {
+  if (rawRate === null) throw new PlanShareError("rate", "is missing from the link");
+  if (!DECIMAL_NUMBER.test(rawRate)) {
     throw new PlanShareError("rate", "must be a number");
   }
 
@@ -301,7 +312,7 @@ export function decodePlanShare(search: string): PlanShareState | null {
     locks,
     share: sharePercent / 100,
     assume,
-    rate: rawRate === null ? DEFAULT_LOADED_HOURLY_RATE : Number(rawRate),
+    rate: Number(rawRate),
   });
 }
 

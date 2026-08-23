@@ -114,6 +114,23 @@ describe("the shareable allowlist", () => {
       "v=1&budget=120&budget=400&floor=8&guard=on",
       "v=9&budget=120&floor=8&guard=on",
       "v=1&floor=8&guard=on",
+      // Every field omitted in turn, from a link that is otherwise complete.
+      // An independent review found this test asserted the property only on
+      // the four fields that already refused: the name promised seven, the
+      // body checked four, and dropping rate, share, or locks was accepted
+      // silently with a substituted value.
+      "v=1&floor=8&guard=on&locks=&share=40&assume=&rate=95",
+      "v=1&budget=120&guard=on&locks=&share=40&assume=&rate=95",
+      "v=1&budget=120&floor=8&locks=&share=40&assume=&rate=95",
+      "v=1&budget=120&floor=8&guard=on&share=40&assume=&rate=95",
+      "v=1&budget=120&floor=8&guard=on&locks=&assume=&rate=95",
+      "v=1&budget=120&floor=8&guard=on&locks=&share=40&rate=95",
+      "v=1&budget=120&floor=8&guard=on&locks=&share=40&assume=",
+      // Six realistic manglings of a link that left the sender intact.
+      "v=1&budget=120&floor=8&guard=on&locks=east_village:16,gasl",
+      "v=1&amp;budget=120&amp;floor=8&amp;guard=on&amp;locks=&amp;share=40&amp;assume=&amp;rate=95",
+      "v=1&budget=120&floor=8&guard=on&locks=&share=40&assume=&rate=95.",
+      "v=1&budget=120&floor=8&guard=on&locks=&share=40&assume=&rate=95>",
     ];
     for (const search of handEdited) {
       expect(() => decodePlanShare(search), search).toThrow(PlanShareError);

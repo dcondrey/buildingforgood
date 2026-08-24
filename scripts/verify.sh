@@ -5,7 +5,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "== [1/6] pipeline: format, lint, types, tests =="
+echo "== [1/6] pipeline: format, lint, types, tests, shell portability =="
 if [ ! -d .venv ]; then
   python3 -m venv .venv
 fi
@@ -13,6 +13,12 @@ fi
 .venv/bin/ruff format --check pipeline/src tests
 .venv/bin/ruff check pipeline/src tests
 .venv/bin/mypy --config-file pipeline/pyproject.toml pipeline/src
+# Every script here is written on macOS and every CI run is Linux. Twice in one
+# push a construct meant different things on the two — `mktemp -t NAME` most
+# expensively, which meant this file had never been able to run on Linux at all.
+# The divergences are a short known list, so they are read for here rather than
+# discovered by a CI run that only reaches the first one.
+PYTHONPATH=pipeline/src .venv/bin/python -m stillhere_pipeline.portability --root .
 # -rs so the skipped-test summary is captured. The claim inventory in step 5
 # reconciles those skips against its ledger: 15 tests skip on every clean
 # checkout because the artifact's five source files are not redistributable

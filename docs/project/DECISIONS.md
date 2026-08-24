@@ -245,3 +245,52 @@ geography that the pipeline could actually derive from, which is the same
 condition that would make the portability claim real. Until then an adopter gets
 a working planner over their own geography and San Diego's methods exhibit
 beside it, and is entitled to be told which is which before they look.
+
+## 2026-08-24 — a gate nobody has watched fail is not a gate
+
+**The decision.** Every gate in `verify.sh` must have a known-bad input it has
+been observed failing on, and that input lives in the repository as a test. A
+gate without one is treated as unproven regardless of what it prints.
+
+**Why, four times over.** The same defect appeared in four unrelated places in
+two days, and in every case the symptom was a green check:
+
+- `mutation_check.sh` graded a mutation as caught when the suite failed, with no
+  check that the suite was green first. A suite already red caught everything.
+  Two agents reported ten of ten over a red suite before anyone noticed.
+- The claim inventory's `--pytest-summary` returned "unreconciled" when the file
+  it was handed did not exist, so a broken `mktemp` would have left the skip
+  ledger asserting nothing behind a passing stage.
+- `tests/pipeline/test_monitoring_data.py` returned early when its input was
+  absent and pytest reported it **passed**. Its cross-check against the
+  publisher's totals had never once executed.
+- `verify.sh` itself could not run on Linux at all — `mktemp -t NAME` is a
+  prefix on BSD and a malformed template on GNU — so every green run had been
+  on the one platform CI does not use.
+
+None of these was a bug in what the gate checked. Each was a bug in whether the
+gate ran, and no amount of testing the *logic* would have found them.
+
+**What this rules out.** Adding a check and observing it pass. Passing is not
+evidence; a check wired to nothing passes too. The evidence is watching it fail
+on an input it should reject, and keeping that input.
+
+**Where it stands today.** The mutation gate has ten mutants and now refuses to
+run over a red baseline. The claim inventory has fourteen negative cases,
+including the three added when check 7 landed — one of which initially passed
+for the wrong reason, its fixture being YAML where the checker reads JSON, and
+was caught only by a positive control. The privacy scanner has its leak
+fixtures. The portability lint added here has one known-bad line per rule, and
+its first fixture is not invented: it is the literal line that shipped and broke
+CI, verified against `50498bb` where the linter finds all three real
+occurrences — two more than the CI run did, because CI stopped at the first.
+
+**What is still unproven, and named rather than left.** The refusal suite and
+the adversarial harnesses have no injected-failure fixture of their own; they
+are covered indirectly, by the mutation gate's complaint-signal mutant and by
+having been watched failing during the session that wired them in. That is
+weaker than a fixture and should become one.
+
+**What would change this decision.** Nothing about it is cheap to hold — every
+new gate costs a fixture. The alternative is what the four cases above cost,
+which was more.

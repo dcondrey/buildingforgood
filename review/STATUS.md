@@ -1,5 +1,11 @@
 # Independent review track — status
 
+**Superseded, 2026-08-23.** This file describes the track as of build-session
+commit `6beb8de` and was not updated afterwards; the work continued for many
+commits past it. It is kept as the record of how the track was organised, not
+as a status. For what is actually open, read `RISK-REGISTER.md`, which is the
+one file here written to be current.
+
 **Branch:** `review/parallel`, in a separate git worktree at
 `/Users/davidcondrey/Documents/stillhere-review`. The main checkout is
 untouched — no source changes anywhere, at any point. `review/` and

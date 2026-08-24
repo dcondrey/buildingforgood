@@ -9,6 +9,7 @@ course of ordinary work fails here rather than in front of an evaluator.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -151,3 +152,63 @@ def test_the_shipped_registry_passes(tmp_path: Path) -> None:
     report = check_registry(REPO_ROOT, REPO_ROOT / "docs/adoption/CLAIMS.yaml", Path("tests"))
     assert report.ok, "\n".join(f"{f.claim_id}: {f.check}: {f.detail}" for f in report.findings)
     assert report.claims_checked >= 15
+
+
+# Check 7 binds a claim to a machine-readable declaration. It was covered only
+# by the shipped registry passing, so every way it can fail was untested — a
+# check whose failure path nobody had watched fail, which is the same shape as
+# the gates this session found passing without earning it.
+DECLARED: dict[str, object] = {
+    **MINIMAL,
+    "declarations": [
+        {
+            "id": "bounded",
+            "claim": "backed",
+            "path": "bounds.json",
+            "version": "bounds/v1",
+            "evidence_count": 1,
+            "bounds_count": 2,
+        }
+    ],
+}
+
+BOUNDS = {
+    "declaration_version": "bounds/v1",
+    "claim": "The guard refuses a bad field.",
+    "demonstrated_on": [{"path": "src/guard.py"}],
+    "not_demonstrated": {
+        "anywhere_else": "It has only been shown on this one guard.",
+        "another_guard": "No second guard has been run against it.",
+    },
+}
+
+
+def _declared(tmp_path: Path, bounds: dict[str, object] | None) -> Path:
+    path = build(tmp_path, DECLARED, "It refuses a bad field.")
+    if bounds is not None:
+        (tmp_path / "bounds.json").write_text(json.dumps(bounds), encoding="utf-8")
+    return path
+
+
+def test_a_claim_whose_declaration_file_vanished_fails(tmp_path: Path) -> None:
+    report = run(tmp_path, _declared(tmp_path, None))
+    assert not report.ok
+    assert [f.check for f in report.findings] == ["declaration"]
+    assert "unbounded" in report.findings[0].detail
+
+
+def test_a_bound_deleted_from_the_declaration_fails(tmp_path: Path) -> None:
+    shrunk = {**BOUNDS, "not_demonstrated": {"anywhere_else": "Only this one guard."}}
+    report = run(tmp_path, _declared(tmp_path, shrunk))
+    assert not report.ok, "removing a bound silently widens the claim it bounds"
+    # Assert the REASON, not just the failure. Written without this, the test
+    # passed because the fixture was not valid JSON — a negative test that goes
+    # green for the wrong reason proves nothing about the check it names.
+    assert [f.check for f in report.findings] == ["declaration"]
+    assert "not_demonstrated" in report.findings[0].detail
+
+
+def test_a_declaration_that_still_matches_its_registry_entry_passes(tmp_path: Path) -> None:
+    report = run(tmp_path, _declared(tmp_path, dict(BOUNDS)))
+    assert report.ok, [f"{f.check}: {f.detail}" for f in report.findings]
+    assert report.declarations_checked == 1

@@ -151,6 +151,27 @@ claims:
       - path: tests/privacy/test_privacy.py
         anchor: suppress
 
+  # The one gate that stands between a regression and a reader. Counsel forms a
+  # belief from this sentence, and nothing tracked it until the deploy workflow
+  # was changed and the sentence nearly went stale unnoticed.
+  - id: deploy-scans-what-it-publishes
+    claim: >-
+      The deploy job privacy-scans the exact bundle it is about to publish, and
+      cannot run unless verify passed for that same commit.
+    quote: "independently privacy-scans the exact artifact it is about to publish"
+    surfaces:
+      - SECURITY.md
+    code:
+      - path: .github/workflows/deploy-pages.yml
+        anchor: "--require-bundle"
+      - path: .github/workflows/deploy-pages.yml
+        anchor: "workflow_run"
+      - path: .github/workflows/deploy-pages.yml
+        anchor: "head_repository.full_name == github.repository"
+    limitation:
+      surface: review/RISK-REGISTER.md
+      quote: "CLOSED, but unobserved"
+
   # ---- what it will not do ------------------------------------------------
   - id: no-backend
     claim: No backend, no accounts, no login, no telemetry.

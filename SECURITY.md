@@ -44,12 +44,22 @@ registry or source.
 ### 2. Build and deploy pipeline
 
 Three GitHub Actions workflows exist: `verify.yml` (format, lint, types,
-Python tests, TypeScript tests, production build, privacy scan) on pushes to
+Python tests, TypeScript tests, production build, the adversarial harnesses in
+`review/attacks/`, the privacy scan, and the claim inventory) on pushes to
 `main` and `track/**` and on every pull request; `mutation.yml` (the planner
 mutation gate); and `deploy-pages.yml`, which builds the bundle,
 independently privacy-scans the exact artifact it is about to publish with
 `--require-bundle`, and then deploys it to GitHub Pages. All third-party
 actions are pinned by commit SHA and workflow permissions are scoped.
+
+**Deploy is gated on verify.** `deploy-pages.yml` runs on `verify` completing
+for `main` and refuses unless that run's conclusion was success, its triggering
+event was a `push`, and its head repository is this one. The last two matter
+because `verify` also runs on pull requests, including from forks, and a
+`workflow_run` branch filter matches the triggering run's head branch — so a
+fork PR opened from a branch named `main` would otherwise satisfy it and get
+its own commit published. `workflow_dispatch` remains an ungated manual path
+and is deliberately privileged.
 
 Relevant reports include: a way to reach the deploy job without passing
 `verify.sh`; a way to make `deploy-pages.yml` publish a bundle other than

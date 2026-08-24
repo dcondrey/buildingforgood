@@ -16,7 +16,9 @@ fi
 # -rs so the skipped-test summary is captured. The claim inventory in step 5
 # reconciles those skips against its ledger: 15 tests skip on every clean
 # checkout because the artifact's five source files are not redistributable
-# (finding F-2), and a suite reporting only "249 passed" hides that cost.
+# (finding F-2), and a bare "N passed" hides that cost. No count is quoted here
+# on purpose: a number in a comment goes stale the next time anyone adds a test,
+# and the ledger in the claim inventory is the thing that actually holds it.
 SKIP_SUMMARY="$(mktemp -t stillhere-skips)"
 trap 'rm -f "$SKIP_SUMMARY"' EXIT
 .venv/bin/pytest tests -q -rs | tee "$SKIP_SUMMARY"

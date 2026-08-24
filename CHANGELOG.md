@@ -75,10 +75,21 @@ declares that, enforced by the claim inventory.
 - **The review track is published**, with closed findings stamped RESOLVED and
   their bodies left as written, and a risk register reordered by severity
   instead of by what an evaluator notices.
+- **The adversarial harnesses run.** `review/attacks/` shipped for the first
+  time and was wired into `verify.sh` as stage 4, 46 tests across 12 files.
+  Thirteen were failing and none was a live regression: five fixtures that
+  predated a hardening, and eight that asserted an attack *succeeded* and now
+  assert it is refused. Two are refused by an error whose text cites those very
+  attacks by name.
 
 ### Fixed
 
-- **Deploy no longer runs without verify having passed** for that commit.
+- **Deploy no longer runs without verify having passed** for that commit — and
+  not on a fork's pull request either. `verify` runs on pull requests, and a
+  `workflow_run` branch filter matches the *triggering* run's head branch, so a
+  fork PR opened from a branch named `main` would otherwise have satisfied the
+  gate and had its own commit published. The job now also requires the
+  triggering event to be a push from this repository.
 
 Everything below was built on 2026-08-23 to move the project from a hackathon
 artifact to something a partner nonprofit can adopt, configure for its own

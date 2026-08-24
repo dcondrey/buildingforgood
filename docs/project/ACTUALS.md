@@ -8,9 +8,11 @@ building, and what the tool will and will not do with any of it.
 Read it before agreeing to send anything.
 
 **Current status: no actuals have been recorded.** Nothing in this repository
-holds a delivered hour or an engagement count from a real operator. The
-schema, the loader, and the empty state exist; the analysis does not, and
-that is deliberate — see [§7](#7-what-the-tool-will-and-will-not-compute).
+holds a delivered hour or an engagement count from a real operator. The schema,
+the loader, the comparison and the screen exist and are wired together; what is
+missing is data, not code. The first analysis — planned against delivered, by
+area and month — is built; everything else in the intended-analysis block
+deliberately is not. See [§7](#7-what-the-tool-will-and-will-not-compute).
 
 Companion documents, not repeated here:
 [`DATA_GOVERNANCE.md`](DATA_GOVERNANCE.md) for the system-wide data posture,
@@ -306,8 +308,9 @@ list is validated rather than documented.
 
 `app/src/features/actuals/ActualsEmptyState.tsx` renders "no actuals recorded
 yet" with a short account of what an operator would supply and how. It is
-presentational, holds no state, and takes what it says as props, so the
-workstream that owns the shell can place it without untangling it.
+presentational, holds no state, and takes what it says as props. It is now
+reached through `ActualsPanel`, which shows it until a file is loaded and the
+comparison replaces it.
 
 It exists because the alternatives are worse. A blank panel reads as broken;
 an empty table reads as a system that lost the data; a zero reads as a month

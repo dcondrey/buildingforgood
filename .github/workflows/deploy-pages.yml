@@ -26,12 +26,30 @@ concurrency:
 
 jobs:
   deploy:
-    # A finished `verify` run is not a passing one. Without this, a failed
-    # verify would still fire `completed` and deploy anyway, which is the
-    # original hole wearing a trigger it did not earn.
+    # Four conditions, and each one closes a distinct way in.
+    #
+    # `conclusion == 'success'` — a FINISHED verify run is not a PASSING one.
+    # Without this a failed verify still fires `completed` and deploys, which is
+    # the original hole wearing a trigger it did not earn.
+    #
+    # `event == 'push'` — `verify` also runs on `pull_request`, including from
+    # forks. The `branches: [main]` filter above matches the TRIGGERING run's
+    # head branch, so a fork PR opened from a branch named `main` satisfies it.
+    # Without this condition that PR's code would be checked out below by
+    # `head_sha` and published. This is the sharp edge of gating on
+    # `workflow_run` and it is easy to miss.
+    #
+    # `head_repository == github.repository` — belt and braces on the same
+    # attack, in case a future edit relaxes the event check.
+    #
+    # `head_branch == 'main'` — restates the trigger filter at the job, so
+    # loosening one of the two does not silently widen the other.
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository &&
+       github.event.workflow_run.head_branch == 'main')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

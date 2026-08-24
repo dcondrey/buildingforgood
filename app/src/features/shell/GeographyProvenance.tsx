@@ -2,11 +2,26 @@ import { useShell } from "./ShellContext";
 import { useTranslation } from "../../i18n/context";
 import "./shell-notices.css";
 
+/**
+ * Every resolution status a loaded profile can actually carry.
+ *
+ * `illustrative` is deliberately absent. `validateProvenance` permits only
+ * `resolved` for `geography.area_list` and only `resolved | provisional |
+ * unresolved` for `boundaries` and `adjacency`, and every path to
+ * `deployment.unresolvedGeography` runs through `parseOrganizationProfile`,
+ * which throws on a failed validation — so no shipped or adopter profile can
+ * reach this map with `illustrative`. The label it used to select read
+ * "invented for illustration", which is the one thing this interface must
+ * never be able to say about a geography it is planning hours against.
+ *
+ * `ResolutionStatus` in `domain/config/types.ts` and `RESOLUTION_STATUSES` in
+ * `profile.ts` still enumerate it; removing it there is a separate change.
+ * Until then the fallback below prints the raw status rather than a label.
+ */
 const STATUS_KEYS: Record<string, string> = {
   resolved: "geo.statusResolved",
   provisional: "geo.statusProvisional",
   unresolved: "geo.statusUnresolved",
-  illustrative: "geo.statusIllustrative",
 };
 
 const COMPONENT_KEYS: Record<string, string> = {

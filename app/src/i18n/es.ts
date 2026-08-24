@@ -43,13 +43,15 @@ export const ES_MESSAGES: Catalogue = {
   /* ---- vigencia del artefacto ------------------------------------- */
   "currency.unknownBadge": "Vigencia desconocida",
   "currency.unknownBadgeNote": "este artefacto no declara su vigencia",
-  "currency.currentThrough": "Vigente hasta {month}",
-  "currency.overdue": "publicación atrasada",
-  "currency.onCadence": "publicación al día",
+  "currency.currentThrough": "Datos hasta {month}",
+  /** La frase que debe llevar todo estado de vigencia. Véase `currency.thresholdPhrase` en `en.ts`. */
+  "currency.thresholdPhrase": "umbral de vigencia",
+  "currency.overdue": "fuera del umbral de vigencia",
+  "currency.onCadence": "dentro del umbral de vigencia",
   "currency.eyebrow": "Vigencia del artefacto",
   "currency.chipNone": "Sin vigencia declarada",
-  "currency.chipOverdue": "Publicación atrasada",
-  "currency.chipCurrent": "Publicación al día",
+  "currency.chipOverdue": "Fuera del umbral de vigencia",
+  "currency.chipCurrent": "Dentro del umbral de vigencia",
   "currency.noBlock":
     "Este artefacto no trae un bloque de vigencia, así que esta versión no puede decir cuánto atraso lleva respecto del calendario. La instantánea sin conexión incluida en el paquete siempre está en este estado. Ejecute la actualización mensual para producir un artefacto que declare su propia antigüedad.",
   "currency.nextRefresh": "Próxima actualización prevista para {month} según {basis}.",
@@ -79,8 +81,10 @@ export const ES_MESSAGES: Catalogue = {
   "disclosure.title": "Trazable por diseño",
   "disclosure.source": "Fuente",
   "disclosure.currency": "Vigencia",
-  "disclosure.currencyOverdue": "Datos de origen hasta {month}; publicación atrasada.",
-  "disclosure.currencyOnCadence": "Datos de origen hasta {month}; publicación al día.",
+  "disclosure.currencyOverdue":
+    "Datos de origen hasta {month}; fuera del umbral de vigencia que declara este artefacto.",
+  "disclosure.currencyOnCadence":
+    "Datos de origen hasta {month}; dentro del umbral de vigencia que declara este artefacto.",
   "disclosure.currencyNone":
     "Este artefacto no declara vigencia. Su actualidad se desconoce y no se infiere.",
   "disclosure.coverageThrough": "Cobertura hasta",
@@ -153,8 +157,10 @@ export const ES_MESSAGES: Catalogue = {
   "hero.offline": "Instantánea de demostración sin conexión",
   "hero.kicker": "Decisión preparada · {focusArea} · {period}",
   "hero.title": "¿Menos carpas,<br><i>o menos personas?</i>",
+  /** La frase que debe llevar la entradilla. Véase `hero.exhibitPhrase` en `en.ts`. */
+  "hero.exhibitPhrase": "la muestra de método de San Diego, que se ve con cualquier perfil",
   "hero.lede":
-    "La estimación de personas sin vivienda derivada por componentes en el centro de San Diego bajó 22% en un año sobre el panel fijo de 261 cuadras, pero la caída vino de las carpas, no de las personas: las observaciones directas de personas subieron y aparecieron en 25 cuadras más que el año anterior. Esta herramienta muestra qué cambió, qué es incierto y a dónde debería ir el próximo turno de trabajo de calle.",
+    "La evidencia de esta página es la muestra de método de San Diego, que se ve con cualquier perfil: no cambia al cargar la geografía de otra organización; lo único que cambia es el plan de abajo. Sobre el panel fijo de 261 cuadras, la estimación de personas sin vivienda derivada por componentes en el centro de San Diego bajó 22% en un año, pero la caída vino de las carpas, no de las personas: las observaciones directas de personas subieron y aparecieron en 25 cuadras más que el año anterior. Esta herramienta muestra qué cambió, qué es incierto y a dónde debería ir el próximo turno de trabajo de calle.",
   "hero.compositionAria":
     "Comparación de la composición observada y de la huella de cuadras activas",
   "hero.peopleSeen": "Personas vistas en campo",
@@ -765,7 +771,6 @@ export const ES_MESSAGES: Catalogue = {
   "geo.statusResolved": "resuelto",
   "geo.statusProvisional": "provisional",
   "geo.statusUnresolved": "sin fuente citable",
-  "geo.statusIllustrative": "inventado a modo de ilustración",
 
   /* ---- las palabras del perfil para sus propios lugares -------------------------
    *
@@ -1108,6 +1113,61 @@ export const ES_MESSAGES: Catalogue = {
   "actuals.instructions":
     "Las instrucciones completas, incluido lo que se calculará y lo que no se calculará más adelante a partir de estos números, están en <c>{docs}</c>.",
 
+  /* ---- el plan frente a lo entregado --------------------------------------------------- */
+  "actuals.compare.eyebrow": "El mes pasado",
+  "actuals.compare.title": "El plan frente a lo entregado",
+  "actuals.compare.intro":
+    "Un plan dice cuántas horas de personal recibirá cada área. Un archivo de horas entregadas dice cuántas se trabajaron allí. La distancia entre ambas es el error del propio plan, área por área.",
+
+  "actuals.compare.loadLabel": "Cargar un archivo de horas entregadas",
+  "actuals.compare.loadHint":
+    "El archivo se lee aquí, en este navegador, y se queda en él. No se sube nada: no hay ningún servidor detrás de esta página al que subirlo.",
+  "actuals.compare.storedNote": "Guardado solo en este navegador, hasta que lo quite.",
+  "actuals.compare.clear": "Quitar estas horas entregadas",
+  "actuals.compare.monthLabel": "Mes",
+
+  "actuals.compare.reportedBy": "Reportado por {role} en {who}. Última actualización: {date}.",
+  "actuals.compare.method": "Cómo se recogieron las cifras: {method}",
+  "actuals.compare.measure": "{label} — {definition}",
+
+  "actuals.compare.colArea": "Área",
+  "actuals.compare.colPlanned": "Horas planificadas",
+  "actuals.compare.colDelivered": "Horas entregadas",
+  "actuals.compare.colError": "Error del plan",
+  "actuals.compare.colEngagement": "{measure}",
+  "actuals.compare.tableCaption":
+    "Horas de personal planificadas y entregadas por área, para {month}",
+
+  "actuals.compare.plannedNone": "Sin plan registrado",
+  "actuals.compare.errorUnresolved": "Sin resolver: no hay plan con el que comparar",
+  "actuals.compare.errorUnder": "{hours} h por debajo del plan",
+  "actuals.compare.errorOver": "{hours} h por encima del plan",
+  "actuals.compare.errorOnPlan": "Igual al plan",
+  "actuals.compare.engagementSuppressed": "Retenido: son muy pocos para publicarlo",
+  "actuals.compare.engagementNotRecorded": "No registrado",
+
+  "actuals.compare.absentTitle": "No reportaron ninguna fila para {month}",
+  "actuals.compare.absentBody":
+    "{areas}. Un mes ausente del archivo es desconocido, no cero: no se ha demostrado que allí no se entregara nada.",
+
+  "actuals.compare.noTotal": "Por qué no hay un total",
+  "actuals.compare.noTotalBody":
+    "Una suma entre áreas o entre meses permitiría a un lector restar hasta recuperar un conteo que este archivo retiene, así que la fila de área y mes sigue siendo el grano publicado. Lea las filas; no las sume.",
+
+  "actuals.compare.notScorableTitle": "Lo que esta comparación no es",
+  "actuals.compare.notScorableCountForecast":
+    "No es una calificación del pronóstico publicado. Ese pronóstico anticipa un conteo observado con la metodología de punto en el tiempo, y ninguna cifra de un archivo de horas entregadas observa un conteo de ese tipo.",
+  "actuals.compare.notScorableEngagementResponse":
+    "No es evidencia de que las horas muevan un conteo de encuentros. Dos cifras en una misma fila no establecen que una haya producido la otra, y la propia lista de exclusiones del archivo descarta esa pregunta.",
+  "actuals.compare.notScorableAreaChange":
+    "No es una lectura de cómo cambió un área. Nada en un archivo de horas entregadas observa un área entre un plan y el siguiente, así que ningún cambio así puede recuperarse de él.",
+
+  "actuals.compare.refusedTitle": "Este archivo fue rechazado",
+  "actuals.compare.refusedIntro":
+    "No se cargó nada. Cada hallazgo nombra el campo del que proviene, para que se corrija en el archivo en vez de adivinarlo.",
+  "actuals.compare.warningsTitle": "Cargado, con advertencias",
+  "actuals.compare.warningsIntro":
+    "Estas no bloquean el archivo. Son cifras que conviene revisar antes de leer la comparación.",
   /* ---- tarjetas de datos responsables -------------------------------------------------- */
   "cards.hideDetails": "Ocultar los detalles de {title}",
   "cards.showDetails": "Mostrar los detalles de {title}",

@@ -359,3 +359,132 @@ describe("every map caption states the outlines are not surveyed boundaries", ()
     expect(offenders).toEqual([]);
   });
 });
+
+/**
+ * The lede has to say whose evidence it is before it states the evidence.
+ *
+ * The evidence layer is not profile-scoped and is not going to be: observations,
+ * panel, forecast, audit and robustness all come from one artifact built from one
+ * pinned Downtown San Diego Partnership report on one fixed path with no profile
+ * in it (`docs/project/DECISIONS.md`, 2026-08-23). Switching organization
+ * profiles changes the plan and nothing above it, so both profiles render a
+ * byte-identical lede.
+ *
+ * That is fine as architecture and was a false statement as copy. The lede opened
+ * with "Downtown San Diego's component-derived unsheltered estimate fell 22%…"
+ * and no frame, so an adopter who had just loaded their own geography read a San
+ * Diego result as a result about their deployment. The decision entry says they
+ * are "entitled to be told which is which before they look"; these are the two
+ * halves of before.
+ */
+describe("the hero lede names the evidence as San Diego's methods exhibit", () => {
+  for (const locale of LOCALES) {
+    it(`carries ${locale}'s registered exhibit phrase`, () => {
+      const phrase = CATALOGUES[locale]["hero.exhibitPhrase"];
+      // A locale cannot satisfy this with an empty or evasive phrase: the
+      // place is the point, and it is spelled the same in every language here.
+      expect(phrase).toContain("San Diego");
+      expect(CATALOGUES[locale]["hero.lede"]).toContain(phrase);
+    });
+
+    it(`states it in ${locale} before the first figure`, () => {
+      const lede = CATALOGUES[locale]["hero.lede"];
+      const firstFigure = lede.search(/\d/);
+      expect(firstFigure).toBeGreaterThan(-1);
+      expect(lede.indexOf(CATALOGUES[locale]["hero.exhibitPhrase"])).toBeLessThan(firstFigure);
+    });
+  }
+});
+
+/**
+ * The currency chrome states the artifact's age, never the publisher's schedule.
+ *
+ * `currency.status` is `elapsed_months > staleness.threshold.months` and nothing
+ * else — `build_currency` in `pipeline/src/stillhere_pipeline/refresh.py`. The
+ * badge rendered that boolean as "publication on cadence" / "publication
+ * overdue", which are claims about the publisher, from an artifact that carries
+ * `source_publication_scheduled: false` and a note saying DSDP announces no
+ * publication dates in advance. The heading over it read "Current through Dec
+ * 2025" for a field named `source_data_through`: where the data stops, not
+ * evidence that anything is current.
+ */
+describe("every currency status string names the threshold, not a publication schedule", () => {
+  /** Every message that renders `currency.status` or the month it stops at. */
+  const STATUS_KEYS = [
+    "currency.overdue",
+    "currency.onCadence",
+    "currency.chipOverdue",
+    "currency.chipCurrent",
+    "disclosure.currencyOverdue",
+    "disclosure.currencyOnCadence",
+  ] as const;
+
+  for (const locale of LOCALES) {
+    it(`carries ${locale}'s registered threshold phrase in all ${STATUS_KEYS.length} status strings`, () => {
+      const phrase = CATALOGUES[locale]["currency.thresholdPhrase"];
+      expect(phrase.length).toBeGreaterThan(0);
+      const missing = STATUS_KEYS.filter(
+        (key) => !CATALOGUES[locale][key].toLowerCase().includes(phrase.toLowerCase()),
+      );
+      expect(missing).toEqual([]);
+    });
+  }
+
+  /**
+   * The retracted wording, in every language that carried it. Registered one
+   * phrase at a time rather than by pattern: "al día" alone would also match
+   * `robust.countDayEyebrow`, which is about the day of the count and is fine.
+   */
+  const RETRACTED = [
+    "current through",
+    "publication on cadence",
+    "publication current",
+    "publication overdue",
+    "vigente hasta",
+    "publicación al día",
+    "publicación atrasada",
+  ];
+
+  it("claims nothing about when the publisher publishes, in any locale", () => {
+    const offenders: string[] = [];
+    for (const locale of LOCALES) {
+      for (const [key, message] of Object.entries(CATALOGUES[locale])) {
+        for (const retracted of RETRACTED) {
+          if (message.toLowerCase().includes(retracted))
+            offenders.push(`${locale}:${key} — "${retracted}"`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+});
+
+/**
+ * No shipped geography can be described as invented.
+ *
+ * `illustrative` was a resolution status meaning "this describes a place that
+ * does not exist". It is unreachable: `validateProvenance` permits only
+ * `resolved` for the area list and only `resolved | provisional | unresolved`
+ * for boundaries and adjacency, and `parseOrganizationProfile` throws on a
+ * failed validation. `geo.statusIllustrative` — "invented for illustration",
+ * "inventado a modo de ilustración" — was the last copy in the interface that
+ * could label a geography this tool allocates staff-hours to as a fabrication,
+ * and it is gone in both locales. The catalogue is the surface that survives a
+ * loader refactor, so the refusal is pinned here too.
+ */
+describe("the interface cannot call a shipped geography invented", () => {
+  const INVENTED = ["invented for illustration", "inventado a modo de ilustración"];
+
+  it("carries no such label in any locale", () => {
+    const offenders: string[] = [];
+    for (const locale of LOCALES) {
+      expect(Object.keys(CATALOGUES[locale])).not.toContain("geo.statusIllustrative");
+      for (const [key, message] of Object.entries(CATALOGUES[locale])) {
+        for (const invented of INVENTED) {
+          if (message.toLowerCase().includes(invented)) offenders.push(`${locale}:${key}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+});

@@ -1435,6 +1435,48 @@ describe("refusal: the vocabulary covers every shipped locale, structurally", ()
     // allowlisted, invisible. Not a live defect, because neither ships. It is
     // recorded because the vocabulary file will look like the only thing that
     // needs touching, and it is not.
+    //
+    // THE REPRO, so the next implementer does not have to take that on trust.
+    // Add `fr` the way an implementer actually would. Four edits, none of them
+    // in a guard:
+    //
+    //   1. app/src/i18n/fr.ts: `export const FR_MESSAGES = { ...EN_MESSAGES }`
+    //   2. translate.ts: import it, add `fr: FR_MESSAGES` to CATALOGUES
+    //   3. locale.ts: LOCALES -> ["en", "es", "fr"]; add INTL_LOCALE.fr and
+    //      LOCALE_LABEL.fr
+    //   4. npm --prefix app exec -- vitest run src/refusals.test.ts
+    //
+    // Run on 2026-08-23: 108 tests, 8 failed. The suite collects, so the gate
+    // gets to speak. Five of the eight name the gap in words:
+    //
+    //   ships a rule set for every locale the app can be read in
+    //     -- expected [ ... ] to have a length of 3 but got 2
+    //   carries an entry for every locale the app can be read in
+    //     -- expected [ 'en', 'es' ] to deeply equal [ 'en', 'es', 'fr' ]
+    //   gives fr a connector, complaint terms, denominators, and both closed
+    //     classes -- no vocabulary entry for fr
+    //   gives fr refusal vectors for all three guarded shapes
+    //     -- no refused corpus for fr
+    //   gives fr legitimate vectors that must keep passing
+    //     -- no permitted corpus for fr
+    //
+    // The other three read as TypeErrors off the corpus that is not there:
+    // "refuses every fr complaint key at the planner and the share link",
+    // "refuses every fr person-denominator key and prose in a cost summary",
+    // and "accepts every legitimate fr key and sentence -- zero over-refusals".
+    //
+    // WHAT DOES NOT PROVE IT, recorded because it was circulated as if it did.
+    // Editing LOCALES alone:
+    //
+    //   perl -0pi -e 's/\["en", "es"\]/["en", "es", "fr"]/' app/src/i18n/locale.ts
+    //
+    // leaves `CATALOGUES.fr` undefined, and the file dies building
+    // CATALOGUE_CHUNKS above -- "TypeError: Cannot convert undefined or null
+    // to object", `Test Files 1 failed`, `Tests no tests`. The suite never
+    // collects, so it is red for the wrong reason and not one named refusal
+    // prints. A gate that failed to load is not a gate that refused, and the
+    // three-line version cites a crash while claiming a refusal. Seed the
+    // catalogue, or you have tested nothing.
     expect(Object.keys(UNSHIPPED_CONNECTORS).length).toBeGreaterThan(0);
     for (const [connector, language] of Object.entries(UNSHIPPED_CONNECTORS)) {
       expect(language.length, connector).toBeGreaterThan(0);

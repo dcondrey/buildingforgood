@@ -37,13 +37,25 @@ export const EN_MESSAGES = {
   /* ---- artifact currency ------------------------------------------ */
   "currency.unknownBadge": "Currency unknown",
   "currency.unknownBadgeNote": "this artifact states no currency",
-  "currency.currentThrough": "Current through {month}",
-  "currency.overdue": "publication overdue",
-  "currency.onCadence": "publication on cadence",
+  "currency.currentThrough": "Data through {month}",
+  /**
+   * The one phrase every currency status string must carry, in this locale.
+   *
+   * `currency.status` is computed from elapsed months against the threshold
+   * the artifact itself states (`staleness.threshold.months`), and from
+   * nothing else. It said "publication on cadence" / "publication overdue",
+   * which are claims about the publisher — and the same artifact carries
+   * `source_publication_scheduled: false` and a note saying DSDP announces
+   * no publication dates. Registered here so `i18n.test.tsx` can require
+   * every status string in every locale to name the threshold instead.
+   */
+  "currency.thresholdPhrase": "freshness threshold",
+  "currency.overdue": "past the freshness threshold",
+  "currency.onCadence": "within the freshness threshold",
   "currency.eyebrow": "Artifact currency",
   "currency.chipNone": "No currency stated",
-  "currency.chipOverdue": "Publication overdue",
-  "currency.chipCurrent": "Publication current",
+  "currency.chipOverdue": "Past the freshness threshold",
+  "currency.chipCurrent": "Within the freshness threshold",
   "currency.noBlock":
     "This artifact carries no currency block, so this build cannot say how far behind the calendar it is. The offline snapshot compiled into the bundle is always in this state. Run the monthly refresh to produce an artifact that states its own age.",
   "currency.nextRefresh": "Next refresh expected {month} on {basis}.",
@@ -73,8 +85,10 @@ export const EN_MESSAGES = {
   "disclosure.title": "Traceable by design",
   "disclosure.source": "Source",
   "disclosure.currency": "Currency",
-  "disclosure.currencyOverdue": "Source data through {month}; publication overdue.",
-  "disclosure.currencyOnCadence": "Source data through {month}; publication on cadence.",
+  "disclosure.currencyOverdue":
+    "Source data through {month}; past the freshness threshold this artifact states.",
+  "disclosure.currencyOnCadence":
+    "Source data through {month}; within the freshness threshold this artifact states.",
   "disclosure.currencyNone":
     "This artifact states no currency. Freshness is unknown and is not inferred.",
   "disclosure.coverageThrough": "Coverage through",
@@ -144,8 +158,21 @@ export const EN_MESSAGES = {
   "hero.offline": "Offline demo snapshot",
   "hero.kicker": "Prepared decision · {focusArea} · {period}",
   "hero.title": "Fewer tents,<br><i>or fewer people?</i>",
+  /**
+   * The one phrase the lede must carry, in this locale.
+   *
+   * The evidence layer is not profile-scoped and is not going to be: it is
+   * built from one pinned Downtown San Diego Partnership report on one fixed
+   * path, and switching organization profiles changes the plan and nothing
+   * above it (`docs/project/DECISIONS.md`, 2026-08-23). The lede used to open
+   * with the 22% figure and no frame, so under any profile it read as a
+   * statement about the deployment the reader had just loaded. It is a
+   * statement about San Diego. Registered here so `i18n.test.tsx` can require
+   * every locale's lede to say so, and to say so before the first figure.
+   */
+  "hero.exhibitPhrase": "San Diego’s methods exhibit, shown under every profile",
   "hero.lede":
-    "Downtown San Diego’s component-derived unsheltered estimate fell 22% in a year on the fixed 261-block panel, but the drop came from tents, not people: direct observations of people rose and appeared on 25 more blocks than the year before. This tool shows what changed, what’s uncertain, and where the next outreach shift should go.",
+    "The evidence on this page is San Diego’s methods exhibit, shown under every profile: it does not change when another organization’s geography is loaded — only the plan below does. On the fixed 261-block panel, Downtown San Diego’s component-derived unsheltered estimate fell 22% in a year, but the drop came from tents, not people: direct observations of people rose and appeared on 25 more blocks than the year before. This tool shows what changed, what’s uncertain, and where the next outreach shift should go.",
   "hero.compositionAria": "Observed composition and active-block footprint comparison",
   "hero.peopleSeen": "People seen in the field",
   "hero.tents": "Tents & structures",
@@ -739,7 +766,6 @@ export const EN_MESSAGES = {
   "geo.statusResolved": "resolved",
   "geo.statusProvisional": "provisional",
   "geo.statusUnresolved": "no citable source",
-  "geo.statusIllustrative": "invented for illustration",
 
   /* ---- the deployment's own words for its places ------------------------
    *
@@ -1073,6 +1099,60 @@ export const EN_MESSAGES = {
   "actuals.instructions":
     "Full instructions, including what will and will not later be computed from these numbers, are in <c>{docs}</c>.",
 
+  /* ---- plan against delivered ---------------------------------------------------------- */
+  "actuals.compare.eyebrow": "Last month",
+  "actuals.compare.title": "The plan against what was delivered",
+  "actuals.compare.intro":
+    "A plan says how many staff hours each area will get. An actuals file says how many were worked there. The gap between the two is the error in the plan itself, one area at a time.",
+
+  "actuals.compare.loadLabel": "Load an actuals file",
+  "actuals.compare.loadHint":
+    "The file is read here, in this browser, and stays in it. Nothing is uploaded: there is no server behind this page to upload anything to.",
+  "actuals.compare.storedNote": "Held in this browser only, until you remove it.",
+  "actuals.compare.clear": "Remove these actuals",
+  "actuals.compare.monthLabel": "Month",
+
+  "actuals.compare.reportedBy": "Reported by the {role} at {who}. Last updated {date}.",
+  "actuals.compare.method": "How the figures were collected: {method}",
+  "actuals.compare.measure": "{label} — {definition}",
+
+  "actuals.compare.colArea": "Area",
+  "actuals.compare.colPlanned": "Planned hours",
+  "actuals.compare.colDelivered": "Delivered hours",
+  "actuals.compare.colError": "Plan error",
+  "actuals.compare.colEngagement": "{measure}",
+  "actuals.compare.tableCaption": "Planned and delivered staff hours by area, for {month}",
+
+  "actuals.compare.plannedNone": "No plan recorded",
+  "actuals.compare.errorUnresolved": "Unresolved: no plan to compare against",
+  "actuals.compare.errorUnder": "{hours} h under plan",
+  "actuals.compare.errorOver": "{hours} h over plan",
+  "actuals.compare.errorOnPlan": "On plan",
+  "actuals.compare.engagementSuppressed": "Withheld: too few to publish",
+  "actuals.compare.engagementNotRecorded": "Not recorded",
+
+  "actuals.compare.absentTitle": "Reported no row for {month}",
+  "actuals.compare.absentBody":
+    "{areas}. A month absent from the file is unknown, not zero: it has not been shown that nothing was delivered there.",
+
+  "actuals.compare.noTotal": "Why there is no total",
+  "actuals.compare.noTotalBody":
+    "A sum across areas or across months would let a reader subtract their way back to a count this file withholds, so the area-month row stays the published grain. Read the rows; do not add them up.",
+
+  "actuals.compare.notScorableTitle": "What this comparison is not",
+  "actuals.compare.notScorableCountForecast":
+    "It is not a score of the published forecast. That forecast predicts an observed count from the point-in-time methodology, and no figure in an actuals file observes a count of that kind.",
+  "actuals.compare.notScorableEngagementResponse":
+    "It is not evidence that hours move an engagement count. Two figures sitting in one row do not establish that one produced the other, and this file's own never-list rules that question out.",
+  "actuals.compare.notScorableAreaChange":
+    "It is not a reading of how an area changed. Nothing in an actuals file observes an area between plans, so no such change can be recovered from it.",
+
+  "actuals.compare.refusedTitle": "This file was refused",
+  "actuals.compare.refusedIntro":
+    "Nothing was loaded. Each finding below names the field it came from, so it can be fixed in the file rather than guessed at.",
+  "actuals.compare.warningsTitle": "Loaded, with warnings",
+  "actuals.compare.warningsIntro":
+    "These do not block the file. They are figures worth checking before the comparison is read.",
   /* ---- responsible-data cards --------------------------------------------------------- */
   "cards.hideDetails": "Hide details for {title}",
   "cards.showDetails": "Show details for {title}",

@@ -44,12 +44,18 @@ function mount(data: DemoData, node: React.ReactNode) {
 afterEach(cleanup);
 
 describe("the currency badge", () => {
-  it("reports an overdue publication distinctly from a current one", () => {
+  // `status` is elapsed months against the threshold the artifact states, and
+  // nothing else (`build_currency` in refresh.py). The badge used to render it
+  // as "publication overdue" / "publication on cadence" — statements about a
+  // publisher whose own block says it schedules nothing. Both sides now name
+  // the threshold, which is the only thing the boolean knows.
+  it("distinguishes the two threshold states without claiming a publication schedule", () => {
     const stale = withCurrency(REFRESHED.currency);
     expect(stale.currency?.status).toBe("stale");
     mount(stale, <CurrencyBadge />);
-    const badge = screen.getByText(/Current through/);
-    expect(badge.textContent).toContain("publication overdue");
+    const badge = screen.getByText(/Data through/);
+    expect(badge.textContent).toContain("past the freshness threshold");
+    expect(badge.textContent).not.toContain("publication");
     expect(badge.className).toContain("currency-stale");
     cleanup();
 
@@ -59,8 +65,9 @@ describe("the currency badge", () => {
       is_stale: false,
     });
     mount(current, <CurrencyBadge />);
-    const fresh = screen.getByText(/Current through/);
-    expect(fresh.textContent).toContain("publication on cadence");
+    const fresh = screen.getByText(/Data through/);
+    expect(fresh.textContent).toContain("within the freshness threshold");
+    expect(fresh.textContent).not.toContain("publication");
     expect(fresh.className).toContain("currency-current");
   });
 

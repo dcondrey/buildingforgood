@@ -1,0 +1,380 @@
+# The claim inventory.
+#
+# Every load-bearing claim this project makes to an adopter, tied to the code
+# that enforces it or the limitation that bounds it. A claim with neither fails
+# the build.
+#
+# It exists because three separate reviews caught the same class of defect: a
+# sentence that was true when it was written and stopped being true when the
+# code moved, with nothing connecting the two. The map caption implied a
+# boundary source that does not exist. The README carried a refusal claim that
+# had been withdrawn everywhere else. The brief said "audited" about findings
+# that were open at the time. A person re-reading every document after every
+# change is the mechanism that failed; this is its replacement.
+#
+# Run it:  python -m stillhere_pipeline.claims
+# It runs in scripts/verify.sh and in CI. Six checks, described in claims.py.
+#
+# Adding a claim is cheap. Removing the backing for one is not: the check names
+# the claim, the surface, and the anchor that vanished.
+
+version: claims/v1
+
+# Documents an adopter, an evaluator, or their counsel reads. A claim must name
+# at least one, and its quote must appear verbatim in every surface it names.
+surfaces:
+  - README.md
+  - SECURITY.md
+  - CHANGELOG.md
+  - docs/adoption/BRIEF.md
+  - docs/adoption/RUNBOOK.md
+  - docs/adoption/EVALUATION_CHECKLIST.md
+
+# Claims that were made, defeated, and withdrawn. These must not reappear on any
+# surface except inside a passage that is explaining the withdrawal, which is
+# what `permitted_context` matches. This is how a narrowed claim stays narrowed.
+withdrawn:
+  - id: complaint-volume-broad
+    phrase: "complaint volume cannot influence planning"
+    withdrawn_because: >-
+      An independent review wrote 311 counts into planning_load — a legally
+      named, correctly typed, schema-legal field — and the shipped allocator
+      re-ranked the plan. Every guard below the derivation check matches field
+      names, and a number has no name. Recorded in docs/project/DECISIONS.md.
+    replaced_by: refusal-narrow
+    # Each entry is a passage where the withdrawn phrase may appear because the
+    # passage exists to say it was withdrawn. Registered one at a time and on
+    # purpose: a pattern here would let the next overclaim in unnoticed.
+    permitted_context:
+      - "Not \"complaint volume cannot influence planning.\""
+      - "broader claim — that complaint volume cannot influence planning — was tested"
+      - "Anyone repeating \"complaint volume cannot influence planning.\""
+      - "The former claim — that complaint volume cannot influence planning — was false as stated"
+
+  - id: regenerable-from-clean-checkout
+    phrase: "regenerate the analysis artifact"
+    withdrawn_because: >-
+      Five of the artifact's source files are organizer-supplied and are not in
+      the repository, so the documented regeneration command exits non-zero on
+      a clean checkout. The artifact is verifiable against pinned checksums; it
+      is not reproducible by an adopter. PHASE0_FINDINGS.md finding F-2.
+    replaced_by: artifact-verifiable-not-reproducible
+    permitted_context: []
+
+claims:
+  # ---- the refusals -------------------------------------------------------
+  - id: refusal-narrow
+    claim: >-
+      Complaint volume cannot reach allocation without also corrupting the
+      published forecast interval.
+    quote: "complaint volume cannot reach allocation without also corrupting"
+    quote_case_sensitive: false
+    surfaces:
+      - README.md
+      - docs/adoption/BRIEF.md
+      - docs/adoption/EVALUATION_CHECKLIST.md
+    code:
+      - path: pipeline/src/stillhere_pipeline/contracts.py
+        anchor: PLANNING_LOAD_DERIVATIONS
+      - path: app/src/domain/planner/planner.ts
+        anchor: assertDeclaredPlanningLoad
+    tests:
+      - path: app/src/refusals.test.ts
+        anchor: "planning load must reconcile"
+    limitation:
+      surface: docs/project/DECISIONS.md
+      quote: "the refusal claim is stated narrowly"
+
+  - id: no-complaint-shaped-field
+    claim: A complaint-shaped field name is refused at every boundary, in every shipped locale.
+    quote: "Complaint counts are still displayed as a"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: app/src/domain/vocabulary/refusedTerms.ts
+        anchor: COMPLAINT_SIGNAL
+      - path: app/src/lib/planner.ts
+        anchor: assertNoComplaintSignal
+    tests:
+      - path: app/src/refusals.test.ts
+        anchor: COMPLAINT_SHAPES
+
+  - id: no-person-denominator
+    claim: >-
+      Cost may be stated per staff-hour, per area, per plan, or per shift.
+      Every other denominator is refused.
+    quote: "No cost figure divides by a human being."
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: app/src/domain/cost/cost.ts
+        anchor: assertNoPersonDenominator
+      - path: app/src/domain/vocabulary/refusedTerms.ts
+        anchor: PERMITTED_DENOMINATORS
+    tests:
+      - path: app/src/domain/cost/cost.test.ts
+        anchor: denominator
+
+  - id: no-person-entity
+    claim: The system has no concept of a person as an entity.
+    quote: "No person is ever in it."
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: app/src/domain/actuals/types.ts
+        anchor: "unique_persons_measure: false"
+      - path: config/schema/actuals.v1.schema.json
+        anchor: area_month_aggregate
+
+  - id: no-llm-in-decision-path
+    claim: No language model sits between the data and any displayed number.
+    quote: "No language model between the data and any displayed number"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: public/generated/demo.v1.json
+        anchor: '"decision_support_only": true'
+      - path: public/generated/demo.v1.json
+        anchor: '"human_review_required": true'
+
+  - id: small-cell-suppressed
+    claim: Any published count between 1 and 4 is withheld.
+    quote: "Any published count between 1 and 4"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: pipeline/src/stillhere_pipeline/privacy.py
+        anchor: min_cell
+      - path: scripts/verify.sh
+        anchor: "--require-bundle"
+    tests:
+      - path: tests/privacy/test_privacy.py
+        anchor: suppress
+
+  # ---- what it will not do ------------------------------------------------
+  - id: no-backend
+    claim: No backend, no accounts, no login, no telemetry.
+    quote: "No backend, database, login, session, analytics, or telemetry."
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: app/src/features/planner/scenarioStore.ts
+        anchor: MAX_SAVED_SCENARIOS
+
+  - id: floor-first
+    claim: >-
+      Every area in scope is guaranteed a minimum before the remainder follows
+      the forecast, and the screen always shows what that cost.
+    quote: "Every area in scope is\n  guaranteed a minimum first"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: app/src/lib/planner.ts
+        anchor: floor
+      - path: app/src/features/cost/CostPieces.tsx
+        anchor: floor
+    tests:
+      - path: app/src/lib/planner.test.ts
+        anchor: floor
+
+  - id: infeasible-says-so
+    claim: If locks and floors exceed the budget the tool produces no plan and says so.
+    quote: "if locks and floors exceed the budget the tool produces no plan and says"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: app/src/lib/planner.ts
+        anchor: feasible
+    tests:
+      - path: app/src/features/shell/deployment.test.tsx
+        anchor: feasible
+
+  # ---- the disclosed limits ----------------------------------------------
+  - id: artifact-verifiable-not-reproducible
+    claim: >-
+      The shipped data file is verifiable against pinned checksums and cannot be
+      regenerated from a clean copy of the repository.
+    quote: "cannot be regenerated from a clean copy of the"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: data/cards/checksums.sha256
+        anchor: ""
+    limitation:
+      surface: docs/adoption/EVALUATION_CHECKLIST.md
+      quote: "checksums but not regenerable from a clean copy"
+
+  - id: geography-unresolved
+    claim: >-
+      Boundaries and adjacency are unresolved in the reference deployment, and
+      the map is an illustration rather than a verified boundary.
+    quote: "is an illustration rather than a verified boundary"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: config/profiles/san-diego-downtown.v1.json
+        anchor: unresolved
+      - path: app/src/features/shell/GeographyProvenance.tsx
+        anchor: unresolved
+    limitation:
+      surface: docs/adoption/BRIEF.md
+      quote: "carries no pinned checksum"
+
+  - id: map-is-not-a-boundary
+    claim: >-
+      The shapes on the map are schematic outlines, not surveyed boundaries, and
+      the interface says so on the map itself rather than only in a document.
+    quote: "is an illustration rather than a verified boundary"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: app/src/i18n/en.ts
+        anchor: "schematic outlines, not surveyed boundaries"
+      - path: app/src/i18n/es.ts
+        anchor: "contornos esquemáticos, no límites cartografiados"
+    tests:
+      - path: app/src/i18n/i18n.test.tsx
+        anchor: "every map caption states the outlines are not surveyed boundaries"
+    limitation:
+      surface: docs/adoption/BRIEF.md
+      quote: "carries no pinned checksum"
+
+  - id: stale-is-correct
+    claim: >-
+      The modelled data runs through December 2025; later observations are
+      displayed but excluded, and the refresh fails if someone flips that flag.
+    quote: "the refresh fails if someone flips that flag"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: pipeline/src/stillhere_pipeline/contracts.py
+        anchor: _validate_currency
+      - path: pipeline/src/stillhere_pipeline/refresh.py
+        anchor: "every monitoring row must carry model_eligible=false"
+    tests:
+      - path: tests/pipeline/test_monitoring_data.py
+        anchor: model_eligible
+
+  - id: no-actuals-analysis
+    claim: >-
+      No delivered-versus-planned analysis exists, because no operator has
+      recorded actuals yet.
+    quote: "No delivered-versus-planned analysis exists"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: app/src/domain/actuals/types.ts
+        anchor: documented_not_implemented
+    limitation:
+      surface: docs/adoption/BRIEF.md
+      quote: "the loader is not wired into the interface"
+
+  - id: accessibility-self-assessed
+    claim: >-
+      Accessibility is self-assessed against WCAG 2.1 AA, all eleven independent
+      findings are addressed in code, and no person has verified it.
+    quote: "Accessibility is self-assessed against WCAG 2.1 AA"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    code:
+      - path: app/src/contrast.test.ts
+        anchor: "4.5"
+    tests:
+      - path: app/src/App.test.tsx
+        anchor: axe
+    limitation:
+      surface: docs/project/ACCESSIBILITY.md
+      quote: "still owed to a person"
+
+  - id: privacy-residual-bounded
+    claim: >-
+      Assume a seventh scanner hole exists. Its mechanism is unknown; its
+      consequence is one number, not one record.
+    quote: "Assume a\nseventh exists."
+    surfaces:
+      - SECURITY.md
+    code:
+      - path: pipeline/src/stillhere_pipeline/privacy.py
+        anchor: BLOCK
+    limitation:
+      surface: docs/adoption/BRIEF.md
+      quote: "The residual exposure is one number, not one record."
+
+  - id: one-maintainer
+    claim: One maintainer, with commitments scoped to what one person can honour.
+    quote: "The project has one maintainer"
+    surfaces:
+      - docs/adoption/BRIEF.md
+    limitation:
+      surface: SECURITY.md
+      quote: "No fix deadline is promised."
+
+  # ---- portability --------------------------------------------------------
+  - id: profile-drives-planner
+    claim: >-
+      A second profile changes the areas, budget, floor, shift structure and
+      rate with no code change.
+    quote: "runs the tool on the"
+    surfaces:
+      - CHANGELOG.md
+    code:
+      - path: app/src/features/shell/deployment.ts
+        anchor: floorOptions
+      - path: config/profiles/san-diego-dsdp-seven.v1.json
+        anchor: outside_perimeter
+    tests:
+      - path: app/src/features/shell/deployment.test.tsx
+        anchor: "a second organization's profile runs the tool"
+
+# The coverage a green suite does not buy.
+#
+# 14 Python tests skip on every clean checkout. A reader who sees "241 passed"
+# and not "14 skipped" concludes the pipeline is covered end to end against real
+# inputs, and it is not: the raw-data tests cannot run without files that are
+# not redistributable. Every distinct skip reason is registered here with the
+# limitation that explains it, and an unregistered reason fails the check.
+skipped_tests:
+  expected_total: 14
+
+  # Files whose skip-reason strings are fixture data rather than real skips.
+  # One entry, and it should stay that way: the checker's own test writes
+  # sample skip calls to a temporary directory, and a regex reading source text
+  # cannot tell those from the real thing. Listed here rather than special-cased
+  # in the code, because an exclusion nobody can see is how a ledger stops
+  # meaning anything.
+  scan_excludes:
+    - tests/pipeline/test_claims.py
+
+  reasons:
+    - reason: hackathon-provided raw bundle is intentionally not tracked
+      count: 11
+      limitation: artifact-verifiable-not-reproducible
+      note: >-
+        These are the F-2 tests. They exercise the demo build against the five
+        organizer-supplied inputs, which are not in the repository and are not
+        ours to redistribute. The pipeline's behaviour is covered instead by a
+        committed synthetic fixture, which is a weaker guarantee and is the
+        cost of F-2 stated plainly.
+    - reason: large local Get It Done extract is intentionally not tracked
+      count: 1
+      limitation: artifact-verifiable-not-reproducible
+      note: The 311 diagnostic's source extract is too large to track.
+    - reason: official parking-meter extracts are intentionally not tracked
+      count: 1
+      limitation: artifact-verifiable-not-reproducible
+      note: Parking-meter transaction files back the reporting-bias diagnostic only.
+    - reason: optional NOAA daily extract is intentionally not tracked
+      count: 1
+      limitation: artifact-verifiable-not-reproducible
+      note: Weather covariate for the sensitivity tests; optional by design.
+    - reason: generated artifacts not present on this branch
+      count: 0
+      limitation: artifact-verifiable-not-reproducible
+      note: >-
+        Registered at zero deliberately, and it must stay at zero. This guard in
+        tests/pipeline/test_contracts.py skips the check that every committed
+        artifact validates against its contract, if public/generated/ is empty.
+        On this branch it is not empty, so the check runs. If this count ever
+        becomes non-zero, the suite is green because the artifact is missing —
+        the exact "quietly absorbed by a green suite" failure this ledger
+        exists to make visible.

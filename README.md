@@ -55,17 +55,35 @@ the plan controls, a per-area dossier with the assumption explorer, saved
 scenarios, and the decision brief. The story view and the workspace share one
 state — the same plan, locks, scenarios, and assumptions travel between them.
 
-To regenerate the analysis artifact and run the full gate (Python 3.11+;
-raw-data tests skip without the organizer bundle):
+To verify the shipped artifact and run the full gate (Python 3.11+):
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -e "pipeline[dev]"
-PYTHONPATH=pipeline/src .venv/bin/python -m stillhere_pipeline.demo
 ./scripts/verify.sh
 ```
 
-The generated artifact is byte-reproducible; `verify.sh` runs both language
-gates and a fail-closed privacy scan of the exact deployable bundle.
+`verify.sh` runs both language gates, a fail-closed privacy scan of the exact
+deployable bundle, and the claim inventory below.
+
+**Verifiable, not reproducible, and the difference matters.** The shipped
+`public/generated/demo.v1.json` can be checked against pinned SHA-256 hashes in
+`data/cards/checksums.sha256`. It **cannot be rebuilt from a clean checkout**:
+five of its inputs are organizer-supplied, are not redistributable, and are not
+in this repository, so `python -m stillhere_pipeline.demo` exits non-zero here
+with `missing input: …`. Fourteen Python tests skip for the same reason. What
+*is* reproducible from a clean checkout, with no network and no bundle, is the
+pipeline's behaviour, against a committed synthetic fixture:
+
+```bash
+PYTHONPATH=pipeline/src .venv/bin/python -m stillhere_pipeline.refresh --source fixture --dry-run
+```
+
+Every claim this project makes to an adopter is listed with the code or the
+limitation backing it, and a claim with neither fails the build:
+
+```bash
+PYTHONPATH=pipeline/src .venv/bin/python -m stillhere_pipeline.claims
+```
 
 ## What it will not say
 

@@ -8,7 +8,7 @@ Run it::
 ``scripts/verify.sh`` runs ``--check``. The registry is
 ``docs/adoption/CLAIMS.yaml`` and that file explains why this exists.
 
-Six checks, in the order they run:
+Seven checks, in the order they run:
 
 1. **The quote is present.** Every claim's quote must appear verbatim in every
    surface it names. A document edited past its claim fails here, which is the
@@ -27,6 +27,11 @@ Six checks, in the order they run:
 6. **The skip ledger reconciles.** Every distinct pytest skip reason is
    registered against a limitation, and the total is declared. A green suite
    that quietly stopped covering something fails here.
+7. **A machine-readable declaration and the claim it bounds stay in step.**
+   Some limitations are a data file rather than a paragraph. A declaration
+   states what has been demonstrated and, at greater length, what has not; this
+   check holds the two together, so the evidence cannot grow, and the bounds
+   cannot shrink, without the claim moving with them.
 
 Deliberately not clever. It matches literal strings, because the failure mode it
 exists to catch is a sentence drifting away from the thing that made it true,
@@ -36,6 +41,7 @@ and a fuzzy matcher would drift with it.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from dataclasses import dataclass, field
@@ -83,6 +89,7 @@ class Report:
     anchors_checked: int = 0
     skips_registered: int = 0
     skips_reconciled: bool = False
+    declarations_checked: int = 0
 
     @property
     def ok(self) -> bool:
@@ -230,6 +237,9 @@ def check_registry(
     # 6. the skip ledger reconciles with the test sources
     _check_skips(root, test_root, data, report, pytest_summary)
 
+    # 7. machine-readable declarations still say what their claim rests on
+    _check_declarations(root, data, report)
+
     return report
 
 
@@ -322,13 +332,35 @@ def _check_skips(
     # Runtime pass: reconcile the declared counts against what pytest actually
     # skipped. Only this pass can tell the difference between "the ledger is
     # stale" and "the ledger is right".
-    if pytest_summary is None or not pytest_summary.is_file():
+    if pytest_summary is None:
         report.skips_reconciled = False
+        return
+    # Asking for reconciliation and not getting it is a failure, not a shrug.
+    # `scripts/verify.sh` writes the summary through a pipe into a temporary
+    # file; if that ever breaks, the ledger would stop asserting anything while
+    # the gate kept printing green, which is the failure this file exists for.
+    if not pytest_summary.is_file():
+        report.skips_reconciled = False
+        report.fail(
+            "skipped_tests",
+            "skip",
+            f"--pytest-summary named {pytest_summary} and no such file exists. The declared "
+            "skip counts went unreconciled while the run asked for them to be checked.",
+        )
         return
     report.skips_reconciled = True
     actual: dict[str, int] = {}
     for count, reason in PYTEST_SKIP_LINE.findall(pytest_summary.read_text(encoding="utf-8")):
         actual[reason] = actual.get(reason, 0) + int(count)
+    if not actual and declared_total:
+        report.fail(
+            "skipped_tests",
+            "skip",
+            f"{pytest_summary} carries no SKIPPED lines, and the ledger declares "
+            f"{declared_total} skipped tests. Run pytest with -rs, or the reconciliation "
+            "is reading an empty file and passing.",
+        )
+        return
 
     for reason, count in sorted(actual.items()):
         entry = registered.get(reason)
@@ -352,6 +384,157 @@ def _check_skips(
             "skip",
             f"the ledger declares {declared_total} skipped tests but pytest skipped {actual_total}",
         )
+
+
+def _check_declarations(root: Path, data: dict[str, Any], report: Report) -> None:
+    """Hold a claim and the machine-readable declaration that bounds it together.
+
+    A prose limitation is checked by matching a sentence. Some limitations are
+    not prose: ``config/portability-demonstrated.v1.json`` is a data file that
+    says which two profiles portability was actually shown on and enumerates
+    what was not shown. Two things can drift there, in opposite directions. The
+    evidence can grow — a third profile appears in the declaration while the
+    claim it bounds still rests on the original two. Or the bounds can shrink —
+    an entry disappears from ``not_demonstrated``, or a phrase disappears from
+    ``forbidden_claims``, and the claim silently widens without a word of it
+    changing. Neither shows up as a failing sentence, so neither is caught by
+    checks 1 through 5.
+
+    The counts here are declared in the registry on purpose. Asserting "five
+    bounds" means removing one is a decision someone has to write down, which is
+    the whole mechanism: not that the number is five, but that changing it is
+    visible.
+    """
+    claims_by_id = {claim["id"]: claim for claim in data.get("claims") or []}
+    for declaration in data.get("declarations") or []:
+        report.declarations_checked += 1
+        did = declaration["id"]
+        cid = declaration["claim"]
+        claim = claims_by_id.get(cid)
+        if claim is None:
+            raise ClaimError(f"declaration {did!r} bounds {cid!r}, which is not a claim")
+
+        relative = declaration["path"]
+        raw = _read(root, relative)
+        if raw is None:
+            report.fail(cid, "declaration", f"{relative} does not exist — the claim is unbounded")
+            continue
+        try:
+            document = json.loads(raw)
+        except json.JSONDecodeError as error:
+            report.fail(cid, "declaration", f"{relative} is not valid JSON: {error}")
+            continue
+
+        expected_version = declaration.get("version")
+        actual_version = document.get("declaration_version")
+        if expected_version and actual_version != expected_version:
+            report.fail(
+                cid,
+                "declaration",
+                f"{relative} declares version {actual_version!r}, and this claim is written "
+                f"against {expected_version!r}",
+            )
+
+        # The declaration's own sentence, verbatim, wherever it says it is stated.
+        sentence = str(document.get("claim") or "").strip()
+        if not sentence:
+            report.fail(cid, "declaration", f"{relative} states no claim of its own")
+        else:
+            for surface in document.get("claim_surfaces") or []:
+                surface_text = _read(root, surface)
+                if surface_text is None:
+                    report.fail(
+                        cid,
+                        "declaration",
+                        f"{relative} names a surface that does not exist: {surface}",
+                    )
+                elif not _contains(surface_text, sentence):
+                    report.fail(
+                        cid,
+                        "declaration",
+                        f"{surface} no longer states the declaration's claim verbatim: "
+                        f"{sentence!r}",
+                    )
+
+        # Every piece of evidence the declaration rests on must also back the claim.
+        claim_paths = {entry["path"] for entry in claim.get("code") or []}
+        evidence = declaration.get("evidence_key", "demonstrated_on")
+        demonstrated = list(document.get(evidence) or [])
+        expected_count = declaration.get("evidence_count")
+        if expected_count is not None and len(demonstrated) != expected_count:
+            report.fail(
+                cid,
+                "declaration",
+                f"{relative} lists {len(demonstrated)} item(s) under {evidence!r} and the registry "
+                f"expects {expected_count}. Evidence changed; say what the claim now covers.",
+            )
+        for entry in demonstrated:
+            path = entry.get("path")
+            if not path:
+                continue
+            if _read(root, path) is None:
+                report.fail(cid, "declaration", f"{relative} cites {path}, which does not exist")
+            elif path not in claim_paths:
+                report.fail(
+                    cid,
+                    "declaration",
+                    f"{relative} rests on {path} and the claim it bounds does not list it under "
+                    "`code:`. The declaration and the claim are describing different evidence.",
+                )
+
+        # The bounds. These may only be removed deliberately.
+        bounds_key = declaration.get("bounds_key", "not_demonstrated")
+        bounds = document.get(bounds_key) or {}
+        expected_bounds = declaration.get("bounds_count")
+        if expected_bounds is not None and len(bounds) != expected_bounds:
+            report.fail(
+                cid,
+                "declaration",
+                f"{relative} lists {len(bounds)} entries under {bounds_key!r} and the registry "
+                f"expects {expected_bounds}. A bound was added or removed; a removed one widens "
+                "the claim without changing a word of it.",
+            )
+        for name, statement in sorted(bounds.items()):
+            if not str(statement).strip():
+                report.fail(
+                    cid,
+                    "declaration",
+                    f"{relative} names the bound {name!r} and says nothing about it",
+                )
+
+        minimum = declaration.get("forbidden_phrases_min")
+        if minimum is not None:
+            phrases = list((document.get("forbidden_claims") or {}).get("phrases") or [])
+            if len(phrases) < minimum:
+                report.fail(
+                    cid,
+                    "declaration",
+                    f"{relative} forbids {len(phrases)} phrase(s) and the registry expects at "
+                    f"least {minimum}. Phrases are added when an overclaim is caught; one is "
+                    "never removed to make a sentence pass.",
+                )
+
+        for key in declaration.get("require_keys") or []:
+            if not document.get(key):
+                report.fail(cid, "declaration", f"{relative} no longer records {key!r}")
+
+        for entry in declaration.get("enforced_by") or []:
+            report.anchors_checked += 1
+            path = entry["path"]
+            text = _read(root, path)
+            if text is None:
+                report.fail(
+                    cid, "declaration", f"{path} does not exist — nothing reads this declaration"
+                )
+                continue
+            anchor = entry.get("anchor", "")
+            if anchor and not _contains(text, anchor):
+                report.fail(
+                    cid,
+                    "declaration",
+                    f"{path} no longer contains {anchor!r} — "
+                    "the declaration is a file nobody checks",
+                )
 
 
 def render(root: Path, registry_path: Path, report: Report) -> str:
@@ -405,9 +588,18 @@ def render(root: Path, registry_path: Path, report: Report) -> str:
         lines.append(f"        !! {finding.detail}")
     lines.append("")
 
+    declarations = data.get("declarations") or []
+    if declarations:
+        lines.append("DECLARED BOUNDS — a limitation held in a data file rather than a paragraph")
+        for declaration in declarations:
+            lines.append(f"        {declaration['path']}")
+            lines.append(f"             bounds: {declaration['claim']}")
+        lines.append("")
+
     lines.append(
         f"{report.claims_checked} claims, {report.anchors_checked} anchors, "
-        f"{report.skips_registered} registered skips"
+        f"{report.skips_registered} registered skips, "
+        f"{report.declarations_checked} declarations"
     )
     return "\n".join(lines)
 

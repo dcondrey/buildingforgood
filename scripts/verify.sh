@@ -14,9 +14,9 @@ fi
 .venv/bin/ruff check pipeline/src tests
 .venv/bin/mypy --config-file pipeline/pyproject.toml pipeline/src
 # -rs so the skipped-test summary is captured. The claim inventory in step 5
-# reconciles those skips against its ledger: 14 tests skip on every clean
+# reconciles those skips against its ledger: 15 tests skip on every clean
 # checkout because the artifact's five source files are not redistributable
-# (finding F-2), and a suite reporting only "241 passed" hides that cost.
+# (finding F-2), and a suite reporting only "249 passed" hides that cost.
 SKIP_SUMMARY="$(mktemp -t stillhere-skips)"
 trap 'rm -f "$SKIP_SUMMARY"' EXIT
 .venv/bin/pytest tests -q -rs | tee "$SKIP_SUMMARY"

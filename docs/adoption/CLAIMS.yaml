@@ -309,6 +309,30 @@ claims:
       surface: SECURITY.md
       quote: "No fix deadline is promised."
 
+  # ---- the geography is real ----------------------------------------------
+  - id: area-list-pinned-to-published-source
+    claim: >-
+      Every area this project names comes from a published source. An area list
+      must resolve to one; no profile can describe a place that does not exist.
+    quote: "Every area this project names is now a real San Diego area with a real source"
+    surfaces:
+      - CHANGELOG.md
+    code:
+      - path: config/schema/organization-profile.v1.schema.json
+        anchor: "the area list is the one geography component that must resolve to a real published source"
+      - path: app/src/domain/config/profile.ts
+        anchor: "`illustrative` is reachable for neither"
+    tests:
+      - path: app/src/domain/config/geographyProvenance.test.ts
+        anchor: "refuses an area list that resolves to no published source"
+      - path: app/src/features/shell/deployment.test.tsx
+        anchor: "takes no geography from the artifact, whatever the artifact states"
+    # What is pinned is the names. The shapes drawn around them are not, and the
+    # two get conflated by anyone reading quickly.
+    limitation:
+      surface: docs/adoption/BRIEF.md
+      quote: "is an illustration rather than a verified boundary"
+
   # ---- portability --------------------------------------------------------
   - id: profile-drives-planner
     claim: >-
@@ -320,21 +344,78 @@ claims:
     code:
       - path: app/src/features/shell/deployment.ts
         anchor: floorOptions
+      - path: config/profiles/san-diego-downtown.v1.json
+        anchor: dsdp-core-six
       - path: config/profiles/san-diego-dsdp-seven.v1.json
         anchor: outside_perimeter
     tests:
       - path: app/src/features/shell/deployment.test.tsx
         anchor: "a second organization's profile runs the tool"
+    # True as written, and true of exactly two profiles in one city sourced to
+    # one report. The sentence does not say that, so the bound is held in a file
+    # the check reads rather than in a reader's good faith.
+    limitation:
+      surface: config/portability-demonstrated.v1.json
+      quote: "with no code change, and nowhere else."
+
+  # ---- what the tests are worth -------------------------------------------
+  - id: mutation-gate-graded-green
+    claim: >-
+      The planner mutation gate breaks both planners ten ways and fails if any
+      mutation survives, and it grades those verdicts only over a suite it has
+      proven green first.
+    quote: "breaks both planners ten ways and fails if any\n  mutation survives"
+    surfaces:
+      - CHANGELOG.md
+    code:
+      - path: scripts/mutation_check.sh
+        anchor: "the suite must be green before anything is broken on purpose"
+      - path: .github/workflows/mutation.yml
+        anchor: ./scripts/mutation_check.sh
+    # A failing suite catches every mutation, including ones no test can see.
+    # The gate reported ten of ten over a red tree once, and that is why the
+    # baseline run is part of the claim rather than an implementation detail.
+    limitation:
+      surface: docs/project/PHASE0_FINDINGS.md
+      quote: "the mutation gate had a bug that made it report a false pass"
+
+# Limitations that are a data file rather than a paragraph.
+#
+# Check 4 matches a sentence in a document. That works when the bound is prose.
+# It does not work when the bound is a list: what portability has been shown on,
+# and the five specific things it has not. A list can be shortened without any
+# sentence changing, and the claim widens by exactly that much in silence. Each
+# entry below pins a claim to its declaration and asserts the shape of it — how
+# much evidence, how many bounds, how many forbidden phrases — so growing the
+# evidence or shrinking the bounds is a decision someone has to write down here.
+declarations:
+  - id: portability-demonstrated
+    claim: profile-drives-planner
+    path: config/portability-demonstrated.v1.json
+    version: portability-demonstrated/v1
+    # Two profiles, and both must be code the claim rests on. A third appearing
+    # here without the claim moving is the drift this catches.
+    evidence_count: 2
+    # Five things portability does NOT cover. Deleting one is how the sentence
+    # goes back to meaning what it used to.
+    bounds_count: 5
+    forbidden_phrases_min: 8
+    require_keys:
+      - void_evidence
+      - what_would_change_this
+    enforced_by:
+      - path: app/src/domain/config/portability.test.ts
+        anchor: portability-demonstrated.v1.json
 
 # The coverage a green suite does not buy.
 #
-# 14 Python tests skip on every clean checkout. A reader who sees "241 passed"
-# and not "14 skipped" concludes the pipeline is covered end to end against real
+# 15 Python tests skip on every clean checkout. A reader who sees "249 passed"
+# and not "15 skipped" concludes the pipeline is covered end to end against real
 # inputs, and it is not: the raw-data tests cannot run without files that are
 # not redistributable. Every distinct skip reason is registered here with the
 # limitation that explains it, and an unregistered reason fails the check.
 skipped_tests:
-  expected_total: 14
+  expected_total: 15
 
   # Files whose skip-reason strings are fixture data rather than real skips.
   # One entry, and it should stay that way: the checker's own test writes
@@ -363,6 +444,19 @@ skipped_tests:
       count: 1
       limitation: artifact-verifiable-not-reproducible
       note: Parking-meter transaction files back the reporting-bias diagnostic only.
+    - reason: pinned RTFH 2026 workbook is intentionally not tracked
+      count: 1
+      limitation: artifact-verifiable-not-reproducible
+      note: >-
+        The fifteenth skip, and it is new because it used to be a lie. The
+        cross-check in tests/pipeline/test_monitoring_data.py `return`ed when
+        the workbook was absent, so the suite reported the test PASSED having
+        verified nothing — and it also called importorskip on a library this
+        repository does not depend on, so it had never executed at all. It now
+        skips, and reads the workbook with stdlib zipfile when one is present.
+        The transcription lock above it — the four exact totals — still asserts
+        on every run; what skips is the comparison against the publisher's own
+        total rows.
     - reason: optional NOAA daily extract is intentionally not tracked
       count: 1
       limitation: artifact-verifiable-not-reproducible

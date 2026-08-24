@@ -111,8 +111,12 @@ in `data/raw/hackathon_provided/` (`Area_Crosswalk.csv`,
 them, with the message that public reports do not substitute for the
 block-level panel.
 
-Those files are not in the repository and are not publicly fetchable. The 15
-skipped Python tests are the raw-data tests skipping for exactly this reason.
+Those files are not in the repository and are not publicly fetchable. Eleven of
+the fifteen skipped Python tests skip for exactly this reason; three more skip
+on other untracked extracts (Get It Done, the parking-meter files, the optional
+NOAA daily), and the fifteenth on the pinned RTFH workbook. All fifteen are
+registered with their reasons in the claim inventory's skip ledger, so the
+count cannot drift without someone saying why.
 
 So `demo.v1.json` is verifiable (checksums are pinned in
 `data/cards/checksums.sha256`) but not reproducible by an adopter. This is a

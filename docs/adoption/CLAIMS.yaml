@@ -170,7 +170,10 @@ claims:
         anchor: "head_repository.full_name == github.repository"
     limitation:
       surface: review/RISK-REGISTER.md
-      quote: "CLOSED, but unobserved"
+      # The gate has been seen refusing (a failed verify skipped the deploy) and
+      # has NOT been seen permitting. That asymmetry is the limitation, because
+      # a gate that refuses everything is indistinguishable from one that works.
+      quote: "Observed refusing, not yet observed permitting"
 
   # ---- what it will not do ------------------------------------------------
   - id: no-backend

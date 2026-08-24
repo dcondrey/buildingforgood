@@ -19,7 +19,10 @@ fi
 # (finding F-2), and a bare "N passed" hides that cost. No count is quoted here
 # on purpose: a number in a comment goes stale the next time anyone adds a test,
 # and the ledger in the claim inventory is the thing that actually holds it.
-SKIP_SUMMARY="$(mktemp -t stillhere-skips)"
+# `mktemp -t NAME` means "prefix" to BSD/macOS and "template needing trailing
+# X's" to GNU coreutils, so the bare form works locally and fails on Linux
+# CI with "too few X's in template". Spell the path out instead.
+SKIP_SUMMARY="$(mktemp "${TMPDIR:-/tmp}/stillhere-skips.XXXXXX")"
 trap 'rm -f "$SKIP_SUMMARY"' EXIT
 .venv/bin/pytest tests -q -rs | tee "$SKIP_SUMMARY"
 

@@ -86,7 +86,11 @@ CREATED_VENV=0
 if [ ! -d .venv ]; then
   echo "first run: setting up the project's own Python tools."
   echo "This takes a few minutes and prints almost nothing. That is normal — do not interrupt it."
-  VENV_LOG="$(mktemp -t stillhere-venv)"
+  # `mktemp -t NAME` is a prefix to BSD/macOS and a template needing trailing
+  # X's to GNU coreutils. The bare form works on a Mac and dies on Linux with
+  # "too few X's in template" — which is exactly the kind of shell error this
+  # script exists to keep away from a non-developer.
+  VENV_LOG="$(mktemp "${TMPDIR:-/tmp}/stillhere-venv.XXXXXX")"
   trap 'rm -f "$VENV_LOG"' EXIT
   if ! python3 -m venv .venv >"$VENV_LOG" 2>&1; then
     # A half-built .venv makes the next run fail somewhere else. Remove the
@@ -121,7 +125,7 @@ if [ "$NEED_INSTALL" -eq 1 ]; then
   if [ "$CREATED_VENV" -eq 0 ]; then
     echo "installing the pipeline's tools; this needs the internet and prints almost nothing."
   fi
-  PIP_LOG="$(mktemp -t stillhere-pip)"
+  PIP_LOG="$(mktemp "${TMPDIR:-/tmp}/stillhere-pip.XXXXXX")"
   trap 'rm -f "${VENV_LOG:-}" "$PIP_LOG"' EXIT
   if ! .venv/bin/pip install --quiet -e "pipeline[dev]" >"$PIP_LOG" 2>&1; then
     if grep -qiE 'network|resolve|proxy|timed out|timeout|connection|ssl|certificate|temporary failure|getaddrinfo|retries exceeded' "$PIP_LOG"; then

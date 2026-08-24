@@ -413,8 +413,8 @@
       "required": ["resolution_status", "resolution_rule"],
       "properties": {
         "resolution_status": {
-          "enum": ["resolved", "provisional", "unresolved", "illustrative"],
-          "description": "`resolved`: a named public or licensed source with a version and a retrieval date backs this, and every source field below is filled in. `provisional`: the organization has a working definition but cannot yet cite it. `unresolved`: there is no defensible source, and the interface must disclose that rather than proceed as if there were. `illustrative`: this describes a place that does not exist. NO v1 PROFILE CAN USE `illustrative`: every geography component is referenced through `pinnedProvenance` or `citedOrDisclosedProvenance` below, and neither admits the value. It survives in this enum only because the hand-written loader and its TypeScript types still enumerate it, and removing it there is a separate change. See `docs/project/DECISIONS.md`, 2026-08-23, for what it was used for."
+          "enum": ["resolved", "provisional", "unresolved"],
+          "description": "`resolved`: a named public or licensed source with a version and a retrieval date backs this, and every source field below is filled in. `provisional`: the organization has a working definition but cannot yet cite it. `unresolved`: there is no defensible source, and the interface must disclose that rather than proceed as if there were. There is no value for a geography that does not exist: `illustrative` was removed from this enum, from the loader, from the TypeScript types and from the interface strings that rendered it. See `docs/project/DECISIONS.md`, 2026-08-23, for what it was used for."
         },
         "source_name": {
           "type": ["string", "null"],

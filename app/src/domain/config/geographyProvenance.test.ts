@@ -107,12 +107,11 @@ describe("a shipped profile's geography names a real published place", () => {
 });
 
 describe("the loader refuses what the schema refuses", () => {
-  // This is the check the fabricated profile would have failed, and the one
-  // place the enforcement cannot live in `config/` or in this file: the loader
-  // is hand-written and does not read the schema, so `geography.area_list`
-  // still accepts `illustrative` at runtime. Until `validateProvenance` takes
-  // a required status, this test is the declaration of that gap rather than a
-  // guard against it.
+  // This is the check the fabricated profile would have failed. The loader is
+  // hand-written and does not read the schema, so this is where the two are
+  // held together: `validateProvenance` takes the statuses each component may
+  // use, and the area list may use only `resolved`. Written first as a failing
+  // declaration of the gap, then closed.
   it("refuses an area list that resolves to no published source", () => {
     const document = clone();
     const geography = document.geography as Record<string, Record<string, unknown>>;

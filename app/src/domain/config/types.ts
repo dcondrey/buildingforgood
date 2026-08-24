@@ -29,7 +29,7 @@ export type ProfileStatus = "draft" | "illustrative_example" | "reference_deploy
  * `resolution_note` the interface renders as a disclosure. It is not a
  * placeholder to be quietly replaced with a version string.
  */
-export type ResolutionStatus = "resolved" | "provisional" | "unresolved" | "illustrative";
+export type ResolutionStatus = "resolved" | "provisional" | "unresolved";
 
 /** Structured provenance for one geography component. */
 export interface Provenance {

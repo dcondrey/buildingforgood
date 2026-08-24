@@ -81,7 +81,7 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const CURRENCY = /^[A-Z]{3}$/;
 
 const PROFILE_STATUSES = ["draft", "illustrative_example", "reference_deployment", "adopted"];
-const RESOLUTION_STATUSES = ["resolved", "provisional", "unresolved", "illustrative"];
+const RESOLUTION_STATUSES = ["resolved", "provisional", "unresolved"];
 
 // The area list is the field an invented geography arrives through, so it alone
 // must name a real published source. Boundaries and adjacency may be undrawn or

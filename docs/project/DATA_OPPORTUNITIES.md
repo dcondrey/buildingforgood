@@ -191,31 +191,54 @@ the skip ledger does not move.
 
 ---
 
-## 4. The loaded hourly rate — what was already ruled out, and what is left
+## 4. The loaded hourly rate — answered by reading, not by assuming
 
-The reference profile ships `loaded_hourly_rate: 45` explicitly labelled
+The reference profile ships `loaded_hourly_rate: 45`, labelled
 `operator_set_assumption` and "not a measured or derived rate."
 
-**This was already investigated properly and the negative result is correct.**
-The pinned City PRA contract releases publish outreach personnel totals — the
-ledger cites the FY23 Family Reunification agreement's $582,079 personnel line —
-but **no fielded-FTE or field-hour denominator**, so no honest hourly rate can
-be divided out. Do not re-propose deriving a rate from the text records; that
-ground is covered.
+**The prior negative result is confirmed, and now by direct examination rather
+than inference.** The PRA documents are publicly retrievable — the ledger's
+"manual authenticated download" overstated it, and two pinned files were
+re-fetched on 2026-08-24 and reproduced their SHA-256 byte for byte. Their text
+was extracted and searched:
 
-**What is genuinely unchecked** is the ledger's own note that the *image-only*
-executed agreements "may carry FTE exhibits." Those have not been read, because
-they are scans. This repo already has handwriting/OCR capability built for
-exactly this kind of document (`pipeline/src/stillhere_pipeline/eyepop_audit.py`,
-Apple Vision locally or EyePop by flag).
+- **FY23 DSDP Family Reunification agreement** (doc `22974587`): the budget
+  exhibit is three lines — Personnel $582,079, Non-Personnel $367,921, Total
+  $950,000. Zero occurrences of `FTE`, "full-time equivalent", "caseload" or
+  "salary"; one of "hours", in a records-access clause. **There is no
+  denominator in this document.**
+- **PATH Coordinated Street Outreach contract** (doc `22974590`): staffing is
+  specified — "two outreach staff (2 people in total per shift; 4 people in
+  total per day) plus a team leader", "Staff two shifts per day", Rapid Response
+  available seven days a week. That confirms the ledger's "4 outreach staff/day"
+  as a **contract requirement**, which is not observed fielded staffing and
+  cannot be divided into a rate.
 
-So the concrete move is: OCR the image-only PRA exhibits and look for an FTE or
-field-hour denominator. If one exists, the placeholder becomes a sourced number
-and the cost layer stops being the weakest surface in the product. If none
-exists, that is a citable negative result and the placeholder stays honest.
-Either outcome is worth having; today the question is simply unanswered.
+### The trap, which is the useful part
 
----
+The PATH document *does* contain an hourly figure, and it must not be used:
+
+> Scenario A: ((10.0 direct service FTE × $25/hours × 2080 hours/year) /
+> $1,000,000 total budget costs) × 5 maximum points
+
+That is a **worked example inside the RFP's pricing-evaluation section**,
+written to explain how bids are scored. `$25/hour` is not PATH's rate, not the
+City's rate, and not anyone's rate. Anyone grepping these contracts for
+"hourly" will land on it first. Do not cite it, and do not let it become the
+replacement for the $45 placeholder — swapping one unsourced number for a
+number that means something else is worse than leaving the placeholder honest.
+
+The one genuinely citable convention in there is **2080 hours/year**, which is
+the City's own stated FTE-hours basis. That is a denominator for converting an
+FTE to hours; it is not a cost.
+
+### What would actually close this
+
+An invoice, a reimbursement detail, or a staffing exhibit stating fielded hours
+or FTE count against a dollar figure. Nothing examined so far carries one. Seven
+of this request's documents remain unread, and the ledger notes some releases
+are image-only — those are the remaining surface, and the repo has OCR built for
+them.
 
 ## 5. Capacity context the planner could be compared against
 

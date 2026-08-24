@@ -649,10 +649,16 @@ sources:
           HRC FY22 scope/budget: FY21 carryforward $721,430.09 + FY22
           $278,569.91 (= $1,000,000); HRC at 1122 Broadway Suite 300.
     retrieval_method: >-
-      Manual authenticated download from the NextRequest portal against the
-      document manifest in issue #85; SHA-256 pinned in checksums.sha256.
-      Reviewed for client-level content before pinning: none found in
-      extracted text (signatory names, titles, and business contacts only).
+      Publicly retrievable from the NextRequest portal; SHA-256 pinned in
+      checksums.sha256. An earlier version of this entry said "manual
+      authenticated download", which overstated it: the request is Published
+      and its documents download over plain HTTP with a session cookie and a
+      referer, no account. Verified 2026-08-24 by re-fetching two of the pinned
+      files and reproducing their hashes byte for byte — document 22974590 for
+      Contract_RFP 10089902-22-F_PATH San Diego (executed).pdf, and document
+      22974587 for FY23 Executed_DSDP FRP.pdf. Reviewed for client-level
+      content before pinning: none found in extracted text (signatory names,
+      titles, and business contacts only).
     update_cadence: >-
       Static releases. The executed PATH street-outreach City agreement, both
       PATH outreach amendments, the DSDP FRP first amendment, and the

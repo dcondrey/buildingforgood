@@ -10,8 +10,8 @@ if [ ! -d .venv ]; then
   python3 -m venv .venv
 fi
 .venv/bin/pip install --quiet -e "pipeline[dev]"
-.venv/bin/ruff format --check pipeline/src tests
-.venv/bin/ruff check pipeline/src tests
+.venv/bin/ruff format --check pipeline/src tests scripts
+.venv/bin/ruff check pipeline/src tests scripts
 .venv/bin/mypy --config-file pipeline/pyproject.toml pipeline/src
 # Every script here is written on macOS and every CI run is Linux. Twice in one
 # push a construct meant different things on the two — `mktemp -t NAME` most

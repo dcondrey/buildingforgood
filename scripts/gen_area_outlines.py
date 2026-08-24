@@ -68,7 +68,7 @@ def project(lon, lat):
     return lon * kx, -lat  # y down
 
 
-pts = [project(lon, lat) for lon, lat in zip(lons, lats)]
+pts = [project(lon, lat) for lon, lat in zip(lons, lats, strict=True)]
 xs = [p[0] for p in pts]
 ys = [p[1] for p in pts]
 minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)

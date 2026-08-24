@@ -144,6 +144,22 @@ COUNT=$((COUNT + 1))
 pass=0
 survived=()
 
+# A mutation is "caught" when the suite fails. So a suite that is ALREADY failing
+# catches everything, including mutations no test can see, and this gate reports
+# PASSED while proving nothing. That is not hypothetical: it happened during the
+# 2026-08-23 session, when an unrelated red test file made all ten report caught.
+# The baseline run is what makes every verdict below mean something.
+echo "== baseline: the suite must be green before anything is broken on purpose =="
+if ! npm --prefix app run test --silent >/dev/null 2>&1; then
+  echo "" >&2
+  echo "MUTATION CHECK ABORTED. The suite is already failing with no mutation applied." >&2
+  echo "Every mutation would report \"caught\" and this gate would prove nothing." >&2
+  echo "Fix the suite first, then re-run:  npm --prefix app run test" >&2
+  exit 1
+fi
+echo "baseline green."
+echo ""
+
 for index in $(seq 0 $((COUNT - 1))); do
   record=$(printf '%s' "$MUTATIONS" | MUT_INDEX="$index" python3 -c '
 import os, sys

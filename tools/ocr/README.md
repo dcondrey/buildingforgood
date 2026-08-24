@@ -10,8 +10,13 @@ machine, and installing them to read one document is a poor trade. macOS already
 ships PDFKit and Vision, and `swiftc` is part of the Command Line Tools, so this
 renders each page and recognizes text with **no dependency at all**.
 
-    swiftc -O -o ocr tools/ocr/ocr.swift
-    ./ocr some-scan.pdf [scale]      # scale defaults to 3.0
+    cd tools/ocr && swift build -c release
+    ./.build/release/ocr some-scan.pdf [scale]   # scale defaults to 3.0
+
+It is a Swift package rather than a loose `.swift` file for a specific reason:
+CodeQL's Swift autobuilder looks for an Xcode project or a package, and a bare
+file made the whole code-scanning run fail. Making the code buildable was the
+fix; exempting Swift from scanning was the alternative, and worse.
 
 It found what it was written for. `Revised Signed Copy FY22 Scope and Budget HRC
 (carryforward).pdf` — a pinned PRA document — has no text layer, so it had never

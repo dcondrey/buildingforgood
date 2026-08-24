@@ -90,7 +90,7 @@ profile says so in full sentences rather than papering over it:
 
 - The publisher names these areas and reports totals for them but publishes no
   boundary file. The only geometry this project holds is a privately supplied
-  block-centroid grid, and those coordinates are on the deployment deny-list,
+  grid of 382 block polygons, and those coordinates are on the deployment deny-list,
   so they cannot be turned into a published boundary either.
 - No adjacency table has been published by any citable source, and none was
   derived, because deriving one would rest on the same coordinates. The
@@ -110,14 +110,27 @@ would close it.
 interface already ships — six in-scope areas, an 80 staff-hour budget, an
 8-hour coverage floor, matching `public/generated/demo.v1.json`.
 
-`profiles/san-diego-dsdp-seven.v1.json` is an **illustrative example
-describing a place that does not exist**, included so the abstraction is
-exercised somewhere that is not downtown. It is a fictional sevenArea, multi-county
-continuum of care: eight in-scope areas plus one listed out of scope, a
-132-hour budget over a two-week cycle, a 10-hour coverage floor, two-hour
-allocation blocks because of driving time, and a self-drawn adjacency table.
-Its `profile_status` is `illustrative_example` and every provenance entry is
-`illustrative`. Do not cite any number in it.
+`profiles/san-diego-dsdp-seven.v1.json` configures the same tool for the
+**full seven-area geography the Downtown San Diego Partnership publishes** —
+the six-area core plus Outside Perimeter — rather than the core the reference
+deployment uses. It exists so the abstraction is exercised against a second
+real geography: seven in-scope areas plus the four East Village quadrants
+listed out of scope (they overlap the East Village total and must never be
+summed with it), a 96-hour budget over a fourteen-day cycle, a 6-hour coverage
+floor, two-hour allocation blocks, and three teams.
+
+**The geography is real and sourced** to the same pinned June 2026 DSDP report
+the reference profile cites, and already transcribed in
+`data/monitoring/dsdp_public_checkpoints.csv`. **The operating parameters are
+illustrative** — a floor, a shift length, a horizon, and a team count are an
+adopting organization's choices, not facts about the world — and the profile's
+own `notes` say which is which. Its `profile_status` is
+`illustrative_example`: cite the area names, not the operating numbers.
+
+Six of its seven areas carry observations in the shipped artifact and Outside
+Perimeter does not, which is the behaviour worth seeing — the interface says
+"the loaded artifact carries no observation for Outside Perimeter" rather than
+inventing one.
 
 ## Loading and validating
 

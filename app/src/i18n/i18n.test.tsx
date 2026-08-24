@@ -286,3 +286,76 @@ describe("choosing a language in the running shell", () => {
     expect(brief).toContain("261");
   }, 30000);
 });
+
+/**
+ * The map's provenance disclosure is one phrase per locale, and every caption
+ * carries it.
+ *
+ * This exists because of a specific failure. Three captions across two
+ * catalogues said "simplified neighborhood boundaries" / "límites de barrio
+ * simplificados", which implies a real boundary that was simplified. There is
+ * no such boundary: the publisher names its six areas and publishes no boundary
+ * file, and the shapes on screen derive from a private grid with no checksum
+ * (PHASE0_FINDINGS F-8). The brief said "an illustration rather than a verified
+ * boundary" while the map itself said otherwise, and the two disagreed for as
+ * long as nothing compared them.
+ *
+ * The general rule is the one Escalation 3 established: a claim that lives in
+ * one language's copy and not the other's is not a claim the product makes, it
+ * is a claim the product makes to some of its users. So this iterates
+ * `LOCALES`, not a hand-written pair, and a locale added without the phrase
+ * fails here rather than shipping.
+ */
+describe("every map caption states the outlines are not surveyed boundaries", () => {
+  /** Every message that captions or describes the schematic map. */
+  const CAPTION_KEYS = [
+    "map.captionChange",
+    "map.captionPlanned",
+    "workspace.captionTail",
+    "disclosure.privacyValue",
+    "decision.privacy",
+  ] as const;
+
+  for (const locale of LOCALES) {
+    it(`carries ${locale}'s registered phrase in all ${CAPTION_KEYS.length} captions`, () => {
+      const phrase = CATALOGUES[locale]["map.outlinePhrase"];
+      expect(phrase.length).toBeGreaterThan(0);
+      const missing = CAPTION_KEYS.filter((key) => !CATALOGUES[locale][key].includes(phrase));
+      expect(missing).toEqual([]);
+    });
+
+    it(`states in ${locale} that the boundary source cannot be pinned`, () => {
+      // The long-form disclosure has to say why, not only what. Without the
+      // reason a reader takes "schematic" for a rendering choice.
+      const provenance = CATALOGUES[locale]["map.provenance"];
+      expect(provenance).toContain(CATALOGUES[locale]["map.outlinePhrase"]);
+      expect(provenance.length).toBeGreaterThan(120);
+    });
+  }
+
+  /**
+   * The retracted wording, in every language that ever carried it. A caption
+   * reworded back to imply a boundary source fails here, which is the half of
+   * this that a positive check cannot do.
+   */
+  const RETRACTED = [
+    "simplified neighborhood boundaries",
+    "simplified outlines",
+    "límites de barrio simplificados",
+    "contornos simplificados",
+  ];
+
+  it("no longer implies a boundary source in any message in any locale", () => {
+    const offenders: string[] = [];
+    for (const locale of LOCALES) {
+      for (const [key, message] of Object.entries(CATALOGUES[locale])) {
+        for (const retracted of RETRACTED) {
+          if (message.toLowerCase().includes(retracted.toLowerCase())) {
+            offenders.push(`${locale}:${key} — "${retracted}"`);
+          }
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+});

@@ -45,7 +45,7 @@
         "source_url": null,
         "source_version": null,
         "retrieved_at": null,
-        "resolution_note": "The publisher names these areas and reports totals for them, but publishes no boundary file. The only geometry this project holds is a block-centroid grid supplied privately, and those coordinates are on the deployment deny-list, so they cannot be turned into a published boundary either. Area membership is therefore traceable through a label crosswalk but not through any boundary a reader could inspect. Anything that would depend on exactly where one area stops and the next begins is out of reach here.",
+        "resolution_note": "The publisher names these areas and reports totals for them, but publishes no boundary file. The only geometry this project holds is a privately supplied grid of 382 block polygons, and those coordinates are on the deployment deny-list, so they cannot be turned into a published boundary either. Area membership is therefore traceable through a label crosswalk but not through any boundary a reader could inspect. Anything that would depend on exactly where one area stops and the next begins is out of reach here.",
         "resolution_rule": "Resolve by obtaining a published or licensed boundary definition for these six areas, with a version and a retrieval date, that can be cited without republishing precise locations."
       }
     },

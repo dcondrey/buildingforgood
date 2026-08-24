@@ -92,7 +92,7 @@ export const ES_MESSAGES: Catalogue = {
     "{areaCount} {areaNounPlural} dentro del alcance; presupuesto predeterminado de {budget} horas de personal para {horizonLabel} ({horizonDays} días); mínimo de cobertura de {floor} h; reserva de continuidad de {reserve} h; incrementos de asignación de {increment} h; {teams} equipos en turnos de {shift} h. Cada uno de estos valores viene del perfil, no es una constante de esta versión.",
   "disclosure.privacy": "Privacidad",
   "disclosure.privacyValue":
-    "Sin registros por cuadra ni geometría a nivel de cuadra; el mapa dibuja únicamente límites de barrio simplificados. Las celdas pequeñas por área y componente se omiten.",
+    "Sin registros por cuadra ni geometría a nivel de cuadra; el mapa dibuja contornos esquemáticos, no límites cartografiados. Las celdas pequeñas por área y componente se omiten.",
   "disclosure.aiUse": "Uso de IA",
   "disclosure.aiUseValue":
     "Solo asistencia durante el desarrollo; ninguna IA se ejecuta en el producto ni determina la evidencia, los pronósticos o las asignaciones.",
@@ -649,9 +649,9 @@ export const ES_MESSAGES: Catalogue = {
   "map.legendFewer": "Menos unidades observadas",
   "map.legendMissing": "Sin observación reciente",
   "map.captionChange":
-    "Cambio en las observaciones crudas de campo por barrio · límites de barrio simplificados, solo valores agregados · no es un conteo de personas",
+    "Cambio en las observaciones crudas de campo por barrio · contornos esquemáticos, no límites cartografiados · solo valores agregados · no es un conteo de personas",
   "map.captionPlanned":
-    "Horas de personal planificadas por barrio · límites de barrio simplificados",
+    "Horas de personal planificadas por barrio · contornos esquemáticos, no límites cartografiados",
   "map.captionBelowMinimum": " · el signo ! marca horas por debajo del mínimo",
   "map.captionAssumption": " · despeje modelado de {area} (supuesto)",
   "map.hoursValue": "{hours} h",
@@ -731,7 +731,8 @@ export const ES_MESSAGES: Catalogue = {
   "workspace.captionChange":
     "Cambio en las observaciones crudas de campo, comparación más reciente del mismo mes",
   "workspace.captionUnmet": "Horas que los mínimos apartaron del reparto por pronóstico",
-  "workspace.captionTail": " · límites de barrio simplificados · no es un conteo de personas",
+  "workspace.captionTail":
+    " · contornos esquemáticos, no límites cartografiados · no es un conteo de personas",
   "workspace.inspectorAria": "Inspector",
   "workspace.tabsAria": "Secciones del inspector",
   "workspace.tabPlan": "Plan",
@@ -1015,7 +1016,7 @@ export const ES_MESSAGES: Catalogue = {
   "decision.triggers":
     "Disparadores de revisión: mes nuevo, cambio de presupuesto o de límites, intervalo más ancho, mínimo no factible o contradicción con el conocimiento local.",
   "decision.privacy":
-    "Límite de privacidad y de autorización: solo evidencia agregada a nivel de lugar; no se distribuyen registros por cuadra ni geometría a nivel de cuadra (el mapa dibuja únicamente límites de barrio simplificados). Esto no rastrea personas, no establece causalidad, no autoriza la aplicación de la ley y no despacha personal automáticamente.",
+    "Límite de privacidad y de autorización: solo evidencia agregada a nivel de lugar; no se distribuyen registros por cuadra ni geometría a nivel de cuadra (el mapa dibuja contornos esquemáticos, no límites cartografiados). Esto no rastrea personas, no establece causalidad, no autoriza la aplicación de la ley y no despacha personal automáticamente.",
 
   /* ---- mensajes del planificador, traducidos en la frontera de presentación --------- */
   "planText.everyAreaKeeps": "{everyOneOf} conserva al menos {floor} horas.",
@@ -1121,7 +1122,9 @@ export const ES_MESSAGES: Catalogue = {
 
   /* ---- recursos de accesibilidad de la revisión WCAG 2.1 AA ------------- */
   "app.skipToMain": "Saltar al contenido principal",
+  /** La frase que toda leyenda del mapa debe llevar. Véase `map.outlinePhrase` en `en.ts`. */
+  "map.outlinePhrase": "contornos esquemáticos, no límites cartografiados",
   "map.provenance":
-    "Los límites son ilustrativos: contornos simplificados de una fuente que este proyecto no puede fijar ni verificar. Las formas se leen como un diagrama, no como geografía verificada.",
+    "Estos son contornos esquemáticos, no límites cartografiados. La entidad publicadora nombra sus áreas pero no publica ningún archivo de límites; estas formas se derivaron de una cuadrícula privada que este proyecto no puede fijar con una suma de verificación ni volver a obtener, y el despliegue marca sus fuentes de límites y de adyacencia como no resueltas. Léalas como un diagrama de qué área es cuál, y nunca como dónde termina un área.",
   "guide.stepAnnounce": "Paso {step} de {total}: {title}",
 } as const;

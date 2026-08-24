@@ -157,9 +157,12 @@ and geometry are omitted` is asserted inside the artifact itself and enforced
 by the scan.
 
 The map is not a coordinate layer. `AREA_MAP_GEOMETRY` in
-`app/src/features/spatial/areaGeometry.ts` holds six simplified area outlines expressed in SVG viewBox units, derived by
-dissolving the organizer block grid to area level. There is no latitude or
-longitude anywhere in the shipped product.
+`app/src/features/spatial/areaGeometry.ts` holds six schematic area outlines
+expressed in SVG viewBox units, derived by dissolving the organizer block
+polygons to area level. They are not surveyed boundaries and the publisher
+issues none; the source grid carries no pinned checksum, so the profile marks
+`geography.boundaries` unresolved. There is no latitude or longitude anywhere in
+the shipped product.
 
 The 311/Get It Done lane publishes only monthly aggregate comparisons and
 their diagnostic interpretation. Request ids, descriptions, and locations are

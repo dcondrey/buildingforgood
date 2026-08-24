@@ -87,7 +87,7 @@ export const EN_MESSAGES = {
     "{areaCount} {areaNounPlural} in scope; {budget}-staff-hour default budget over the {horizonLabel} ({horizonDays} days); {floor}h coverage floor; {reserve}h continuity reserve; {increment}-hour allocation increments; {teams} teams on {shift}-hour shifts. Every one of these is a profile value, not a constant in this build.",
   "disclosure.privacy": "Privacy",
   "disclosure.privacyValue":
-    "No block records or block-level geometry; the map draws simplified neighborhood boundaries only. Small per-area component cells are omitted.",
+    "No block records or block-level geometry; the map draws schematic outlines, not surveyed boundaries. Small per-area component cells are omitted.",
   "disclosure.aiUse": "AI use",
   "disclosure.aiUseValue":
     "Development assistance only; no AI runs in the product or determines evidence, forecasts, or allocations.",
@@ -625,8 +625,9 @@ export const EN_MESSAGES = {
   "map.legendFewer": "Fewer observed units",
   "map.legendMissing": "No recent observation",
   "map.captionChange":
-    "Change in raw field observations by neighborhood · simplified neighborhood boundaries, aggregate values only · not a count of people",
-  "map.captionPlanned": "Planned staff-hours by neighborhood · simplified neighborhood boundaries",
+    "Change in raw field observations by neighborhood · schematic outlines, not surveyed boundaries · aggregate values only · not a count of people",
+  "map.captionPlanned":
+    "Planned staff-hours by neighborhood · schematic outlines, not surveyed boundaries",
   "map.captionBelowMinimum": " · ! marks hours below the minimum",
   "map.captionAssumption": " · {area} modeled as cleared (assumption)",
   "map.hoursValue": "{hours}h",
@@ -705,7 +706,7 @@ export const EN_MESSAGES = {
   "workspace.captionHours": "Planned staff-hours by neighborhood",
   "workspace.captionChange": "Change in raw field observations, latest same-month comparison",
   "workspace.captionUnmet": "Hours the minimums moved away from the forecast split",
-  "workspace.captionTail": " · simplified neighborhood boundaries · not a count of people",
+  "workspace.captionTail": " · schematic outlines, not surveyed boundaries · not a count of people",
   "workspace.inspectorAria": "Inspector",
   "workspace.tabsAria": "Inspector sections",
   "workspace.tabPlan": "Plan",
@@ -982,7 +983,7 @@ export const EN_MESSAGES = {
   "decision.triggers":
     "Review triggers: new month, budget or boundary change, wider interval, infeasible floor, or local knowledge conflict.",
   "decision.privacy":
-    "Privacy and authorization boundary: aggregate place-level evidence only; no block records or block-level geometry ship (the map draws simplified neighborhood boundaries only). This does not track people, establish causality, authorize enforcement, or dispatch staff automatically.",
+    "Privacy and authorization boundary: aggregate place-level evidence only; no block records or block-level geometry ship (the map draws schematic outlines, not surveyed boundaries). This does not track people, establish causality, authorize enforcement, or dispatch staff automatically.",
 
   /* ---- planner messages, translated at the display boundary ------------------- */
   "planText.everyAreaKeeps": "{everyOneOf} keeps at least {floor} hours.",
@@ -1085,8 +1086,20 @@ export const EN_MESSAGES = {
 
   /* ---- accessibility affordances added in the WCAG 2.1 AA pass ---------- */
   "app.skipToMain": "Skip to main content",
+  /**
+   * The one phrase every map caption must carry, in this locale.
+   *
+   * "Simplified neighborhood boundaries" was the old wording and it implied a
+   * real boundary that had been simplified. No such boundary exists: the
+   * publisher names its areas and publishes no boundary file. The phrase below
+   * is registered here so `i18n.test.tsx` can require every caption to use it,
+   * in every shipped locale — a caption reworded in one language and not the
+   * other is how the Spanish build ended up making a claim the English build
+   * had already retracted.
+   */
+  "map.outlinePhrase": "schematic outlines, not surveyed boundaries",
   "map.provenance":
-    "Boundaries are illustrative: simplified outlines from a source this project cannot pin or verify. Read the shapes as a diagram, not as verified geography.",
+    "These are schematic outlines, not surveyed boundaries. The publisher names its areas but publishes no boundary file; these shapes were derived from a private grid this project cannot pin to a checksum or re-obtain, and the deployment marks its boundary and adjacency sources unresolved. Read them as a diagram of which area is which, and never as where one area stops.",
   "guide.stepAnnounce": "Step {step} of {total}: {title}",
 } as const;
 

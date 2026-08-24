@@ -1,4 +1,4 @@
-"""Derive simplified neighborhood outlines for the AreaMap SVG.
+"""Derive schematic area outlines for the AreaMap SVG.
 
 Reads the hackathon block grid, dissolves blocks to the six canonical areas on
 a coarse occupancy grid (aggregate outlines only, no block geometry emitted),
@@ -13,8 +13,8 @@ PROVENANCE GAP, stated rather than hidden. Downtown_BlockGrid.geojson is not
 listed in scripts/fetch_raw.sh and carries no entry in
 data/cards/checksums.sha256, so the geometry the shipped map derives from
 cannot be verified against a pin the way every other demo input can. Until it
-is pinned, the map's boundaries are a derived illustration with unverified
-provenance, which is why the organization profile marks
+is pinned, the shapes are schematic outlines with unverified provenance rather
+than surveyed boundaries, which is why the organization profile marks
 geography.boundaries as unresolved. Pinning it requires the organizer bundle
 (finding F-2).
 

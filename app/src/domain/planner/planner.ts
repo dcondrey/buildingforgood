@@ -25,7 +25,7 @@
  */
 
 import { isPermittedPlanningLoadDerivation, PERMITTED_PLANNING_LOAD_DERIVATIONS } from "./types.ts";
-import { COMPLAINT_SIGNAL } from "../vocabulary/refusedTerms.ts";
+import { isComplaintShaped } from "../vocabulary/refusedTerms.ts";
 
 import type {
   AreaAllocation,
@@ -35,8 +35,13 @@ import type {
   PlannerPolicy,
 } from "./types.ts";
 
-/** Field names that must never reach the planner (C-01 finding R-03). */
-const COMPLAINT_FIELD_PATTERN = COMPLAINT_SIGNAL;
+/**
+ * Field names that must never reach the planner (C-01 finding R-03).
+ *
+ * Accents and case are folded before matching: `denuncias` was refused and
+ * `denúncias` accepted, which is one word, not two.
+ */
+const isComplaintFieldName = isComplaintShaped;
 
 export class PlannerInputError extends Error {
   constructor(detail: string) {
@@ -67,7 +72,7 @@ export function assertNoComplaintSignal(record: unknown, where: string): void {
   // and left the guard wrong everywhere else.
   if (record instanceof Map) {
     for (const [key, value] of record) {
-      if (typeof key === "string" && COMPLAINT_FIELD_PATTERN.test(key)) {
+      if (typeof key === "string" && isComplaintFieldName(key)) {
         throw new PlannerInputError(
           `${where} carries a map keyed "${key}"; complaint volume may never influence ` +
             `planning load or allocation`,
@@ -86,7 +91,7 @@ export function assertNoComplaintSignal(record: unknown, where: string): void {
   if (typeof record !== "object" || record === null) return;
 
   for (const [key, value] of Object.entries(record)) {
-    if (COMPLAINT_FIELD_PATTERN.test(key)) {
+    if (isComplaintFieldName(key)) {
       throw new PlannerInputError(
         `${where} carries "${key}"; complaint volume may never influence planning load ` +
           `or allocation (config/decision.v1.json → observations.complaint_volume_excluded_uses)`,

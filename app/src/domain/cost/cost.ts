@@ -15,7 +15,7 @@ import type { AreaCost, FloorMarginalCost, PlanCost } from "./types.ts";
 import {
   declaredDenominator,
   PERMITTED_DENOMINATORS,
-  PERSON_DENOMINATOR_PROSE,
+  prosePersonDenominators,
 } from "../vocabulary/refusedTerms.ts";
 
 /** Fallback rate for the reference deployment, in `DEFAULT_RATE_CURRENCY`. */
@@ -87,10 +87,17 @@ export function assertNoPersonDenominator(value: unknown, where: string): void {
       return;
     }
     if (typeof node === "string") {
-      if (PERSON_DENOMINATOR_PROSE.test(node)) {
+      // The prose path asks the same question the key path does. It used to
+      // ask a different one -- "is this word on a list of words meaning
+      // person?" -- so `coste_por_usuario` was refused as a key and "gasto por
+      // usuario" was accepted as a value, and free text is the side facing
+      // operator-supplied input.
+      const [denominator] = prosePersonDenominators(node);
+      if (denominator !== undefined) {
         throw new CostDenominatorError(
-          `${where}: text at "${path}" reads "${node.slice(0, 60)}", which prices a person. ` +
-            `Cost figures are stated per staff-hour, per area, or per plan only.`,
+          `${where}: text at "${path}" reads "${node.slice(0, 60)}", which states a cost ` +
+            `per "${denominator}". Cost figures are stated per staff-hour, per area, per plan, ` +
+            `or per shift only; nothing here divides by a human being.`,
         );
       }
       return;

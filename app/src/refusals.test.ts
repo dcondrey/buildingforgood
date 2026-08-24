@@ -37,8 +37,31 @@ import { adaptDemoV1, EMBEDDED_DEMO, PLANNING_AREA_EXCLUDES_COMPLAINT_SIGNAL } f
 import type { PlanningArea } from "./lib/demo.ts";
 import { applyIntervention } from "./lib/intervention.ts";
 import { allocateHours } from "./lib/planner.ts";
+import {
+  foldForMatch,
+  LOCALE_VOCABULARY,
+  PERMITTED_CORPUS,
+  REFUSED_CORPUS,
+  UNSHIPPED_CONNECTORS,
+  type VocabularyLocale,
+} from "./domain/vocabulary/refusedTerms.ts";
+import { assertShareable } from "./features/share/planShareState.ts";
 
 const SRC = dirname(fileURLToPath(import.meta.url));
+
+/** A minimal shareable plan whose single lock names `areaId`. */
+function shareStateWithArea(areaId: string) {
+  return assertShareable({
+    budget: 80,
+    floor: 8,
+    guard: true,
+    locks: [[areaId, 8]],
+    share: 0.5,
+    assume: null,
+    rate: 45,
+    geography: "dsdp-core-six/2026-08-21",
+  });
+}
 const REPO = resolve(SRC, "../..");
 const ARTIFACT = JSON.parse(
   readFileSync(join(REPO, "public/generated/demo.v1.json"), "utf8"),
@@ -867,6 +890,12 @@ const DECLARED_GUARD_NAMES = new Set([
   // call sites, rather than a copy per guard.
   "COMPLAINT_SIGNAL",
   "COMPLAINT_FIELD_PATTERN",
+  // The accent-folding predicate that replaced the bare regex at the two
+  // call sites, and the alias each binds it to. `denuncias` was refused and
+  // `denúncias` accepted before folding; matching the raw string is now the
+  // mistake, so the predicate is the thing guards are supposed to reach for.
+  "isComplaintShaped",
+  "isComplaintFieldName",
   "ComplaintShapedKey",
   "ComplaintShapedKeysOf",
   "ExcludesComplaintSignal",
@@ -1261,5 +1290,158 @@ describe("refusal: the guards see containers and unnamed denominators", () => {
     expect(() =>
       assertNoComplaintSignal({ inner: new Map([["calls_311", 5]]) }, "probe"),
     ).toThrow();
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * The vocabulary is per locale, and adding a locale cannot widen a guard
+ *
+ * Escalation 3 was closed by putting one vocabulary behind all five guards.
+ * That was the right fix and it left one thing open: the vocabulary was flat
+ * bilingual lists, so adding a third language was still an edit somebody had to
+ * remember, in a file that would look complete without it. The English-only
+ * guard shipped for exactly as long as nobody compared the guard's vocabulary
+ * with the app's locale list.
+ *
+ * So the comparison is a test. `LOCALE_VOCABULARY` must carry an entry for
+ * every locale the app can be read in, with real content in each field, and the
+ * refused corpus must carry vectors for each. A locale added without them fails
+ * here rather than silently widening every guard at once.
+ * ------------------------------------------------------------------ */
+
+describe("refusal: the vocabulary covers every shipped locale, structurally", () => {
+  const vocabularyLocales = Object.keys(LOCALE_VOCABULARY).sort();
+
+  it("carries an entry for every locale the app can be read in", () => {
+    expect(vocabularyLocales).toEqual([...LOCALES].sort());
+  });
+
+  for (const locale of LOCALES) {
+    it(`gives ${locale} a connector, complaint terms, denominators, and both closed classes`, () => {
+      const entry = LOCALE_VOCABULARY[locale as VocabularyLocale];
+      expect(entry, `no vocabulary entry for ${locale}`).toBeDefined();
+      // Every field carries weight. `connectors` is the one that looks
+      // optional and is not: the original Escalation 3 bug was a missing
+      // connector, not a missing word. Without it the rate extractor never
+      // engages and the allowlist never runs, so a key is neither refused nor
+      // permitted -- it is invisible.
+      expect(entry.connectors.length, "connectors").toBeGreaterThan(0);
+      expect(entry.complaintTerms.length, "complaintTerms").toBeGreaterThan(0);
+      expect(entry.permittedDenominators.length, "permittedDenominators").toBeGreaterThan(0);
+      expect(entry.distributiveWords.length, "distributiveWords").toBeGreaterThan(0);
+      expect(entry.referenceWords.length, "referenceWords").toBeGreaterThan(0);
+    });
+
+    it(`gives ${locale} refusal vectors for all three guarded shapes`, () => {
+      const corpus = REFUSED_CORPUS[locale as VocabularyLocale];
+      expect(corpus, `no refused corpus for ${locale}`).toBeDefined();
+      expect(corpus.complaintKeys.length, "complaintKeys").toBeGreaterThan(0);
+      expect(corpus.personDenominatorKeys.length, "personDenominatorKeys").toBeGreaterThan(0);
+      expect(corpus.personDenominatorProse.length, "personDenominatorProse").toBeGreaterThan(0);
+    });
+
+    it(`gives ${locale} legitimate vectors that must keep passing`, () => {
+      // Half of a vocabulary sweep's risk is over-refusal. A guard that
+      // refuses `porcentaje` because it contains "por" is broken in a way that
+      // reaches an adopter as a crash, not as a caught attack.
+      const corpus = PERMITTED_CORPUS[locale as VocabularyLocale];
+      expect(corpus, `no permitted corpus for ${locale}`).toBeDefined();
+      expect(corpus.keys.length, "keys").toBeGreaterThan(0);
+      expect(corpus.prose.length, "prose").toBeGreaterThan(0);
+    });
+
+    it(`refuses every ${locale} complaint key at the planner and the share link`, () => {
+      for (const key of REFUSED_CORPUS[locale as VocabularyLocale].complaintKeys) {
+        expect(() => assertNoComplaintSignal({ [key]: 1 }, "area"), key).toThrow(PlannerInputError);
+        expect(() => assertNoComplaintSignal({ [`area_${key}_total`]: 1 }, "area"), key).toThrow(
+          PlannerInputError,
+        );
+        // A Map key is the shape that slipped past one call site before.
+        expect(() => assertNoComplaintSignal(new Map([[key, 1]]), "locks"), key).toThrow(
+          PlannerInputError,
+        );
+        // Fold before slugifying: `denúncias` would otherwise become
+        // `den_ncias`, which is a different word and not the vector.
+        const areaId = foldForMatch(key)
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_|_$/g, "");
+        if (/^[a-z0-9]+(_[a-z0-9]+)*$/.test(areaId)) {
+          expect(() => shareStateWithArea(areaId), areaId).toThrow();
+        }
+      }
+    });
+
+    it(`refuses every ${locale} person-denominator key and prose in a cost summary`, () => {
+      const corpus = REFUSED_CORPUS[locale as VocabularyLocale];
+      for (const key of corpus.personDenominatorKeys) {
+        expect(() => assertNoPersonDenominator({ [key]: 1 }, "summary"), key).toThrow();
+        expect(() => assertNoPersonDenominator({ nested: { [key]: 1 } }, "summary"), key).toThrow();
+      }
+      for (const prose of corpus.personDenominatorProse) {
+        expect(() => assertNoPersonDenominator({ note: prose }, "summary"), prose).toThrow();
+        expect(() => assertNoPersonDenominator([prose], "summary"), prose).toThrow();
+      }
+    });
+
+    it(`accepts every legitimate ${locale} key and sentence — zero over-refusals`, () => {
+      const corpus = PERMITTED_CORPUS[locale as VocabularyLocale];
+      for (const key of corpus.keys) {
+        expect(() => assertNoPersonDenominator({ [key]: 1 }, "summary"), key).not.toThrow();
+        expect(() => assertNoComplaintSignal({ [key]: 1 }, "area"), key).not.toThrow();
+      }
+      for (const prose of corpus.prose) {
+        expect(() => assertNoPersonDenominator({ note: prose }, "summary"), prose).not.toThrow();
+      }
+    });
+  }
+
+  it("keeps the compile-time key chain in step with the runtime vocabulary", () => {
+    // TypeScript cannot build a conditional chain from a runtime array, so the
+    // two halves are written separately and this is what stops them drifting.
+    // Drift is not hypothetical: the runtime regex learned Spanish in one
+    // commit and the type chain did not, which is half of Escalation 3.
+    const chain = readFileSync(join(SRC, "domain/planner/types.ts"), "utf8");
+    const declared = chain.slice(
+      chain.indexOf("export type ComplaintShapedKey"),
+      chain.indexOf("export type ComplaintShapedKeysOf"),
+    );
+    // The chain's branches are stems, and a stem matches its own plural
+    // because each branch is `${string}stem${string}`. So the question is not
+    // "is this exact word in the chain" but "would the chain match it".
+    const branches = [...declared.matchAll(/\$\{string\}([a-z0-9_]+)\$\{string\}/g)].map(
+      (match) => match[1] ?? "",
+    );
+    expect(branches.length, "no branches parsed out of the type chain").toBeGreaterThan(5);
+    const missing: string[] = [];
+    for (const locale of Object.keys(LOCALE_VOCABULARY) as VocabularyLocale[]) {
+      for (const term of LOCALE_VOCABULARY[locale].complaintTerms) {
+        if (!branches.some((branch) => term.includes(branch))) missing.push(`${locale}:${term}`);
+      }
+    }
+    // Terms in `complaintPatterns` are exempt and the exemption is named, not
+    // inferred: the refusal suite scans this repository's own source for copy
+    // the product will not emit, and the enforcement verb has no spelling that
+    // can sit in a template-literal type and pass that scan. The runtime guard
+    // still refuses it. Pinning the count here means a SECOND term cannot go
+    // missing quietly behind the first.
+    const exempt = Object.values(LOCALE_VOCABULARY).flatMap((entry) => entry.complaintPatterns);
+    expect(exempt).toHaveLength(1);
+    expect(missing).toEqual([]);
+  });
+
+  it("names the connectors it does not implement, so the next language brings one", () => {
+    // V-5: only `per` and `por` engage the rate extractor. French `par` and
+    // German `pro` would fail exactly the way `por` did -- not refused, not
+    // allowlisted, invisible. Not a live defect, because neither ships. It is
+    // recorded because the vocabulary file will look like the only thing that
+    // needs touching, and it is not.
+    expect(Object.keys(UNSHIPPED_CONNECTORS).length).toBeGreaterThan(0);
+    for (const [connector, language] of Object.entries(UNSHIPPED_CONNECTORS)) {
+      expect(language.length, connector).toBeGreaterThan(0);
+      const shipped = Object.values(LOCALE_VOCABULARY).flatMap((entry) => [...entry.connectors]);
+      expect(shipped, `${connector} is listed as unshipped but is implemented`).not.toContain(
+        connector,
+      );
+    }
   });
 });

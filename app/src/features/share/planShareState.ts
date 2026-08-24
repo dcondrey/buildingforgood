@@ -23,7 +23,7 @@
  */
 
 import { MAX_LOADED_HOURLY_RATE } from "../../domain/cost/index.ts";
-import { COMPLAINT_SIGNAL } from "../../domain/vocabulary/refusedTerms.ts";
+import { isComplaintShaped } from "../../domain/vocabulary/refusedTerms.ts";
 import { MAX_BUDGET_HOURS } from "../../lib/constants";
 
 export const PLAN_SHARE_VERSION = "1";
@@ -85,7 +85,7 @@ const AREA_ID_SHAPE = /^[a-z0-9]+(_[a-z0-9]+)*$/;
 const MAX_AREA_ID_LENGTH = 40;
 /* The two shapes that must never become an area identifier. Written as
  * patterns, not lists, so neither ever renders as user-facing copy. */
-const REPORT_VOLUME_TOKEN = COMPLAINT_SIGNAL;
+const readsAsReportVolume = isComplaintShaped;
 const PERSON_OR_POINT_SEGMENT =
   /^(id|lat|lon|lng|latitude|longitude|coord|coords|coordinates|geometry|block|blockid|parcel|parcelid|address|street|streetaddress|email|phone|ssn|dob|dateofbirth|name|firstname|lastname|fullname|person|personid|personname|client|clientid|clientname|patient|case|caseid|household|householdid|user|userid|uuid|guid)$/;
 
@@ -116,7 +116,7 @@ function assertAreaId(field: string, value: unknown): string {
   if (!AREA_ID_SHAPE.test(value)) {
     throw new PlanShareError(field, "must be a lowercase area id such as east_village");
   }
-  if (REPORT_VOLUME_TOKEN.test(value)) {
+  if (readsAsReportVolume(value)) {
     throw new PlanShareError(
       field,
       "reads as report volume, which measures who reports rather than who is present and never enters a plan",

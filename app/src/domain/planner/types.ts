@@ -114,11 +114,29 @@ export interface PlanResult {
 /**
  * Key names that carry a complaint signal, matched at the type level.
  *
- * Mirrors `COMPLAINT_FIELD_PATTERN` in `./planner.ts`. That regex guards the
- * runtime boundary where untyped artifact JSON crosses in; this guards the
- * compile-time boundary where a maintainer widens an interface. Both exist
- * because either one alone is removable by a single edit.
+ * Mirrors the runtime vocabulary in `../vocabulary/refusedTerms.ts`. That one
+ * guards the boundary where untyped artifact JSON crosses in; this guards the
+ * boundary where a maintainer widens an interface. Both exist because either
+ * one alone is removable by a single edit.
+ *
+ * TypeScript cannot build a conditional chain from a runtime array, so this
+ * list is written by hand and the coupling is enforced by a test:
+ * `refusals.test.ts` requires a branch here for every term in
+ * `LOCALE_VOCABULARY`. A word added to the vocabulary and not to this chain
+ * fails there rather than leaving the compile-time half quietly narrower than
+ * the runtime half -- which is exactly the drift that let `quejas_recibidas`
+ * through three of five guards.
  */
+// One runtime term is deliberately absent from this chain: the enforcement
+// verb in `LOCALE_VOCABULARY.en.complaintPatterns`. The refusal suite scans
+// every source file for copy this product will not emit and reads a
+// template-literal type as a string, so there is no spelling of that word
+// which can sit here and pass -- splitting it across `${string}` holes still
+// renders as the forbidden phrase. It was absent from this chain before the
+// vocabulary was locale-keyed too; the difference is that the gap is now
+// declared, and `refusals.test.ts` pins the exception by name so a SECOND term
+// cannot go missing quietly behind it. The runtime guard still refuses it, and
+// the runtime guard is the one untyped artifact JSON crosses.
 export type ComplaintShapedKey<K extends string> =
   Lowercase<K> extends `${string}complaint${string}`
     ? true
@@ -126,25 +144,41 @@ export type ComplaintShapedKey<K extends string> =
       ? true
       : Lowercase<K> extends `${string}service_request${string}`
         ? true
-        : Lowercase<K> extends `${string}call_volume${string}`
+        : Lowercase<K> extends `${string}servicerequest${string}`
           ? true
-          : Lowercase<K> extends `${string}report_volume${string}`
+          : Lowercase<K> extends `${string}call_volume${string}`
             ? true
-            : Lowercase<K> extends `${string}nuisance${string}`
+            : Lowercase<K> extends `${string}callvolume${string}`
               ? true
-              : Lowercase<K> extends `${string}hotline${string}`
+              : Lowercase<K> extends `${string}report_volume${string}`
                 ? true
-                : Lowercase<K> extends `${string}queja${string}`
+                : Lowercase<K> extends `${string}reportvolume${string}`
                   ? true
-                  : Lowercase<K> extends `${string}denuncia${string}`
+                  : Lowercase<K> extends `${string}nuisance${string}`
                     ? true
-                    : Lowercase<K> extends `${string}reportes_recibidos${string}`
+                    : Lowercase<K> extends `${string}hotline${string}`
                       ? true
-                      : Lowercase<K> extends `${string}linea_de_atencion${string}`
+                      : Lowercase<K> extends `${string}queja${string}`
                         ? true
-                        : Lowercase<K> extends `${string}molestia${string}`
+                        : Lowercase<K> extends `${string}denuncia${string}`
                           ? true
-                          : false;
+                          : Lowercase<K> extends `${string}reclamo${string}`
+                            ? true
+                            : Lowercase<K> extends `${string}reclamacion${string}`
+                              ? true
+                              : Lowercase<K> extends `${string}reporte_ciudadano${string}`
+                                ? true
+                                : Lowercase<K> extends `${string}reportes_recibidos${string}`
+                                  ? true
+                                  : Lowercase<K> extends `${string}aviso_ciudadano${string}`
+                                    ? true
+                                    : Lowercase<K> extends `${string}avisos_ciudadanos${string}`
+                                      ? true
+                                      : Lowercase<K> extends `${string}linea_de_atencion${string}`
+                                        ? true
+                                        : Lowercase<K> extends `${string}molestia${string}`
+                                          ? true
+                                          : false;
 
 /** The complaint-shaped keys of `T`, or `never` when it has none. */
 export type ComplaintShapedKeysOf<T> = {

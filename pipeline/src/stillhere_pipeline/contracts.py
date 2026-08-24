@@ -484,6 +484,15 @@ def validate_demo_v1(doc: dict[str, Any]) -> None:
 # plan against its most recent observed total or take the coverage floor and
 # no discretionary share. What it may not do is carry a load with no stated,
 # checkable basis, because that is the shape complaint volume arrives in.
+#
+# What this buys, stated exactly, is the claim in docs/project/DECISIONS.md:
+# complaint volume cannot reach allocation without ALSO corrupting the
+# published forecast interval, which is derived from checksummed inputs. It is
+# not the claim that complaint volume cannot influence planning. Rewriting
+# forecast.areas[].upper to match a forged planning_load satisfies the
+# reconciliation below; that attack is accepted here and refused upstream by
+# the pinned source checksums, which is a different and harder boundary. Do
+# not widen the wording in any comment, docstring, or document.
 PLANNING_LOAD_DERIVATIONS: dict[str, str] = {
     "forecast_upper_bound": "forecast.areas[].upper",
     "latest_observed_total": "observations.latest_by_area[].total",

@@ -23,7 +23,7 @@ Two rules before anything else:
 | Field | Required | What to put |
 | --- | --- | --- |
 | `schema_version` | yes | Leave it at `organization-profile/v1`. |
-| `profile_id` | yes | A short lowercase slug for your deployment, words joined by hyphens: `riverside-county-outreach`. |
+| `profile_id` | yes | A short lowercase slug for your deployment, words joined by hyphens: `your-org-outreach`. |
 | `profile_status` | yes | `draft` while you are still filling it in — this marks the profile as not for real decisions. Change to `adopted` when your leadership signs off. |
 | `last_updated` | yes | Today's date, as `2026-08-23`. Update it every time you change anything. |
 | `organization.name` | yes | Your organization, as you want it to appear on screen. |
@@ -53,8 +53,8 @@ will read hardest.
 | Field | Required | What to put |
 | --- | --- | --- |
 | `geography.area_list.version` | yes | A label for this exact set of area names, e.g. `county-service-areas/2026-07`. Change it whenever you add, remove, or rename an area, so a plan can always be traced back to the geography it was made under. |
-| `geography.area_list.areas[].id` | yes | A stable lowercase identifier, words joined by underscores: `north_bench`. Never rename an id in place — a rename is a new area list version. |
-| `geography.area_list.areas[].label` | yes | How the area is named to a human, spelled the way your source spells it: `North Bench`. |
+| `geography.area_list.areas[].id` | yes | A stable lowercase identifier, words joined by underscores: `east_village`. Never rename an id in place — a rename is a new area list version. |
+| `geography.area_list.areas[].label` | yes | How the area is named to a human, spelled the way your source spells it: `East Village`. |
 | `geography.area_list.areas[].in_scope` | yes | `true` if this area receives hours; `false` if it does not. |
 | `geography.area_list.areas[].note` | no | Why an area is out of scope, or any caveat about comparing it with the others. |
 
@@ -137,8 +137,8 @@ what stops a quiet area from being zeroed out because a model said so.
 
 Set it by asking: what is the smallest visit to one area that is worth
 sending a team on at all? In a dense downtown that might be four to eight
-hours. In a sevenArea county where an area is forty minutes away, a visit under ten
-hours may not be worth the drive.
+hours. In a spread-out county geography where an area is forty minutes away, a
+visit under ten hours may not be worth the drive.
 
 Then check the arithmetic: **floor × number of in-scope areas** is committed
 before the forecast is consulted at all. Six areas at eight hours commits
@@ -263,11 +263,20 @@ Errors stop the file loading. Warnings do not — a floor that leaves little
 discretionary budget, or a budget that is not a whole number of shifts, are
 flagged for you to look at, not blocked.
 
-## An example that is not San Diego
+## A second example: the publisher's full seven areas
 
-`config/profiles/san-diego-dsdp-seven.v1.json` is an illustrative profile for
-a fictional sevenArea continuum of care: eight in-scope areas plus one listed and
-excluded, a 132-hour budget over a fourteen-day cycle, a ten-hour coverage
-floor, two-hour allocation blocks, and a self-drawn adjacency table. It exists
-to show what the same tool looks like configured somewhere that is not a dense
-downtown. Every value in it is invented; do not cite any of them.
+`config/profiles/san-diego-dsdp-seven.v1.json` configures the same tool for the
+seven areas the Downtown San Diego Partnership publishes — the six-area core
+plus Outside Perimeter — instead of the core the reference deployment uses:
+seven in-scope areas plus the four East Village quadrants listed and excluded,
+a 96-hour budget over a fourteen-day cycle, a six-hour coverage floor, two-hour
+allocation blocks, and three teams.
+
+Read it as two different kinds of value. **The geography is real**, sourced to
+the pinned June 2026 DSDP report and transcribed in
+`data/monitoring/dsdp_public_checkpoints.csv` — the area names and the
+`in_scope: false` exclusions are worth copying as a pattern. **The operating
+numbers are illustrative**: they differ from the reference deployment on
+purpose, so that switching profiles exercises the budget, floor, increment,
+horizon, and team count rather than the area list alone. Set your own from your
+own staffing, not from these.

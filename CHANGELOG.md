@@ -24,10 +24,12 @@ geography, and operate monthly.
   `docs/project/DATA_GOVERNANCE.md` — the document a general counsel reads
   before a program director reaches the methodology.
 - **Organization profiles.** `config/schema/organization-profile.v1.schema.json`
-  plus two validating profiles. `?profile=coldwater-valley-rural` runs the tool
-  on a different geography with a different area count, budget, floor, and
-  increment, with no code change. Provenance is a required structured field, so
-  an adopter cannot leave it null by accident.
+  plus two validating profiles, both San Diego and both sourced to the same
+  pinned DSDP report. `?profile=san-diego-dsdp-seven` runs the tool on the
+  publisher's full seven-area geography — the six-area core plus Outside
+  Perimeter — with a different area count, budget, floor, and increment, and no
+  code change. Provenance is a required structured field, so an adopter cannot
+  leave it null by accident.
 - **A monthly `refresh` command** a human runs: fetch, audit, contract-check,
   emit. `--dry-run` checks everything and writes nothing; `--source fixture`
   works from a clean checkout with no network; `--source published` re-derives
@@ -70,6 +72,14 @@ geography, and operate monthly.
   `[]` for either, so every field inside one passed in silence.
 - Share links require all seven — now eight — fields rather than substituting
   defaults for three of them.
+- **The second example profile is a real published geography.** It was
+  briefly a fictional rural Continuum of Care with invented area names, an
+  invented scope statement, and an invented adjacency table. Labelling it
+  illustrative did not make it acceptable in a repository about real
+  homelessness in a real city, and it was unnecessary: the publisher's own
+  seven-area geography was already transcribed in
+  `data/monitoring/dsdp_public_checkpoints.csv`. Every area this project
+  names is now a real San Diego area with a real source.
 
 ### Fixed
 

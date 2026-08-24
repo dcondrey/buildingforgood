@@ -109,6 +109,17 @@ describe("a stale artifact that the publisher has not overtaken", () => {
     expect(line.textContent).toContain("not a publisher commitment");
   });
 
+  // A badge that is accurate and inert still leaves a program director
+  // guessing. This is the half that makes it actionable, and the last clause
+  // is a claim with a guard behind it rather than a reassurance.
+  it("tells a reader what to do while the publisher is late, and not to force it", () => {
+    mount(withCurrency(REFRESHED.currency), <CurrencyPanel />);
+    // The lead-in is bold, so match the paragraph rather than the <b> inside it.
+    const guidance = screen.getByText(/What to do meanwhile/).closest("p");
+    expect(guidance?.textContent).toMatch(/Keep planning from this window/);
+    expect(guidance?.textContent).toMatch(/refuses that/);
+  });
+
   it("says nothing about a next publication when the artifact names none", () => {
     const { next_publication_expected: _dropped, ...rest } = REFRESHED.currency as Record<
       string,

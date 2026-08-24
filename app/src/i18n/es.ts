@@ -55,6 +55,8 @@ export const ES_MESSAGES: Catalogue = {
   "currency.noBlock":
     "Este artefacto no trae un bloque de vigencia, así que esta versión no puede decir cuánto atraso lleva respecto del calendario. La instantánea sin conexión incluida en el paquete siempre está en este estado. Ejecute la actualización mensual para producir un artefacto que declare su propia antigüedad.",
   "currency.nextRefresh": "Próxima actualización prevista para {month} según {basis}.",
+  "currency.whileLate":
+    "<b>Qué hacer mientras tanto.</b> Siga planificando con esta ventana. Son los datos más recientes que cumplieron el estándar, y un plan hecho con ellos no empeora porque quien publica se retrase. Vuelva a ejecutar la actualización mensual el mes que viene: recogerá un informe nuevo el mismo día en que se publique. No relaje la regla de elegibilidad para que esta página parezca vigente: el comando de actualización lo rechaza, a propósito.",
   "currency.frozen":
     "<b>La repetición de enero de 2026 queda congelada, de forma permanente.</b> Es la muestra de método: el único mes con el que este proyecto se califica a sí mismo, usando solo datos que existían antes de él. Ningún artefacto más nuevo lo reemplaza, y nada de lo que sigue puede volver a calificarlo.",
   "currency.excludedEyebrow": "Observado · no apto para el modelo",

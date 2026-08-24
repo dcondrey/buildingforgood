@@ -59,6 +59,14 @@ export const EN_MESSAGES = {
   "currency.noBlock":
     "This artifact carries no currency block, so this build cannot say how far behind the calendar it is. The offline snapshot compiled into the bundle is always in this state. Run the monthly refresh to produce an artifact that states its own age.",
   "currency.nextRefresh": "Next refresh expected {month} on {basis}.",
+  /**
+   * What a program director looks at a late badge and needs to know. The
+   * runbook says it too, but the person reading a stale badge is on this page,
+   * not in the runbook. The last sentence is a claim with a guard behind it:
+   * `refresh.py` raises if any monitoring row is marked model-eligible.
+   */
+  "currency.whileLate":
+    "<b>What to do meanwhile.</b> Keep planning from this window. It is the newest data that met the standard, and a plan built on it is not made worse by the publisher being late. Run the monthly refresh again next month — it picks up a new report the day one is published. Do not relax the eligibility rule to make this page look current: the refresh command refuses that, on purpose.",
   "currency.frozen":
     "<b>The January 2026 replay stays frozen, permanently.</b> It is the methods exhibit — the one month this project grades itself on, using only data that existed before it. A newer artifact never replaces it, and nothing below is allowed to regrade it.",
   "currency.excludedEyebrow": "Observed · not model-eligible",

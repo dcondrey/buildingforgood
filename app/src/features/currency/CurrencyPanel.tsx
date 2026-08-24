@@ -60,6 +60,8 @@ export function CurrencyPanel() {
         </p>
       )}
 
+      {stale && <p className="currency-while-late">{tx("currency.whileLate")}</p>}
+
       <p className="currency-frozen">{tx("currency.frozen")}</p>
 
       {excluded && (

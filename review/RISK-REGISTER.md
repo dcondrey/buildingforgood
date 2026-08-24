@@ -169,23 +169,31 @@ first five minutes.
 **Severity: medium-high**, and it is the only item on this list that can put a
 regression of any *other* item onto the public site.
 
-**Status: OPEN.**
+**Status: CLOSED, but unobserved.**
 
-**What it is.** The deploy workflow runs on push to `main` with no dependency on
-the verify workflow. A push that breaks the refusal suite, the claim inventory,
-the mutation gate or the test suite still deploys.
+**What it was.** The deploy workflow ran on push to `main` with no dependency on
+the verify workflow, so a push that broke the refusal suite, the claim
+inventory, the mutation gate or the test suite still deployed. `SECURITY.md`
+invites reports of "a way to reach the deploy job without passing `verify.sh`" —
+the document anticipated this; it simply was not closed.
 
-**What it costs if it goes wrong.** A broken guard reaches the public artifact
-and nothing stops it at the door.
+**What closed it.** Deploy now triggers on `verify` completing for `main` and
+refuses to run unless that run's conclusion was success — a finished workflow is
+not a passing one. Checkout pins the commit verify actually graded rather than
+whatever `main` points at when the job starts. `workflow_dispatch` stays ungated
+as the deliberate manual path.
 
-**The mitigation that does exist**, and it is the strongest single one: the
-deploy job independently privacy-scans the exact bundle it is about to publish,
-with `--require-bundle`. So the highest-severity item on this list — item 1 — is
-gated at deploy time even though the others are not.
+**Why it is not marked simply CLOSED.** `workflow_run` behaviour is only
+observable on the remote, and at the time of writing nothing had been pushed, so
+this has never executed. **The failure mode is silent**: if `verify` ever stops
+running on push to `main`, deploy never fires and the site quietly stops
+updating rather than failing loudly. The evidence that it works is the site
+changing after a push. Check that, once.
 
-**Note.** `SECURITY.md` invites reports of "a way to reach the deploy job
-without passing `verify.sh`". The document anticipates this; it is not an
-overclaim. It is simply not closed.
+**The mitigation that already existed** and is unchanged: the deploy job
+independently privacy-scans the exact bundle it is about to publish, with
+`--require-bundle`. That is why item 1, the highest-severity risk here, was
+gated at deploy time even while the rest were not.
 
 ---
 
@@ -347,6 +355,10 @@ exists to catch.
   behind an early return and then behind an undeclared dependency.
 - **An unsourced geography could load.** The loader now requires the area list
   to resolve to a real published source.
+- **The adversarial harnesses were shipped but never run.** They are stage 4 of
+  `verify.sh` now. Thirteen of forty-six were failing; none was a live
+  regression — five stale fixtures, and eight that asserted an attack succeeded
+  and now assert it is refused.
 
 ---
 

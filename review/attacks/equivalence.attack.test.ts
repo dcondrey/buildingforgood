@@ -4,8 +4,12 @@ import { describe, expect, it } from "vitest";
 import { allocateHours } from "../../app/src/lib/planner";
 import type { PlanningArea } from "../../app/src/lib/demo";
 
+// `loadDerivation` was not required when this harness was written. Every
+// planning load must now declare one from a permitted set, so a fixture
+// without it is refused before the equivalence question is even reached.
 const mk = (id: string, load: number): PlanningArea => ({
   id, name: id, latest: null, delta: 0, planningLoad: load, auditWape: null, reason: "",
+  loadDerivation: "forecast_upper_bound",
 });
 
 // Mutant M2: `hours: unlockedHours.get(id) ?? locks.get(id) ?? 0` (order swapped).

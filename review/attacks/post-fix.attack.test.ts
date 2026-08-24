@@ -22,12 +22,15 @@ describe("post-fix verification", () => {
     expect(msg).toMatch(/REFUSED/);
   });
 
-  it("C/D: complaint volume carried in planningLoad is still accepted", () => {
-    let threw: unknown = null;
-    let plan: ReturnType<typeof allocateHours> | null = null;
-    try { plan = allocateHours(areas, 600, 20, true); } catch (e) { threw = e; }
-    console.log("POSTFIX C/D:", threw ? `REFUSED: ${(threw as Error).message}` : "ACCEPTED — guard did not fire");
-    if (plan) console.log("POSTFIX C/D hours:", JSON.stringify(Object.fromEntries(plan.allocations.map((a) => [a.areaId, a.hours]))));
-    expect(threw).toBeNull(); // documenting reality
+  // WAS: "is still accepted", asserting `threw` was null. That was the honest
+  // result at the time and it was the gap this harness existed to show: naming
+  // the field innocently got complaint volume through, because a name-based
+  // guard can only catch names. The fix was not a better name list. Every
+  // planning load must now declare a derivation from a permitted set, and
+  // complaint volume has none, so it is refused as an unstated basis.
+  it("C/D: complaint volume carried in planningLoad is now refused too", () => {
+    expect(() => allocateHours(areas, 600, 20, true)).toThrow(
+      /may never become allocation weight/,
+    );
   });
 });

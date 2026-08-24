@@ -8,9 +8,14 @@ import {
 import { allocateHours } from "../../app/src/lib/planner";
 import { EMBEDDED_DEMO } from "../../app/src/lib/demo";
 
+// `geography` is the eighth field, added after this harness was written so a
+// plan cannot be read under an area list it was not made for. Its absence is
+// why every case below failed at the baseline; it is a hardening this attack
+// predates, not a finding.
 const SENT: PlanShareState = {
   budget: 120, floor: 8, guard: true,
   locks: [["east_village", 40]], share: 0.25, assume: "gaslamp", rate: 62.5,
+  geography: "dsdp-core-six/2026-08-21",
 };
 const AREAS = EMBEDDED_DEMO.areas;
 
@@ -71,15 +76,16 @@ describe("ATTACK S: the share link", () => {
     }
   });
 
-  it("S-3 quantifies the divergence a stripped rate/share produces", () => {
+  // WAS: quantifying how far the reader's cost drifted from the sender's when
+  // a parameter was stripped, because the decoder substituted a default for
+  // three of the fields. It requires all of them now, so the divergence this
+  // measured cannot occur: the link is refused instead of silently differing.
+  it("S-3 is refused: a stripped parameter cannot become a silent default", () => {
     const q = encodePlanShare(SENT);
-    const noRate = decodePlanShare(q.split("&").filter((p) => !p.startsWith("rate=")).join("&"))!;
-    const noShare = decodePlanShare(q.split("&").filter((p) => !p.startsWith("share=")).join("&"))!;
-    const senderCost = SENT.budget * SENT.rate;
-    const readerCost = noRate.budget * noRate.rate;
-    console.log(`S-3 sender saw $${senderCost.toFixed(2)} for the plan; reader of the same link sees $${readerCost.toFixed(2)} (rate ${SENT.rate} -> ${noRate.rate})`);
-    console.log(`S-3 sender's clearance assumption ${SENT.share * 100}%; reader's ${noShare.share * 100}%`);
-    expect(readerCost).not.toBe(senderCost);
+    const strip = (name: string) =>
+      q.split("&").filter((p) => !p.startsWith(`${name}=`)).join("&");
+    expect(() => decodePlanShare(strip("rate"))).toThrow(/rate: is missing from the link/);
+    expect(() => decodePlanShare(strip("share"))).toThrow(/share: is missing from the link/);
   });
 
   it("S-4 prototype pollution and key smuggling", () => {

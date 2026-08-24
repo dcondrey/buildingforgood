@@ -21,6 +21,9 @@ describe("ATTACK F: container shapes the guards do not walk", () => {
         `F ${label.padEnd(24)} complaint=${probe(assertNoComplaintSignal, value).padEnd(28)} person=${probe(assertNoPersonDenominator, value)}`,
       );
     }
-    expect(probe(assertNoComplaintSignal, new Map([["complaint_count", 9]]))).toMatch(/ACCEPTED/);
+    // WAS: expecting /ACCEPTED/. The guards walked plain objects and stepped
+    // straight over a Map, so hiding the payload in one got it through. The
+    // walk enters these containers now, so the same probe is refused.
+    expect(probe(assertNoComplaintSignal, new Map([["complaint_count", 9]]))).toMatch(/REFUSED/);
   });
 });

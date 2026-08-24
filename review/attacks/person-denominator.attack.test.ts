@@ -37,10 +37,14 @@ describe("ATTACK E: per-person cost without a per-person-named field", () => {
     expect(Number.isFinite(costPerContact)).toBe(true);
   });
 
-  it("E-2 puts the forbidden phrase in a VALUE, not a key", () => {
+  // WAS: asserting the guard did NOT throw. It only read keys, so a per-person
+  // denominator written into a display VALUE walked past it. The guard now
+  // reads text values too, and names the offending path.
+  it("E-2 is refused: the guard reads text in values, not only keys", () => {
     const payload = { label: "Assumed cost per person served", unit: "USD per person", value: 3.28 };
-    console.log("E-2:", tryGuard(payload, "displayRow"));
-    expect(() => assertNoPersonDenominator(payload, "displayRow")).not.toThrow();
+    expect(() => assertNoPersonDenominator(payload, "displayRow")).toThrow(
+      /text at "label" reads "Assumed cost per person served"/,
+    );
   });
 
   it("E-3 uses this project's OWN vocabulary as the denominator", () => {
@@ -54,7 +58,13 @@ describe("ATTACK E: per-person cost without a per-person-named field", () => {
     ]) {
       console.log(`E-3 ${key.padEnd(28)} ${tryGuard({ [key]: 1 }, "areaCost")}`);
     }
-    expect(() => assertNoPersonDenominator({ cost_per_sleeper: 1 }, "x")).not.toThrow();
+    // WAS: asserting no throw. A denylist of person-words could never cover the
+    // project's own vocabulary. It is an allowlist now — a denominator must be
+    // staff-hour, area, or plan — so "sleeper" is refused for not being on it,
+    // rather than for being recognised as a person.
+    expect(() => assertNoPersonDenominator({ cost_per_sleeper: 1 }, "x")).toThrow(
+      /declares a denominator of "sleeper", which is not permitted/,
+    );
   });
 
   it("E-4 hides the payload in a container the walk does not enter", () => {

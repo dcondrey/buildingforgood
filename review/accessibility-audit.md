@@ -1,5 +1,15 @@
 # Accessibility audit — WCAG 2.1 AA
 
+**This is a self-assessment, not a third-party audit, and the word "audit" in
+this title should not be read as one.** `docs/adoption/BRIEF.md` states that no
+independent accessibility audit has been commissioned, and that remains true:
+this file is the same author testing their own work. It is the source of the
+findings the brief counts, and its two Level A items have since been fixed.
+
+**"the state that is deployed" below is stale.** It was written when `f8dd100`
+was the deployed commit. Nothing has been deployed since; at the time of the
+v1.0.0 tag the public site was many commits behind this repository.
+
 **Queue item 2.5.** Audited against `f8dd100` (the state that is deployed).
 **Marked urgent** because the build session is mid-decomposition (`431ea08`
 plus ~12 untracked feature components): findings anchored to `App.tsx` line

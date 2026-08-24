@@ -33,14 +33,35 @@ ones that were embarrassing.
 
 **Known gaps in the track itself**, stated here rather than left to be found:
 
-- `attacks/` holds executable harnesses that `scripts/verify.sh` does **not**
-  run — vitest's root is `app/`, and these sit outside it, so nothing collects
-  them. They were written to falsify specific claims at specific commits, and
-  several will not run against the current tree without adjustment. Treat them
-  as evidence of what was attempted, not as a live suite.
+**`attacks/` is now a live suite, and that changed after this README was first
+written.** It used to be true that nothing ran these: vitest's root is `app/`
+and they sit outside it, so shipping them meant shipping adversarial tests CI
+never executed — a claim with nothing behind it. They now run as stage 4 of
+`scripts/verify.sh`.
+
+Making them run meant confronting what they assert. Thirteen of the forty-six
+were failing, and **none of them was a live regression**: five were fixtures
+that predated a hardening (a share link that now requires all eight fields; a
+planning load that must now declare a permitted derivation), and eight asserted
+that an attack *succeeded* — they were characterisations of holes, several
+carrying the comment "documenting reality, not endorsing it". Every one of those
+holes has since been closed, so each now asserts the refusal instead, naming the
+mechanism. The shipped error for two of them cites this file's own attacks C and
+D by name: the product was hardened in response to these harnesses and nobody
+came back to update them.
+
+A failure in stage 4 means an old hole has reopened. The product suite would not
+necessarily notice, because these attacks were built from outside it.
 - The track's own portability finding was void: it was measured by running an
   invented profile for an organization that does not exist. See
   `docs/project/DECISIONS.md`, 2026-08-23. No file here should be read as
   demonstrating portability to a non-San-Diego geography, because nothing has.
 - `STATUS.md` describes the track as of build-session commit `6beb8de` and is
   not current.
+- `patches/` was a directory in the working tree and is **not** in the
+  repository, because it is empty and git does not record empty directories.
+  Nothing was removed to make it so and nothing is hidden by it; it is named
+  here because a reader who saw it referenced elsewhere would otherwise be left
+  wondering what was dropped.
+- `accessibility-audit.md` is titled "audit" and is a self-assessment. The
+  distinction matters and is stated at the top of that file.

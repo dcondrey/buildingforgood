@@ -10,7 +10,10 @@ from the ledger's description of them. Where something was checked and found
 than an unexplored one.
 
 **Every number in section 1 is regenerable**, by
-`python scripts/sdrdl_feasibility.py`. The first draft of this document reported
+`python scripts/sdrdl_feasibility.py`. The arithmetic behind it lives in
+`stillhere_pipeline.sdrdl` with fourteen tests on hand-computed values, because
+a figure a document cites is a claim and this repository does not ship claims
+with nothing behind them. The first draft of this document reported
 those figures from a throwaway script in a temp directory, which made them
 exactly what this repository refuses to ship — a number in a document with
 nothing behind it. The script is deliberately outside `verify.sh`: it needs the

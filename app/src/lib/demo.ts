@@ -111,6 +111,13 @@ export interface DemoData {
   source: { label: string; retrievedAt: string; artifact: string };
   scenario: {
     id: string;
+    /**
+     * The geography the prepared-decision header names. The loaded
+     * organization profile owns this string —
+     * `features/shell/deployment.applyDeployment` writes it — because a label
+     * naming a place or an area count on its own outlives the geography it
+     * describes. What an artifact puts here describes only its own rows.
+     */
     focusArea: string;
     period: string;
     decisionHorizon: string;
@@ -270,6 +277,80 @@ export interface DemoData {
 
 type UnknownRecord = Record<string, unknown>;
 
+const EMBEDDED_AREAS: PlanningArea[] = [
+  {
+    id: "city_center",
+    name: "City Center",
+    latest: 195,
+    delta: 9,
+    planningLoad: 193,
+    loadDerivation: "embedded_demo_snapshot",
+    auditWape: 12.9,
+    reason: "upper forecast bound + 8h coverage floor",
+  },
+  {
+    id: "columbia",
+    name: "Columbia",
+    latest: 32,
+    delta: 5,
+    planningLoad: 34.7,
+    loadDerivation: "embedded_demo_snapshot",
+    auditWape: 19.9,
+    reason: "upper forecast bound + 8h coverage floor",
+  },
+  {
+    id: "cortez",
+    name: "Cortez",
+    latest: 83,
+    delta: -63,
+    planningLoad: 113.3,
+    loadDerivation: "embedded_demo_snapshot",
+    auditWape: 34.2,
+    reason: "upper forecast bound + 8h coverage floor",
+  },
+  {
+    id: "east_village",
+    name: "East Village",
+    latest: 555,
+    delta: -54,
+    planningLoad: 591,
+    loadDerivation: "embedded_demo_snapshot",
+    auditWape: 7.8,
+    reason: "upper forecast bound + 8h coverage floor",
+  },
+  {
+    id: "gaslamp",
+    name: "Gaslamp",
+    latest: 42,
+    delta: -6,
+    planningLoad: 61.7,
+    loadDerivation: "embedded_demo_snapshot",
+    auditWape: 22.6,
+    reason: "upper forecast bound + 8h coverage floor",
+  },
+  {
+    id: "marina",
+    name: "Marina",
+    latest: 11,
+    delta: 1,
+    planningLoad: 24,
+    loadDerivation: "embedded_demo_snapshot",
+    auditWape: 32.7,
+    reason: "upper forecast bound + 8h coverage floor",
+  },
+];
+
+/**
+ * What an artifact covers, counted off the rows it actually carries.
+ *
+ * Never a place name and never written by hand: a hand-written label goes on
+ * asserting a geography after the data under it has changed. The loaded
+ * profile replaces this with its own geography before anything renders it.
+ */
+function artifactScope(areas: PlanningArea[]): string {
+  return `${areas.length} planning ${areas.length === 1 ? "area" : "areas"}`;
+}
+
 export const EMBEDDED_DEMO: DemoData = {
   origin: "embedded",
   // The embedded snapshot is compiled in and never refreshed, so it can make
@@ -282,7 +363,7 @@ export const EMBEDDED_DEMO: DemoData = {
   },
   scenario: {
     id: "wider-footprint-next-shift",
-    focusArea: "Six-area downtown core",
+    focusArea: artifactScope(EMBEDDED_AREAS),
     period: "Jan 2024 → Jan 2025",
     decisionHorizon: "next outreach shift · within 7 days",
     defaultBudget: 80,
@@ -387,68 +468,7 @@ export const EMBEDDED_DEMO: DemoData = {
       { model: "Seasonal naive · 12m", mae: 191.3, wape: 15.6, coverage: null, selected: false },
     ],
   },
-  areas: [
-    {
-      id: "city_center",
-      name: "City Center",
-      latest: 195,
-      delta: 9,
-      planningLoad: 193,
-      loadDerivation: "embedded_demo_snapshot",
-      auditWape: 12.9,
-      reason: "upper forecast bound + 8h coverage floor",
-    },
-    {
-      id: "columbia",
-      name: "Columbia",
-      latest: 32,
-      delta: 5,
-      planningLoad: 34.7,
-      loadDerivation: "embedded_demo_snapshot",
-      auditWape: 19.9,
-      reason: "upper forecast bound + 8h coverage floor",
-    },
-    {
-      id: "cortez",
-      name: "Cortez",
-      latest: 83,
-      delta: -63,
-      planningLoad: 113.3,
-      loadDerivation: "embedded_demo_snapshot",
-      auditWape: 34.2,
-      reason: "upper forecast bound + 8h coverage floor",
-    },
-    {
-      id: "east_village",
-      name: "East Village",
-      latest: 555,
-      delta: -54,
-      planningLoad: 591,
-      loadDerivation: "embedded_demo_snapshot",
-      auditWape: 7.8,
-      reason: "upper forecast bound + 8h coverage floor",
-    },
-    {
-      id: "gaslamp",
-      name: "Gaslamp",
-      latest: 42,
-      delta: -6,
-      planningLoad: 61.7,
-      loadDerivation: "embedded_demo_snapshot",
-      auditWape: 22.6,
-      reason: "upper forecast bound + 8h coverage floor",
-    },
-    {
-      id: "marina",
-      name: "Marina",
-      latest: 11,
-      delta: 1,
-      planningLoad: 24,
-      loadDerivation: "embedded_demo_snapshot",
-      auditWape: 32.7,
-      reason: "upper forecast bound + 8h coverage floor",
-    },
-  ],
+  areas: EMBEDDED_AREAS,
   limitations: [
     "The monthly figures are visual street-sweep observations, not a census of unique people.",
     "Four 2025 reports are absent and remain null; no missing month is zero-filled.",
@@ -1056,6 +1076,8 @@ export function adaptDemoV1(input: unknown): DemoData | null {
     }
   }
 
+  const carriedAreas = areas.length ? areas : EMBEDDED_AREAS;
+
   return {
     origin: "generated",
     currency: parseCurrency(record(root.currency)),
@@ -1066,7 +1088,7 @@ export function adaptDemoV1(input: unknown): DemoData | null {
     },
     scenario: {
       id: text(scenario.id, EMBEDDED_DEMO.scenario.id),
-      focusArea: text(aggregate.area, "Six-area downtown core"),
+      focusArea: artifactScope(carriedAreas),
       period: `${displayMonth(text(comparison.from_month, "2024-01"))} → ${displayMonth(text(comparison.to_month, "2025-01"))}`,
       decisionHorizon: "next outreach shift · within 7 days",
       defaultBudget: number(planner.budget_hours, EMBEDDED_DEMO.scenario.defaultBudget),
@@ -1143,7 +1165,7 @@ export function adaptDemoV1(input: unknown): DemoData | null {
       trainingWindow: `${displayMonth(text(training.start_month, "2021-01"))} – ${displayMonth(text(training.end_month, "2025-12"))}`,
       scorecard: scorecard.length ? scorecard : EMBEDDED_DEMO.forecast.scorecard,
     },
-    areas: areas.length ? areas : EMBEDDED_DEMO.areas,
+    areas: carriedAreas,
     reportingBias,
     robustness,
     limitations: limitations.length ? limitations : EMBEDDED_DEMO.limitations,

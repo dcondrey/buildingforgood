@@ -10,9 +10,9 @@
  * geography.
  *
  * The San Diego profile is the reference deployment and reproduces exactly
- * what shipped before this file existed; `applyDeployment` returns the loaded
- * artifact unchanged when the profile asks for nothing different, so the
- * characterization tests pin the same behaviour they always did.
+ * what shipped before this file existed; `applyDeployment` keeps the loaded
+ * artifact's own area rows when the profile asks for nothing different, so
+ * the characterization tests pin the same behaviour they always did.
  */
 
 import sevenArea from "../../../../config/profiles/san-diego-dsdp-seven.v1.json" with { type: "json" };
@@ -66,6 +66,13 @@ export interface Deployment {
   /** Singular place noun this organization uses for its areas. */
   areaNoun: string;
   areaNounPlural: string;
+  /**
+   * The geography the scenario header names, e.g. the profile's own place
+   * followed by the count and noun of its in-scope areas. Derived here so a
+   * header cannot go on describing the geography it was written for after a
+   * different profile is loaded.
+   */
+  geographyLabel: string;
   areaListVersion: string;
   defaultBudget: number;
   minBudget: number;
@@ -132,6 +139,39 @@ function placeNoun(profile: OrganizationProfile): string {
   return PLACE_NOUNS.find((noun) => prose.includes(noun)) ?? "area";
 }
 
+/**
+ * Where this deployment operates, in the profile's own words.
+ *
+ * The schema carries no geography-name field, so the name comes from the
+ * first sentence of the jurisdiction note — the one field whose whole job is
+ * to say where the organization works. A profile that states no jurisdiction
+ * gets no place name rather than one this code made up.
+ */
+function jurisdictionPlace(profile: OrganizationProfile): string | null {
+  const note = profile.organization.jurisdiction_note?.trim() ?? "";
+  const first = note.split(". ")[0] ?? "";
+  const place = first
+    .replace(/\.$/, "")
+    .replace(/\s+only$/i, "")
+    .trim();
+  return place.length > 0 ? place : null;
+}
+
+/**
+ * The geography a scenario header names: the profile's own place, and the
+ * count and noun of the areas that profile actually puts in scope.
+ *
+ * Both halves are read from the loaded profile. Nothing here may be written
+ * by hand, because a hand-written label outlives the geography it describes —
+ * a header reading "Six-area downtown core" survived a switch to a seven-area
+ * profile and went on asserting a geography that was no longer loaded.
+ */
+function geographyLabel(place: string | null, countWord: string, nounPlural: string): string {
+  const scope = `${countWord} ${nounPlural}`;
+  if (place === null) return `${scope.charAt(0).toUpperCase()}${scope.slice(1)}`;
+  return `${place} (${scope})`;
+}
+
 const COMPONENT_LABELS: Record<GeographyDisclosure["component"], string> = {
   area_list: "Area list",
   boundaries: "Boundaries",
@@ -170,6 +210,7 @@ export function deriveDeployment(profile: OrganizationProfile): Deployment {
   const operations = profile.operations;
   const rate = profile.cost_assumptions.loaded_hourly_rate;
   const noun = placeNoun(profile);
+  const countWord = numberWord(areas.length);
   return {
     profileId: profile.profile_id,
     profileStatus: profile.profile_status,
@@ -180,9 +221,10 @@ export function deriveDeployment(profile: OrganizationProfile): Deployment {
     areaIds: areas.map((area) => area.id),
     areaLabels: new Map(areas.map((area) => [area.id, area.label])),
     areaCount: areas.length,
-    areaCountWord: numberWord(areas.length),
+    areaCountWord: countWord,
     areaNoun: noun,
     areaNounPlural: `${noun}s`,
+    geographyLabel: geographyLabel(jurisdictionPlace(profile), countWord, `${noun}s`),
     areaListVersion: profile.geography.area_list.version,
     defaultBudget: operations.budget.value,
     minBudget: operations.budget.minimum,
@@ -262,19 +304,33 @@ export function scopeAreas(areas: PlanningArea[], deployment: Deployment): Plann
 /**
  * The artifact as this deployment plans against it.
  *
- * Returns the artifact untouched when the profile asks for nothing the
- * artifact does not already say, so the reference deployment keeps the exact
- * object identity — and therefore the exact behaviour — it had before.
+ * The area rows keep their object identity when the profile asks for nothing
+ * the artifact does not already carry, so the reference deployment plans over
+ * exactly the rows it always did. The scenario's geography is always this
+ * deployment's, never the artifact's: an artifact describes the rows it
+ * carries, and only the loaded profile knows what geography is being planned.
  */
 export function applyDeployment(data: DemoData, deployment: Deployment): DemoData {
   const areas = scopeAreas(data.areas, deployment);
   const sameAreas =
     areas.length === data.areas.length && areas.every((area, index) => area === data.areas[index]);
-  if (sameAreas && data.scenario.defaultBudget === deployment.defaultBudget) return data;
+  if (
+    sameAreas &&
+    data.scenario.defaultBudget === deployment.defaultBudget &&
+    data.scenario.focusArea === deployment.geographyLabel
+  ) {
+    return data;
+  }
   return {
     ...data,
-    areas,
-    scenario: { ...data.scenario, defaultBudget: deployment.defaultBudget },
+    // The artifact's own array when the profile changed nothing about it, so
+    // the reference deployment plans over the identical rows it always did.
+    areas: sameAreas ? data.areas : areas,
+    scenario: {
+      ...data.scenario,
+      focusArea: deployment.geographyLabel,
+      defaultBudget: deployment.defaultBudget,
+    },
   };
 }
 

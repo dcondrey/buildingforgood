@@ -16,7 +16,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../../App.tsx";
 import { EMBEDDED_DEMO } from "../../lib/demo";
 import { allocateHours } from "../../lib/planner";
-import { applyDeployment, loadDeployment, resolveProfileId, scopeAreas } from "./deployment";
+import {
+  AVAILABLE_PROFILE_IDS,
+  applyDeployment,
+  loadDeployment,
+  resolveProfileId,
+  scopeAreas,
+} from "./deployment";
 
 const SAN_DIEGO = loadDeployment("san-diego-downtown");
 const SEVEN_AREA = loadDeployment("san-diego-dsdp-seven");
@@ -35,9 +41,26 @@ describe("the reference deployment reproduces what shipped", () => {
     expect(SAN_DIEGO.areaCountWord).toBe("six");
   });
 
-  it("leaves the loaded artifact untouched, object identity included", () => {
-    expect(applyDeployment(EMBEDDED_DEMO, SAN_DIEGO)).toBe(EMBEDDED_DEMO);
+  it("leaves the loaded artifact's rows untouched, object identity included", () => {
+    const scoped = applyDeployment(EMBEDDED_DEMO, SAN_DIEGO);
+    expect(scoped.areas).toBe(EMBEDDED_DEMO.areas);
     expect(scopeAreas(EMBEDDED_DEMO.areas, SAN_DIEGO)).toEqual(EMBEDDED_DEMO.areas);
+    // The scenario's geography is the one thing the deployment always writes,
+    // so it is the one thing that differs. Nothing else may.
+    expect({ ...scoped, scenario: EMBEDDED_DEMO.scenario }).toEqual(EMBEDDED_DEMO);
+    expect({ ...scoped.scenario, focusArea: EMBEDDED_DEMO.scenario.focusArea }).toEqual(
+      EMBEDDED_DEMO.scenario,
+    );
+  });
+
+  it("still says which downtown geography it is, and how many areas", () => {
+    // Specific, not vague: the six-area case names its place and its count,
+    // both read from the profile. The noun is the profile's own word for its
+    // places, which is why this reads "areas" and the seven-area profile,
+    // whose prose says neighborhood, reads "neighborhoods".
+    expect(applyDeployment(EMBEDDED_DEMO, SAN_DIEGO).scenario.focusArea).toBe(
+      "Downtown San Diego (six areas)",
+    );
   });
 
   it("allocates exactly the hours the characterization test pins", () => {
@@ -120,6 +143,51 @@ describe("a second organization's profile runs the tool", () => {
   });
 });
 
+/**
+ * A scenario label may not assert a geography of its own.
+ *
+ * The header read "Prepared decision · Six-area downtown core" under the
+ * seven-area profile, because the geography was a literal in the artifact
+ * layer and nothing tied it to the profile that was loaded. These two tests
+ * are the enforcement, and they bite on the class rather than on those two
+ * strings: the first fails on any area count that is not the loaded
+ * profile's, and the second fails if anything an artifact says about
+ * geography reaches the header at all. Rewriting the old literals by hand
+ * would have passed neither.
+ */
+describe("a scenario label states the loaded profile's geography and nothing else", () => {
+  const COUNT_TOKEN =
+    /\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/gi;
+
+  it("names its own profile's area count, and no other count", () => {
+    for (const id of AVAILABLE_PROFILE_IDS) {
+      const deployment = loadDeployment(id);
+      const label = applyDeployment(EMBEDDED_DEMO, deployment).scenario.focusArea;
+      const counts = [...label.matchAll(COUNT_TOKEN)].map((match) => match[1].toLowerCase());
+      expect(counts).toContain(deployment.areaCountWord);
+      for (const count of counts) {
+        expect([deployment.areaCountWord, String(deployment.areaCount)]).toContain(count);
+      }
+    }
+  });
+
+  it("takes no geography from the artifact, whatever the artifact states", () => {
+    const claiming = {
+      ...EMBEDDED_DEMO,
+      scenario: {
+        ...EMBEDDED_DEMO.scenario,
+        focusArea: "a geography stated by the artifact and not by any profile",
+      },
+    };
+    for (const id of AVAILABLE_PROFILE_IDS) {
+      const deployment = loadDeployment(id);
+      const label = applyDeployment(claiming, deployment).scenario.focusArea;
+      expect(label).toBe(deployment.geographyLabel);
+      expect(label).not.toContain("stated by the artifact");
+    }
+  });
+});
+
 describe("the rendered shell on the second profile", () => {
   beforeEach(() => {
     vi.stubGlobal(
@@ -142,7 +210,7 @@ describe("the rendered shell on the second profile", () => {
     window.history.replaceState({}, "", "/");
   });
 
-  it("opens on the sevenArea geography with its own budget and floor", async () => {
+  it("opens on the seven-area geography with its own budget and floor", async () => {
     render(<App />);
     await screen.findByText("Offline demo snapshot");
     expect(await screen.findByText(/96\/96 hours allocated\./)).toBeDefined();
@@ -154,6 +222,18 @@ describe("the rendered shell on the second profile", () => {
     ).toBeDefined();
     expect(screen.getByLabelText("Hours for Outside Perimeter")).toBeDefined();
     expect(screen.getByLabelText("Hours for East Village")).toBeDefined();
+  });
+
+  it("names the loaded geography in the prepared-decision header", async () => {
+    render(<App />);
+    await screen.findByText("Offline demo snapshot");
+    await screen.findByText(/96\/96 hours allocated\./);
+    const kicker = screen.getByText(/^Prepared decision ·/);
+    expect(kicker.textContent).toBe(
+      `Prepared decision · ${SEVEN_AREA.geographyLabel} · Jan 2024 → Jan 2025`,
+    );
+    expect(kicker.textContent).toMatch(/seven neighborhoods/);
+    expect(kicker.textContent).not.toMatch(/\bsix\b/i);
   });
 
   it("states that the artifact carries no observation for these areas", async () => {

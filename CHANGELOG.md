@@ -14,7 +14,60 @@ backed by code or by a declared limitation and CI fails if one is not; it does
 not mean the limitations are gone. They are listed, in severity order, in
 `review/RISK-REGISTER.md`.
 
-## Unreleased
+## 1.1.0 - 2026-08-24
+
+### Added
+
+- **A portability lint** (`stillhere_pipeline.portability`), stage 1 of
+  `verify.sh`. Eleven constructs that mean different things on BSD and GNU, each
+  with a known-bad line in the test file. Its first fixture is not invented: it
+  is the literal `mktemp -t` line that shipped and broke CI. Run against the
+  commit CI rejected, it finds all three real occurrences — two more than the CI
+  run did, because CI stopped at the first.
+- **`stillhere_pipeline.sdrdl`**, the reconciliation between the public SDRDL
+  package and the official published series, with fourteen tests on
+  hand-computed values.
+- **`docs/project/DATA_OPPORTUNITIES.md`**, an investigation executed against
+  the real files. Seventeen sources are pinned; four feed the artifact and
+  eleven feed no computation.
+
+### Changed
+
+- **San Diego is the scope, not a first instance.** Portability moves from a
+  high-severity risk to a declared non-goal. The declaration and its build check
+  stay, because under a San-Diego-only scope they cost nothing and are what stops
+  the promise reappearing in a document by accident.
+- **`scripts/` is covered by ruff and mypy**, which it never was. mypy found a
+  real defect the moment the code was in scope: floats accumulating into an
+  int-typed `Counter`, where the multiplied values are fractional.
+
+### Fixed
+
+- **Deploy could be reached by a fork's pull request.** `verify` runs on pull
+  requests, and a `workflow_run` branch filter matches the *triggering* run's
+  head branch — so a fork PR opened from a branch named `main` satisfied the
+  gate and would have had its own commit published. The job now also requires
+  the triggering event to be a push from this repository.
+- **`verify.sh` and `refresh.sh` could not run on Linux at all.** `mktemp -t
+  NAME` is a prefix on BSD and a malformed template on GNU. Every local run was
+  a Mac; the first CI run failed.
+- Two defects in the SDRDL reconciliation, both found by writing its tests: a
+  gap at the end of the package could never be reported, and the
+  within-tolerance figure decided its own boundary by floating point.
+
+### Findings that did not survive execution
+
+- Extending the observation history to 2014 from the public package **fails**.
+  2014 and 2015 record 100% individuals and 2016 records 99.8%, against 11-36%
+  structures from 2017 on. That is an annotation change, not tents appearing
+  downtown in 2017, so multipliers have nothing to act on and the level is not
+  comparable across the break.
+- What replaced it is worth more: across 70 overlapping months the independent
+  digitization reproduces the official total at a **median ratio of 0.991**,
+  with yearly medians of 0.995 to 0.984 and no drift. Nothing else in this
+  repository corroborates the evidence base from outside itself.
+
+## 1.0.0 - 2026-08-24
 
 ### Truth pass — every adopter-facing claim backed, or declared
 
@@ -206,12 +259,12 @@ brief rather than left for an adopter to discover:
   field-level guard can see. The guarantee is that no such figure can be
   stored, exported, or displayed.
 
-## 1.0.0 - 2026-08-23 (not tagged)
+## Pre-release history - 2026-08-20 to 2026-08-23 (never tagged)
 
-> No `v1.0.0` git tag exists. `git tag` returns nothing, which is finding F-5
-> below. This entry describes the state of `main` on 2026-08-23; it is not a
-> published release, and there is no compare link or release page to point at
-> until the tag is cut.
+> This entry describes the state of `main` across the build days before any
+> release existed. It was written when `git tag` returned nothing, which was
+> finding F-5. That is no longer true: `v1.0.0` was cut and pushed on
+> 2026-08-24, and the work below sits underneath it rather than being it.
 
 First versioned state. Built for the Building for Good Hackathon; before the
 hacking window the repository held only empty infrastructure and planning

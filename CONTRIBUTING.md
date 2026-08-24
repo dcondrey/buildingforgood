@@ -302,6 +302,43 @@ author structurally cannot see in their own work.
 - **Say what a derived set is derived from.** When a test reads a schema, a
   registry, or a directory to build its cases, a one-line comment saying so
   stops the next maintainer from "simplifying" it back into a literal list.
+- **A universal name needs a universal body.** A test name containing
+  `every`, `all`, `any`, `never`, `always`, or `only` must be backed by
+  iteration, a structural enumeration, or a corpus scan — never by a single
+  example. A single assertion can still earn it when the assertion is itself
+  structural: `toHaveLength(rows.length)` quantifies over the rows, and a
+  type-level guard like `ExcludesComplaintSignal<T>` quantifies over `T`'s
+  fields.
+- **A projection compared with its own source proves nothing.** If a test
+  builds a "declared fields only" copy and compares the two outputs, and the
+  copy lists every key the source has, it is comparing a deep clone with
+  itself and will pass with the guard deleted. Inject a field that should be
+  ignored, and compare against that.
+
+### What the naming audit found, and what it did not cover
+
+**Do not run a regex rename pass over test names.** An independent reviewer's
+heuristic — "does it loop, or make four or more assertions?" — over-flagged by
+12% on its own sample and had to withdraw a finding. Names are judged by
+reading the body.
+
+Audited 2026-08-23 by reading every body, scoped to the guards and `domain/`
+because that is where a false claim costs most: **76 universal-claim names
+examined, 4 overclaimed (5.3%), all four fixed.** An earlier hand-picked sample
+had projected roughly 30%; it was chosen to span files rather than at random and
+the reviewer said at the time to treat it as an upper bound. It was.
+
+Three of the four sat in `refusals.test.ts`, and two of those were the adjacent
+"plans from declared inputs alone" pair — the place where the suite argues about
+*influence* rather than about field names, and where a self-comparison is
+easiest to mistake for a proof.
+
+Not audited, and recorded here rather than quietly dropped: **43 universal-claim
+names in the rest of `app/src`** (feature components, `lib/`, i18n) and **25 in
+the Python suite**, out of 119 across 556 test names in total. The rate in the
+audited stratum was 5.3%; if the unaudited two-thirds run at the same rate, that
+is three or four more names, none of them on a refusal path. That is the reason
+for stopping here, and it is an estimate rather than a measurement.
 
 ## Pull requests
 

@@ -634,7 +634,12 @@ describe("refusal: a complaint-shaped field is refused, and planning load must r
   // instead, which a rename does not survive.
   // See docs/project/PHASE1_ADVERSARIAL.md, route 2b.
 
-  it("allocates from area identity and planning load alone", () => {
+  it("ignores any field the adapter did not declare, on the shipped planner", () => {
+    // The projection below lists exactly the eight keys of `PlanningArea`, so
+    // on its own it compares a deep copy with itself and would pass with the
+    // allocator reading every field there is. It is kept because it fails the
+    // day `adaptDemoV1` emits a ninth key that allocation then reads — but the
+    // claim in the name is carried by the injection, not by the projection.
     const full = adaptDemoV1(ARTIFACT)?.areas ?? [];
     expect(full.length).toBeGreaterThan(0);
     const declared = full.map(
@@ -650,14 +655,27 @@ describe("refusal: a complaint-shaped field is refused, and planning load must r
           reason: area.reason,
         }) as PlanningArea,
     );
+    // Route 2b, executed: fields a contractor could add and then weight. None
+    // is complaint-shaped by name, so no guard sees them; the plan must be
+    // byte-identical anyway.
+    const smuggled = full.map((area, index) => ({
+      ...area,
+      residentReportIndex: 900 - index * 7,
+      urgencyWeight: index % 3,
+      escalations: index * 11,
+    })) as PlanningArea[];
     for (const budget of [48, 80, 400]) {
-      expect(allocateHours(declared, budget, 8, true)).toEqual(
-        allocateHours(full, budget, 8, true),
-      );
+      const reference = allocateHours(full, budget, 8, true);
+      expect(allocateHours(declared, budget, 8, true), `declared @ ${budget}`).toEqual(reference);
+      expect(allocateHours(smuggled, budget, 8, true), `smuggled @ ${budget}`).toEqual(reference);
     }
   });
 
-  it("plans from the declared planner inputs alone on the domain planner", () => {
+  it("ignores any field beyond the declared inputs, on the domain planner", () => {
+    // Same shape as the test above, and the same correction: `domainAreas()`
+    // constructs exactly these six keys, so the projection alone compares an
+    // object graph with itself. The undeclared fields are what the name rests
+    // on.
     const areas = domainAreas();
     const declared = areas.map(
       (area) =>
@@ -670,7 +688,14 @@ describe("refusal: a complaint-shaped field is refused, and planning load must r
           included: area.included,
         }) as AreaPlanningInput,
     );
-    expect(buildPlan(declared, POLICY)).toEqual(buildPlan(areas, POLICY));
+    const smuggled = areas.map((area, index) => ({
+      ...area,
+      residentReportIndex: 900 - index * 7,
+      urgencyWeight: index % 3,
+    })) as AreaPlanningInput[];
+    const reference = buildPlan(areas, POLICY);
+    expect(buildPlan(declared, POLICY)).toEqual(reference);
+    expect(buildPlan(smuggled, POLICY)).toEqual(reference);
   });
 
   it("produces the same plan when the artifact's 311 diagnostic is deleted outright", () => {
@@ -890,7 +915,15 @@ describe("refusal: no complaint or 311 identifier is reachable from allocation c
         expect(key).not.toMatch(/rank|priority|severity|nuisance|complaint/i);
       }
     }
-    for (const allocation of allocateHours(EMBEDDED_DEMO.areas, 80, 8, true).allocations) {
+    // "Neither planner" means the shipped one too, and at the plan level as
+    // well as the row level. The row pin below was the whole of the shipped
+    // half, so a plan-level `priority_order` on `PlanResult` would have passed
+    // the check whose own comment says it must not.
+    const shipped = allocateHours(EMBEDDED_DEMO.areas, 80, 8, true);
+    for (const key of Object.keys(shipped)) {
+      expect(key).not.toMatch(/rank|priority|severity|nuisance|complaint/i);
+    }
+    for (const allocation of shipped.allocations) {
       expect(Object.keys(allocation).sort()).toEqual(["areaId", "hours"]);
     }
   });

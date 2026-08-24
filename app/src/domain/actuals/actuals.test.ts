@@ -8,6 +8,9 @@
  * the one enforced — must be refused.
  */
 
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 import schema from "../../../../config/schema/actuals.v1.schema.json" with { type: "json" };
@@ -16,6 +19,7 @@ import {
   BASELINE_WILL_NEVER_COMPUTE,
   hasRecordedActuals,
   parseActuals,
+  SMALL_CELL_THRESHOLD,
   suppressEngagementCount,
   validateActuals,
 } from "./actuals.ts";
@@ -141,6 +145,24 @@ describe("a missing required field fails loudly and by name", () => {
 });
 
 describe("the suppression policy applies exactly as it does to observations", () => {
+  it("uses the same threshold the pipeline's suppressor uses", () => {
+    // The name of this block claims equivalence with the observations policy,
+    // and until this test existed nothing checked it: SMALL_CELL_THRESHOLD in
+    // actuals.ts is a hand-copied mirror of the one in suppress.py, so raising
+    // the pipeline's threshold to 10 would leave every test below green while
+    // the two policies silently diverged. Read the Python rather than trust the
+    // comment that says they match.
+    const suppressor = readFileSync(
+      fileURLToPath(
+        new URL("../../../../pipeline/src/stillhere_pipeline/suppress.py", import.meta.url),
+      ),
+      "utf8",
+    );
+    const declared = /^SMALL_CELL_THRESHOLD\s*=\s*(\d+)/m.exec(suppressor);
+    expect(declared?.[1], "suppress.py no longer declares SMALL_CELL_THRESHOLD").toBeDefined();
+    expect(Number(declared?.[1])).toBe(SMALL_CELL_THRESHOLD);
+  });
+
   it("rejects a published engagement count below the threshold", () => {
     const document = clone();
     rows(document)[0].engagement = { count: 3, suppressed: false };

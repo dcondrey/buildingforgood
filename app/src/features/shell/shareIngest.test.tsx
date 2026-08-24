@@ -68,10 +68,10 @@ describe("a shared link the shell refuses", () => {
   });
 
   it("refuses a link built against another organization's area list", async () => {
-    await openWith(INTACT.replace(GEO, "coldwater-valley-illustrative/2026-08-23"));
+    await openWith(INTACT.replace(GEO, "dsdp-published-seven/2026-08-23"));
     const notice = await screen.findByLabelText("Shared link");
     expect(notice.textContent).toContain("built against a different list of areas");
-    expect(notice.textContent).toContain("coldwater-valley-illustrative/2026-08-23");
+    expect(notice.textContent).toContain("dsdp-published-seven/2026-08-23");
     expect(await screen.findByText(/80\/80 hours allocated\./)).toBeDefined();
   });
 

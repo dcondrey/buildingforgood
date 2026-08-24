@@ -1,0 +1,200 @@
+{
+  "$schema": "../schema/organization-profile.v1.schema.json",
+  "schema_version": "organization-profile/v1",
+  "profile_id": "san-diego-dsdp-seven",
+  "profile_status": "illustrative_example",
+  "last_updated": "2026-08-23",
+  "organization": {
+    "name": "Still Here SD — DSDP published seven-area configuration",
+    "profile_owner_role": "Outreach or community-services coordinator",
+    "scope_statement": "The same tool configured for the full seven-area geography the Downtown San Diego Partnership publishes, rather than the six-area core the reference deployment uses. It exists to show that the area list is configuration and not code: the seventh area, Outside Perimeter, is a real published area with a real reported total, and adding it changes the plan without changing the product. It plans staff time against aggregate place observations. It does not identify people, infer movement, establish causation, or measure service need.",
+    "jurisdiction_note": "Downtown San Diego and its published Outside Perimeter. Outside Perimeter is a residual area — the publisher reports it as what falls outside the core perimeter rather than as a named neighborhood — so its boundary is less defined than the six core areas, not more. The four East Village sub-areas remain out of scope because they overlap the East Village total."
+  },
+  "observations": {
+    "grain": "area_month_aggregate",
+    "precise_locations_publishable": false,
+    "individual_records_publishable": false
+  },
+  "geography": {
+    "area_list": {
+      "version": "dsdp-published-seven/2026-08-21",
+      "areas": [
+        {
+          "id": "city_center",
+          "label": "City Center",
+          "in_scope": true
+        },
+        {
+          "id": "columbia",
+          "label": "Columbia",
+          "in_scope": true
+        },
+        {
+          "id": "cortez",
+          "label": "Cortez",
+          "in_scope": true
+        },
+        {
+          "id": "east_village",
+          "label": "East Village",
+          "in_scope": true
+        },
+        {
+          "id": "gaslamp",
+          "label": "Gaslamp",
+          "in_scope": true
+        },
+        {
+          "id": "marina",
+          "label": "Marina",
+          "in_scope": true
+        },
+        {
+          "id": "outside_perimeter",
+          "label": "Outside Perimeter",
+          "in_scope": true
+        },
+        {
+          "id": "east_village_north_east",
+          "label": "East Village - North East",
+          "in_scope": false,
+          "note": "Published, but overlapping: the quadrants partition East Village and their totals are already inside the East Village total. Listed so the exclusion is visible rather than silent; never summed with the parent."
+        },
+        {
+          "id": "east_village_north_west",
+          "label": "East Village - North West",
+          "in_scope": false,
+          "note": "Published, but overlapping: the quadrants partition East Village and their totals are already inside the East Village total. Listed so the exclusion is visible rather than silent; never summed with the parent."
+        },
+        {
+          "id": "east_village_south_east",
+          "label": "East Village - South East",
+          "in_scope": false,
+          "note": "Published, but overlapping: the quadrants partition East Village and their totals are already inside the East Village total. Listed so the exclusion is visible rather than silent; never summed with the parent."
+        },
+        {
+          "id": "east_village_south_west",
+          "label": "East Village - South West",
+          "in_scope": false,
+          "note": "Published, but overlapping: the quadrants partition East Village and their totals are already inside the East Village total. Listed so the exclusion is visible rather than silent; never summed with the parent."
+        }
+      ],
+      "provenance": {
+        "resolution_status": "resolved",
+        "source_name": "Downtown San Diego Partnership Clean & Safe Unsheltered Sleep Count report, June 2026",
+        "publisher": "Downtown San Diego Partnership",
+        "source_url": "https://downtownsandiego.org/wp-content/uploads/2026/08/June-2026-Unsheltered-Sleep-Count.1.pdf",
+        "source_version": "June 2026 Unsheltered Sleep Count report",
+        "retrieved_at": "2026-08-21",
+        "resolution_note": "All seven names are the publisher's own. This is the publisher's complete reported geography: the June 2026 report gives a total for each of these seven areas and a seven-area published total, and data/monitoring/dsdp_public_checkpoints.csv transcribes both. The reference profile restricts to six and states that exclusion; this profile does not restrict. Outside Perimeter is published and countable, so the name list is resolved, but see the boundary entry: a residual area is defined by what it is not. The four East Village quadrants are listed out of scope for the reason the data dictionary gives: they overlap the East Village total and must never be summed with it.",
+        "resolution_rule": "Re-audit whenever the publisher adds, removes, renames, or re-partitions a reported area."
+      }
+    },
+    "boundaries": {
+      "provenance": {
+        "resolution_status": "unresolved",
+        "source_name": null,
+        "publisher": null,
+        "source_url": null,
+        "source_version": null,
+        "retrieved_at": null,
+        "resolution_note": "The publisher names these areas and reports totals for them, but publishes no boundary file. The only geometry this project holds is a block-centroid grid supplied privately, and those coordinates are on the deployment deny-list, so they cannot be turned into a published boundary either. Area membership is therefore traceable through a label crosswalk but not through any boundary a reader could inspect. Anything that would depend on exactly where one area stops and the next begins is out of reach here. Outside Perimeter is worse still: it is a residual, defined as whatever falls outside the core perimeter, so it has no boundary of its own even in principle until the core perimeter is resolved.",
+        "resolution_rule": "Resolve by obtaining a published or licensed boundary definition for these six areas, with a version and a retrieval date, that can be cited without republishing precise locations."
+      }
+    },
+    "adjacency": {
+      "version": null,
+      "pairs": [],
+      "provenance": {
+        "resolution_status": "unresolved",
+        "source_name": null,
+        "publisher": null,
+        "source_url": null,
+        "source_version": null,
+        "retrieved_at": null,
+        "resolution_note": "No adjacency table for these areas has been published by any source this project can cite, and none has been derived, because deriving one would rest on the same precise coordinates the boundary entry above rules out. The consequence is deliberate and visible: the drop test runs with adjacency unavailable, so a sustained decline with no adjacent evidence returns insufficient evidence instead of possible displacement. An unresolved adjacency makes the product say less, which is the correct direction.",
+        "resolution_rule": "Resolve by publishing a versioned adjacency table reviewed against a resolved boundary definition. Adjacency cannot resolve before boundaries do."
+      }
+    }
+  },
+  "operations": {
+    "planning_horizon": {
+      "value": 14,
+      "unit": "day",
+      "label": "next two-week outreach cycle"
+    },
+    "budget": {
+      "value": 96,
+      "unit": "staff_hour",
+      "user_editable": true,
+      "minimum": 0
+    },
+    "shift": {
+      "length_hours": 8,
+      "allocation_increment_hours": 2
+    },
+    "team_count": 3,
+    "coverage_floor_hours": 6,
+    "continuity_reserve_hours": 2,
+    "uncertainty_weight": 0.6,
+    "floor_dominance_warning_threshold": 0.25
+  },
+  "cost_assumptions": {
+    "loaded_hourly_rate": {
+      "value": 52,
+      "currency": "USD",
+      "unit": "cost_per_staff_hour",
+      "assumption": {
+        "status": "operator_set_assumption",
+        "set_by_role": "Program director",
+        "basis": "Placeholder for the reference scenario; not a measured or derived rate. San Diego's public contract releases publish outreach personnel totals (for example the FY23 Family Reunification agreement's $582,079 personnel line) but no fielded-FTE or field-hour denominator, so no hourly rate can honestly be derived from them. Any organization adopting this profile must replace this value with its own budgeted figure before any cost figure is shown to a decision-maker.",
+        "effective_date": "2026-08-23",
+        "review_by": "2027-08-23",
+        "includes": [
+          "outreach worker wages",
+          "payroll taxes",
+          "benefits",
+          "field supervision time",
+          "vehicle and fuel"
+        ],
+        "excludes": [
+          "client assistance funds",
+          "capital and facilities",
+          "organization-wide indirect administration",
+          "contracted clinical or medical services"
+        ]
+      }
+    }
+  },
+  "language_boundaries": {
+    "permitted_examples": [
+      "Aggregate changes are consistent with possible displacement.",
+      "The available evidence is insufficient.",
+      "This forecast has a wide uncertainty interval.",
+      "This plan distributes staff time. It does not establish who is served or on what terms."
+    ],
+    "prohibited_claim_types": [
+      "identified_people_moved_between_areas",
+      "policy_caused_observed_decline",
+      "area_needs_enforcement",
+      "live_shelter_capacity_or_eligibility",
+      "automatic_operational_authorization"
+    ]
+  },
+  "review_triggers": [
+    "new_monthly_observation",
+    "available_budget_changed",
+    "missing_or_incomparable_area",
+    "forecast_interval_warning",
+    "fairness_floor_infeasible",
+    "local_operational_knowledge_conflicts",
+    "source_boundary_or_method_revision"
+  ],
+  "notes": [
+    "The GEOGRAPHY here is real and sourced: seven published areas from the pinned June 2026 DSDP report, transcribed in data/monitoring/dsdp_public_checkpoints.csv. Nothing about the place is invented.",
+    "The OPERATING PARAMETERS are illustrative. A coverage floor, a shift length, a planning horizon and a team count are an adopting organization's own choices, not facts about the world, so varying them is configuration rather than fabrication. They differ from the reference deployment on purpose, so this profile exercises more of the schema than the area list alone: a 14-day cycle instead of 7, 2-hour allocation blocks instead of 1-hour, a 6-hour floor instead of 8, 3 teams instead of 2, and a higher uncertainty weight.",
+    "Budget: 3 teams x 8-hour shifts x 4 shifts = 96 staff-hours, a whole number of 2-hour allocation blocks. Seven areas at the 6-hour floor require 42, leaving 54 discretionary.",
+    "The $52 rate is a placeholder like the reference profile's $45 and must be replaced before any cost figure is shown to a decision-maker.",
+    "Expect Outside Perimeter to render with no observation carried. public/generated/demo.v1.json is built on the six-area core, so the shipped artifact has no row for it. That is the correct behaviour and it is worth seeing: the tool refuses to invent an observation for an area it has no data on, and says so on screen."
+  ]
+}

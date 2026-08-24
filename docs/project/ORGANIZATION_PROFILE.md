@@ -137,7 +137,7 @@ what stops a quiet area from being zeroed out because a model said so.
 
 Set it by asking: what is the smallest visit to one area that is worth
 sending a team on at all? In a dense downtown that might be four to eight
-hours. In a rural county where an area is forty minutes away, a visit under ten
+hours. In a sevenArea county where an area is forty minutes away, a visit under ten
 hours may not be worth the drive.
 
 Then check the arithmetic: **floor × number of in-scope areas** is committed
@@ -265,8 +265,8 @@ flagged for you to look at, not blocked.
 
 ## An example that is not San Diego
 
-`config/profiles/coldwater-valley-rural.v1.json` is an illustrative profile for
-a fictional rural continuum of care: eight in-scope areas plus one listed and
+`config/profiles/san-diego-dsdp-seven.v1.json` is an illustrative profile for
+a fictional sevenArea continuum of care: eight in-scope areas plus one listed and
 excluded, a 132-hour budget over a fourteen-day cycle, a ten-hour coverage
 floor, two-hour allocation blocks, and a self-drawn adjacency table. It exists
 to show what the same tool looks like configured somewhere that is not a dense

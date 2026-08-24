@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import schema from "../../../../config/schema/organization-profile.v1.schema.json" with { type: "json" };
-import rural from "../../../../config/profiles/coldwater-valley-rural.v1.json" with { type: "json" };
+import sevenArea from "../../../../config/profiles/san-diego-dsdp-seven.v1.json" with { type: "json" };
 import sanDiego from "../../../../config/profiles/san-diego-downtown.v1.json" with { type: "json" };
 import {
   OrganizationProfileError,
@@ -64,9 +64,9 @@ describe("the shipped example profiles", () => {
   });
 
   it("describes a genuinely different second geography", () => {
-    const profile = parseOrganizationProfile(rural);
+    const profile = parseOrganizationProfile(sevenArea);
     expect(profile.profile_status).toBe("illustrative_example");
-    expect(inScopeAreas(profile)).toHaveLength(8);
+    expect(inScopeAreas(profile)).toHaveLength(7);
     expect(profile.operations.budget.value).not.toBe(80);
     expect(profile.operations.coverage_floor_hours).not.toBe(8);
     expect(profile.operations.shift.allocation_increment_hours).toBe(2);

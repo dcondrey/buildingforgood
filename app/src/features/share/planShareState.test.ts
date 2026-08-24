@@ -56,7 +56,7 @@ describe("plan share links", () => {
       share: 1,
       assume: null,
       rate: 45,
-      geography: "coldwater-valley-illustrative/2026-08-23",
+      geography: "dsdp-published-seven/2026-08-23",
     };
     expect(decodePlanShare(encodePlanShare(plain))).toEqual(plain);
   });
@@ -202,12 +202,12 @@ describe("the area list a link was built against", () => {
 
   it("refuses a link built against a different area list, naming both", () => {
     const restored = decodePlanShare(encodePlanShare(PLAN)) as PlanShareState;
-    expect(() =>
-      assertGeographyMatches(restored, "coldwater-valley-illustrative/2026-08-23"),
-    ).toThrow(PlanShareError);
-    expect(() =>
-      assertGeographyMatches(restored, "coldwater-valley-illustrative/2026-08-23"),
-    ).toThrow(/dsdp-core-six\/2026-08-21.*coldwater-valley-illustrative\/2026-08-23/);
+    expect(() => assertGeographyMatches(restored, "dsdp-published-seven/2026-08-23")).toThrow(
+      PlanShareError,
+    );
+    expect(() => assertGeographyMatches(restored, "dsdp-published-seven/2026-08-23")).toThrow(
+      /dsdp-core-six\/2026-08-21.*dsdp-published-seven\/2026-08-23/,
+    );
   });
 
   it("refuses a geography value this module would not have written", () => {

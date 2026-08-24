@@ -110,9 +110,9 @@ would close it.
 interface already ships — six in-scope areas, an 80 staff-hour budget, an
 8-hour coverage floor, matching `public/generated/demo.v1.json`.
 
-`profiles/coldwater-valley-rural.v1.json` is an **illustrative example
+`profiles/san-diego-dsdp-seven.v1.json` is an **illustrative example
 describing a place that does not exist**, included so the abstraction is
-exercised somewhere that is not downtown. It is a fictional rural, multi-county
+exercised somewhere that is not downtown. It is a fictional sevenArea, multi-county
 continuum of care: eight in-scope areas plus one listed out of scope, a
 132-hour budget over a two-week cycle, a 10-hour coverage floor, two-hour
 allocation blocks because of driving time, and a self-drawn adjacency table.

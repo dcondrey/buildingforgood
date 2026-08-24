@@ -6,7 +6,7 @@
  * hardcode: which areas are in scope, the default budget, the coverage floor,
  * the continuity reserve, the allocation increment, the team count, and the
  * loaded hourly rate. Swapping profiles is a URL parameter, not an edit:
- * `?profile=coldwater-valley-rural` runs the same build on a different
+ * `?profile=san-diego-dsdp-seven` runs the same build on a different
  * geography.
  *
  * The San Diego profile is the reference deployment and reproduces exactly
@@ -15,7 +15,7 @@
  * characterization tests pin the same behaviour they always did.
  */
 
-import rural from "../../../../config/profiles/coldwater-valley-rural.v1.json" with { type: "json" };
+import sevenArea from "../../../../config/profiles/san-diego-dsdp-seven.v1.json" with { type: "json" };
 import sanDiego from "../../../../config/profiles/san-diego-downtown.v1.json" with { type: "json" };
 import {
   inScopeAreas,
@@ -33,7 +33,7 @@ import type { DemoData, PlanningArea } from "../../lib/demo";
 /** Profiles compiled into this build, by `profile_id`. */
 const PROFILE_SOURCES: Record<string, unknown> = {
   "san-diego-downtown": sanDiego,
-  "coldwater-valley-rural": rural,
+  "san-diego-dsdp-seven": sevenArea,
 };
 
 export const DEFAULT_PROFILE_ID = "san-diego-downtown";

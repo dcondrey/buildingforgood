@@ -99,7 +99,7 @@ describe("a well-formed actuals file", () => {
 
   it("checks the file against the deployment it claims to belong to", () => {
     const result = validateActuals(VALID, {
-      expectedProfileId: "coldwater-valley-rural",
+      expectedProfileId: "san-diego-dsdp-seven",
       knownAreaIds: ["north_ridge"],
     });
     expect(result.ok).toBe(false);

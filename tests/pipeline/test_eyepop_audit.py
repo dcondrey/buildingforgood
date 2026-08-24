@@ -386,5 +386,11 @@ def test_cli_also_run_fails_closed_before_rasterizing(
         raise AssertionError("rasterized before checking credentials")
 
     monkeypatch.setattr(module, "rasterize", explode)
-    with pytest.raises(SystemExit, match="EYEPOP_API_KEY"):
+    # `--engine local` is Apple Vision, so on a non-macOS host a platform guard
+    # refuses before the credential check is ever reached. Both refusals are
+    # fail-closed, which is what this test is named for; the assertion that
+    # actually carries it is the `explode` sentinel above, which fires if
+    # anything rasterizes first. Matching only the macOS-side message made this
+    # pass on every developer machine and fail the first time CI ran it.
+    with pytest.raises(SystemExit, match="EYEPOP_API_KEY|requires macOS"):
         main(["--pdf", str(tmp_path / "r.pdf"), "--also-run", "eyepop@300", "--format", "table"])

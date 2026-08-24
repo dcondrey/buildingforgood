@@ -232,8 +232,25 @@ notice period, no migration.
 - **The privacy scanner still infers which numbers are people-counts from
   document shape** for the shipped file; the durable fix is partially landed.
   Six rounds of review each found a real hole, and the security policy says to
-  assume a seventh exists. What that risk is bounded to is stated below.
-- **Accessibility is audited, not fully verified.** Zero automated WCAG 2.1 AA
-  violations across six screens, contrast measured directly. Keyboard operation
-  is a manual protocol still to be run by a person, and screen-reader
-  announcement of the live plan region was not verified.
+  assume a seventh exists. The mechanism of a seventh is unknown; its
+  consequence is bounded, and the ceiling is stated above under "What the
+  seventh scanner hole could actually cost you" and in `SECURITY.md` § 3.
+- **Accessibility is self-assessed against WCAG 2.1 AA, and not verified by a
+  person.** No third-party accessibility audit has been commissioned; "audited"
+  here means two passes inside this project, and you should read it that way.
+  An in-house axe sweep found two issues and fixed them. An independent review
+  track then raised eleven findings, A-1 through A-11, including two at Level A
+  that automated tooling structurally cannot see — the interactive map's
+  keyboard reachability in Safari, and scrollable tables that could not be
+  scrolled without a mouse. **All eleven are addressed in code**, each one
+  answered individually in
+  [`docs/project/ACCESSIBILITY.md`](../project/ACCESSIBILITY.md); the two Level A
+  items were fixed by replacing the map's SVG hit targets with real HTML buttons
+  and by making every scroll region focusable. Zero automated WCAG 2.1 AA
+  violations across six screens, and the colour palette is checked by
+  computation rather than by axe, which cannot resolve CSS custom properties in
+  this test environment (`app/src/contrast.test.ts`). What is still owed to a
+  person and has not been done: Safari, a real screen reader, a real print
+  render, 400% zoom reflow, and text spacing. Fixed findings are not the same as
+  verified accessibility, and if your grant conditions require an audit, this is
+  not one.

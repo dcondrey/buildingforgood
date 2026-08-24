@@ -196,8 +196,16 @@ map and nowhere else.
 Every schematic map now carries a caption of its own, in the quiet register the
 rest of the page uses (mono, `--faint`, inside the map frame):
 
-> Boundaries are illustrative: simplified outlines from a source this project
-> cannot pin or verify. Read the shapes as a diagram, not as verified geography.
+> These are schematic outlines, not surveyed boundaries. The publisher names
+> its areas but publishes no boundary file; these shapes were derived from a
+> private grid this project cannot pin to a checksum or re-obtain, and the
+> deployment marks its boundary and adjacency sources unresolved. Read them as a
+> diagram of which area is which, and never as where one area stops.
+
+The earlier wording said "simplified neighborhood boundaries", which implied a
+real boundary that had been simplified. `i18n.test.tsx` now requires every map
+caption in every shipped locale to carry that locale's registered
+`map.outlinePhrase`, and fails if the retracted wording returns.
 
 Keys `map.provenance`, `app.skipToMain` and `guide.stepAnnounce` are in both
 `en.ts` and `es.ts`; the Spanish follows the glossary in `docs/project/I18N.md`

@@ -73,6 +73,26 @@ suppression, geometry approval) propagating past the node it was approved
 for. Six rounds of review each found a real hole of that shape. Assume a
 seventh exists.
 
+**What a seventh hole is bounded to.** That sentence stays because it is true,
+but on its own it states an unknown mechanism with no ceiling, which is not
+what a reader needs in order to act. The mechanism is unknown; the consequence
+is not. The worst case is **one number, not one record**: a published
+area-month count between 1 and 4 shipping as an integer instead of as
+`suppressed`. It cannot be worse than that, and the reason is architectural
+rather than procedural — the pipeline aggregates before it writes, no
+person-level type exists anywhere in the lineage that reaches deployment, and
+the published grain is one named area and one calendar month with no day, no
+block, no tract, no coordinate, and no address. A completely unsuppressed file
+still says how many and never who, where within the area, or which day. The
+upstream SDRDL source package, meanwhile, is public at point precision, so the
+ceiling on a scanner failure is republishing more coarsely something already
+obtainable more precisely from the original publisher. This bound holds only
+while the input rule holds: it is void for an adopter who supplies
+person-level records, coordinates, addresses, or block-scale counts. The same
+bound, written for a non-technical reader, is in
+[`docs/adoption/BRIEF.md`](docs/adoption/BRIEF.md) under "What the seventh
+scanner hole could actually cost you"; the two must not drift apart.
+
 Concretely, we want to hear about: a leak shape the scanner does not see; an
 allow-list entry that exempts more than it should; a suppression marker or
 geography declaration that clears the rule for a sibling or descendant it
@@ -110,9 +130,11 @@ Stated plainly so nobody has to discover them in a report:
   ruling recorded in `docs/policy/small-cell-suppression.md`. Pre-suppression
   artifacts exist in this repository's git history, and the upstream SDRDL
   source is public at point precision. Those two facts are why the boundary
-  was drawn at the deployment rather than at the repository. On non-public
-  source data both facts would flip, and an adopting organization must draw
-  the boundary differently — see
+  was drawn at the deployment rather than at the repository, and the second of
+  them is also the ceiling on a scanner failure, stated under section 3. On
+  non-public source data both facts would flip, the bound in section 3 would
+  not hold, and an adopting organization must draw the boundary differently —
+  see
   [`docs/project/DATA_GOVERNANCE.md`](docs/project/DATA_GOVERNANCE.md).
 - **Recovery across files or across rollup levels is not enforced.** The
   artifact key surface is pinned by a test so that adding a rollup fails the

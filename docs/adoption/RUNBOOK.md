@@ -48,8 +48,26 @@ goes wrong.
 ```sh
 ./scripts/refresh.sh --dry-run     # always first — runs every check, writes nothing
 ./scripts/refresh.sh               # only if the dry run reads correctly
-./scripts/verify.sh                # before anything is published
 ```
+
+**The first run sets itself up, and that takes several minutes with almost
+nothing on screen.** It prints `== [0/2] checking prerequisites ==`, then a
+line saying it is installing its own tools, and then it goes quiet. That
+silence is normal. Do not interrupt it. Every run after the first skips this
+and finishes in seconds.
+
+**If the setup cannot proceed, it stops before doing anything and tells you
+why in a sentence.** Every one of those messages begins `REFRESH FAILED:`,
+names what is missing, and says what to install or who to ask. You should
+never see a raw error mentioning `pip`, `venv`, or a Python traceback; if you
+do, that is a bug in the tool and worth reporting as one. Section 11 lists the
+setup failures and what each one means.
+
+**`./scripts/verify.sh` is not your step.** It checks the whole repository —
+formatting, types, both test suites, a production build, and the privacy scan
+— and on a cold machine it is a long, noisy run that also needs Node and npm.
+It belongs to your technical contact, who runs it before anything is
+published. Ask them to; do not treat a failure in it as something you caused.
 
 **Read the dry run's summary line before doing the real run.** It looks like
 this:
@@ -178,8 +196,14 @@ is the mistake the refusal exists to prevent.
 This is the part most likely to surprise you, so it gets the most space.
 
 **What it does.** Before any hours are distributed by forecast, **every
-neighborhood in scope is guaranteed a minimum**. The default is 8 hours. Only
-what is left over follows the forecast.
+neighborhood in scope is guaranteed a minimum**. Only what is left over follows
+the forecast.
+
+**The size of that minimum is your organization's setting, not the tool's.** It
+comes from the configuration profile this deployment runs on, so the numbers on
+your screen may not be the numbers in this paragraph. In the reference
+deployment the minimum is 8 hours; in the published seven-area configuration it
+is 6.
 
 **Why the plan looks "wrong."** If one neighborhood has far more expected need
 than the others, your intuition says send most of the hours there. The tool
@@ -197,13 +221,19 @@ planning load** — the hours the forecast said an area wanted that the floor
 moved somewhere else. Read as: *this is what fairness cost, in hours.* It is
 displayed whether or not you ask, so the trade-off is never hidden from you.
 
-**Three settings you can pick** — 0h, 4h, 8h:
+**Three settings you can pick** — none, half, and your organization's minimum.
+The tool works the last two out from your configured minimum, so the buttons
+read `0h`, half of it, and it:
 
 | Setting | What it means | When to use it |
 | --- | --- | --- |
-| **8h (default)** | Every area guaranteed 8 hours. | Normal operation. |
-| **4h** | Half the guarantee. | Comparison, to see how sensitive the plan is to the floor. |
+| **Your minimum (default)** | Every area guaranteed the full amount. | Normal operation. |
+| **Half** | Half the guarantee. | Comparison, to see how sensitive the plan is to the floor. |
 | **0h** | No minimum. Hours follow the forecast alone. | **Comparison only.** |
+
+On the reference deployment those buttons read 8h, 4h and 0h. On the published
+seven-area configuration they read 6h, 3h and 0h. If your buttons show
+different numbers again, that is your profile, not a different tool.
 
 The tool labels 0h as a comparison view and not a recommendation, and it means
 that. Use it to see which neighborhoods would be left with almost nothing —
@@ -294,9 +324,13 @@ scenario matters, write it down or export the brief.
 
 ## 10. Exporting
 
-**Copy the decision brief** puts a plain-text summary on your clipboard: the
+**Copy decision brief** puts a plain-text summary on your clipboard: the
 evidence result, the plan, the assumptions, and the limitations. Paste it into
 an email, a board packet, or your case notes.
+
+**The button stays greyed out until there is a plan on screen.** That is not a
+fault; it is the tool refusing to hand you an empty brief. Work through
+sections 6 and 7 first, then come back.
 
 **Two things to check before you send it:**
 
@@ -307,8 +341,53 @@ an email, a board packet, or your case notes.
 2. **The brief carries its own limitations text. Do not trim it.** The
    qualifications are the reason the numbers can be shared at all.
 
-**Printing** produces a decision brief laid out for paper. The interactive
-controls do not print.
+**Download spreadsheet (CSV)** gives you the same plan as a file, one row per
+neighborhood, with the reason for every hour.
+
+**Print plan / save as PDF** produces a decision brief laid out for paper. The
+interactive controls do not print.
+
+---
+
+## 10b. Sending a plan to a colleague
+
+**Copy link to this plan** hands the whole plan to someone else: the hours you
+set, the guaranteed minimum, every lock you placed, and the two assumptions you
+stated. Like the brief button, it is greyed out until there is a plan.
+
+**Nothing is stored anywhere and no account is involved.** The plan travels
+inside the link itself — neighborhood names and hour counts only, no records,
+no locations, nothing about any person. The link is shown in full above the
+button so you can read what you are about to send.
+
+**If your recipient sees a "Shared link" notice instead of your plan, read it
+before assuming the tool is broken.** There are two of them and they mean
+different things:
+
+| What they see | What happened | What you do |
+| --- | --- | --- |
+| "This link could not be read…" naming a field | The link was damaged in transit — mail clients wrap, shorten, and break long links. | Send it again, unwrapped and unshortened. Do not talk them through "just ignore it": they are looking at the default plan, not yours. |
+| "This link was built against a different list of areas…" | Their deployment is configured for a different set of neighborhoods than yours. | Hours and area names do not carry across geographies, so the tool refuses rather than mapping them onto the wrong places. Send the brief or the spreadsheet instead. |
+
+**In both cases the recipient is looking at the default plan for their
+deployment, not yours, and the notice says so.** Treat a refusal notice as
+*this plan did not arrive*, never as *the tool is glitching*.
+
+---
+
+## 10c. Two controls in the top bar this runbook does not otherwise mention
+
+**Language.** English and Español. It changes the interface text only; every
+number, and the way it is grouped and punctuated, stays identical.
+
+**Which deployment you are looking at.** Adding `?profile=` and a profile name
+to the web address runs the same build on a different organization's
+configuration — different neighborhoods, different budget, different guaranteed
+minimum. Two are shipped: `san-diego-downtown` (the default) and
+`san-diego-dsdp-seven`. An unrecognised name falls back to the default rather
+than failing. You will not normally touch this, but an evaluator may ask about
+it, and it is the reason section 6 tells you to read your own buttons rather
+than this document's numbers.
 
 ---
 
@@ -325,9 +404,38 @@ be locked out of, and no data of yours to leak.** That narrows the list a lot.
 | Everything is stale and the refresh will not run | A pinned source changed, or a required file is missing. | Section 2. Do not force it. |
 | A number looks wrong to your outreach team | Possibly a digitization misread, possibly the tool is missing local knowledge. | Check the audit findings (section 3). Then lock the area (section 7) and note why. |
 | Saved scenarios disappeared | Browser data was cleared, or a different browser/device. | They are per-browser by design. Nothing to recover. |
+| Recipient of a shared link sees a "Shared link" notice | The link was damaged in transit, or their deployment covers different neighborhoods. | Section 10b. They are seeing the default plan, not yours. |
+
+### When the refresh cannot even start
+
+These come from `./scripts/refresh.sh` before it touches any data. All of them
+stop the command, and none of them changes anything — the site keeps showing
+the last good numbers while you sort it out.
+
+| Message | What it means | What to do |
+| --- | --- | --- |
+| `REFRESH FAILED: this computer does not have Python installed…` | The tool's engine is not on this machine. | The message names what to install for your operating system. If you cannot install software here, this is a technical contact's job, not yours. |
+| `REFRESH FAILED: the Python on this computer is too old…` | Python is installed but predates what the pipeline needs. | Install a newer one alongside the old; nothing has to be removed. Technical contact if you are unsure. |
+| `REFRESH FAILED: the project's private Python folder (.venv) is damaged…` | A previous setup was interrupted, or this machine's Python moved. | The message gives the one-line fix, and it loses nothing: delete the `.venv` folder and run the command again. Expect the next run to take several minutes. |
+| `REFRESH FAILED: the refresh could not create its private Python folder (.venv)…` | The setup step itself failed. The message quotes what Python reported. | On Ubuntu or Debian this is usually one missing package, named in the message. Otherwise a full disk or a folder this account cannot write to. |
+| `REFRESH FAILED: the refresh could not download the tools it needs…` | Offline, or a workplace firewall or proxy is blocking the download. | Check you are online and run it again. A proxy needs setting up once, by your technical contact. |
+| `REFRESH FAILED: the refresh could not install the tools it needs…` | The setup failed for some reason other than the network; the message quotes it. | Hand the quoted lines to your technical contact. |
+| `REFRESH FAILED: this copy of the project is read-only…` | The project is on a disk or share this account cannot write to. | Move it somewhere you own, or ask for write permission on that folder. |
+| `REFRESH FAILED: the download step needs the … command and this computer does not have it.` | A standard system tool (`curl` or `sha256sum`) is missing from this machine. | You can still run every check on the files already on disk with `./scripts/refresh.sh --no-fetch`. The proper fix is a technical contact's. |
+| `REFRESH FAILED: the published source files could not be downloaded or did not match…` | Either the download failed, or a publisher's file is not the one this project recorded. | These are very different. The message says which. **A fingerprint mismatch is never something to re-record away** — find out what the publisher changed first. |
+| `REFRESH FAILED: the refresh stopped unexpectedly…` | Something the tool did not anticipate. | Send the whole terminal output to your technical contact. This one is a bug, not an operator error. |
+
+**The pattern to trust:** every one of these names what is missing and what to
+do about it. If you get a bare error mentioning `pip`, `venv`, or a Python
+traceback instead, the tool has failed to explain itself — report that as a
+defect rather than trying to interpret it.
 
 **Who to contact.** This runbook cannot fill this in for you, and it should not
-guess. Before you go live, write the four names in here:
+guess. Before you go live, write the four names in here.
+
+**If this table is still blank, do not publish anything.** Stop and contact
+whoever gave you this tool. An unfilled table means nobody has yet agreed to
+own a failure, and the first monthly run is the wrong moment to find that out.
 
 | Role | Who | For |
 | --- | --- | --- |
@@ -347,6 +455,8 @@ authority.
 | --- | --- |
 | How old is the data? | Staleness label, top of the page — § 1 |
 | How do I refresh it? | `./scripts/refresh.sh --dry-run` first — § 2 |
+| The first run is taking forever. | Normal — § 2, it is installing its own tools |
+| It stopped before it started. | Setup failures and what each one means — § 11 |
 | It failed. Now what? | § 2, and do not force it |
 | The publisher is late. | Do not interpolate — § 2 |
 | Can I trust this forecast? | § 4 |
@@ -355,12 +465,18 @@ authority.
 | How do I overrule it? | Lock an area — § 7, and read what it costs |
 | Why can't I make the site look current? | § 8 — and the refusal is deliberate |
 | Where did my scenarios go? | Browser-only — § 9 |
+| How do I send a plan to a colleague? | § 10b — and read what a refusal notice means |
+| The buttons show different hours than this document. | Your profile — § 6 and § 10c |
 | Something is broken. | § 11 |
 
 ---
 
-*This runbook was written against the tool as it actually behaves, by reading
-the shipped code and the refresh pipeline. Where the tool does not yet do
-something, this document says so rather than describing an intention. The
-terminal dependency in section 2 is the one thing in here that a
-non-developer cannot currently do alone.*
+*This runbook was written against the tool as it actually behaves. The first
+draft was written by reading the shipped code, and a dry run of that draft
+found six places where the document and the product had parted company —
+including a first-run failure that named `pip` and told an operator nothing.
+Sections 2, 6, 10, 10b, 10c and 11 were rewritten against commands actually
+executed and screens actually rendered, not against the code that produces
+them. Where the tool does not yet do something, this document says so rather
+than describing an intention. The terminal dependency in section 2 is the one
+thing in here that a non-developer cannot currently do alone.*

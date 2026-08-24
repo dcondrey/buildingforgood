@@ -4,8 +4,11 @@ A person runs this once a month. There is no scheduler, no cron, no workflow
 trigger, and adding one is out of scope until the manual path has been run by
 hand several times and its failure modes are boring.
 
-The refresh does four things, in order, and stops at the first one that fails:
+The refresh does five things, in order, and stops at the first one that fails:
 
+0. **Check its prerequisites** before doing any work: a writable checkout, a
+   Python new enough for the pipeline, a usable `.venv`, the pipeline
+   importable, and — when fetching — `curl` and `sha256sum`.
 1. **Fetch** the allowlisted public monitoring sources and verify their pinned
    hashes (`scripts/fetch_raw.sh monitoring`).
 2. **Audit** the monitoring table: every row model-ineligible, every month
@@ -14,7 +17,21 @@ The refresh does four things, in order, and stops at the first one that fails:
    the deployable-data privacy gate.
 4. **Emit** `public/generated/demo.v1.json`.
 
-Nothing is written unless all four pass. There is no degraded output.
+Nothing is written unless all of them pass. There is no degraded output.
+
+Stage 0 exists because the person running this is not a developer. Before it
+was added, the first thing a program director saw on a cold machine was a
+`pip` or `venv` traceback — a failure naming a tool they had never heard of,
+from a command they were told was routine. Every way `scripts/refresh.sh` can
+now stop prints `REFRESH FAILED:` and a sentence naming what is missing, what
+to install, and who to ask. `docs/adoption/RUNBOOK.md` § 11 is the
+operator-facing table of those messages.
+
+Stage 0 also skips the `pip install` when the environment already matches
+`pipeline/pyproject.toml`, recorded in `.venv/.stillhere-pipeline-install`.
+That is not a speed optimization: without it, a monthly `--fixture` refresh on
+a machine that is fully set up but offline failed at `pip` for tools it
+already had.
 
 ## What you run
 
@@ -80,6 +97,22 @@ non-zero, and leaves the previous artifact untouched.
 | `contract violation: …` | The artifact does not satisfy `stillhere.demo.v1`. | Fix the producing code. |
 | `privacy scan blocked …` | A published cell is below the small-cell threshold, or a precise-location field appeared. | Suppress the cell. Do not publish it. |
 
+Those come from the Python side. The wrapper adds its own, all raised before
+any data is touched:
+
+| Message | What happened | What to do |
+| --- | --- | --- |
+| `this computer does not have Python installed …` | No `python3` on `PATH`. | The message names the install per platform. |
+| `the Python on this computer is too old …` | `python3` predates the pipeline's `requires-python`. | Install a newer interpreter alongside; nothing has to be removed. |
+| `the project's private Python folder (.venv) is damaged …` | `.venv` exists but its interpreter will not run — usually an interrupted setup or a moved system Python. | `rm -rf .venv` and re-run. A partial `.venv` the wrapper itself created is removed automatically so the failure stays reproducible. |
+| `the refresh could not create its private Python folder (.venv) …` | `python3 -m venv` failed. The interpreter's own first six lines are quoted. | On Debian/Ubuntu usually `python3-venv`; otherwise disk or permissions. |
+| `the refresh could not download the tools it needs …` | `pip` failed with network-shaped output. | Connectivity, proxy, or firewall. Not a data problem. |
+| `the refresh could not install the tools it needs …` | `pip` failed for some other reason; its output is quoted. | Read the quoted lines. |
+| `this copy of the project is read-only …` | The checkout is not writable. | Move it, or get write permission on the folder. |
+| `the download step needs the … command …` | `curl` or `sha256sum` is missing and a fetch was requested. | `--no-fetch` still runs every check against what is on disk. |
+| `the published source files could not be downloaded or did not match …` | `scripts/fetch_raw.sh monitoring` failed. | Two very different cases, and the message distinguishes them: a transfer failure, or a fingerprint mismatch. Never re-pin to clear the second. |
+| `the refresh stopped unexpectedly …` | The Python side exited non-zero without a `REFRESH FAILED:` of its own. | A bug. The traceback above it is the report. |
+
 A failing `tests/pipeline/test_pipeline_golden.py` is a different signal: the
 pipeline's output changed. If the change is intended, regenerate the
 expectation deliberately — run the fixture refresh with `--out
@@ -125,6 +158,25 @@ Those rows live under `currency.observed_not_model_eligible` and nowhere else.
 `assert_monitoring_isolated` re-reads the assembled document and refuses the
 run if any of their months appears in the observation, forecast, or planner
 lanes, so the separation is checked rather than merely intended.
+
+`next_publication_expected` is **this project's own refresh cadence and not a
+publisher commitment**, and the block says so in its own `basis` and
+`source_publication_note` fields with `source_publication_scheduled: false`.
+Nothing here infers when DSDP will publish, because DSDP does not announce it.
+
+### Where the source actually stood, last time anyone checked
+
+**2026-08-23.** `./scripts/fetch_raw.sh monitoring` fetched all three pinned
+publisher documents and every one matched its recorded hash, so no publisher
+had revised what this project transcribes. DSDP's own media index showed its
+most recent unsheltered sleep count to be the **June 2026** report, uploaded
+2026-08-11 — the one already transcribed in
+`data/monitoring/dsdp_public_checkpoints.csv`. There was no July or August 2026
+count report. The site being `stale` on that date was therefore a fact about
+the publisher, not a missed refresh.
+
+Re-check this rather than trusting it: the whole point of the block is that
+nobody has to take a freshness claim on faith.
 
 ## What is not reproducible from a clean checkout
 

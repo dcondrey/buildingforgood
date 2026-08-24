@@ -83,6 +83,37 @@ describe("the currency badge", () => {
   });
 });
 
+describe("a stale artifact that the publisher has not overtaken", () => {
+  // The state this deployment is actually in: every source the project pins
+  // is the newest one the publisher has released, and the modelled window is
+  // still months behind the calendar. The failure to guard against is a
+  // surface that shows those numbers with nothing said about when the next
+  // one is due, or that dresses this project's own refresh cadence up as a
+  // publisher commitment.
+  it("names the expected publication and refuses to call it a publisher promise", () => {
+    const data = withCurrency(REFRESHED.currency);
+    const next = data.currency?.nextPublication;
+    expect(next?.month).toBe("Sep 2026");
+    expect(next?.scheduled).toBe(false);
+
+    mount(data, <CurrencyPanel />);
+    const line = screen.getByText(/Next refresh expected/);
+    expect(line.textContent).toContain("Sep 2026");
+    expect(line.textContent).toContain("not a publisher commitment");
+  });
+
+  it("says nothing about a next publication when the artifact names none", () => {
+    const { next_publication_expected: _dropped, ...rest } = REFRESHED.currency as Record<
+      string,
+      unknown
+    >;
+    const data = withCurrency(rest);
+    expect(data.currency?.nextPublication).toBeNull();
+    mount(data, <CurrencyPanel />);
+    expect(screen.queryByText(/Next refresh expected/)).toBeNull();
+  });
+});
+
 describe("the observed-but-not-model-eligible rows", () => {
   it("frames them as excluded observations, never as newer data", () => {
     mount(withCurrency(REFRESHED.currency), <CurrencyPanel />);

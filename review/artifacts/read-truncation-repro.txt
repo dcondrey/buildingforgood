@@ -1,0 +1,3 @@
+needle      = [export function assertNoComplaintSignal(record: unknown, where: string): void {]
+replacement = [export function assertNoComplaintSignal(record: unknown, where: string): void {]
+>>> NEEDLE == REPLACEMENT: mutation is a NO-OP; the file is never modified.

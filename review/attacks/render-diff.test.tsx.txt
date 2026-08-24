@@ -1,0 +1,65 @@
+// @vitest-environment jsdom
+/** Independent rendered-output capture for the decomposition review.
+ *  Renders App, drives a scripted interaction, dumps normalized DOM at each step. */
+import { render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { writeFileSync } from "node:fs";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import App from "./App";
+
+const OUT = process.env.DUMP_OUT ?? "/tmp/dump.txt";
+
+function normalize(root: HTMLElement): string {
+  const clone = root.cloneNode(true) as HTMLElement;
+  // Sort attributes so DOM attribute-set order cannot masquerade as a difference.
+  const walk = (el: Element) => {
+    const attrs = Array.from(el.attributes)
+      .map((a) => [a.name, a.value] as const)
+      .sort((x, y) => x[0].localeCompare(y[0]));
+    for (const a of Array.from(el.attributes)) el.removeAttribute(a.name);
+    for (const [n, v] of attrs) el.setAttribute(n, v);
+    Array.from(el.children).forEach(walk);
+  };
+  walk(clone);
+  return clone.innerHTML
+    .replace(/\sid="([a-z-]*):r[0-9a-z]+:"/g, ' id="$1:RID"')  // React useId
+    .replace(/aria-(labelledby|controls|describedby)="([a-z-]*):r[0-9a-z]+:"/g, 'aria-$1="$2:RID"')
+    .replace(/></g, ">\n<");
+}
+
+const safeClear = () => { try { localStorage.clear(); } catch { /* jsdom storage variant */ } };
+beforeEach(() => {
+  safeClear();
+  Object.assign(navigator, { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
+});
+afterEach(safeClear);
+
+it("captures the shell across a scripted interaction", async () => {
+  const user = userEvent.setup();
+  const { container } = render(<App />);
+  const steps: string[] = [];
+  const capture = (label: string) => steps.push(`\n===== ${label} =====\n${normalize(container)}`);
+
+  await waitFor(() => expect(screen.getAllByRole("heading").length).toBeGreaterThan(0), { timeout: 15000 });
+  capture("01 initial");
+
+  const budget = screen.getByLabelText(/available staff-hours/i);
+  await user.clear(budget);
+  await user.type(budget, "120");
+  capture("02 budget 120");
+
+  for (const label of [/^0h/, /^4h/, /^8h/]) {
+    const b = screen.queryAllByRole("button", { name: label }).at(0);
+    if (b) { await user.click(b); capture("03 floor " + String(label)); }
+  }
+  for (const rx of [/reveal|show.*result|run the drop/i, /generate|recompute|plan/i]) {
+    const b = screen.queryAllByRole("button", { name: rx }).at(0);
+    if (b) { await user.click(b); capture("03b " + String(rx)); }
+  }
+  for (const name of [/data & limits/i, /map workspace/i, /story/i]) {
+    const btn = screen.queryAllByRole("button", { name }).at(0);
+    if (btn) { await user.click(btn); capture(`04 clicked ${String(name)}`); }
+  }
+  writeFileSync(OUT, steps.join("\n"));
+  expect(steps.length).toBeGreaterThan(2);
+}, 60000);

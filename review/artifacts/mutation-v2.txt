@@ -1,0 +1,20 @@
+caught        shipped: coverage floor short by one hour
+caught        shipped: guard flag ignored, floor always applied
+caught        shipped: largest-remainder order reversed
+SURVIVED      shipped: budget-conservation check disabled
+SURVIVED      shipped: a coordinator lock loses to the computed value
+caught        domain: complaint-signal guard neutered
+caught        domain: continuity reserve never granted
+caught        domain: guaranteed hours rounded down instead of up
+caught        domain: the "not a need estimate" disclosure dropped
+caught        domain: infeasible plan reported as planned
+
+8 of 10 mutations caught.
+
+MUTATION CHECK FAILED. These broken planners still pass the suite:
+  - shipped: budget-conservation check disabled
+  - shipped: a coordinator lock loses to the computed value
+
+Add a test that fails for each, then re-run.
+
+[exited with code 0]

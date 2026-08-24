@@ -176,7 +176,12 @@ Done when:
 - Allocations sum to the available budget within an explicit rounding tolerance.
 - No allocation is negative; the floor is satisfied or the result is marked infeasible.
 - Locked assignments survive recomputation.
-- Automated tests prove that 311 complaint volume cannot enter the planning-load objective.
+- Automated tests prove that a complaint-SHAPED FIELD is refused on every
+  allocation path, and that every `planning_load` reconciles with the
+  derivation it declares. They do not prove that complaint volume cannot
+  enter the objective — that claim was tested, falsified, and withdrawn
+  (`docs/project/DECISIONS.md`); a number written into a legally named field
+  carries no name for a guard to match.
 - The plan can be read as an operational recommendation without consulting the historical chart.
 
 ### M5 — Transparency, accessibility, and responsible-data proof

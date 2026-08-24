@@ -11,10 +11,20 @@ export interface HistoryPoint {
 /**
  * One planning area as the shipped planner sees it.
  *
- * Complaint volume is not representable here, and that is enforced rather
- * than asserted: `PLANNING_AREA_EXCLUDES_COMPLAINT_SIGNAL` below fails to
- * typecheck if any complaint-shaped field is added, and `allocateHours`
- * runs `assertNoComplaintSignal` over the values it is actually handed.
+ * A complaint-SHAPED FIELD is not representable here, and that much is
+ * enforced rather than asserted: `PLANNING_AREA_EXCLUDES_COMPLAINT_SIGNAL`
+ * below fails to typecheck if one is added, `allocateHours` runs
+ * `assertNoComplaintSignal` over the values it is actually handed, and both
+ * read the shared bilingual vocabulary in `domain/vocabulary/refusedTerms.ts`
+ * rather than an English word list.
+ *
+ * State it no wider than that. Both checks match field *names*, and a number
+ * has no name: an independent review wrote 311 counts into `planning_load` and
+ * re-ranked the shipped plan. What the project defends is that complaint volume
+ * cannot reach allocation without also corrupting the published forecast
+ * interval, which is derived from checksummed inputs — see
+ * `docs/project/DECISIONS.md`, and `assertDeclaredPlanningLoad`, which is the
+ * check that actually holds the line.
  * See config/decision.v1.json -> observations.complaint_volume_excluded_uses
  * and the C-01 red-team review, finding R-03.
  */

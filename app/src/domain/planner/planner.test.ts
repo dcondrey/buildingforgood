@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { COMPLAINT_SIGNAL } from "../vocabulary/refusedTerms.ts";
 import { assertNoComplaintSignal, buildPlan, PlannerInputError, relativeLoad } from "./planner.ts";
-import type { AreaPlanningInput, PlannerPolicy } from "./types.ts";
+import type { AreaPlanningInput, DropTestResult, PlannerPolicy } from "./types.ts";
 
 /** Policy defaults mirror config/decision.v1.json → planner. */
 const POLICY: PlannerPolicy = {
@@ -80,11 +80,33 @@ describe("non-negativity and the coverage floor", () => {
   });
 
   it("adds a continuity reserve only for possible_displacement", () => {
-    const plan = buildPlan(SIX_AREAS, POLICY);
-    const ev = plan.allocations.find((a) => a.area_id === "east_village");
-    const gl = plan.allocations.find((a) => a.area_id === "gaslamp");
-    expect(ev?.continuity_reserve_hours).toBe(4);
-    expect(gl?.continuity_reserve_hours).toBe(0);
+    // "Only" over the whole closed set of classifications, not the two the
+    // default fixture happens to contain. DropTestResult has three members and
+    // all three are placed here, so a fourth added to the union without a
+    // decision about its reserve fails the exhaustiveness check below.
+    const classifications: DropTestResult[] = [
+      "likely_improvement",
+      "possible_displacement",
+      "insufficient_evidence",
+    ];
+    const plan = buildPlan(
+      classifications.map((drop_test, index) => area(`a${index}`, 60, 44, { drop_test })),
+      POLICY,
+    );
+    const reserveFor = (index: number) =>
+      plan.allocations.find((a) => a.area_id === `a${index}`)?.continuity_reserve_hours;
+    expect(classifications.map((_, index) => reserveFor(index))).toEqual([0, 4, 0]);
+  });
+
+  it("has exactly the three drop-test classifications this suite enumerates", () => {
+    // The guard for the test above: it can only claim "only" while it covers
+    // every member of the union.
+    const enumerated: Record<DropTestResult, true> = {
+      likely_improvement: true,
+      possible_displacement: true,
+      insufficient_evidence: true,
+    };
+    expect(Object.keys(enumerated)).toHaveLength(3);
   });
 
   it("excludes areas marked not included", () => {
@@ -469,10 +491,17 @@ describe("excess capacity", () => {
   });
 
   it("gives a zero-forecast area the floor and no more, however large the budget", () => {
+    // "However large" over a range rather than one value: the discretionary
+    // remainder grows with the budget, and the property being claimed is that
+    // none of it reaches an area with no forecast, at any budget.
     const withEmpty = [...SIX_AREAS, area("empty_area", 0, 0)];
-    const plan = buildPlan(withEmpty, { ...POLICY, budget_hours: 100_000 });
-    const empty = plan.allocations.find((a) => a.area_id === "empty_area");
-    expect(empty?.allocated_hours).toBe(POLICY.minimum_coverage_floor_hours);
+    for (const budget_hours of [80, 500, 5_000, 100_000, 1_000_000]) {
+      const plan = buildPlan(withEmpty, { ...POLICY, budget_hours });
+      const empty = plan.allocations.find((a) => a.area_id === "empty_area");
+      expect(empty?.allocated_hours, `budget ${budget_hours}`).toBe(
+        POLICY.minimum_coverage_floor_hours,
+      );
+    }
   });
 
   it("still reports unmet load when the floor redistributes under excess capacity", () => {

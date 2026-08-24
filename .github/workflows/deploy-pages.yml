@@ -1,7 +1,16 @@
 name: deploy-pages
 
+# Deploy runs only after `verify` has passed for the same commit. Before this,
+# it triggered directly on push, so a commit that broke the refusal suite, the
+# claim inventory or the mutation gate still reached the public site — the one
+# hole that could put a regression of any other guarantee in front of a reader.
+# `workflow_dispatch` stays as the manual path and is not gated; use it
+# knowingly.
 on:
-  push:
+  workflow_run:
+    workflows: ["verify"]
+    types:
+      - completed
     branches:
       - main
   workflow_dispatch:
@@ -17,6 +26,12 @@ concurrency:
 
 jobs:
   deploy:
+    # A finished `verify` run is not a passing one. Without this, a failed
+    # verify would still fire `completed` and deploy anyway, which is the
+    # original hole wearing a trigger it did not earn.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -24,6 +39,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Build the commit that verify actually graded, not whatever main
+          # points at by the time this job starts.
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:

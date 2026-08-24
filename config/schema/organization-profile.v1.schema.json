@@ -35,7 +35,7 @@
     },
     "profile_status": {
       "enum": ["draft", "illustrative_example", "reference_deployment", "adopted"],
-      "description": "How much weight this profile carries. `draft` is being filled in and must not be run for real decisions. `illustrative_example` is a teaching artifact describing a place that does not exist. `reference_deployment` is the scenario this repository itself ships. `adopted` is an organization's live configuration."
+      "description": "How much weight this profile carries. `draft` is being filled in and must not be run for real decisions. `illustrative_example` is a teaching artifact whose geography is real and pinned to a published source but whose operating parameters — budget, coverage floor, shift shape, team count, rate — are this project's own illustration rather than an organization's actual figures: cite its area names, not its numbers. It does not and cannot mean a place that does not exist; the area list is pinned in every case. `reference_deployment` is the scenario this repository itself ships. `adopted` is an organization's live configuration."
     },
     "last_updated": {
       "$ref": "#/$defs/isoDate",
@@ -110,8 +110,8 @@
               "description": "Every area the organization plans across, including areas currently out of scope. Ordering is not significant. Area ids must be unique."
             },
             "provenance": {
-              "$ref": "#/$defs/provenance",
-              "description": "Where these area NAMES come from. Required and structured: an adopter cannot leave it null by accident."
+              "$ref": "#/$defs/pinnedProvenance",
+              "description": "Where these area NAMES come from. Required, structured, and pinned: the area list is the one geography component that must resolve to a real published source, so `resolution_status` here can only be `resolved` and every source field must be filled in. An adopter cannot leave it null by accident, and cannot mark it illustrative on purpose."
             }
           },
           "description": "The versioned list of planning areas and the source of its names."
@@ -122,7 +122,7 @@
           "required": ["provenance"],
           "properties": {
             "provenance": {
-              "$ref": "#/$defs/provenance",
+              "$ref": "#/$defs/citedOrDisclosedProvenance",
               "description": "Where the area BOUNDARIES come from. Separate from the name list on purpose: a publisher very often names its areas without publishing their geometry, and a profile that conflates the two overstates what it knows. No geometry is ever stored in a profile — only the citation for it."
             }
           },
@@ -148,7 +148,7 @@
               "description": "Unordered pairs of area ids that share a boundary, e.g. `[[\"gaslamp\", \"east_village\"]]`. List each pair once; the loader treats them as symmetric and rejects self-pairs, duplicates, and ids that are not in the area list. MUST be empty when adjacency provenance is `unresolved` — an invented adjacency table would let the interface claim displacement evidence it does not have."
             },
             "provenance": {
-              "$ref": "#/$defs/provenance",
+              "$ref": "#/$defs/citedOrDisclosedProvenance",
               "description": "Where the adjacency relation comes from. An adjacency table derived from a map an organization drew itself is legitimate, but it is `provisional`, not `resolved`, until someone can cite it."
             }
           },
@@ -414,7 +414,7 @@
       "properties": {
         "resolution_status": {
           "enum": ["resolved", "provisional", "unresolved", "illustrative"],
-          "description": "`resolved`: a named public or licensed source with a version and a retrieval date backs this, and every source field below is filled in. `provisional`: the organization has a working definition but cannot yet cite it. `unresolved`: there is no defensible source, and the interface must disclose that rather than proceed as if there were. `illustrative`: this describes a place that does not exist and exists only to demonstrate the configuration."
+          "description": "`resolved`: a named public or licensed source with a version and a retrieval date backs this, and every source field below is filled in. `provisional`: the organization has a working definition but cannot yet cite it. `unresolved`: there is no defensible source, and the interface must disclose that rather than proceed as if there were. `illustrative`: this describes a place that does not exist. NO v1 PROFILE CAN USE `illustrative`: every geography component is referenced through `pinnedProvenance` or `citedOrDisclosedProvenance` below, and neither admits the value. It survives in this enum only because the hand-written loader and its TypeScript types still enumerate it, and removing it there is a separate change. See `docs/project/DECISIONS.md`, 2026-08-23, for what it was used for."
         },
         "source_name": {
           "type": ["string", "null"],
@@ -447,6 +447,40 @@
         }
       },
       "description": "Structured provenance for one geography component. There is deliberately no way to record a source as a bare version string: an adopter either cites something or discloses that they cannot."
+    },
+    "pinnedProvenance": {
+      "allOf": [{ "$ref": "#/$defs/provenance" }],
+      "required": [
+        "resolution_status",
+        "source_name",
+        "publisher",
+        "source_url",
+        "source_version",
+        "retrieved_at",
+        "resolution_rule"
+      ],
+      "properties": {
+        "resolution_status": {
+          "const": "resolved",
+          "description": "Fixed. This component names a real published source or the profile does not load."
+        },
+        "source_name": { "type": "string", "minLength": 1 },
+        "publisher": { "type": "string", "minLength": 1 },
+        "source_url": { "type": "string", "minLength": 1 },
+        "source_version": { "type": "string", "minLength": 1 },
+        "retrieved_at": { "$ref": "#/$defs/isoDate" }
+      },
+      "description": "Provenance for a component that must be pinned to a real published source: status `resolved`, and every source field named, versioned, and dated. Used for the area list, and only for the area list. The area names ARE the geography as far as this tool is concerned — a plan allocates hours to them, the interface prints them, and a saved plan is traced by them — so a profile that cannot cite where they came from is describing a place nobody can check. A profile once shipped here invented nine such names, disclosed at every level that they were invented, and was still a fabrication about homelessness in a repository full of real counts. Boundaries and adjacency are deliberately NOT pinned this way: a publisher routinely names areas without publishing their geometry, and requiring a boundary citation would push adopters toward inventing one."
+    },
+    "citedOrDisclosedProvenance": {
+      "allOf": [{ "$ref": "#/$defs/provenance" }],
+      "properties": {
+        "resolution_status": {
+          "enum": ["resolved", "provisional", "unresolved"],
+          "description": "`illustrative` is not available here. A component may be cited, or held provisionally, or disclosed as unresolved — but it describes a real place either way, because the area list above is pinned to a published source."
+        }
+      },
+      "description": "Provenance for a component that may legitimately be unsourced, so long as the gap is disclosed to the reader in `resolution_note`. Used for boundaries and adjacency. What it excludes is `illustrative`: the place is real, so its boundaries cannot describe somewhere that does not exist. That leaves `illustrative` unreachable in a v1 profile."
     }
   }
 }

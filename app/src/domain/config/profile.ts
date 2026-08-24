@@ -83,6 +83,11 @@ const CURRENCY = /^[A-Z]{3}$/;
 const PROFILE_STATUSES = ["draft", "illustrative_example", "reference_deployment", "adopted"];
 const RESOLUTION_STATUSES = ["resolved", "provisional", "unresolved", "illustrative"];
 
+// The area list is the field an invented geography arrives through, so it alone
+// must name a real published source. Boundaries and adjacency may be undrawn or
+// unsourced provided they say so; `illustrative` is reachable for neither.
+const CITED_OR_DISCLOSED = ["resolved", "provisional", "unresolved"];
+
 interface Ctx {
   errors: ProfileIssue[];
   warnings: ProfileIssue[];
@@ -278,7 +283,12 @@ function readStringArray(
   return out;
 }
 
-function validateProvenance(ctx: Ctx, value: unknown, path: string): string | null {
+function validateProvenance(
+  ctx: Ctx,
+  value: unknown,
+  path: string,
+  permitted: readonly string[] = RESOLUTION_STATUSES,
+): string | null {
   const obj = readObject(ctx, value, path);
   if (obj === null) {
     fail(ctx, path, "Required field is missing. Provenance is never optional.");
@@ -297,6 +307,14 @@ function validateProvenance(ctx: Ctx, value: unknown, path: string): string | nu
     join(path, "resolution_status"),
     RESOLUTION_STATUSES,
   );
+  if (status !== null && !permitted.includes(status)) {
+    fail(
+      ctx,
+      join(path, "resolution_status"),
+      `Expected one of ${permitted.join(", ")}; found \`${status}\`. The area list must name a ` +
+        "real published source. A geography nobody can cite is a place nobody can check.",
+    );
+  }
   readString(ctx, obj.resolution_rule, join(path, "resolution_rule"));
 
   const sourceFields = ["source_name", "publisher", "source_url", "source_version", "retrieved_at"];
@@ -386,7 +404,12 @@ function validateAdjacency(ctx: Ctx, value: unknown, path: string, areaIds: Set<
     return;
   }
   checkKeys(ctx, obj, path, ["version", "pairs", "provenance"], []);
-  const status = validateProvenance(ctx, obj.provenance, join(path, "provenance"));
+  const status = validateProvenance(
+    ctx,
+    obj.provenance,
+    join(path, "provenance"),
+    CITED_OR_DISCLOSED,
+  );
 
   if (obj.version !== null && obj.version !== undefined && typeof obj.version !== "string") {
     fail(ctx, join(path, "version"), "Expected a string or null.");
@@ -803,7 +826,7 @@ export function validateOrganizationProfile(input: unknown): ProfileValidation {
         const reason = forbiddenReason(area.id);
         if (reason !== null) fail(ctx, `geography.area_list.areas (id \`${area.id}\`)`, reason);
       }
-      validateProvenance(ctx, areaList.provenance, "geography.area_list.provenance");
+      validateProvenance(ctx, areaList.provenance, "geography.area_list.provenance", ["resolved"]);
     }
 
     const boundaries = readObject(ctx, geography.boundaries, "geography.boundaries");
@@ -811,7 +834,12 @@ export function validateOrganizationProfile(input: unknown): ProfileValidation {
       fail(ctx, "geography.boundaries", "Required field is missing.");
     } else {
       checkKeys(ctx, boundaries, "geography.boundaries", ["provenance"], []);
-      validateProvenance(ctx, boundaries.provenance, "geography.boundaries.provenance");
+      validateProvenance(
+        ctx,
+        boundaries.provenance,
+        "geography.boundaries.provenance",
+        CITED_OR_DISCLOSED,
+      );
     }
 
     validateAdjacency(ctx, geography.adjacency, "geography.adjacency", areaIds);

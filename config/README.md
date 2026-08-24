@@ -1,12 +1,14 @@
 # Configuration
 
 This directory holds the configuration an organization writes to run this
-tool. There are two kinds of file here, and they are not the same thing.
+tool. There is more than one kind of file here, and they are not the same
+thing.
 
 | Path | What it is | Consumed by |
 | --- | --- | --- |
 | `schema/organization-profile.v1.schema.json` | The organization profile schema. The current configuration contract. | `app/src/domain/config/` |
 | `profiles/*.v1.json` | One profile per deployment. Two are shipped as examples. | `app/src/domain/config/` |
+| `portability-demonstrated.v1.json` | What running somewhere else has and has not been shown to work. A declaration, checked by a test. | `app/src/domain/config/portability.test.ts` |
 | `decision.v1.json` | A superseded design record from the project's first scenario. Kept, unchanged, because it is history and because a test still reads it. | `app/src/domain/planner/contract.test.ts` |
 
 ## The organization profile
@@ -64,15 +66,34 @@ mandatory entries in every profile's prohibited-claim list.
 ### Provenance is required and structured
 
 Every geography component carries a `provenance` object with a
-`resolution_status` of `resolved`, `provisional`, `unresolved`, or
-`illustrative`, plus a `resolution_rule` saying what would change it.
+`resolution_status` and a `resolution_rule` saying what would change it.
 
-- `resolved` requires a non-null `source_name`, `publisher`, `source_url`,
-  `source_version`, and `retrieved_at`. The loader refuses a `resolved` status
-  with any of them missing.
-- Every other status requires a non-empty `resolution_note` written for a
-  reader outside the organization. That note is what the interface renders as
-  an unresolved-provenance disclosure.
+- **The area list must be pinned.** Its status can only be `resolved`, and
+  `source_name`, `publisher`, `source_url`, `source_version`, and
+  `retrieved_at` must all be filled in. A profile whose area list does not
+  name a real published source is refused by the schema and fails the build:
+  `app/src/domain/config/geographyProvenance.test.ts` checks every file in
+  `profiles/`. The hand-written loader does not yet refuse it at runtime — it
+  does not read the schema, and `validateProvenance` accepts any status the
+  enum lists — and a failing test in that same file declares the gap rather
+  than leaving it to be discovered. The area names *are* the
+  geography as far as this tool is concerned — hours are allocated to them,
+  the interface prints them, a saved plan is traced by them — so an area list
+  nobody can cite is a place nobody can check. This rule exists because a
+  profile in this repository once invented nine area names, disclosed at every
+  level that they were invented, and was a fabrication anyway;
+  `docs/project/DECISIONS.md` (2026-08-23) records it.
+- **Boundaries and adjacency may be `resolved`, `provisional`, or
+  `unresolved`,** and every status other than `resolved` requires a non-empty
+  `resolution_note` written for a reader outside the organization. That note is
+  what the interface renders as an unresolved-provenance disclosure. They are
+  not pinned, deliberately: a publisher routinely names its areas without
+  publishing their geometry, and demanding a boundary citation would push an
+  adopter toward inventing one.
+- **`illustrative` is unreachable.** No geography component accepts it, because
+  the area list is pinned and the place is therefore real. The value remains in
+  the loader's `RESOLUTION_STATUSES` list and in the `ResolutionStatus` type
+  only because removing it there is a separate change.
 
 There is deliberately no way to record a source as a bare version string. An
 adopter either cites something or discloses that they cannot.
@@ -132,6 +153,26 @@ Perimeter does not, which is the behaviour worth seeing — the interface says
 "the loaded artifact carries no observation for Outside Perimeter" rather than
 inventing one.
 
+## What portability has been shown to mean
+
+Portability is demonstrated on two real published San Diego area definitions
+with no code change, and nowhere else.
+
+Both profiles are Downtown San Diego and both cite the same pinned June 2026
+Downtown San Diego Partnership report. No area definition published by anyone
+else, in any other place, has been run through this tool. A third example
+profile once did claim more than that, and it did it by inventing the
+organization and the geography it was porting to; that evidence is withdrawn,
+and `docs/project/DECISIONS.md` (2026-08-23) says why.
+
+`portability-demonstrated.v1.json` is the machine-readable version of the two
+paragraphs above: what the demonstration covers, the five things it does not,
+and the phrases that would state a portability nobody here has shown.
+`app/src/domain/config/portability.test.ts` reads it and fails the build if a
+profile is added that is not declared there, if a declared profile stops
+resolving to its published source, if this section stops carrying the claim
+sentence word for word, or if one of those phrases appears anywhere it scans.
+
 ## Loading and validating
 
 `app/src/domain/config/` parses and validates a profile with no runtime schema
@@ -150,8 +191,10 @@ or team-shifts, are reported but valid. A coverage floor larger than the budget
 can pay for is an error, because every plan the profile could produce would be
 infeasible.
 
-The loader is not wired into the interface here; that wiring is a separate
-workstream.
+The loader is wired into the interface: `app/src/features/shell/deployment.ts`
+imports both profiles, parses them through this loader, and derives the areas,
+budget, floor options, shift shape and rate the shell runs on. Which one loads
+is a URL parameter — `?profile=san-diego-dsdp-seven` — not an edit.
 
 ## What happened to `decision.v1.json`
 

@@ -1,0 +1,89 @@
+{
+  "declaration_version": "portability-demonstrated/v1",
+  "last_updated": "2026-08-23",
+
+  "_comment": [
+    "What this project has actually shown about running somewhere else, and what it has not.",
+    "",
+    "Modelled on UNSHIPPED_CONNECTORS in app/src/domain/vocabulary/refusedTerms.ts: a declaration",
+    "of absent coverage, written down rather than implemented, with a test that fails if the",
+    "repository quietly starts claiming otherwise. The reason it exists is specific. A previous",
+    "session demonstrated portability by inventing an organization and a geography to port to, and",
+    "the demonstration proved only that the loader accepts a file somebody wrote. That evidence is",
+    "void; see docs/project/DECISIONS.md, 2026-08-23. What replaced it is real but narrower, and a",
+    "narrower claim left undeclared is how the wider one comes back.",
+    "",
+    "Enforced by app/src/domain/config/portability.test.ts, which reads this file."
+  ],
+
+  "claim": "Portability is demonstrated on two real published San Diego area definitions with no code change, and nowhere else.",
+  "claim_surfaces": ["config/README.md"],
+
+  "demonstrated_on": [
+    {
+      "profile_id": "san-diego-downtown",
+      "path": "config/profiles/san-diego-downtown.v1.json",
+      "area_list_version": "dsdp-core-six/2026-08-21",
+      "jurisdiction": "Downtown San Diego, California",
+      "area_list_source": {
+        "publisher": "Downtown San Diego Partnership",
+        "source_name": "Downtown San Diego Partnership Clean & Safe Unsheltered Sleep Count report, June 2026",
+        "source_version": "June 2026 Unsheltered Sleep Count report",
+        "retrieved_at": "2026-08-21"
+      }
+    },
+    {
+      "profile_id": "san-diego-dsdp-seven",
+      "path": "config/profiles/san-diego-dsdp-seven.v1.json",
+      "area_list_version": "dsdp-published-seven/2026-08-21",
+      "jurisdiction": "Downtown San Diego, California",
+      "area_list_source": {
+        "publisher": "Downtown San Diego Partnership",
+        "source_name": "Downtown San Diego Partnership Clean & Safe Unsheltered Sleep Count report, June 2026",
+        "source_version": "June 2026 Unsheltered Sleep Count report",
+        "retrieved_at": "2026-08-21"
+      }
+    }
+  ],
+
+  "what_the_demonstration_covers": [
+    "The area list, budget, coverage floor, shift length, allocation increment, team count, planning horizon, uncertainty weight and loaded hourly rate all move between the two profiles with no change to application code. Swapping them is a URL parameter.",
+    "An area the shipped artifact carries no observation for renders as carrying no observation, rather than as a zero or an estimate.",
+    "An out-of-scope area stays listed and its exclusion is stated, for a real published reason."
+  ],
+
+  "not_demonstrated": {
+    "a_geography_outside_san_diego": "Both profiles are Downtown San Diego and both cite the same pinned Downtown San Diego Partnership report. Nothing here has been run against an area definition published by anyone else, in any other city, county or continuum of care.",
+    "a_second_publisher": "One publisher, one source document, one retrieval date. A second publisher would exercise the parts of the loader that no single source can: a different area-naming convention, a different reporting cadence, a different definition of what an area total counts.",
+    "a_resolved_boundary_or_adjacency": "Both profiles carry unresolved boundaries and unresolved adjacency. No profile in this repository has ever had a resolved boundary source, so the resolved path through the geography disclosures is untested against a real one.",
+    "an_adopting_organization": "No organization outside this project has written a profile. Both files here were written by the project, and a schema is easy to satisfy when the same people wrote the schema and the file.",
+    "a_pipeline_run_on_another_geography": "The profile configures the interface. The Python pipeline still reads its inputs from pinned San Diego sources, and porting the pipeline to another publisher's data is not covered by either profile."
+  },
+
+  "void_evidence": {
+    "profile": "config/profiles/coldwater-valley-rural.v1.json",
+    "introduced": "84327bf",
+    "removed": "0113a1f",
+    "why_void": "It was an invented rural continuum of care with invented area names, an invented adjacency table and an invented cost basis. Running it demonstrated that the loader accepts a well-formed file, not that the tool ports to another organization's geography. Any portability finding that rests on it is withdrawn.",
+    "record": "docs/project/DECISIONS.md, 2026-08-23"
+  },
+
+  "forbidden_claims": {
+    "_comment": "Literal phrases that would state a portability this project has not demonstrated. app/src/domain/config/portability.test.ts fails if any appears in a scanned surface, case-insensitively. Add a phrase here when an overclaim is caught; do not remove one to make a sentence pass.",
+    "phrases": [
+      "any city",
+      "any jurisdiction",
+      "any geography",
+      "any continuum of care",
+      "any homeless response system",
+      "works anywhere",
+      "runs anywhere",
+      "portable to any"
+    ],
+    "scanned_surfaces": ["README.md", "CHANGELOG.md", "CONTRIBUTING.md", "config", "docs", "app/src"],
+    "permitted_contexts": [],
+    "_permitted_contexts_comment": "A phrase can appear legitimately inside a passage that denies the claim rather than makes it. Register such a line here, one at a time, as {\"path\": \"...\", \"line_contains\": \"...\"}. A blanket pattern would let the next overclaim through behind the exception."
+  },
+
+  "what_would_change_this": "A published area definition for a geography outside San Diego, cited and retrievable, instantiated as a third profile whose area-list provenance resolves to it. Then this file gains a third entry and the claim widens by exactly that much. A profile whose area list cannot be pinned to a published source is refused by the schema and fails the build — see config/schema/organization-profile.v1.schema.json, $defs/pinnedProvenance, and app/src/domain/config/geographyProvenance.test.ts."
+}

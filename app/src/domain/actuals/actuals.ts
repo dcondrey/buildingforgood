@@ -22,10 +22,12 @@
  * coordinate-shaped numbers, and unsuppressed small counts. Over-blocking is
  * the accepted error direction, as it is there.
  *
- * Failure is loud and names the field. Nothing here is wired into the
- * interface; `App.tsx` and the shell are owned elsewhere and do the wiring.
+ * Failure is loud and names the field. Nothing calls into this file directly:
+ * `ingest.ts` is the one door, and it adds the planner's own complaint-signal
+ * guard on top of the checks here.
  */
 
+import { isComplaintShaped } from "../vocabulary/refusedTerms.ts";
 import type {
   ActualsDocument,
   ActualsIssue,
@@ -195,20 +197,39 @@ function normalizeKey(key: string): string {
   return key.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
+/**
+ * Report volume, in every language the app speaks.
+ *
+ * The list above is English, and an English list on an import path is the
+ * Escalation-3 defect this project has already paid for once: `quejas_recibidas`
+ * passed three guards that were written for the language their author read. The
+ * shared vocabulary in `domain/vocabulary/refusedTerms.ts` is the one policy
+ * behind every guard that enforces it, and it folds accents before matching, so
+ * it is asked first here too. The local list stays because it carries forms the
+ * shared vocabulary does not — the municipal reporting app by name, and a
+ * couple of English compounds — and adding them there would claim a coverage
+ * their Spanish equivalents do not have.
+ *
+ * The name is tested twice, raw and stripped of punctuation, because the shared
+ * vocabulary holds underscored forms (`reportes_recibidos`) that this file's own
+ * matcher would have flattened away before either could match.
+ */
+function complaintShaped(text: string): boolean {
+  if (isComplaintShaped(text) || isComplaintShaped(normalizeKey(text))) return true;
+  const normalized = normalizeKey(text);
+  return FORBIDDEN_NAME_RULES.some(
+    (rule) => rule.reason === COMPLAINT_REASON && normalized.includes(rule.token),
+  );
+}
+
 function forbiddenReason(name: string): string | null {
+  if (complaintShaped(name)) return COMPLAINT_REASON;
   const normalized = normalizeKey(name);
   for (const rule of FORBIDDEN_NAME_RULES) {
     const hit = rule.exact ? normalized === rule.token : normalized.includes(rule.token);
     if (hit) return rule.reason;
   }
   return null;
-}
-
-function complaintShapedText(text: string): boolean {
-  const normalized = normalizeKey(text);
-  return FORBIDDEN_NAME_RULES.some(
-    (rule) => rule.reason === COMPLAINT_REASON && normalized.includes(rule.token),
-  );
 }
 
 function decimalPlaces(value: number): number {
@@ -420,7 +441,7 @@ function validateMeasure(ctx: Ctx, value: unknown): void {
   for (const key of ["kind", "label", "definition", "collection_method"]) {
     const text = readString(ctx, obj[key], `engagement_measure.${key}`);
     if (text === null) continue;
-    if (complaintShapedText(text)) fail(ctx, `engagement_measure.${key}`, COMPLAINT_REASON);
+    if (complaintShaped(text)) fail(ctx, `engagement_measure.${key}`, COMPLAINT_REASON);
   }
 }
 

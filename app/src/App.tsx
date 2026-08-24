@@ -1,4 +1,5 @@
 import "./App.css";
+import { ActualsSection } from "./features/actuals/ActualsSection";
 import { DropTestSection } from "./features/evidence/DropTestSection";
 import { HeroSection } from "./features/evidence/HeroSection";
 import { ReviewSection } from "./features/evidence/ReviewSection";
@@ -50,6 +51,8 @@ function App() {
             <ForecastSection />
 
             <PlannerSection />
+
+            <ActualsSection />
 
             <ReviewSection />
 

@@ -77,9 +77,14 @@ people. Four sentences it is designed to refuse:
 - "This area needs enforcement."
 - "A shelter has capacity or someone is eligible for a service."
 
-311 complaint volume never enters forecasting or planning — it measures
+311 complaint volume is not a forecasting or planning input — it measures
 reporting behavior, not need — and its diagnostic is shown precisely so that
-exclusion can be audited.
+exclusion can be audited. The refusal is stated narrowly on purpose:
+**complaint volume cannot reach allocation without also corrupting the
+published forecast interval, which is derived from checksummed inputs.** The
+broader claim — that complaint volume cannot influence planning — was tested
+by an independent review, falsified, and withdrawn
+([`docs/project/DECISIONS.md`](docs/project/DECISIONS.md)).
 
 ## Go deeper
 

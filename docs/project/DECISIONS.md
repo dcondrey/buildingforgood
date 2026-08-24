@@ -291,8 +291,26 @@ are covered indirectly, by the mutation gate's complaint-signal mutant and by
 having been watched failing during the session that wired them in. That is
 weaker than a fixture and should become one.
 
+**A fifth instance, the same day, in the fix for the fourth.** Adding one
+`.swift` file made CodeQL detect Swift and its autobuilder fail, because a loose
+file is neither an Xcode project nor a package. The fix was to make it a real
+package, and the next run went green — so the commit message said the red mark
+was fixed "by scanning more."
+
+That was false when it was written. The green came from Swift being *dropped*:
+the configured language list had been set before any Swift existed, so the
+analysis simply stopped running. The evidence is in the analysis record —
+`/language:swift rules=0` on the failing run, and no swift analysis at all on
+the "fixed" one. A language nobody scans produces no alerts, which looks
+identical to a language with no problems.
+
+It is true now: `swift` was added to the configured languages and the analysis
+runs with 27 rules and 0 results. But it was true only after checking, and the
+check that caught it was asking *what did the gate actually examine* rather than
+*did the gate go green*. That question is the whole entry.
+
 **What would change this decision.** Nothing about it is cheap to hold — every
-new gate costs a fixture. The alternative is what the four cases above cost,
+new gate costs a fixture. The alternative is what the five cases above cost,
 which was more.
 
 ## 2026-08-24 — San Diego is the scope, not a first instance

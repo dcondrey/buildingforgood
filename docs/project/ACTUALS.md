@@ -226,8 +226,9 @@ recoverable.
 
 ## 6. How the file is imported
 
-`app/src/domain/actuals/` holds the loader. It is not wired into the
-interface — another workstream owns that — and it never runs against a
+`app/src/domain/actuals/` holds the loader and the comparison;
+`app/src/features/actuals/` holds the screen, mounted after the planner.
+The loader never runs against a
 server, because there isn't one.
 
 ```ts
@@ -256,12 +257,24 @@ hours.
 
 ## 7. What the tool will and will not compute
 
-**Today: nothing.** There is no variance analytic, no forecast scoring
-against actuals, no delivery scorecard, and no chart reading this file. With
-zero real operator data, a computed variance would be a number about nothing
-carrying the authority of a measurement, and a prospective score validated
-against an empty set is theatre. The `intended_analysis` block in the schema
-says so in the file itself, with `status: "documented_not_implemented"`.
+**Today: planned against delivered, per area and month, and nothing else.**
+The plan error is planned hours minus delivered hours for one area in one
+month. That is the first item in the sanctioned list below, and it needs no
+causal claim: the plan predicted a number of hours, and a different number
+was worked.
+
+There is still no forecast scoring, no delivery scorecard, and no chart. In
+particular the comparison **does not score the published count forecast**,
+and cannot: that forecast predicts an observed point-in-time count, and no
+field in an actuals file observes a quantity of that kind. That limitation
+and two neighbours are recorded in `NOT_SCORABLE_FROM_ACTUALS`, rendered on
+the screen, and pinned by tests that fail if the record is emptied or if an
+entry stops reaching the reader — so the gap cannot be closed by deleting
+the disclosure.
+
+No total is computed across areas or across months. A sum would let a reader
+subtract their way back to a count the file withholds, so the area-month row
+stays the published grain.
 
 **Later, if the preconditions in that block are met** — descriptive,
 retrospective, area-level, and stated up front so the bar cannot be lowered

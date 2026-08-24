@@ -170,7 +170,7 @@
       "properties": {
         "status": {
           "const": "documented_not_implemented",
-          "description": "Fixed. NOTHING in this block is implemented in this version. There is no variance analytic, no forecast scoring against actuals, and no scorecard reading this file. That is deliberate: with zero real operator data, a computed variance would be a number about nothing, presented with the authority of a measurement. The block is here so an adopter can see where the analysis goes before agreeing to supply the data that would feed it."
+          "description": "Fixed, and now partly outrun by the tool. The first item of `planned_when_data_exists` — planned against delivered hours, by area and month — IS implemented and renders on the actuals screen. Nothing else in this block is: there is no forecast scoring against actuals, no coverage-continuity analytic, and no scorecard. In particular the comparison does not score the published count forecast and cannot, because that forecast predicts an observed point-in-time count and no field in this file observes one. The literal is retained so that v1 files already written stay valid. Note the flaw it exposes: this field describes the TOOL's implementation state but is validated as a property of the OPERATOR's file, so every conforming file must assert something about software it does not control. Correcting that belongs to a v2 of this schema, not to an edit that would invalidate v1."
         },
         "preconditions": {
           "type": "array",

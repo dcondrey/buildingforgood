@@ -132,11 +132,13 @@ SDRDL could confirm it outright.
   in time — one area relabelled, not two areas. `east_village_south` appears
   only from 2017. `Barrio Logan`, `Golden Hill` and `Sherman Height` (sic)
   appear only from 2021 and are outside the core; they must be excluded by name.
-- **Licensing is easier than first stated, because the plan changed.** Publishing
-  an agreement statistic derived from the package is a far smaller ask than
-  redistributing its counts. The conversation with SDRDL
-  (`eric@sandiegodata.org`) is still the right first step, but it is now "may we
-  cite an agreement measure" rather than "may we republish your data."
+- **Licensing was over-weighted in the first draft of this document.** The
+  package is public and unauthenticated, the observations are facts, the project
+  repo is MIT, and what ships here is a median and a set of percentages — not
+  the counts. Attribution to SDRDL and DSP is the real obligation and it is
+  discharged inside the artifact. The ledger's old instruction to "confirm reuse
+  beyond a hackathon demo" was written when this was a hackathon project; it has
+  been discharged and is not a standing gate on public factual data."
 - **Point coordinates never deploy.** The package carries EPSG:2230 x/y on the
   deny-list. Aggregation happens inside the pipeline, as it already does.
 

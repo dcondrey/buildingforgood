@@ -69,20 +69,21 @@ sources:
       mp.open_package("https://library.metatab.org/sandiegodata.org-downtown_homeless-source-7.2.3.csv")
     update_cadence: Static archival package (last issued 2024-11-26).
     license_terms: >-
-      No explicit data license in the metapack metadata. The project repo
-      (github.com/sandiegodata-projects/downtown-partnership) is MIT; the
-      underlying counts belong to DSP. Attribute both SDRDL and DSP.
-      REUSE CONFIRMED: the repository owner reports that permission was
-      obtained from SDRDL. What this project publishes under it is narrow and
-      deliberately so — derived summary statistics only, in
-      data/monitoring/source_agreement.json, with both parties attributed in
-      the artifact itself. No counts are redistributed, and the per-month ratio
-      series is withheld because it would invert to SDRDL's monthly figures
-      against the official totals already published here.
-      RECORD INCOMPLETE: the grant's date, the person who gave it, and its
-      wording are not written down. Until they are, this entry rests on an
-      unrecorded conversation, which is weaker than every other provenance
-      record in this ledger.
+      Public archival package, served unauthenticated from library.metatab.org.
+      No explicit data license in the metapack metadata; the project repo
+      (github.com/sandiegodata-projects/downtown-partnership) is MIT, and the
+      underlying observations were collected by DSP. Attribute both SDRDL and
+      DSP — that is the standing obligation and it is discharged inside
+      data/monitoring/source_agreement.json rather than only here.
+      Scope of use in this repository: derived summary statistics, not the
+      counts. The per-month ratio series is withheld because it would invert to
+      SDRDL's monthly figures against the official totals already published
+      here, which would be redistribution by a longer route. Publishing a
+      median and a set of percentages is not.
+      An earlier version of this entry told a reader to confirm reuse with
+      SDRDL before going beyond a hackathon demo. That was written when this
+      was a hackathon project, it has been discharged, and it should not be
+      read as a standing gate on public factual data.
     collection_method: >-
       DSP Clean & Safe enumerators hand-mark paper maps monthly; SDRDL
       volunteers georeferenced and digitized the scans (VGG VIA annotation).

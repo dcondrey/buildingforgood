@@ -904,7 +904,7 @@ const DECLARED_GUARD_NAMES = new Set([
 ]);
 
 describe("refusal: no complaint or 311 identifier is reachable from allocation code", () => {
-  it("scopes the scan to every planner and allocation module", () => {
+  it("keeps the four modules the scan must not miss inside its derived list", () => {
     const names = ALLOCATION_MODULES.map((file) => file.slice(SRC.length + 1));
     expect(names).toContain("lib/planner.ts");
     expect(names).toContain("domain/planner/planner.ts");

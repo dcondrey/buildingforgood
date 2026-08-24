@@ -191,7 +191,7 @@ describe("refusal: no cost value reaches the allocator", () => {
     return found.sort();
   })();
 
-  it("finds every allocating module rather than trusting a fixed list", () => {
+  it("keeps the three known allocating modules in the list the walk derives", () => {
     expect(PLANNER_FILES).toContain("lib/planner.ts");
     expect(PLANNER_FILES).toContain("domain/planner/planner.ts");
     expect(PLANNER_FILES).toContain("domain/planner/types.ts");

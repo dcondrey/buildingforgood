@@ -61,7 +61,7 @@ describe("plan share links", () => {
     expect(decodePlanShare(encodePlanShare(plain))).toEqual(plain);
   });
 
-  it("builds an absolute link and drops any query the page already carried", () => {
+  it("builds an absolute link that replaces the page's existing query and drops its fragment", () => {
     expect(planShareUrl(PLAN, "https://example.org/tool/?stale=1#top")).toBe(
       "https://example.org/tool/?v=1&budget=120&floor=8&guard=on&locks=east_village:16,gaslamp:12&share=40&assume=east_village&rate=95&geography=dsdp-core-six/2026-08-21",
     );

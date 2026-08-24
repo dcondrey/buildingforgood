@@ -299,7 +299,7 @@ describe("uncertainty and continuity reserves", () => {
 });
 
 describe("guarded versus unguarded comparison", () => {
-  it("reports what an unguarded plan would have given each area", () => {
+  it("reports what an unguarded plan would have given the highest-load and the smallest area", () => {
     const plan = buildPlan(SIX_AREAS, POLICY);
     const ev = plan.allocations.find((a) => a.area_id === "east_village");
     const ch = plan.allocations.find((a) => a.area_id === "cortez_hill");

@@ -102,7 +102,7 @@ describe("decision flow (#12)", () => {
     await waitFor(() => expect(document.activeElement).toBe(heading));
   });
 
-  it("generates a plan, conserves the budget, and always shows unmet planning load", async () => {
+  it("opens on a plan that states hours allocated, unmet planning load, and hours the guard moved", async () => {
     await renderOffline();
     await screen.findByText(/\d+\/\d+ hours allocated\./); // the shell opens with a live plan
     expect(await screen.findByText(/\/\d+ hours allocated\./)).toBeDefined();
@@ -252,7 +252,7 @@ describe("guided onboarding", () => {
     expect(screen.getByRole("dialog").textContent).toContain("Step 1 of 10");
   });
 
-  it("never strands the guard-off comparison view when stopped", async () => {
+  it("restores the coverage guard when Escape stops the guide at the comparison step", async () => {
     const user = userEvent.setup();
     await beginGuide(user);
     const next = () =>

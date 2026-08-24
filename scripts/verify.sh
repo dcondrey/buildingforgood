@@ -5,14 +5,14 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "== [1/6] pipeline: format, lint, types, tests, shell portability =="
+echo "== [1/6] pipeline and scripts: format, lint, types, tests, shell portability =="
 if [ ! -d .venv ]; then
   python3 -m venv .venv
 fi
 .venv/bin/pip install --quiet -e "pipeline[dev]"
 .venv/bin/ruff format --check pipeline/src tests scripts
 .venv/bin/ruff check pipeline/src tests scripts
-.venv/bin/mypy --config-file pipeline/pyproject.toml pipeline/src
+MYPYPATH=pipeline/src .venv/bin/mypy --config-file pipeline/pyproject.toml pipeline/src scripts
 # Every script here is written on macOS and every CI run is Linux. Twice in one
 # push a construct meant different things on the two — `mktemp -t NAME` most
 # expensively, which meant this file had never been able to run on Linux at all.

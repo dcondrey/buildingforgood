@@ -64,7 +64,7 @@ lat0 = sum(lats) / len(lats)
 kx = math.cos(math.radians(lat0))
 
 
-def project(lon, lat):
+def project(lon: float, lat: float) -> tuple[float, float]:
     return lon * kx, -lat  # y down
 
 
@@ -89,7 +89,7 @@ NX = int((maxx - minx) / CELL) + 2
 NY = int((maxy - miny) / CELL) + 2
 
 # Occupancy: mark every cell overlapped by a block's bbox (closes street gaps).
-cell_votes: dict[tuple[int, int], Counter] = defaultdict(Counter)
+cell_votes: dict[tuple[int, int], Counter[str]] = defaultdict(Counter)
 for f in feats:
     area = CANONICAL[f["properties"]["neighborhood"]]
     ring = f["geometry"]["coordinates"][0]
@@ -127,8 +127,12 @@ while changed:
                 changed = True
 
 
-def trace_outline(cells: set[tuple[int, int]]):
-    """Boundary edges of a rectilinear cell union, chained into loops."""
+def trace_outline(cells: set[tuple[int, int]]) -> list[tuple[int, int]]:
+    """Boundary edges of a rectilinear cell union, chained into loops.
+
+    Returns the longest loop: the outer boundary. Interior holes are dropped,
+    which is intended — these outlines are schematic, not surveyed.
+    """
     edges = set()
     for i, j in cells:
         for edge, nb in (
@@ -160,7 +164,7 @@ def trace_outline(cells: set[tuple[int, int]]):
     return loops[0]
 
 
-def simplify(loop):
+def simplify(loop: list[tuple[int, int]]) -> list[tuple[int, int]]:
     """Drop collinear points."""
     out = []
     n = len(loop)
@@ -184,7 +188,7 @@ sy = (VIEW_H - 2 * MARGIN) / (gj1 - gj0)
 s = min(sx, sy)
 
 
-def to_view(p):
+def to_view(p: tuple[int, int]) -> tuple[float, float]:
     return (round(MARGIN + (p[0] - gi0) * s, 1), round(MARGIN + (p[1] - gj0) * s, 1))
 
 

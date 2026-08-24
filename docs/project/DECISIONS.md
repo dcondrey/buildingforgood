@@ -185,11 +185,14 @@ source, version, and retrieval date — and no geography component may be marked
 `illustrative`. The schema states it at `geography.area_list.provenance`
 through a `pinnedProvenance` definition, and
 `app/src/domain/config/geographyProvenance.test.ts` enforces it against every
-file in `config/profiles/`, so an unpinned profile cannot ship. It cannot yet
-be *loaded* against, because the hand-written loader does not read the schema
-and `validateProvenance` still accepts `illustrative` on the area list; the
-same test file carries a failing case that says so out loud rather than
-leaving the gap for the next review to find. Operating parameters — a floor, a
+file in `config/profiles/`, so an unpinned profile cannot ship. The loader
+enforces it too: `validateProvenance` now takes the set of statuses each
+geography component may use — `resolved` alone for the area list,
+`resolved | provisional | unresolved` for boundaries and adjacency — so a
+profile whose geography resolves to no published source fails to load instead
+of rendering confidently. That gap was written into this entry as an open
+failing test before it was closed; it is recorded here because the sequence
+matters, not because it is still true. Operating parameters — a floor, a
 shift length, a horizon, a team count — remain an adopter's own choices and may
 still vary between example profiles, because varying them is configuration
 rather than fabrication. The line is between a fact about the world and a choice about how
@@ -198,3 +201,47 @@ to work, and only the first has to be sourced.
 **What would change this decision.** A published area definition for a
 non-San-Diego geography, cited and retrievable, would let a third profile
 demonstrate portability for real. Nothing short of that does.
+
+## 2026-08-23 — the evidence layer is a methods exhibit, the planning layer is the portable part
+
+**The decision.** Switching organization profiles changes the area list, budget,
+coverage floor, allocation increment, shift length, team count, planning horizon
+and loaded rate, and changes the plan that follows from them. It changes nothing
+in the evidence layer. The observations, the balanced panel, the forecast, the
+digitization audit, the reporting-bias check and the robustness sensitivities
+come from one artifact built from one pinned Downtown San Diego Partnership
+report, fetched from one fixed path with no profile in it. That is now the
+declared architecture rather than an accident nobody had written down.
+
+**Why it was a defect to leave implicit.** An adopter loading their own profile
+could not tell whether they were getting a working evidence layer or an empty
+one. `applyDeployment` rewrites the scoped areas and the scenario and passes
+every evidence field through untouched — `currency`, `source`, `signal`,
+`forecast`, `evidence`, `qualityAudit`, `reportingBias`, `robustness`,
+`limitations`. Rendered side by side, both profiles produce a byte-identical
+hero lede, composition strip and 261-block panel line. That was true before this
+entry; the only thing that has changed is that it is now pinned by a test and
+stated out loud.
+
+**Why not make evidence profile-scoped.** It is not reachable from here.
+Per-profile evidence requires the Python pipeline to run on another publisher's
+data, and `config/portability-demonstrated.v1.json` declares that
+undemonstrated. What building it anyway would produce is an evidence layer
+shaped like a capability and empty of one — a worse failure than the one being
+fixed, and the same failure as the invented profile: a thing that looks like
+proof and is not.
+
+**Two consequences, both accepted.** Per area, the refusal already works: an
+area the artifact carries no observation for renders as carrying none, takes the
+guaranteed minimum and no forecast weight, and says so. In aggregate the
+evidence keeps San Diego's own labels, so under the seven-area profile the
+header names seven areas while the currency panel names the six-area downtown
+core. Both statements are true of different things. Fixing the header made that
+seam visible rather than hidden, which is the right direction; it now has to be
+disclosed on screen rather than left for the reader to reconcile.
+
+**What would change this decision.** A published dataset for a non-San-Diego
+geography that the pipeline could actually derive from, which is the same
+condition that would make the portability claim real. Until then an adopter gets
+a working planner over their own geography and San Diego's methods exhibit
+beside it, and is entitled to be told which is which before they look.

@@ -232,13 +232,41 @@ The one genuinely citable convention in there is **2080 hours/year**, which is
 the City's own stated FTE-hours basis. That is a denominator for converting an
 FTE to hours; it is not a cost.
 
-### What would actually close this
+### The image-only exhibit, read — and why the answer is structural
 
-An invoice, a reimbursement detail, or a staffing exhibit stating fielded hours
-or FTE count against a dollar figure. Nothing examined so far carries one. Seven
-of this request's documents remain unread, and the ledger notes some releases
-are image-only — those are the remaining surface, and the repo has OCR built for
-them.
+The ledger noted that some releases are image-only and had therefore never been
+read. `Revised Signed Copy FY22 Scope and Budget HRC (carryforward).pdf` (doc
+`25768210`) is one: it carries no text layer at all. It is also, by title, the
+likeliest place in the corpus for a staffing denominator.
+
+It has now been read — nine pages, ~13,800 characters, via `tools/ocr/ocr.swift`,
+which uses macOS PDFKit and Vision and needs nothing installed. Result: **zero
+`FTE`, zero "full-time", zero hours figures, zero positions, zero "hourly".**
+
+What it does contain is the reason the denominator is missing everywhere else:
+
+> LINE ITEM Consultant Services … **PATH Supportive Services Contract. This
+> represents the total costs (both personnel and non-personnel expenses) of the
+> contract with PATH** to provide HRC system navigation services.
+
+The budget has `SALARIES & WAGES` and `FRINGE BENEFITS` lines, and the outreach
+money does not run through them. It is booked as **Consultant Services**, a
+single figure that collapses personnel and non-personnel together by
+construction.
+
+**That is structural, not an omission.** Outreach staffing is *purchased as a
+contracted service*, so the buyer's books carry a contract value and never carry
+hours or an FTE count. The hours exist in the contractor's payroll, which is not
+a public record. This is why the search kept failing, and why more searching
+will not fix it.
+
+### What would actually close this, and what would not
+
+Not more PRA reading. What would close it is a figure from the provider side —
+an invoice with an hours line, a cost-reimbursement detail, or a grant report
+stating fielded FTE against a dollar amount. Absent that, `loaded_hourly_rate`
+stays an operator-set assumption, and that label is now a documented finding
+rather than a placeholder nobody has tested.
 
 ## 5. Capacity context the planner could be compared against
 

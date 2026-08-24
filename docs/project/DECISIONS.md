@@ -294,3 +294,32 @@ weaker than a fixture and should become one.
 **What would change this decision.** Nothing about it is cheap to hold — every
 new gate costs a fixture. The alternative is what the four cases above cost,
 which was more.
+
+## 2026-08-24 — San Diego is the scope, not a first instance
+
+**The decision.** This tool is for San Diego. Running it on another
+organization's geography may be a future effort; it is not a goal now, and the
+project will not carry it as an open gap, a risk, or a direction of travel.
+
+**What changes.** The risk register listed "nothing has demonstrated this works
+on another geography" as a high-severity risk, on the reasoning that it was the
+claim most likely to drive an adoption decision that then fails. That reasoning
+only holds if portability is being offered. It is not, so the entry becomes a
+declared non-goal. The evidence layer being San Diego's stops being a seam to
+disclose apologetically and becomes simply what the product is.
+
+**What does not change, deliberately.** The portability declaration in
+`config/portability-demonstrated.v1.json`, the claim it bounds, and the build
+check that fails when a broader claim appears — all stay. Under a San-Diego-only
+scope they cost nothing to keep and they are exactly what stops a portability
+promise reappearing in a document by accident. The configuration layer also
+stays configurable: that is how the two profiles express the publisher's
+six-area core and its full seven-area geography, both of which are San Diego.
+
+**What the effort goes into instead.** More and better San Diego data, and
+features that make the plan more useful to a San Diego program director. The
+investigated options, with what was executed to check each, are in
+`DATA_OPPORTUNITIES.md`.
+
+**What would change this decision.** A real San Diego organization asking to run
+it on their own geography — which is a conversation, not a backlog item.

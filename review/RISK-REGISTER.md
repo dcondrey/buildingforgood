@@ -92,11 +92,17 @@ at it before they ask.
 
 ## 3. Nothing has demonstrated this works on another organization's geography
 
-**Severity: high**, because it is the claim most likely to drive an adoption
-decision that then fails. An organization adopting on the belief that this runs
-on their areas has made a decision on a premise no evidence supports.
+**Severity: not a risk — a declared non-goal, as of 2026-08-24.** This tool is
+for San Diego. Running it on another geography may be a future effort and is not
+one now, so there is no adoption decision resting on a premise that could fail.
+It stays on this list only so that nobody re-derives it as a gap and starts
+building for it.
 
-**Status: OPEN, and now declared.**
+**Status: OUT OF SCOPE.** What must remain true is narrow: no document may
+*promise* portability. The declaration that bounds the claim, and the build
+check behind it, stay exactly as they are — under a San-Diego-only scope they
+are cheaper to keep than to unwind, and they are what stops the promise
+reappearing by accident.
 
 **What it is.** The tool can be configured for a different set of areas, and
 that genuinely works — areas, budget, floor, shift length, increment, team
@@ -127,10 +133,13 @@ stops."*
 
 ## 4. The evidence on the page is San Diego's, under every profile
 
-**Severity: medium-high.** Related to item 3 but distinct: this one is
-permanent by design, not pending evidence.
+**Severity: low, and correct by design.** Under a San-Diego-only scope the
+evidence layer being San Diego's is not a seam, it is the product. This entry
+stays because the *page* must still say which layer is which — an operator
+reading a plan should know the analysis above it is a methods exhibit — but
+there is nothing here to fix.
 
-**Status: DISCLOSED**, as of this session.
+**Status: DISCLOSED, and intended.**
 
 **What it is.** Switching profiles changes the plan. It changes nothing in the
 evidence layer — the observations, the panel, the forecast, the digitization

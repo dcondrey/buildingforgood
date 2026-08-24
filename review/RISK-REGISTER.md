@@ -169,7 +169,7 @@ first five minutes.
 **Severity: medium-high**, and it is the only item on this list that can put a
 regression of any *other* item onto the public site.
 
-**Status: CLOSED. Observed refusing, not yet observed permitting.**
+**Status: CLOSED, and observed in both directions.**
 
 **What it was.** The deploy workflow ran on push to `main` with no dependency on
 the verify workflow, so a push that broke the refusal suite, the claim
@@ -183,18 +183,18 @@ not a passing one. Checkout pins the commit verify actually graded rather than
 whatever `main` points at when the job starts. `workflow_dispatch` stays ungated
 as the deliberate manual path.
 
-**What has actually been seen.** On the first push, `verify` failed — a
-portable-shell bug in `verify.sh` that had never run on Linux — and the deploy
-job was **skipped**, which is the gate doing its job. So the refusing direction
-is observed. The permitting direction is not: no push has yet had verify pass
-and deploy publish.
+**What has actually been seen, on 2026-08-24.** Two pushes had `verify` fail —
+a portable-shell bug and a macOS-only assertion, both of which had never run on
+Linux — and the deploy job was **skipped** both times. The third push had verify
+pass and the deploy publish, and the live bundle carries that commit's strings.
+So the gate has been watched refusing twice and permitting once.
 
-**That asymmetry is the thing to watch, because the failure mode is silent.** A
-gate that refuses everything looks identical to a gate that works, right up
-until someone notices the site has not changed in a month. If `verify` ever
-stops running on push to `main`, deploy never fires and nothing complains. The
-evidence that it permits is the site changing after a green push. Check that
-once, deliberately.
+**The residual limitation is that the failure mode is silent.** A gate that
+refuses everything looks identical to a working one until somebody notices the
+site has not changed in a month. If `verify` ever stops running on push to
+`main` — a trigger edit, a rename, a path filter — deploy never fires and
+nothing complains. Nothing monitors that, and nothing here proposes to; the
+mitigation is that this paragraph exists and the deploy history is public.
 
 **The mitigation that already existed** and is unchanged: the deploy job
 independently privacy-scans the exact bundle it is about to publish, with

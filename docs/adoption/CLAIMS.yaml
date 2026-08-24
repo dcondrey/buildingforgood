@@ -170,10 +170,10 @@ claims:
         anchor: "head_repository.full_name == github.repository"
     limitation:
       surface: review/RISK-REGISTER.md
-      # The gate has been seen refusing (a failed verify skipped the deploy) and
-      # has NOT been seen permitting. That asymmetry is the limitation, because
-      # a gate that refuses everything is indistinguishable from one that works.
-      quote: "Observed refusing, not yet observed permitting"
+      # The gate has now been watched both refusing and permitting. What remains
+      # is that its failure mode is silent: if verify stops running, deploy
+      # never fires and nothing says so.
+      quote: "the failure mode is silent"
 
   # ---- what it will not do ------------------------------------------------
   - id: no-backend

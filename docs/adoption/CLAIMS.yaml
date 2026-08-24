@@ -175,6 +175,28 @@ claims:
       # never fires and nothing says so.
       quote: "the failure mode is silent"
 
+  # The only check that corroborates the evidence base from outside itself. A
+  # figure like this invites more weight than it can carry, so the claim names
+  # what it is evidence ABOUT and the limitation names what it is not.
+  - id: source-agreement-corroborates-transcription
+    claim: >-
+      An independent digitization of the same source reproduces the published
+      monthly series closely across the overlapping months.
+    quote: "independent digitization"
+    surfaces:
+      - CHANGELOG.md
+    code:
+      - path: pipeline/src/stillhere_pipeline/sdrdl.py
+        anchor: "def agreement"
+      - path: data/monitoring/source_agreement.json
+        anchor: source_agreement
+    tests:
+      - path: tests/pipeline/test_sdrdl.py
+        anchor: withholds_the_per_month_ratio_series
+    limitation:
+      surface: docs/project/DATA_OPPORTUNITIES.md
+      quote: "agreement, not reconstruction"
+
   # ---- what it will not do ------------------------------------------------
   - id: no-backend
     claim: No backend, no accounts, no login, no telemetry.

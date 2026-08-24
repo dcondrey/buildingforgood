@@ -71,8 +71,18 @@ sources:
     license_terms: >-
       No explicit data license in the metapack metadata. The project repo
       (github.com/sandiegodata-projects/downtown-partnership) is MIT; the
-      underlying counts belong to DSP. Attribute both SDRDL and DSP; confirm
-      reuse beyond a hackathon demo with SDRDL (eric@sandiegodata.org).
+      underlying counts belong to DSP. Attribute both SDRDL and DSP.
+      REUSE CONFIRMED: the repository owner reports that permission was
+      obtained from SDRDL. What this project publishes under it is narrow and
+      deliberately so — derived summary statistics only, in
+      data/monitoring/source_agreement.json, with both parties attributed in
+      the artifact itself. No counts are redistributed, and the per-month ratio
+      series is withheld because it would invert to SDRDL's monthly figures
+      against the official totals already published here.
+      RECORD INCOMPLETE: the grant's date, the person who gave it, and its
+      wording are not written down. Until they are, this entry rests on an
+      unrecorded conversation, which is weaker than every other provenance
+      record in this ledger.
     collection_method: >-
       DSP Clean & Safe enumerators hand-mark paper maps monthly; SDRDL
       volunteers georeferenced and digitized the scans (VGG VIA annotation).

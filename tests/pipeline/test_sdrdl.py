@@ -10,6 +10,9 @@ the overlap evidence chose.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from stillhere_pipeline.sdrdl import (
@@ -151,3 +154,54 @@ def test_the_worst_months_are_ranked_by_distance_from_parity_both_ways() -> None
 def test_comparing_series_that_do_not_overlap_is_refused_rather_than_reported_as_zero() -> None:
     with pytest.raises(ValueError, match="no overlapping months"):
         agreement({"2014-01": 10.0}, {"2020-01": 10})
+
+
+def _artifact() -> dict:
+    official = {f"2019-{m:02d}": 100 for m in range(1, 13)}
+    totals = {m: 99.0 for m in official}
+    totals["2019-06"] = 50.0
+    from stillhere_pipeline.sdrdl import agreement_artifact
+
+    return agreement_artifact(
+        agreement(totals, official), package_version="pkg-1.0", retrieved="2026-08-24"
+    )
+
+
+def test_the_artifact_withholds_the_per_month_ratio_series() -> None:
+    """The property the whole design rests on.
+
+    The official monthly totals are already published here, so shipping every
+    month's ratio would multiply back into SDRDL's own monthly figures. Only the
+    named defect months invert, and they are declared as defects.
+    """
+    artifact = _artifact()
+    named = {row["month"] for row in artifact["known_defect_months"]}
+    assert "2019-06" in named, "a real outlier must still be locatable"
+    assert len(named) <= 5
+    blob = json.dumps(artifact)
+    unnamed = [m for m in (f"2019-{i:02d}" for i in range(1, 13)) if m not in named]
+    for month in unnamed:
+        assert month not in blob, f"{month} is an ordinary month and must not carry a ratio"
+
+
+def test_the_artifact_states_what_it_is_not() -> None:
+    boundary = _artifact()["boundary"]
+    for phrase in ("never a model input", "never an allocation weight"):
+        assert phrase in boundary
+
+
+def test_the_artifact_pins_the_package_version_and_retrieval_date() -> None:
+    artifact = _artifact()
+    assert artifact["package_version"] == "pkg-1.0"
+    assert artifact["retrieved_at"] == "2026-08-24"
+
+
+def test_the_shipped_artifact_matches_what_the_module_produces() -> None:
+    shipped = json.loads(
+        (Path(__file__).resolve().parents[2] / "data/monitoring/source_agreement.json").read_text()
+    )
+    assert shipped["kind"] == "source_agreement"
+    assert shipped["overlap_months"] == 70
+    assert 0.98 <= shipped["median_ratio"] <= 1.0
+    assert set(shipped["median_ratio_by_year"]) == {str(y) for y in range(2017, 2023)}
+    assert shipped["months_absent_from_package"] == ["2018-11", "2019-12"]

@@ -32,7 +32,14 @@ import tempfile
 import urllib.request
 from pathlib import Path
 
-from stillhere_pipeline.sdrdl import agreement, composition, monthly_totals
+from stillhere_pipeline.sdrdl import (
+    agreement,
+    agreement_artifact,
+    composition,
+    monthly_totals,
+)
+
+PACKAGE_VERSION = "sandiegodata.org-downtown_homeless-source-7.2.3"
 
 COUNTS_URL = (
     "https://library.metatab.org/sandiegodata.org-downtown_homeless-source-7.2.3/data/counts.csv"
@@ -50,6 +57,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--counts", type=Path, help="a local counts.csv, to skip the download")
+    parser.add_argument(
+        "--emit",
+        type=Path,
+        help="write the committed summary artifact here (data/monitoring/source_agreement.json)",
+    )
+    parser.add_argument(
+        "--retrieved", default="", help="ISO date the package was retrieved, recorded in --emit"
+    )
     args = parser.parse_args(argv)
 
     artifact = json.loads((args.root / "public/generated/demo.v1.json").read_text("utf-8"))
@@ -95,6 +110,15 @@ def main(argv: list[str] | None = None) -> int:
         "  change, not tents appearing downtown in 2017, so multipliers have nothing to\n"
         "  act on in the earlier months and the level is not comparable across the break."
     )
+
+    if args.emit:
+        if not args.retrieved:
+            parser.error("--emit needs --retrieved: an artifact with no retrieval date is unpinned")
+        artifact_out = agreement_artifact(
+            result, package_version=PACKAGE_VERSION, retrieved=args.retrieved
+        )
+        args.emit.write_text(json.dumps(artifact_out, indent=2, sort_keys=True) + "\n", "utf-8")
+        print(f"\nwrote {args.emit}")
     return 0
 
 

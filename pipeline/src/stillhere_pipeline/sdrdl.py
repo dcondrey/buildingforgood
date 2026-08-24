@@ -180,3 +180,46 @@ def agreement(totals: Mapping[str, float], official: Mapping[str, int]) -> Agree
         worst=sorted(ratios.items(), key=lambda kv: abs(kv[1] - 1), reverse=True)[:5],
         absent_from_package=sorted(set(covered) - set(totals)),
     )
+
+
+def agreement_artifact(
+    result: Agreement, *, package_version: str, retrieved: str
+) -> dict[str, Any]:
+    """The committed summary — statistics, not a republished series.
+
+    Deliberately omits the per-month ratios. The official monthly totals are
+    already published in this repository, so a full ratio series would let
+    anyone multiply the two back into SDRDL's own monthly aggregates, which is
+    republishing their data by a longer route. Year medians are taken over
+    eleven or twelve months and do not invert. The five named months do invert,
+    and are included anyway because a defect nobody can locate cannot be fixed;
+    they are identified as defects rather than offered as observations.
+    """
+    return {
+        "kind": "source_agreement",
+        "boundary": (
+            "Agreement between two independent digitizations of the same DSP Clean & Safe "
+            "paper maps: the shipped artifact's series, and the public SDRDL package. It is "
+            "evidence about transcription, never a model input, never an allocation weight, "
+            "and not an independent count of anything. Summary statistics only; the per-month "
+            "ratio series is withheld because it would invert to SDRDL's own monthly figures "
+            "against the official totals already published here."
+        ),
+        "attribution": (
+            "Observations collected by the Downtown San Diego Partnership Clean & Safe "
+            "program. Digitized and published by the San Diego Regional Data Library. "
+            "Both are attributed here because the source ledger requires it of any use "
+            "of this package."
+        ),
+        "package_version": package_version,
+        "retrieved_at": retrieved,
+        "overlap_months": result.months,
+        "median_ratio": round(result.median_ratio, 4),
+        "p10_ratio": round(result.p10, 4),
+        "p90_ratio": round(result.p90, 4),
+        "within_5pct": round(result.within_5pct, 1),
+        "within_10pct": round(result.within_10pct, 1),
+        "median_ratio_by_year": {y: round(v, 4) for y, v in result.by_year.items()},
+        "months_absent_from_package": result.absent_from_package,
+        "known_defect_months": [{"month": m, "ratio": round(v, 3)} for m, v in result.worst],
+    }

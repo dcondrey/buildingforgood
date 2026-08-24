@@ -5,13 +5,80 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-This file was reconstructed from the commit history on 2026-08-23. The
-repository carries no tags at all, so everything built between 2026-08-20 and
+This file was reconstructed from the commit history on 2026-08-23, when the
+repository carried no tags at all, so everything built between 2026-08-20 and
 2026-08-23 is collected under a single `1.0.0` heading rather than back-dated
-into versions that never existed. That heading names the intended first
-version; it is not a published release. See the note under it.
+into versions that never existed. `v1.0.0` is now tagged at the end of the
+truth pass below. It marks the point where every adopter-facing claim is
+backed by code or by a declared limitation and CI fails if one is not; it does
+not mean the limitations are gone. They are listed, in severity order, in
+`review/RISK-REGISTER.md`.
 
 ## Unreleased
+
+### Truth pass — every adopter-facing claim backed, or declared
+
+A session spent making the artifact's claims and the artifact's behaviour the
+same thing, and putting a machine in the way of them diverging again.
+
+**Gates that passed without earning it.** `mutation_check.sh` graded a mutation
+as caught when the suite failed, with no check that the suite was green first —
+so a suite already failing caught everything and the gate printed PASSED having
+proved nothing. Two agents reported ten of ten over a red suite before it was
+found. It now refuses to run unless the baseline is green. The claim inventory's
+`--pytest-summary` returned "unreconciled" when its input was missing, so a
+broken `mktemp` would have left the skip ledger asserting nothing behind a green
+stage. A Python test returned early when its input was absent and reported
+*passed*: its cross-check against the publisher's own totals had never once
+executed, sitting first behind that return and then behind an undeclared
+dependency. It now reads the workbook with stdlib `zipfile` and skips honestly
+when it is absent.
+
+**A live mutation was found in the working tree** with the complaint-signal
+guard disabled — `assertNoComplaintSignal` skipping every key — left by an
+interrupted run whose restore never fired.
+
+**The same guard defect, on a new path.** The actuals loader carried its own
+English-only complaint list, and the free-text scan on the measure definition —
+the documented laundering site — missed Spanish outright. That is Escalation 3
+reintroduced on an import path that did not exist when Escalation 3 was fixed.
+
+**Claims narrowed to what is true.** An unsourced geography no longer loads: an
+area list must resolve to a real published source, and `illustrative` — a
+status meaning "this place does not exist" — is gone from the schema, the
+loader, the types and both catalogues. Scenario labels derive from the loaded
+profile and cannot state another geography. Six currency strings stopped
+asserting a publication schedule the artifact explicitly refuses to claim. The
+hero lede now names the evidence as San Diego's methods exhibit before its first
+numeral. Six test names stopped claiming more than their bodies establish.
+
+**The portability evidence was void and is recorded as void.** It came from
+running an invented profile. Nothing here has demonstrated portability to a
+non-San-Diego geography, and `config/portability-demonstrated.v1.json` now
+declares that, enforced by the claim inventory.
+
+### Added
+
+- **Plan against delivered.** An actuals file is read in the browser — nothing
+  is uploaded, there is no server to upload to — and one screen shows planned
+  against delivered hours per area with the plan error visible. No total is
+  computed across areas or months, because a sum would let a reader subtract
+  back to a count the file withholds. What the comparison is *not* is declared
+  and pinned: it does not score the published count forecast, and cannot.
+- **The claim inventory gained a seventh check**, binding a claim to a
+  machine-readable declaration so a claim and its bound cannot drift apart.
+- **A prerequisite stage in `refresh.sh`**, so a non-developer's first failure
+  names what to install rather than pip. Every failure path was triggered and
+  observed, not reasoned about.
+- **What to do while the publisher is late**, on the page where a stale badge is
+  read rather than only in the runbook.
+- **The review track is published**, with closed findings stamped RESOLVED and
+  their bodies left as written, and a risk register reordered by severity
+  instead of by what an evaluator notices.
+
+### Fixed
+
+- **Deploy no longer runs without verify having passed** for that commit.
 
 Everything below was built on 2026-08-23 to move the project from a hackathon
 artifact to something a partner nonprofit can adopt, configure for its own

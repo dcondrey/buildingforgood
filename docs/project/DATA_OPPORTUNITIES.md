@@ -260,13 +260,58 @@ hours or an FTE count. The hours exist in the contractor's payroll, which is not
 a public record. This is why the search kept failing, and why more searching
 will not fix it.
 
-### What would actually close this, and what would not
+### The whole corpus, surveyed
 
-Not more PRA reading. What would close it is a figure from the provider side —
-an invoice with an hours line, a cost-reimbursement detail, or a grant report
-stating fielded FTE against a dollar amount. Absent that, `loaded_hourly_rate`
-stays an operator-set assumption, and that label is now a documented finding
-rather than a placeholder nobody has tested.
+Reading documents one at a time was the wrong method for thirty-six of them.
+`scripts/survey_pra.py` walks the pinned list: locates each on the portal,
+downloads it, compares its SHA-256 to the pin, decides typed or scanned, OCRs
+the scans, and scans the text for staffing and cost denominators.
+
+First full run, 2026-08-25:
+
+| | |
+| --- | --- |
+| pinned documents | 36 |
+| located and downloaded | 18 |
+| **hashes reproduced exactly** | **18** |
+| hash mismatches | **0** |
+| not found by title | 15 |
+| typed / scanned | 12 / 6 |
+| read (incl. OCR) | 18 |
+
+**Every document the survey could find reproduced its pin byte for byte.** That
+converts the PRA provenance from a record to a reproducible fact. The fifteen
+not found are a title-matching gap, not evidence of absence — portal titles
+differ from the pinned filenames by clerk-added suffixes, and matching is
+deliberately narrow because a hash attached to the wrong document is worse than
+no hash. Widening it is the obvious next increment.
+
+### What the survey found about the rate
+
+**The first genuine FTE-with-dollars pairing in the corpus**, in
+`Proposal_Alpha Project.pdf` (doc `43532436`) — a *Pricing and Fee Schedule*:
+
+> PERSONNEL & FRINGE · POSITION TITLE · **NUMBER OF FTEs TO BE BILLED TO THIS
+> PROJECT** · **Average Annual Salary** · Total — Program Director 1.00
+> $90,000 · Program Manager 1.00 $75,000 · Services Coordinator 1.00 $62,000 …
+
+It is the right *shape* of document and the wrong program twice over: it prices
+a **non-congregate family shelter**, not street outreach, and it is a
+**proposal** — what a provider bid, not what was paid. Using it for outreach
+hours would repeat the category error the ledger already warns about with the
+1:15 and 1:12.5 shelter case-management ratios.
+
+**The FY24 Adopted Budget pairs FTE with personnel dollars, but only citywide.**
+`fy24ab_v1cbo.pdf` gives 13,030.17 FTE against $2.02bn of personnel expense by
+fund type and labor group. There is no departmental breakdown in this volume —
+it is the Citywide Budget Overview, and the departmental volumes are not pinned.
+Dividing the citywide figure would average police, fire and utilities into an
+outreach rate.
+
+So the answer stands, and is now sharper about what would change it: **a pricing
+and fee schedule from a street-outreach bid**, which is a document type this
+corpus proves exists and does not yet contain. The executed outreach agreements
+are pinned; the responses that priced them are not.
 
 ## 5. Capacity context the planner could be compared against
 

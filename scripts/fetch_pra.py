@@ -23,19 +23,11 @@ unless `--out` names somewhere, and `data/raw/` stays ignored.
 from __future__ import annotations
 
 import argparse
-import hashlib
-import json
 import tempfile
-import urllib.parse
-import urllib.request
 from pathlib import Path
 
+from stillhere_pipeline.nextrequest import digest, download, pinned_hashes, search
 from stillhere_pipeline.pdftext import extract_text, find, has_text_layer
-
-PORTAL = "https://sandiego.nextrequest.com"
-AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
-)
 
 #: Patterns worth reading in a contract, and the reason each is here. Bounded,
 #: because the unbounded versions match inside ordinary words.
@@ -50,36 +42,6 @@ DENOMINATORS = {
 }
 
 
-def _open(url: str, referer: str | None = None) -> bytes:
-    request = urllib.request.Request(url, headers={"User-Agent": AGENT})
-    if referer:
-        request.add_header("Referer", referer)
-    with urllib.request.urlopen(request, timeout=180) as response:  # noqa: S310 - pinned host
-        return bytes(response.read())
-
-
-def search(term: str, limit: int = 10) -> list[dict[str, object]]:
-    query = urllib.parse.urlencode({"search_term": term})
-    payload = json.loads(_open(f"{PORTAL}/client/documents?{query}"))
-    return list(payload.get("documents", []))[:limit]
-
-
-def download(doc_id: int) -> bytes:
-    page = f"{PORTAL}/documents/{doc_id}"
-    _open(page)  # the download 403s without the referring page having been seen
-    return _open(f"{page}/download", referer=page)
-
-
-def pinned_hashes(root: Path) -> dict[str, str]:
-    lines = (root / "data/cards/checksums.sha256").read_text("utf-8").splitlines()
-    out: dict[str, str] = {}
-    for line in lines:
-        parts = line.split(None, 1)
-        if len(parts) == 2:
-            out[Path(parts[1].strip()).name] = parts[0]
-    return out
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("."))
@@ -91,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.search:
         for doc in search(args.search):
-            print(f"  {doc['id']:>9}  {str(doc.get('pretty_id')):>9}  {str(doc['title'])[:66]}")
+            print(f"  {doc.id:>9}  {doc.request:>9}  {doc.title[:66]}")
         if not args.doc_id:
             return 0
 
@@ -99,10 +61,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("give --search, --doc-id, or both")
 
     blob = download(args.doc_id)
-    digest = hashlib.sha256(blob).hexdigest()
-    print(f"document {args.doc_id}: {len(blob)} bytes\n  sha256 {digest}")
+    actual = digest(blob)
+    print(f"document {args.doc_id}: {len(blob)} bytes\n  sha256 {actual}")
 
-    matches = [name for name, value in pinned_hashes(args.root).items() if value == digest]
+    matches = [name for name, value in pinned_hashes(args.root).items() if value == actual]
     print(f"  pinned as: {matches[0]}" if matches else "  NOT among the pinned hashes")
 
     destination = args.out or Path(tempfile.gettempdir()) / f"pra-{args.doc_id}.pdf"

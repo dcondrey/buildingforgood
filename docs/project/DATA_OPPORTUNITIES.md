@@ -327,6 +327,54 @@ type exists — the Alpha Project proposal is one, for a shelter — and does no
 contain one for outreach. The executed agreements are pinned; the responses that
 priced them are not.
 
+## 4b. A third source, and the strongest corroboration yet
+
+`sdrdl_analysis` was pinned and fed nothing. It is DSP's **officially published**
+monthly downtown totals — the multiplied series, as the publisher issued it —
+covering 2012-01 to 2019-04. That makes a three-way check possible, and it is a
+better one than section 1 because it compares the shipped artifact against the
+publisher's own arithmetic rather than against another transcription.
+
+| comparison | months | result |
+| --- | --- | --- |
+| shipped artifact vs DSP published | 28 | **median 1.000 — 22 of 28 exactly equal** |
+| reconstruction from unmultiplied counts vs DSP published | 60 | median 0.996 |
+| reconstruction vs shipped artifact (section 1) | 70 | median 0.991 |
+
+**The middle row validates the method.** Applying the documented multiplier
+schedule to SDRDL's deliberately unmultiplied counts reproduces the publisher's
+own published figures to within 0.4% across sixty months. That is independent
+support for both the multiplier arithmetic and the `2=Structure, 3=Vehicle` code
+mapping the overlap chose.
+
+**The top row is the strongest statement this project can make about its own
+evidence.** For the twenty-eight months where the two series meet, the shipped
+monthly totals are *exactly* the numbers the publisher published, in twenty-two
+of them.
+
+### The six that differ, and what is not known about them
+
+The other six differ by **exactly one**, and the artifact is the higher value in
+every case — 2017-09, 2017-10, 2017-12, 2018-08, 2019-03, 2019-04. Never lower.
+A systematic direction like that is the signature of a convention rather than a
+data disagreement: a rounding rule, or one record included on one side.
+
+**The obvious explanation was tested and did not hold.** If it were rounding,
+the months that differ should carry fractional parts on one side of a threshold
+and the months that match on the other. They do not: the differing months sit at
+0.93, 0.74, 0.68, 0.66, 0.80 and 0.33, while matching months include 0.61 and
+0.49. The reconstruction is also not close enough to either series to act as a
+tiebreaker, so it cannot adjudicate.
+
+So the mechanism is **undetermined**, and is recorded that way rather than as the
+tidy rounding story. It is six counts out of twenty-eight months, each off by
+one, in a series where nothing downstream is sensitive to a unit — but an
+unexplained systematic difference is worth naming, because the next person to
+notice it should find it already known rather than think they have found a bug.
+
+**Coverage limit.** The published series stops at 2019-04, so this check cannot
+speak to 2019-05 onward, which is most of the shipped history.
+
 ## 5. Capacity context the planner could be compared against
 
 `city_pra_outreach_contracts` documents contracted street-outreach staffing —

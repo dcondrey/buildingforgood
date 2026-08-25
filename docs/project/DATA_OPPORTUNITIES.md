@@ -407,15 +407,48 @@ the hours stay with the provider.
 ### Following it further: there are no hours because the accounting has none
 
 The provider's own records do cross, in reimbursement backup. PATH's FY20
-Connections claims (request 21-1196) include per-employee *salary and fringe
-worksheets* — the most promising document in the entire search, and the place an
-hourly rate would live if one existed anywhere in these files.
+Connections claims include per-employee *salary and fringe worksheets* — the
+most promising document in the entire search, and the place an hourly rate would
+live if one existed anywhere in these files.
+
+**Check where they came from before reading anything into them.** They are in
+request 21-1196, which is a **Police** department request for bank statements
+and general ledger detail. Not a homelessness request. The reimbursement backup
+surfaced inside a financial-records disclosure, and the programmes it covers are
+Connections, Rapid Re-Housing, Interim Housing and Cortez Hill — **housing, not
+street outreach**. An earlier draft of this section carried the outreach framing
+across from the rest of the search, which was wrong.
+
+**A naming trap worth stating, because this repository is about exactly this.**
+An earlier draft called the last of those "the Cortez Hill shelter". No such
+thing was established. The cost object reads `534001- Cortez Hills CDBG- Admin`,
+and the FY19 close-out report names the programme: the **Cortez Hill Family
+Center**, providing "interim housing and supportive services to homeless
+families with children", delivered under an agreement with the **YWCA of San
+Diego County**. Interim housing for families is not a shelter in the sense the
+shortened name suggests, and the documents speak only to FY19 and FY20 — they
+say nothing about whether it operates today.
+
+The compression mattered for a second reason. **`Cortez` is one of the six
+planning areas in this product's geography.** "Cortez Hill" is a programme name.
+Letting a programme label read as an area label is the same class of error as
+the invented profile, arriving by abbreviation rather than by invention.
 
 **It allocates by percentage of effort, not by hours.** One person's gross pay is
 split across five funding sources at fixed rates — 16.50%, 22.40%, 21.10%,
-20.00%, 20.00% — with no hours figure anywhere on the form. That is the real
-reason the search kept coming up empty, and it is stronger than "not released":
-**there are no hours to find, because this accounting does not use them.**
+20.00%, 20.00%, summing to exactly 100% — with no hours figure anywhere on the
+form.
+
+Percentage of effort is the share of someone's paid time attributed to each
+funding source: a certified estimate of how the time divides, not a measurement
+of what was worked. Splitting an analyst across five grant-funded programmes
+this way is ordinary and permitted — CDBG and ESG both allow administrative
+cost, capped, and a compliance role supporting five programmes is a real cost of
+each.
+
+It also explains the search. **There are no hours to find because the method
+substitutes a percentage for hour tracking**, which is a stronger answer than
+"not released" and closes the question rather than deferring it.
 
 ### What is there instead, and it is worth having
 

@@ -267,24 +267,29 @@ Reading documents one at a time was the wrong method for thirty-six of them.
 downloads it, compares its SHA-256 to the pin, decides typed or scanned, OCRs
 the scans, and scans the text for staffing and cost denominators.
 
-First full run, 2026-08-25:
+Full run, 2026-08-25, after the matcher was widened:
 
-| | |
-| --- | --- |
-| pinned documents | 36 |
-| located and downloaded | 18 |
-| **hashes reproduced exactly** | **18** |
-| hash mismatches | **0** |
-| not found by title | 15 |
-| typed / scanned | 12 / 6 |
-| read (incl. OCR) | 18 |
+| | first pass | after |
+| --- | --- | --- |
+| pinned documents | 36 | 36 |
+| located | 18 | **33** |
+| hashes reproduced exactly | 18 | **33** |
+| hash mismatches | 0 | **0** |
+| not found by title | 15 | **0** |
+| typed / scanned | 12 / 6 | 22 / 11 |
+| read, including OCR | 18 | **33** |
 
-**Every document the survey could find reproduced its pin byte for byte.** That
-converts the PRA provenance from a record to a reproducible fact. The fifteen
-not found are a title-matching gap, not evidence of absence — portal titles
-differ from the pinned filenames by clerk-added suffixes, and matching is
-deliberately narrow because a hash attached to the wrong document is worse than
-no hash. Widening it is the obvious next increment.
+**Every PDF in the pinned corpus was located and every hash reproduced byte for
+byte.** The three not reproduced are the `.xlsx` files, which this survey skips.
+That converts the PRA provenance from a record into a reproducible fact.
+
+The first pass missed fifteen because it searched on the whole filename stem,
+which is often too specific to hit anything — the executed PATH contract is not
+returned by a search for its own filename and is returned by a search for
+`10089902`. `search_terms` now falls back from the stem to a truncation to the
+embedded RFP or PRA number, and matching tolerates punctuation and a clerk's
+appended suffix while still requiring a long shared opening, because a hash
+attached to the wrong document is worse than no hash.
 
 ### What the survey found about the rate
 
@@ -308,10 +313,19 @@ it is the Citywide Budget Overview, and the departmental volumes are not pinned.
 Dividing the citywide figure would average police, fire and utilities into an
 outreach rate.
 
-So the answer stands, and is now sharper about what would change it: **a pricing
-and fee schedule from a street-outreach bid**, which is a document type this
-corpus proves exists and does not yet contain. The executed outreach agreements
-are pinned; the responses that priced them are not.
+**Both executed street-outreach agreements are now read in full, scans
+included, and neither carries a denominator.** The CityNet agreement OCR'd to
+106,930 characters; its only hours figure is a 24-hour incident-reporting
+deadline. PATH's is the scoring-example trap above. That is the structural
+finding confirmed across the corpus rather than inferred from two documents:
+outreach is bought as a service, so the buyer's records carry a contract value
+and the hours stay in the provider's payroll.
+
+So the answer stands, and is now sharp about what would change it: **a pricing
+and fee schedule from a street-outreach bid**. The corpus proves that document
+type exists — the Alpha Project proposal is one, for a shelter — and does not
+contain one for outreach. The executed agreements are pinned; the responses that
+priced them are not.
 
 ## 5. Capacity context the planner could be compared against
 

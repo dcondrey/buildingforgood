@@ -37,13 +37,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from stillhere_pipeline.nextrequest import (
-    best_match,
-    digest,
-    download,
-    pinned_hashes,
-    search,
-)
+from stillhere_pipeline.nextrequest import digest, download, locate, pinned_hashes
 from stillhere_pipeline.pdftext import extract_text, find, has_text_layer
 
 #: Patterns worth reading, and why each is here. Bounded, because the unbounded
@@ -106,7 +100,7 @@ def main(argv: list[str] | None = None) -> int:
             lines.append("- not a PDF; skipped by this survey\n")
             continue
 
-        found = best_match(name, search(Path(name).stem, limit=25))
+        found = locate(name)
         if found is None:
             counts["not_found"] += 1
             lines.append("- **not found on the portal by title**\n")

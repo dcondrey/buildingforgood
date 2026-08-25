@@ -64,3 +64,33 @@ def test_the_ledger_is_read_by_basename_and_can_be_filtered(tmp_path: Path) -> N
 def test_digest_is_the_sha256_the_ledger_records() -> None:
     # Fixed vector, so a change of algorithm cannot pass unnoticed.
     assert digest(b"").startswith("e3b0c44298fc1c14")
+
+
+def test_search_terms_fall_back_from_the_whole_name_to_an_identifier() -> None:
+    """The whole stem often finds nothing; the RFP number finds it.
+
+    The executed PATH contract is not returned by a search for its own filename
+    and is returned by a search for 10089902. Fifteen of thirty-six pinned
+    documents went unfound on the first survey for exactly this reason.
+    """
+    from stillhere_pipeline.nextrequest import search_terms
+
+    terms = search_terms("Contract_RFP 10089902-22-F_PATH San Diego (executed).pdf")
+    assert terms[0].startswith("Contract_RFP")
+    assert any("10089902" in term for term in terms), terms
+
+
+def test_search_terms_never_repeat_a_query() -> None:
+    from stillhere_pipeline.nextrequest import search_terms
+
+    terms = search_terms("Short.pdf")
+    assert len(terms) == len(set(terms))
+
+
+def test_a_clerks_suffix_no_longer_defeats_the_match() -> None:
+    portal = doc("Contract_RFP 10089902-22-F_PATH San Diego (executed agreement).pdf")
+    assert best_match("Contract_RFP 10089902-22-F_PATH San Diego (executed).pdf", [portal])
+
+
+def test_punctuation_differences_do_not_defeat_the_match() -> None:
+    assert best_match("PRA #25-360 - ESD - Report.pdf", [doc("PRA 25 360   ESD  Report.pdf")])

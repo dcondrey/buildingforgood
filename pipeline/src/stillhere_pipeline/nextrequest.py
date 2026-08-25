@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
@@ -101,11 +102,56 @@ def best_match(name: str, candidates: list[Document]) -> Document | None:
     fallback is deliberately narrow: guessing here would attach a hash to the
     wrong document, and a wrong hash is worse than no hash.
     """
-    stem = Path(name).stem.lower()
+    stem = _normalise(Path(name).stem)
     for candidate in candidates:
-        if Path(candidate.title).stem.lower() == stem:
+        if _normalise(Path(candidate.title).stem) == stem:
             return candidate
     for candidate in candidates:
-        if Path(candidate.title).stem.lower().startswith(stem[:40]):
+        other = _normalise(Path(candidate.title).stem)
+        # One is the other plus a clerk's suffix — "(executed)" against
+        # "(executed agreement)". Require a long shared opening so that two
+        # unrelated City filenames cannot satisfy it.
+        if len(stem) >= 25 and (other.startswith(stem[:25]) or stem.startswith(other[:25])):
             return candidate
+    return None
+
+
+def _normalise(text: str) -> str:
+    """Lowercase, strip punctuation, collapse runs — for comparing two titles."""
+    return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
+
+
+def search_terms(name: str) -> list[str]:
+    """Progressively less specific ways to ask for one document.
+
+    The portal matches on `search_term` loosely, and a whole filename stem is
+    often too specific to hit anything: the executed PATH contract is found by
+    "10089902" and not by its own filename. So try the stem, then a truncation,
+    then the distinctive tokens — an identifier carrying digits first, because
+    RFP and PRA numbers are the least ambiguous thing in a City filename.
+    """
+    stem = Path(name).stem
+    terms = [stem]
+    if len(stem) > 40:
+        terms.append(stem[:40].strip())
+    with_digits = [
+        t for t in re.split(r"[^A-Za-z0-9-]+", stem) if re.search(r"\d", t) and len(t) > 4
+    ]
+    terms.extend(sorted(with_digits, key=len, reverse=True)[:2])
+    words = [t for t in re.split(r"[^A-Za-z]+", stem) if len(t) > 3]
+    if len(words) >= 3:
+        terms.append(" ".join(words[:4]))
+    ordered: list[str] = []
+    for term in terms:
+        if term and term not in ordered:
+            ordered.append(term)
+    return ordered
+
+
+def locate(name: str, limit: int = 25) -> Document | None:
+    """Find one pinned filename on the portal, trying each term until one hits."""
+    for term in search_terms(name):
+        found = best_match(name, search(term, limit=limit))
+        if found is not None:
+            return found
     return None

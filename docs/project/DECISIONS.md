@@ -285,11 +285,21 @@ its first fixture is not invented: it is the literal line that shipped and broke
 CI, verified against `50498bb` where the linter finds all three real
 occurrences — two more than the CI run did, because CI stopped at the first.
 
-**What is still unproven, and named rather than left.** The refusal suite and
-the adversarial harnesses have no injected-failure fixture of their own; they
-are covered indirectly, by the mutation gate's complaint-signal mutant and by
-having been watched failing during the session that wired them in. That is
-weaker than a fixture and should become one.
+**The last two now have fixtures too.** `scripts/gate_selftest.sh` breaks one
+guard at a time and runs only the stage that should notice: a Spanish complaint
+term removed from the vocabulary, which stage 3 must catch, and the cost guard
+stopped from reading text values, which reopens the hole ATTACK E-2 was written
+for and stage 4 must catch. Both were watched failing. It is not part of
+`verify.sh` because it edits tracked source; it refuses to run against a dirty
+tree and restores what it touches.
+
+Writing it produced the lesson in miniature. The first fixture removed the term
+`"quejas"` and the suite stayed green, which looked exactly like a hole in the
+gate. It was not: the list also carries `"queja"`, matching is on substrings, and
+the corpus key stayed refused by the singular. **A fixture that changes no
+behaviour is not a fixture** — it is one more way for a check to pass without
+earning it, and it very nearly got written up as a defect in the product rather
+than a defect in the test.
 
 **A fifth instance, the same day, in the fix for the fourth.** Adding one
 `.swift` file made CodeQL detect Swift and its autobuilder fail, because a loose

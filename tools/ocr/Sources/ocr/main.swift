@@ -6,12 +6,16 @@ import Vision
 // macOS only, offline, no third-party dependency.
 let args = CommandLine.arguments
 guard args.count > 1, let doc = PDFDocument(url: URL(fileURLWithPath: args[1])) else {
-    FileHandle.standardError.write("usage: ocr <file.pdf> [scale]\n".data(using: .utf8)!)
+    FileHandle.standardError.write("usage: ocr <file.pdf> [scale] [maxPages]\n".data(using: .utf8)!)
     exit(2)
 }
 let scale = args.count > 2 ? (Double(args[2]) ?? 3.0) : 3.0
+// A 257MB scan of timesheets is a hundred high-resolution pages. Sampling the
+// first few answers "is this the right document at all" without rendering the
+// rest, which matters when the answer is usually no.
+let maxPages = args.count > 3 ? (Int(args[3]) ?? doc.pageCount) : doc.pageCount
 
-for i in 0..<doc.pageCount {
+for i in 0..<min(doc.pageCount, maxPages) {
     guard let page = doc.page(at: i) else { continue }
     let bounds = page.bounds(for: .mediaBox)
     let w = Int(bounds.width * scale), h = Int(bounds.height * scale)

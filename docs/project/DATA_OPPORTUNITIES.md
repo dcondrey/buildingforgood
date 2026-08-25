@@ -327,7 +327,84 @@ type exists — the Alpha Project proposal is one, for a shelter — and does no
 contain one for outreach. The executed agreements are pinned; the responses that
 priced them are not.
 
-## 4c. Would scraping more of the portal find it? No, and here is the proof
+## 4c. The sweep, run: 466 documents, and why the yield is low
+
+`scripts/discover_pra.py` sweeps the portal by title across homelessness terms,
+paginating, deduplicating, and writing an inventory. It downloads nothing:
+choosing what to open should be a decision somebody makes rather than a side
+effect of a sweep. Titles suggesting rosters, intake, case files or complaints
+are flagged and left alone, because a bulk pull of unreviewed public-records
+releases into a project whose whole claim is that no person-level data exists
+here is exactly how person-level data would arrive.
+
+Run on 2026-08-25: **466 distinct documents**, against 36 pinned. Sixteen
+candidates after filtering. Two flagged and not opened.
+
+### Municipal vocabulary is the problem, and it is worse than it sounds
+
+The first filter asked only whether a title looked like data, and returned
+**sixty-eight "CSD P6 Monthly Report" documents** — underground utility
+undergrounding, Rule 20A, project numbers in La Jolla and Clairemont Mesa. The
+sweep term was "monthly report", which matches most of a city's paperwork.
+
+Tightening it to require a homelessness word *and* a data word cut 102
+candidates to 16. Then the two most promising of those were opened and both were
+false positives of the same kind:
+
+- **"24-DG-11052021-228 Jan 2026 Report - Outreach"** is Urban Forestry's
+  street-tree programme. In City vocabulary "outreach" is community outreach.
+- The inventory also surfaced a link to the City's own
+  `homelessness-strategies-and-solutions/data-reports` page. It carries three
+  strategy PDFs and no data series.
+
+"Shelter" also matches animal shelter, and "bridge" matches literal bridges.
+Title-only search over a municipal corpus has a high false-positive rate that no
+regex fixes, because the words genuinely mean other things.
+
+### What is actually there
+
+Real homelessness documents, in quantity, and of one shape: executed scopes and
+budgets, contracts and amendments, close-out reports. A Family Center close-out
+report gives "Total Served 3,670" and outcome indicators — genuine data, at
+programme grain, about shelter. Nothing found is area-and-month, and nothing is
+outreach observation.
+
+**That is structural rather than unlucky.** This portal holds the *buyer's*
+contracting records. The observations this product runs on are the publisher's,
+and they come from DSDP and SDRDL — already pinned, and now corroborated three
+ways in section 4b. Sweeping the City's contract files for observation data is
+looking in the wrong filing cabinet, and the sweep is worth keeping mainly
+because it establishes that.
+
+### A correction: hours records do exist, and I had said they did not
+
+An earlier version of this document said the buyer's records "never carry hours".
+That was too strong, and searching for the document types that carry hours —
+which the first sweep did not do — found them.
+
+`OHS Timesheets_1-Released_Redacted.pdf` (doc `13632098`, request 20-5647) is a
+257 MB scan of SAP *Approve Working Times* screens: named employees, daily hours
+booked against cost objects. The Office of Homeless Solutions is the predecessor
+of today's Homelessness Strategies & Solutions department. **Hours are there.**
+
+They do not answer this question, for three reasons stated rather than implied.
+The records are from 2013. They are *City staff* hours, not the contracted
+street-outreach workers a plan on this page allocates. And they are person-level
+employment records — names against daily hours — which this project will not
+pin, whatever their public-records status, because the one thing it claims is
+that no person-level data lives here.
+
+The contractor side was checked too. `FY20 Cortez Hill SDHC July 2019 Payroll
+Bank Statement` sounds like payroll detail and is a **bank statement**: it proves
+money moved and itemises no hours, no positions, no rates.
+
+So the boundary is narrower and better evidenced than the earlier claim. The
+City records its *own* employees' hours. What does not cross is the
+**contractor's** hours, and that is exactly the gap the empty Schedule 2 above
+describes: when the City buys the service, personnel is zero on its books and
+the hours stay with the provider.
+
+## 4d. Would scraping more find the rate? No, and here is the proof
 
 The pinned corpus is 36 documents against 166,105 public ones, so the question
 is fair. Measured rather than guessed:

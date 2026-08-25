@@ -240,3 +240,42 @@ def test_a_year_boundary_still_counts_as_adjacent() -> None:
 
     kinds = {d["month"]: d["kind"] for d in classify_defects([("2020-12", 0.5), ("2021-01", 1.5)])}
     assert set(kinds.values()) == {"month_boundary_pair"}
+
+
+def test_the_publisher_check_counts_exact_matches_not_close_ones() -> None:
+    """Against the publisher's own arithmetic, "close" is not a category."""
+    from stillhere_pipeline.sdrdl import publisher_agreement
+
+    shipped = {"2017-01": 882, "2017-02": 1027, "2017-03": 900}
+    published = {"2017-01": 882.0, "2017-02": 1026.0, "2017-03": 900.0}
+    result = publisher_agreement(shipped, published)
+    assert result.months == 3
+    assert result.exactly_equal == 2
+    assert result.differing == [
+        {"month": "2017-02", "shipped": 1027, "published": 1026, "delta": 1}
+    ]
+
+
+def test_the_publisher_check_records_the_direction_of_each_difference() -> None:
+    # Direction is the whole signal: every observed difference is +1, never -1,
+    # which is what makes it a convention rather than a disagreement.
+    from stillhere_pipeline.sdrdl import publisher_agreement
+
+    result = publisher_agreement(
+        {"2018-01": 100, "2018-02": 98}, {"2018-01": 99.0, "2018-02": 99.0}
+    )
+    assert [d["delta"] for d in result.differing] == [1, -1]
+
+
+def test_the_publisher_check_spans_only_where_the_two_series_meet() -> None:
+    from stillhere_pipeline.sdrdl import publisher_agreement
+
+    result = publisher_agreement({"2017-01": 1, "2020-01": 1}, {"2017-01": 1.0, "2012-01": 1.0})
+    assert (result.months, result.first_month, result.last_month) == (1, "2017-01", "2017-01")
+
+
+def test_comparing_a_series_with_no_published_overlap_is_refused() -> None:
+    from stillhere_pipeline.sdrdl import publisher_agreement
+
+    with pytest.raises(ValueError, match="no overlapping months"):
+        publisher_agreement({"2025-01": 1}, {"2012-01": 1.0})

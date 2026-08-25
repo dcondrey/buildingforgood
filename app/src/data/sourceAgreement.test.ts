@@ -15,6 +15,20 @@ describe("the bundled source-agreement figures", () => {
     expect(SOURCE_AGREEMENT).toEqual(ARTIFACT);
   });
 
+  it("carry the publisher check, which is the stronger comparison", () => {
+    const check = SOURCE_AGREEMENT.publisher_check;
+    expect(check, "the exact-match check against DSP's own totals must ship").toBeTruthy();
+    expect(check!.exactly_equal).toBeGreaterThan(0);
+    expect(check!.exactly_equal).toBeLessThanOrEqual(check!.months);
+    // Every known difference is +1 and the shipped value is the higher. That
+    // direction is the finding; if it ever stops holding, the mechanism note
+    // below is describing something that no longer happens.
+    for (const row of check!.differing) {
+      expect(row.shipped - row.published).toBe(row.delta);
+    }
+    expect(check!.mechanism_of_difference).toMatch(/undetermined/i);
+  });
+
   it("carry the boundary that says what the number is not", () => {
     for (const phrase of ["never a model input", "never an allocation weight"]) {
       expect(SOURCE_AGREEMENT.boundary).toContain(phrase);
@@ -25,9 +39,18 @@ describe("the bundled source-agreement figures", () => {
     // The official monthly totals ship in this same bundle. A full ratio series
     // would multiply back into SDRDL's own monthly figures; only the named
     // defect months invert, and they are declared as defects.
+    //
+    // Scoped to the SDRDL-derived fields on purpose. `publisher_check` compares
+    // two series that are both already public — what ships here, and what DSP
+    // itself published — so naming its months reveals nothing about SDRDL's
+    // transcription, which is the thing being withheld.
     const named = new Set(SOURCE_AGREEMENT.known_defect_months.map((m) => m.month));
     expect(named.size).toBeLessThanOrEqual(5);
-    const blob = JSON.stringify(SOURCE_AGREEMENT);
+    const blob = JSON.stringify({
+      median_ratio_by_year: SOURCE_AGREEMENT.median_ratio_by_year,
+      known_defect_months: SOURCE_AGREEMENT.known_defect_months,
+      months_absent_from_package: SOURCE_AGREEMENT.months_absent_from_package,
+    });
     for (const year of Object.keys(SOURCE_AGREEMENT.median_ratio_by_year)) {
       for (let m = 1; m <= 12; m += 1) {
         const month = `${year}-${String(m).padStart(2, "0")}`;

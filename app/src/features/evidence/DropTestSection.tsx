@@ -40,6 +40,7 @@ export function DropTestSection() {
   );
   const defectPair = defects.filter((d) => d.kind === "month_boundary_pair");
   const defectRun = defects.filter((d) => d.kind === "short_run");
+  const publisherCheck = SOURCE_AGREEMENT.publisher_check;
   return (
     <section className="decision-section" id="drop-test" aria-labelledby="drop-title" tabIndex={-1}>
       <div aria-hidden="true" className="section-number">
@@ -771,6 +772,32 @@ export function DropTestSection() {
           })}
         </p>
         <p className="digitization-audit-finding">{tx("sourceAgreement.notWhat")}</p>
+
+        {publisherCheck && (
+          <div className="source-publisher-check">
+            <strong>{t("sourceAgreement.publisherTitle")}</strong>
+            <p>
+              {tx("sourceAgreement.publisherBody", {
+                months: publisherCheck.months,
+                from: publisherCheck.first_month,
+                to: publisherCheck.last_month,
+                equal: publisherCheck.exactly_equal,
+              })}
+            </p>
+            {publisherCheck.differing.length > 0 && (
+              <p>
+                {t("sourceAgreement.publisherDiffer", {
+                  count: publisherCheck.differing.length,
+                  months: list(publisherCheck.differing.map((row) => row.month)),
+                })}
+              </p>
+            )}
+            <p className="digitization-audit-finding">{tx("sourceAgreement.publisherMechanism")}</p>
+            <p className="currency-frozen">
+              {t("sourceAgreement.publisherLimit", { to: publisherCheck.last_month })}
+            </p>
+          </div>
+        )}
         <details className="digitization-audit-pages">
           <summary>{t("sourceAgreement.defectsTitle")}</summary>
           <p>{t("sourceAgreement.defectsIntro")}</p>

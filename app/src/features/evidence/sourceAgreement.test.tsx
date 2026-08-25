@@ -56,6 +56,23 @@ describe("the independent source-agreement surface", () => {
     expect(panel()?.textContent).toMatch(/never enters the forecast/i);
   });
 
+  it("shows the publisher check, which is the stronger of the two", async () => {
+    // Two independent transcriptions agreeing is good; matching the numbers the
+    // publisher itself issued is better, and it was sitting in the artifact
+    // unrendered.
+    await open();
+    const check = SOURCE_AGREEMENT.publisher_check!;
+    expect(panel()?.textContent).toContain(String(check.exactly_equal));
+    expect(panel()?.textContent).toMatch(/publisher/i);
+  });
+
+  it("says the unexplained difference is unexplained", async () => {
+    // The temptation is a tidy story. Rounding was tested and does not fit, so
+    // the page must not imply it has been accounted for.
+    await open();
+    expect(panel()?.textContent).toMatch(/why is not known/i);
+  });
+
   it("names the months that disagree rather than reporting only the headline", async () => {
     await open();
     for (const defect of SOURCE_AGREEMENT.known_defect_months.slice(0, 2)) {

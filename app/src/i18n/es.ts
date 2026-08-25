@@ -1137,6 +1137,15 @@ export const ES_MESSAGES: Catalogue = {
     "El {within5}% de los meses concuerda dentro del 5%; el {within10}%, dentro del 10%.",
   "sourceAgreement.notWhat":
     "<b>Esto es evidencia sobre la transcripción, no un segundo conteo.</b> Nunca entra en el pronóstico ni se convierte en peso de asignación. Que dos lecturas concuerden no convierte a ninguna en un censo de personas.",
+  "sourceAgreement.publisherTitle": "Contrastado con las cifras de quien publica",
+  "sourceAgreement.publisherBody":
+    "La comparación de arriba es con una segunda lectura de los mismos mapas. Esta es más fuerte y de otra clase: enfrenta los totales de esta página con las cifras que la propia Downtown San Diego Partnership publicó. En los <b>{months} meses</b> en que ambas series coinciden ({from} a {to}), <b>{equal} son exactamente iguales</b>.",
+  "sourceAgreement.publisherDiffer":
+    "Los otros {count} difieren en exactamente uno, y la cifra de aquí es siempre la mayor: {months}.",
+  "sourceAgreement.publisherMechanism":
+    "<b>No se sabe por qué.</b> Una diferencia que siempre es de uno y siempre en el mismo sentido es una convención, no un desacuerdo, y el candidato obvio — el redondeo — se comprobó y no encaja. Queda registrado como inexplicado en vez de darle una historia ordenada, para que quien lo note después lo encuentre ya sabido.",
+  "sourceAgreement.publisherLimit":
+    "La serie publicada termina en {to}, así que esta comprobación no dice nada sobre los meses posteriores.",
   "sourceAgreement.defectsTitle": "Dónde discrepan, y por qué eso sirve",
   "sourceAgreement.defectsIntro":
     "Las discrepancias no están dispersas. Se agrupan, que es como se ve un problema de transcripción que puede corregirse, y no como se ve el ruido:",

@@ -201,6 +201,8 @@ claims:
         anchor: are the artifact's, field for field
       - path: app/src/features/evidence/sourceAgreement.test.tsx
         anchor: a reader would otherwise never see
+      - path: app/src/data/sourceAgreement.ts
+        anchor: publisher_check
     limitation:
       surface: docs/project/DATA_OPPORTUNITIES.md
       quote: "agreement, not reconstruction"

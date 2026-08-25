@@ -37,17 +37,26 @@ from stillhere_pipeline.sdrdl import (
     agreement_artifact,
     composition,
     monthly_totals,
+    publisher_agreement,
 )
 
 PACKAGE_VERSION = "sandiegodata.org-downtown_homeless-source-7.2.3"
+
+#: DSP's own published monthly totals — the multiplied series as the publisher
+#: issued it, 2012-01 to 2019-04. A different and stronger check than the
+#: transcription agreement: against these, the shipped series either matches or
+#: it does not.
+PUBLISHED_URL = (
+    "https://library.metatab.org/sandiegodata.org-dowtown_homeless-2.1.1/data/monthly_totals.csv"
+)
 
 COUNTS_URL = (
     "https://library.metatab.org/sandiegodata.org-downtown_homeless-source-7.2.3/data/counts.csv"
 )
 
 
-def fetch(url: str, into: Path) -> Path:
-    target = into / "counts.csv"
+def fetch(url: str, into: Path, name: str = "counts.csv") -> Path:
+    target = into / name
     with urllib.request.urlopen(url, timeout=120) as response:  # noqa: S310 - pinned https URL
         target.write_bytes(response.read())
     return target
@@ -57,6 +66,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--counts", type=Path, help="a local counts.csv, to skip the download")
+    parser.add_argument(
+        "--published", type=Path, help="a local monthly_totals.csv, to skip the download"
+    )
     parser.add_argument(
         "--emit",
         type=Path,
@@ -76,6 +88,9 @@ def main(argv: list[str] | None = None) -> int:
         path = args.counts or fetch(COUNTS_URL, Path(tmp))
         with path.open(newline="", encoding="utf-8", errors="replace") as handle:
             rows = list(csv.DictReader(handle))
+        published_path = args.published or fetch(PUBLISHED_URL, Path(tmp), name="published.csv")
+        with published_path.open(newline="", encoding="utf-8", errors="replace") as handle:
+            published = {r["date"][:7]: float(r["count"]) for r in csv.DictReader(handle)}
 
     months = sorted({r["date"][:7] for r in rows if r["date"]})
     print(f"package: {len(rows)} records, {months[0]} -> {months[-1]}, {len(months)} months")
@@ -96,6 +111,17 @@ def main(argv: list[str] | None = None) -> int:
     print("  worst months: " + ", ".join(f"{m} {v:.2f}" for m, v in result.worst))
     print(f"  in the official series, absent from the package: {result.absent_from_package}")
 
+    check = publisher_agreement(official, published)
+    print(
+        f"\nagainst DSP's own published totals: {check.months} months "
+        f"({check.first_month}..{check.last_month}), {check.exactly_equal} exactly equal"
+    )
+    for row in check.differing:
+        print(
+            f"  {row['month']}  shipped {row['shipped']}  published {row['published']}"
+            f"  delta {row['delta']:+d}"
+        )
+
     print("\nunmultiplied composition by year — why the pre-2017 months cannot be spliced:")
     print(f"  {'year':6} {'individual':>11} {'structure':>10} {'vehicle':>8}")
     for year, counter in sorted(composition(rows).items()):
@@ -115,7 +141,10 @@ def main(argv: list[str] | None = None) -> int:
         if not args.retrieved:
             parser.error("--emit needs --retrieved: an artifact with no retrieval date is unpinned")
         artifact_out = agreement_artifact(
-            result, package_version=PACKAGE_VERSION, retrieved=args.retrieved
+            result,
+            package_version=PACKAGE_VERSION,
+            retrieved=args.retrieved,
+            publisher=publisher_agreement(official, published),
         )
         args.emit.write_text(json.dumps(artifact_out, indent=2, sort_keys=True) + "\n", "utf-8")
         print(f"\nwrote {args.emit}")

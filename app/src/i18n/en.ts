@@ -1128,6 +1128,15 @@ export const EN_MESSAGES = {
   "sourceAgreement.spread": "{within5}% of months agree within 5%, {within10}% within 10%.",
   "sourceAgreement.notWhat":
     "<b>This is evidence about transcription, not a second count.</b> It never enters the forecast and never becomes allocation weight. Two readings agreeing does not make either one a census of people.",
+  "sourceAgreement.publisherTitle": "Checked against the publisher's own figures",
+  "sourceAgreement.publisherBody":
+    "The comparison above is with a second reading of the same maps. This one is stronger and different in kind: it sets the totals on this page against the numbers the Downtown San Diego Partnership itself published. Across the <b>{months} months</b> where the two series meet ({from} to {to}), <b>{equal} are exactly equal</b>.",
+  "sourceAgreement.publisherDiffer":
+    "The other {count} differ by exactly one, and the figure here is the higher in every case: {months}.",
+  "sourceAgreement.publisherMechanism":
+    "<b>Why is not known.</b> A difference that is always one and always the same direction is a convention rather than a disagreement, and the obvious candidate — rounding — was tested and does not fit. It is recorded as unexplained rather than given a tidy story, so that the next person to notice it finds it already known.",
+  "sourceAgreement.publisherLimit":
+    "The published series ends {to}, so this check says nothing about the months after it.",
   "sourceAgreement.defectsTitle": "Where they disagree, and why that is useful",
   "sourceAgreement.defectsIntro":
     "The disagreements are not scattered. They cluster, which is what a fixable transcription problem looks like rather than noise:",

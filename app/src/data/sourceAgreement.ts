@@ -6,6 +6,17 @@
 /** How a disagreement is shaped. Classified in the pipeline, not inferred here. */
 export type DefectKind = "month_boundary_pair" | "short_run" | "unclassified";
 
+/** The shipped series against the totals the publisher itself issued. */
+export interface PublisherCheck {
+  note: string;
+  months: number;
+  exactly_equal: number;
+  first_month: string;
+  last_month: string;
+  differing: { month: string; shipped: number; published: number; delta: number }[];
+  mechanism_of_difference: string;
+}
+
 export interface SourceAgreement {
   kind: string;
   boundary: string;
@@ -21,6 +32,7 @@ export interface SourceAgreement {
   median_ratio_by_year: Record<string, number>;
   months_absent_from_package: string[];
   known_defect_months: { month: string; ratio: number; kind: DefectKind }[];
+  publisher_check: PublisherCheck | null;
 }
 
 export const SOURCE_AGREEMENT: SourceAgreement = {
@@ -70,6 +82,53 @@ export const SOURCE_AGREEMENT: SourceAgreement = {
   p10_ratio: 0.924,
   p90_ratio: 1.0488,
   package_version: "sandiegodata.org-downtown_homeless-source-7.2.3",
+  publisher_check: {
+    differing: [
+      {
+        delta: 1,
+        month: "2017-09",
+        published: 1275,
+        shipped: 1276,
+      },
+      {
+        delta: 1,
+        month: "2017-10",
+        published: 1091,
+        shipped: 1092,
+      },
+      {
+        delta: 1,
+        month: "2017-12",
+        published: 1012,
+        shipped: 1013,
+      },
+      {
+        delta: 1,
+        month: "2018-08",
+        published: 964,
+        shipped: 965,
+      },
+      {
+        delta: 1,
+        month: "2019-03",
+        published: 732,
+        shipped: 733,
+      },
+      {
+        delta: 1,
+        month: "2019-04",
+        published: 776,
+        shipped: 777,
+      },
+    ],
+    exactly_equal: 22,
+    first_month: "2017-01",
+    last_month: "2019-04",
+    mechanism_of_difference:
+      "Undetermined. Every difference is exactly one and the shipped value is always the higher, which is a convention rather than a disagreement. Rounding was the obvious candidate and does not fit: the differing months do not separate from the matching ones by fractional part.",
+    months: 28,
+    note: "The shipped monthly totals against the totals DSP itself published, multipliers already applied. A different and stronger check than the transcription agreement above: these either match or they do not.",
+  },
   retrieved_at: "2026-08-24",
   within_10pct: 88.6,
   within_5pct: 74.3,

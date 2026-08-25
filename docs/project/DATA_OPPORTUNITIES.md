@@ -404,6 +404,87 @@ City records its *own* employees' hours. What does not cross is the
 describes: when the City buys the service, personnel is zero on its books and
 the hours stay with the provider.
 
+### Following it further: there are no hours because the accounting has none
+
+The provider's own records do cross, in reimbursement backup. PATH's FY20
+Connections claims (request 21-1196) include per-employee *salary and fringe
+worksheets* — the most promising document in the entire search, and the place an
+hourly rate would live if one existed anywhere in these files.
+
+**It allocates by percentage of effort, not by hours.** One person's gross pay is
+split across five funding sources at fixed rates — 16.50%, 22.40%, 21.10%,
+20.00%, 20.00% — with no hours figure anywhere on the form. That is the real
+reason the search kept coming up empty, and it is stronger than "not released":
+**there are no hours to find, because this accounting does not use them.**
+
+### What is there instead, and it is worth having
+
+The worksheets itemise everything above gross wages: Pension, 457 Plan,
+Medicare, SUI, Worker's Compensation, Life and LTD insurance, plus a Flex
+Credit. That is precisely the "loaded" in `loaded_hourly_rate`, which the profile
+defines as wages, payroll taxes, benefits, supervision and vehicle cost.
+
+Total compensation against gross wages, across three staff and three pay
+periods:
+
+| | ratio |
+| --- | --- |
+| staff member A | 1.353 |
+| staff member B | 1.338 |
+| staff member C | 1.318 |
+| **median** | **1.338** |
+
+**A San Diego homeless-services provider's fully loaded cost was about 1.34 times
+gross wages in FY20**, from the provider's own reimbursement filings. It is not
+an hourly rate and cannot become one — no hours exist to divide by. It is the
+other half of the calculation: an operator who knows what they pay can check
+their loaded figure against a local, sourced multiplier instead of guessing at
+one.
+
+**Read it narrowly, and note which staff it describes.** Every cost object on
+these worksheets is an administrative line — `Path GF Admin`, `ESG RRH-Admin`,
+`Path CDBG-Admin`, `Cortez Hills CDBG-Admin`, `SVDP IH GF-Admin`. So this is an
+**administrative** loading factor, from three staff at one provider in one fiscal
+year. Whether field staff load the same way is not established here and should
+not be assumed: benefit design, overtime exposure and workers' compensation
+classification all differ between an office role and a street role, and
+workers' compensation in particular is rated by occupation.
+
+It is a reference point, not a rate, and not a substitute for an organisation's
+own budgeted figure.
+
+**On handling.** These worksheets name individuals and state their pay. They were
+read to compute the ratio and deleted; no per-person document identifier appears
+in this repository, and nothing person-level is pinned or deployed. That is the
+same posture the pipeline already takes with SDRDL's point coordinates, which it
+reads and aggregates and never ships.
+
+### Where this search stops, and why it is a decision rather than a dead end
+
+Following the invoice thread further did find provider records. `FY20
+Connections Oct RFR PATH CONN CDBG OCT 2019 LIST OF EXPENDITURES` (doc
+`11367718`) is PATH's own reimbursement backup, and it contains **named
+employees with per-employee amounts claimed** — pension, Medicare, workers'
+compensation, line by line.
+
+So the contract boundary is not absolute after all: a provider's compensation
+detail does reach the City's files, through reimbursement backup. What that
+particular form carries is fringe *dollars* per employee, not hours, and it
+covers a housing programme rather than street outreach.
+
+**The search stops here on purpose.** The next step down this path is opening
+more per-employee compensation records looking for a Personnel line item that
+lists hours — and that means accumulating named people's pay data inside a
+project whose single loudest claim is that no person-level data lives in it.
+The public-records status of those documents does not change what they are.
+
+That is a different answer from "nothing was found". Something was found, it is
+recorded, the files were deleted from scratch rather than kept, and the reason
+for not going further is a commitment rather than an absence. If the loaded rate
+ever needs a source badly enough to reopen this, the route is to ask a provider
+for an aggregate — hours and cost, no names — not to reassemble one from other
+people's payroll.
+
 ## 4d. Would scraping more find the rate? No, and here is the proof
 
 The pinned corpus is 36 documents against 166,105 public ones, so the question

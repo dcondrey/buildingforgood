@@ -1115,6 +1115,28 @@ export const ES_MESSAGES: Catalogue = {
   "actuals.instructions":
     "Las instrucciones completas, incluido lo que se calculará y lo que no se calculará más adelante a partir de estos números, están en <c>{docs}</c>.",
 
+  /* ---- concordancia con una fuente independiente ---------------------------------------- */
+  "sourceAgreement.eyebrow": "Contrastado con otra transcripción",
+  "sourceAgreement.title": "Una segunda digitalización de los mismos mapas",
+  "sourceAgreement.intro":
+    "Los conteos de esta página los leyó de mapas en papel un equipo. Otro equipo, en la San Diego Regional Data Library, leyó los mismos mapas de forma independiente y publicó su propia versión. Comparar ambas dice cuánto de la tendencia es aquello que se cuenta y cuánto es la lectura que se hace de ello.",
+  "sourceAgreement.headline":
+    "En <b>{months} meses solapados</b> ambas concuerdan con una mediana de <b>{median}</b> — dentro del uno por ciento — y las medianas anuales se mueven entre {low} y {high} sin deriva.",
+  "sourceAgreement.spread":
+    "El {within5}% de los meses concuerda dentro del 5%; el {within10}%, dentro del 10%.",
+  "sourceAgreement.notWhat":
+    "<b>Esto es evidencia sobre la transcripción, no un segundo conteo.</b> Nunca entra en el pronóstico ni se convierte en peso de asignación. Que dos lecturas concuerden no convierte a ninguna en un censo de personas.",
+  "sourceAgreement.defectsTitle": "Dónde discrepan, y por qué eso sirve",
+  "sourceAgreement.defectsIntro":
+    "Las discrepancias no están dispersas. Se agrupan, que es como se ve un problema de transcripción que puede corregirse, y no como se ve el ruido:",
+  "sourceAgreement.defectPair":
+    "{a} y {b} son casi imágenes invertidas ({ratioA} y {ratioB}): la firma de un recorrido asignado al lado equivocado del cambio de mes.",
+  "sourceAgreement.defectRun":
+    "{months} quedan juntos cerca de {ratio}, lo que se lee como un tramo incompleto de digitalización y no como un fallo de codificación.",
+  "sourceAgreement.absent":
+    "{months} están en la serie publicada y faltan por completo en la otra transcripción.",
+  "sourceAgreement.provenance": "Paquete {version}, obtenido el {retrieved}. {attribution}",
+
   /* ---- el plan frente a lo entregado --------------------------------------------------- */
   "actuals.compare.eyebrow": "El mes pasado",
   "actuals.compare.title": "El plan frente a lo entregado",

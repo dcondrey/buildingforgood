@@ -1,6 +1,15 @@
 import { ArrowDownIcon, CheckIcon, SparkIcon } from "../../components/Icons";
 import { Metric } from "../../components/Metric";
 import { DIGITIZATION_AGREEMENT, DIGITIZATION_AUDIT } from "../../data/digitizationAudit";
+import { SOURCE_AGREEMENT } from "../../data/sourceAgreement";
+
+/** Whether two YYYY-MM strings are consecutive calendar months. */
+function monthsAdjacent(a: string, b: string): boolean {
+  const [ay, am] = a.split("-").map(Number);
+  const [by, bm] = b.split("-").map(Number);
+  return by * 12 + bm - (ay * 12 + am) === 1;
+}
+
 import { useShell } from "../../features/shell/ShellContext";
 import { AreaDetailPanel } from "../../features/spatial/AreaDetailPanel";
 import { AreaMap } from "../../features/spatial/AreaMap";
@@ -27,7 +36,27 @@ export function DropTestSection() {
     structureTwo,
     toggleAreaSelection,
   } = useShell();
-  const { t, tx, number, signed, date } = useTranslation();
+  const { t, tx, number, signed, date, list } = useTranslation();
+
+  // The named defects are read out of the artifact rather than hardcoded, so a
+  // re-run that finds different months describes those instead of these.
+  const yearRatios = Object.values(SOURCE_AGREEMENT.median_ratio_by_year);
+  const defects = [...SOURCE_AGREEMENT.known_defect_months].sort((a, b) =>
+    a.month.localeCompare(b.month),
+  );
+  // A pair of adjacent months straddling parity is the month-boundary
+  // signature: what one month lost, the next gained.
+  const pairIndex = defects.findIndex(
+    (d, i) =>
+      i + 1 < defects.length &&
+      d.ratio < 1 &&
+      defects[i + 1].ratio > 1 &&
+      monthsAdjacent(d.month, defects[i + 1].month),
+  );
+  const defectPair =
+    pairIndex === -1 ? null : ([defects[pairIndex], defects[pairIndex + 1]] as const);
+  const paired = new Set(defectPair ? [defectPair[0].month, defectPair[1].month] : []);
+  const defectRun = defects.filter((d) => !paired.has(d.month) && d.ratio < 1);
   return (
     <section className="decision-section" id="drop-test" aria-labelledby="drop-title" tabIndex={-1}>
       <div aria-hidden="true" className="section-number">
@@ -734,6 +763,70 @@ export function DropTestSection() {
           )}
         </div>
       )}
+
+      <div className="digitization-audit" id="source-agreement">
+        <div className="digitization-audit-head">
+          <div>
+            <span className="eyebrow">{t("sourceAgreement.eyebrow")}</span>
+            <strong>{t("sourceAgreement.title")}</strong>
+          </div>
+          <span className="selected-chip">{number(SOURCE_AGREEMENT.median_ratio, 3)}</span>
+        </div>
+        <p>{t("sourceAgreement.intro")}</p>
+        <p className="digitization-audit-finding">
+          {tx("sourceAgreement.headline", {
+            months: SOURCE_AGREEMENT.overlap_months,
+            median: number(SOURCE_AGREEMENT.median_ratio, 3),
+            low: number(Math.min(...yearRatios), 3),
+            high: number(Math.max(...yearRatios), 3),
+          })}
+        </p>
+        <p>
+          {t("sourceAgreement.spread", {
+            within5: number(SOURCE_AGREEMENT.within_5pct, 0),
+            within10: number(SOURCE_AGREEMENT.within_10pct, 0),
+          })}
+        </p>
+        <p className="digitization-audit-finding">{tx("sourceAgreement.notWhat")}</p>
+        <details className="digitization-audit-pages">
+          <summary>{t("sourceAgreement.defectsTitle")}</summary>
+          <p>{t("sourceAgreement.defectsIntro")}</p>
+          <ul>
+            {defectPair && (
+              <li>
+                {t("sourceAgreement.defectPair", {
+                  a: defectPair[0].month,
+                  b: defectPair[1].month,
+                  ratioA: number(defectPair[0].ratio, 2),
+                  ratioB: number(defectPair[1].ratio, 2),
+                })}
+              </li>
+            )}
+            {defectRun.length > 0 && (
+              <li>
+                {t("sourceAgreement.defectRun", {
+                  months: list(defectRun.map((d) => d.month)),
+                  ratio: number(defectRun[0].ratio, 2),
+                })}
+              </li>
+            )}
+            {SOURCE_AGREEMENT.months_absent_from_package.length > 0 && (
+              <li>
+                {t("sourceAgreement.absent", {
+                  months: list(SOURCE_AGREEMENT.months_absent_from_package),
+                })}
+              </li>
+            )}
+          </ul>
+          <p className="currency-frozen">
+            {t("sourceAgreement.provenance", {
+              version: SOURCE_AGREEMENT.package_version,
+              retrieved: date(SOURCE_AGREEMENT.retrieved_at),
+              attribution: SOURCE_AGREEMENT.attribution,
+            })}
+          </p>
+        </details>
+      </div>
 
       <div className="digitization-audit" id="digitization-audit">
         <div className="digitization-audit-head">

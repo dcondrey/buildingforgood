@@ -190,9 +190,17 @@ claims:
         anchor: "def agreement"
       - path: data/monitoring/source_agreement.json
         anchor: source_agreement
+      - path: app/src/data/sourceAgreement.ts
+        anchor: SOURCE_AGREEMENT
+      - path: app/src/features/evidence/DropTestSection.tsx
+        anchor: source-agreement
     tests:
       - path: tests/pipeline/test_sdrdl.py
         anchor: withholds_the_per_month_ratio_series
+      - path: app/src/data/sourceAgreement.test.ts
+        anchor: are the artifact's, field for field
+      - path: app/src/features/evidence/sourceAgreement.test.tsx
+        anchor: a reader would otherwise never see
     limitation:
       surface: docs/project/DATA_OPPORTUNITIES.md
       quote: "agreement, not reconstruction"

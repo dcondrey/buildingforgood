@@ -1107,6 +1107,27 @@ export const EN_MESSAGES = {
   "actuals.instructions":
     "Full instructions, including what will and will not later be computed from these numbers, are in <c>{docs}</c>.",
 
+  /* ---- independent source agreement ---------------------------------------------------- */
+  "sourceAgreement.eyebrow": "Checked against another transcription",
+  "sourceAgreement.title": "A second digitization of the same maps",
+  "sourceAgreement.intro":
+    "The counts on this page were read off paper maps by one team. A different team, at the San Diego Regional Data Library, read the same maps independently and published their own version. Comparing the two says how much of the trend is the thing being counted and how much is the reading of it.",
+  "sourceAgreement.headline":
+    "Across <b>{months} overlapping months</b> the two agree at a median of <b>{median}</b> — within one percent — and the yearly medians move between {low} and {high} with no drift.",
+  "sourceAgreement.spread": "{within5}% of months agree within 5%, {within10}% within 10%.",
+  "sourceAgreement.notWhat":
+    "<b>This is evidence about transcription, not a second count.</b> It never enters the forecast and never becomes allocation weight. Two readings agreeing does not make either one a census of people.",
+  "sourceAgreement.defectsTitle": "Where they disagree, and why that is useful",
+  "sourceAgreement.defectsIntro":
+    "The disagreements are not scattered. They cluster, which is what a fixable transcription problem looks like rather than noise:",
+  "sourceAgreement.defectPair":
+    "{a} and {b} are near mirror images ({ratioA} and {ratioB}) — the signature of a survey landing on the wrong side of a month boundary.",
+  "sourceAgreement.defectRun":
+    "{months} sit together near {ratio}, which reads as an incomplete stretch of digitization rather than a coding fault.",
+  "sourceAgreement.absent":
+    "{months} are in the published series and absent from the other transcription entirely.",
+  "sourceAgreement.provenance": "Package {version}, retrieved {retrieved}. {attribution}",
+
   /* ---- plan against delivered ---------------------------------------------------------- */
   "actuals.compare.eyebrow": "Last month",
   "actuals.compare.title": "The plan against what was delivered",

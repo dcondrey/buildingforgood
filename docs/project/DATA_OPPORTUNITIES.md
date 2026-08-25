@@ -327,6 +327,69 @@ type exists — the Alpha Project proposal is one, for a shelter — and does no
 contain one for outreach. The executed agreements are pinned; the responses that
 priced them are not.
 
+## 4c. Would scraping more of the portal find it? No, and here is the proof
+
+The pinned corpus is 36 documents against 166,105 public ones, so the question
+is fair. Measured rather than guessed:
+
+| title search | documents |
+| --- | --- |
+| shelter | 228 |
+| outreach | 100 |
+| homeless | 76 |
+| HHAP | 46 |
+| scope and budget | 25 |
+| fee schedule | 15 |
+| encampment | 13 |
+
+So a homelessness-relevant sweep is a few hundred documents, not 166,105. It is
+tractable. Three things bound what it could return.
+
+**The search is title-only.** `"Pricing and Fee Schedule"` returns nothing,
+because that phrase sits in the body of the Alpha Project proposal and not in
+its title. Content is not discoverable without downloading, and titles mislead:
+`16b. Compensation & Fee Schedule.pdf` is an Arcadis sewer-and-water
+construction contract.
+
+**There is no per-request enumeration.** `/client/requests/<id>/documents` and
+`/events` are both 404. A request's documents can only be reached by guessing
+titles, which is how the first survey missed fifteen of thirty-six.
+
+**And a bulk pull would be the wrong thing to do anyway.** PRA releases carry
+personal information; the ledger records that every pinned document was reviewed
+for client-level content before pinning. Downloading hundreds of unreviewed
+releases into a project whose spine is that no person-level data exists here is
+precisely how person-level data would arrive. Any expansion is screened first,
+one document at a time, or it does not happen.
+
+### The decisive part: the form exists and is empty
+
+Executed FY24 Interim Housing scope and budget (doc `62159139`, request 26-352),
+OCR'd from a scan:
+
+```
+SALARIES & WAGES (Schedule 2)      —
+FRINGE BENEFITS  (Schedule 3)      —
+TOTAL PERSONNEL                    —
+ADMINISTRATIVE COSTS          16,503
+CONSULTANT SERVICES (Sch 5)  228,974
+TOTAL CDBG PROJECT BUDGET    245,477
+```
+
+followed by: *"SCHEDULE 2 — PERSONNEL SCHEDULE: GROSS PAY. The purpose of this
+form is to list the positions being claimed…"*
+
+**The form for the denominator is there, and it is blank.** The absence is not
+an oversight in what was released, and it is not something a wider sweep would
+fix: SDHC buys these services, so personnel is zero and the money lands in
+Consultant Services. That is now confirmed across five documents and three
+programs — DSDP Family Reunification, the Homelessness Response Center, and
+Interim Housing — plus both executed street-outreach agreements.
+
+Scraping more of this portal would find more budgets shaped exactly like these.
+The denominator is on the provider's side of a contract boundary, and no volume
+of the buyer's records crosses it.
+
 ## 4b. A third source, and the strongest corroboration yet
 
 `sdrdl_analysis` was pinned and fed nothing. It is DSP's **officially published**

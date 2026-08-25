@@ -215,8 +215,54 @@ def classify_defects(worst: Sequence[tuple[str, float]]) -> list[dict[str, Any]]
     return [{"month": m, "ratio": round(r, 3), "kind": kinds[m]} for m, r in ordered]
 
 
+@dataclass(frozen=True)
+class PublisherAgreement:
+    """The shipped series against the publisher's own published totals.
+
+    Stronger than the transcription check, and different in kind. Section 1
+    compares two readings of the same paper maps; this compares what ships here
+    against the numbers DSP itself issued, multipliers already applied. Where
+    they meet, agreement is not "close" — it is equal or it is not.
+    """
+
+    months: int
+    exactly_equal: int
+    differing: list[dict[str, Any]]
+    first_month: str
+    last_month: str
+
+
+def publisher_agreement(
+    shipped: Mapping[str, int], published: Mapping[str, float]
+) -> PublisherAgreement:
+    shared = sorted(set(shipped) & set(published))
+    if not shared:
+        raise ValueError("no overlapping months; nothing can be compared")
+    differing = [
+        {
+            "month": m,
+            "shipped": shipped[m],
+            "published": int(published[m]),
+            "delta": shipped[m] - int(published[m]),
+        }
+        for m in shared
+        if abs(shipped[m] - published[m]) >= 0.5
+    ]
+    return PublisherAgreement(
+        months=len(shared),
+        exactly_equal=len(shared) - len(differing),
+        differing=differing,
+        first_month=shared[0],
+        last_month=shared[-1],
+    )
+
+
 def agreement_artifact(
-    result: Agreement, *, package_version: str, retrieved: str
+    result: Agreement,
+    *,
+    package_version: str,
+    retrieved: str,
+    publisher: PublisherAgreement | None = None,
 ) -> dict[str, Any]:
     """The committed summary — statistics, not a republished series.
 
@@ -255,4 +301,26 @@ def agreement_artifact(
         "median_ratio_by_year": {y: round(v, 4) for y, v in result.by_year.items()},
         "months_absent_from_package": result.absent_from_package,
         "known_defect_months": classify_defects(result.worst),
+        "publisher_check": (
+            None
+            if publisher is None
+            else {
+                "note": (
+                    "The shipped monthly totals against the totals DSP itself published, "
+                    "multipliers already applied. A different and stronger check than the "
+                    "transcription agreement above: these either match or they do not."
+                ),
+                "months": publisher.months,
+                "exactly_equal": publisher.exactly_equal,
+                "first_month": publisher.first_month,
+                "last_month": publisher.last_month,
+                "differing": publisher.differing,
+                "mechanism_of_difference": (
+                    "Undetermined. Every difference is exactly one and the shipped value is "
+                    "always the higher, which is a convention rather than a disagreement. "
+                    "Rounding was the obvious candidate and does not fit: the differing "
+                    "months do not separate from the matching ones by fractional part."
+                ),
+            }
+        ),
     }

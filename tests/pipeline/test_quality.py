@@ -68,6 +68,23 @@ class TestBuildQualityReport:
             source_id="sdrdl_source",
             retrieved_at="2026-08-21T01:06:45Z",
         )
+        # "all sections" is a claim about the key set, so assert the key set.
+        # Asserting a handful of named keys let a new section arrive unnoticed
+        # under a name promising every one of them.
+        assert sorted(report) == [
+            "comparability_events",
+            "day_of_month_reliable",
+            "duplicates_dropped",
+            "file_total_mismatches",
+            "invalid_rows",
+            "missing_months_global",
+            "per_neighborhood_gap_months",
+            "row_counts",
+            "schema",
+            "small_cell_suppression",
+            "source",
+            "source_maps_without_counts",
+        ]
         assert report["schema"] == "quality_report.v0"
         assert report["source"] == {
             "source_id": "sdrdl_source",

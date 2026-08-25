@@ -579,7 +579,7 @@ def test_one_declared_feature_does_not_exempt_its_siblings() -> None:
     )
 
 
-def test_a_root_declaration_covers_every_feature() -> None:
+def test_a_root_declaration_covers_the_features_beneath_it() -> None:
     doc = {
         "geography_version": "planning-areas/2026-08",
         "type": "FeatureCollection",

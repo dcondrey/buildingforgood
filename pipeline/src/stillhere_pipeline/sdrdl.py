@@ -182,6 +182,39 @@ def agreement(totals: Mapping[str, float], official: Mapping[str, int]) -> Agree
     )
 
 
+def _consecutive(a: str, b: str) -> bool:
+    ay, am = (int(part) for part in a.split("-"))
+    by, bm = (int(part) for part in b.split("-"))
+    return by * 12 + bm - (ay * 12 + am) == 1
+
+
+def classify_defects(worst: Sequence[tuple[str, float]]) -> list[dict[str, Any]]:
+    """Name the shape of each disagreement, so a reader is not left to infer it.
+
+    The classification is the useful half. A short month and a long month are
+    two facts; an adjacent pair where one is short by roughly what the next is
+    long is one fact — a survey attributed to the wrong side of a month
+    boundary — and it is fixable. Consecutive short months are a different fact:
+    an incomplete stretch of digitization.
+
+    It belongs here rather than in the interface. The first version inferred the
+    pair shape at render time, which put a judgement about the data inside a
+    component whose job is to display it.
+    """
+    ordered = sorted(worst, key=lambda kv: kv[0])
+    kinds: dict[str, str] = {}
+    for index, (month, ratio) in enumerate(ordered):
+        if index + 1 >= len(ordered):
+            continue
+        next_month, next_ratio = ordered[index + 1]
+        if ratio < 1 < next_ratio and _consecutive(month, next_month):
+            kinds[month] = "month_boundary_pair"
+            kinds[next_month] = "month_boundary_pair"
+    for month, ratio in ordered:
+        kinds.setdefault(month, "short_run" if ratio < 1 else "unclassified")
+    return [{"month": m, "ratio": round(r, 3), "kind": kinds[m]} for m, r in ordered]
+
+
 def agreement_artifact(
     result: Agreement, *, package_version: str, retrieved: str
 ) -> dict[str, Any]:
@@ -221,5 +254,5 @@ def agreement_artifact(
         "within_10pct": round(result.within_10pct, 1),
         "median_ratio_by_year": {y: round(v, 4) for y, v in result.by_year.items()},
         "months_absent_from_package": result.absent_from_package,
-        "known_defect_months": [{"month": m, "ratio": round(v, 3)} for m, v in result.worst],
+        "known_defect_months": classify_defects(result.worst),
     }

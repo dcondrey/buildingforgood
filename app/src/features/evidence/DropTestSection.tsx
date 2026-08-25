@@ -3,13 +3,6 @@ import { Metric } from "../../components/Metric";
 import { DIGITIZATION_AGREEMENT, DIGITIZATION_AUDIT } from "../../data/digitizationAudit";
 import { SOURCE_AGREEMENT } from "../../data/sourceAgreement";
 
-/** Whether two YYYY-MM strings are consecutive calendar months. */
-function monthsAdjacent(a: string, b: string): boolean {
-  const [ay, am] = a.split("-").map(Number);
-  const [by, bm] = b.split("-").map(Number);
-  return by * 12 + bm - (ay * 12 + am) === 1;
-}
-
 import { useShell } from "../../features/shell/ShellContext";
 import { AreaDetailPanel } from "../../features/spatial/AreaDetailPanel";
 import { AreaMap } from "../../features/spatial/AreaMap";
@@ -38,25 +31,15 @@ export function DropTestSection() {
   } = useShell();
   const { t, tx, number, signed, date, list } = useTranslation();
 
-  // The named defects are read out of the artifact rather than hardcoded, so a
+  // Read straight out of the artifact. The pipeline classifies the shape of
+  // each disagreement; this component only groups by that classification, so a
   // re-run that finds different months describes those instead of these.
   const yearRatios = Object.values(SOURCE_AGREEMENT.median_ratio_by_year);
   const defects = [...SOURCE_AGREEMENT.known_defect_months].sort((a, b) =>
     a.month.localeCompare(b.month),
   );
-  // A pair of adjacent months straddling parity is the month-boundary
-  // signature: what one month lost, the next gained.
-  const pairIndex = defects.findIndex(
-    (d, i) =>
-      i + 1 < defects.length &&
-      d.ratio < 1 &&
-      defects[i + 1].ratio > 1 &&
-      monthsAdjacent(d.month, defects[i + 1].month),
-  );
-  const defectPair =
-    pairIndex === -1 ? null : ([defects[pairIndex], defects[pairIndex + 1]] as const);
-  const paired = new Set(defectPair ? [defectPair[0].month, defectPair[1].month] : []);
-  const defectRun = defects.filter((d) => !paired.has(d.month) && d.ratio < 1);
+  const defectPair = defects.filter((d) => d.kind === "month_boundary_pair");
+  const defectRun = defects.filter((d) => d.kind === "short_run");
   return (
     <section className="decision-section" id="drop-test" aria-labelledby="drop-title" tabIndex={-1}>
       <div aria-hidden="true" className="section-number">
@@ -792,7 +775,7 @@ export function DropTestSection() {
           <summary>{t("sourceAgreement.defectsTitle")}</summary>
           <p>{t("sourceAgreement.defectsIntro")}</p>
           <ul>
-            {defectPair && (
+            {defectPair.length === 2 && (
               <li>
                 {t("sourceAgreement.defectPair", {
                   a: defectPair[0].month,

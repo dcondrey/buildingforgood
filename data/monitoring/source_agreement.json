@@ -4,24 +4,29 @@
   "kind": "source_agreement",
   "known_defect_months": [
     {
-      "month": "2022-02",
-      "ratio": 0.484
-    },
-    {
-      "month": "2022-03",
-      "ratio": 1.478
-    },
-    {
+      "kind": "short_run",
       "month": "2018-03",
       "ratio": 0.562
     },
     {
+      "kind": "short_run",
       "month": "2018-04",
       "ratio": 0.564
     },
     {
+      "kind": "short_run",
       "month": "2018-05",
       "ratio": 0.588
+    },
+    {
+      "kind": "month_boundary_pair",
+      "month": "2022-02",
+      "ratio": 0.484
+    },
+    {
+      "kind": "month_boundary_pair",
+      "month": "2022-03",
+      "ratio": 1.478
     }
   ],
   "median_ratio": 0.9912,

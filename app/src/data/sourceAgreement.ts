@@ -1,8 +1,10 @@
 // Generated from data/monitoring/source_agreement.json. Do not edit by hand:
-// `tests/pipeline` has no reach into app/, so `sourceAgreement.test.ts` pins
-// this module against that file and fails if the two drift. Re-emit the JSON
-// with `python scripts/sdrdl_feasibility.py --emit ... --retrieved ...` and
-// copy the values across.
+// `sourceAgreement.test.ts` pins this module against that file and fails if the
+// two drift. Re-emit the JSON with
+// `python scripts/sdrdl_feasibility.py --emit ... --retrieved ...`.
+
+/** How a disagreement is shaped. Classified in the pipeline, not inferred here. */
+export type DefectKind = "month_boundary_pair" | "short_run" | "unclassified";
 
 export interface SourceAgreement {
   kind: string;
@@ -18,7 +20,7 @@ export interface SourceAgreement {
   within_10pct: number;
   median_ratio_by_year: Record<string, number>;
   months_absent_from_package: string[];
-  known_defect_months: { month: string; ratio: number }[];
+  known_defect_months: { month: string; ratio: number; kind: DefectKind }[];
 }
 
 export const SOURCE_AGREEMENT: SourceAgreement = {
@@ -29,24 +31,29 @@ export const SOURCE_AGREEMENT: SourceAgreement = {
   kind: "source_agreement",
   known_defect_months: [
     {
-      month: "2022-02",
-      ratio: 0.484,
-    },
-    {
-      month: "2022-03",
-      ratio: 1.478,
-    },
-    {
+      kind: "short_run",
       month: "2018-03",
       ratio: 0.562,
     },
     {
+      kind: "short_run",
       month: "2018-04",
       ratio: 0.564,
     },
     {
+      kind: "short_run",
       month: "2018-05",
       ratio: 0.588,
+    },
+    {
+      kind: "month_boundary_pair",
+      month: "2022-02",
+      ratio: 0.484,
+    },
+    {
+      kind: "month_boundary_pair",
+      month: "2022-03",
+      ratio: 1.478,
     },
   ],
   median_ratio: 0.9912,

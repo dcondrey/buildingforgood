@@ -205,3 +205,38 @@ def test_the_shipped_artifact_matches_what_the_module_produces() -> None:
     assert 0.98 <= shipped["median_ratio"] <= 1.0
     assert set(shipped["median_ratio_by_year"]) == {str(y) for y in range(2017, 2023)}
     assert shipped["months_absent_from_package"] == ["2018-11", "2019-12"]
+
+
+def test_an_adjacent_pair_straddling_parity_is_named_a_boundary_problem() -> None:
+    from stillhere_pipeline.sdrdl import classify_defects
+
+    kinds = {
+        d["month"]: d["kind"] for d in classify_defects([("2022-02", 0.48), ("2022-03", 1.48)])
+    }
+    assert kinds == {"2022-02": "month_boundary_pair", "2022-03": "month_boundary_pair"}
+
+
+def test_consecutive_short_months_are_a_run_not_a_pair() -> None:
+    from stillhere_pipeline.sdrdl import classify_defects
+
+    kinds = {
+        d["month"]: d["kind"]
+        for d in classify_defects([("2018-03", 0.56), ("2018-04", 0.56), ("2018-05", 0.59)])
+    }
+    assert set(kinds.values()) == {"short_run"}
+
+
+def test_a_short_and_a_long_month_far_apart_are_not_a_pair() -> None:
+    """Adjacency is the whole claim; without it they are two unrelated facts."""
+    from stillhere_pipeline.sdrdl import classify_defects
+
+    kinds = {d["month"]: d["kind"] for d in classify_defects([("2019-01", 0.5), ("2021-07", 1.5)])}
+    assert kinds["2019-01"] == "short_run"
+    assert kinds["2021-07"] == "unclassified"
+
+
+def test_a_year_boundary_still_counts_as_adjacent() -> None:
+    from stillhere_pipeline.sdrdl import classify_defects
+
+    kinds = {d["month"]: d["kind"] for d in classify_defects([("2020-12", 0.5), ("2021-01", 1.5)])}
+    assert set(kinds.values()) == {"month_boundary_pair"}

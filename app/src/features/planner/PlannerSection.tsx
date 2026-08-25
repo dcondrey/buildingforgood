@@ -5,6 +5,7 @@ import {
   PlannerStart,
   ScenarioBench,
 } from "../../features/planner/PlannerPieces";
+import { CONTRACTED_CAPACITY } from "../../data/capacityContext";
 import { GeographyProvenance } from "../../features/shell/GeographyProvenance";
 import { useShell } from "../../features/shell/ShellContext";
 import { AreaDetailPanel } from "../../features/spatial/AreaDetailPanel";
@@ -39,7 +40,7 @@ export function PlannerSection() {
     toggleAreaSelection,
     unmetTotal,
   } = useShell();
-  const { t, number, money } = useTranslation();
+  const { t, tx, number, money } = useTranslation();
   const assumedAreaName = intervention
     ? (data.areas.find((area) => area.id === intervention.areaId)?.name ?? "")
     : "";
@@ -239,6 +240,36 @@ export function PlannerSection() {
           </div>
         </div>
       )}
+
+      <div className="capacity-context" id="capacity-context">
+        <span className="eyebrow">{t("capacity.eyebrow")}</span>
+        <strong>{t("capacity.title")}</strong>
+        <p>
+          {tx("capacity.body", {
+            staff: CONTRACTED_CAPACITY.outreachStaffPerDay,
+            shifts: CONTRACTED_CAPACITY.shiftsPerDay,
+            days: CONTRACTED_CAPACITY.daysPerWeek,
+          })}
+        </p>
+        <p className="digitization-audit-finding">{tx("capacity.notComparable")}</p>
+        <details>
+          <summary>{t("capacity.quoteLead")}</summary>
+          <ul>
+            {CONTRACTED_CAPACITY.quotes.map((quote) => (
+              <li key={quote}>
+                <q>{quote}</q>
+              </li>
+            ))}
+          </ul>
+          <p className="currency-frozen">
+            {tx("capacity.sourceNote", {
+              title: CONTRACTED_CAPACITY.source.title,
+              request: CONTRACTED_CAPACITY.source.request,
+              doc: CONTRACTED_CAPACITY.source.documentId,
+            })}
+          </p>
+        </details>
+      </div>
     </section>
   );
 }

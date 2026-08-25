@@ -1107,6 +1107,17 @@ export const EN_MESSAGES = {
   "actuals.instructions":
     "Full instructions, including what will and will not later be computed from these numbers, are in <c>{docs}</c>.",
 
+  /* ---- contracted capacity context ------------------------------------------------------ */
+  "capacity.eyebrow": "For comparison, not for planning",
+  "capacity.title": "What the City has contracted for",
+  "capacity.body":
+    "The City's street-outreach contract requires <b>{staff} outreach staff a day</b>, across {shifts} shifts, {days} days a week, plus a team leader. It is here so you know what exists alongside what you are planning.",
+  "capacity.notComparable":
+    "<b>This is not a target and not an input.</b> It states what a contract requires, not what was actually in the field, and it covers a different program from the plan above. Nothing on this page divides one by the other, because the result would look like a coverage ratio and would not be one.",
+  "capacity.quoteLead": "From the executed agreement:",
+  "capacity.sourceNote":
+    "{title}, PRA request {request}. Re-fetch and check it against its recorded fingerprint with <c>python scripts/fetch_pra.py --doc-id {doc}</c>.",
+
   /* ---- independent source agreement ---------------------------------------------------- */
   "sourceAgreement.eyebrow": "Checked against another transcription",
   "sourceAgreement.title": "A second digitization of the same maps",

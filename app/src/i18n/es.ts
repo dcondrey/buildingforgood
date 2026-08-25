@@ -1115,6 +1115,17 @@ export const ES_MESSAGES: Catalogue = {
   "actuals.instructions":
     "Las instrucciones completas, incluido lo que se calculará y lo que no se calculará más adelante a partir de estos números, están en <c>{docs}</c>.",
 
+  /* ---- contexto de capacidad contratada -------------------------------------------------- */
+  "capacity.eyebrow": "Para comparar, no para planificar",
+  "capacity.title": "Lo que la ciudad tiene contratado",
+  "capacity.body":
+    "El contrato municipal de atención en calle exige <b>{staff} personas de atención al día</b>, repartidas en {shifts} turnos, {days} días a la semana, más un jefe de equipo. Está aquí para que sepa qué existe junto a lo que usted planifica.",
+  "capacity.notComparable":
+    "<b>Esto no es una meta ni una entrada de datos.</b> Dice lo que exige un contrato, no lo que realmente estuvo en la calle, y cubre un programa distinto del plan de arriba. Nada en esta página divide una cifra por la otra, porque el resultado parecería una tasa de cobertura y no lo sería.",
+  "capacity.quoteLead": "Del acuerdo firmado:",
+  "capacity.sourceNote":
+    "{title}, solicitud PRA {request}. Vuelva a descargarlo y contrástelo con su huella registrada usando <c>python scripts/fetch_pra.py --doc-id {doc}</c>.",
+
   /* ---- concordancia con una fuente independiente ---------------------------------------- */
   "sourceAgreement.eyebrow": "Contrastado con otra transcripción",
   "sourceAgreement.title": "Una segunda digitalización de los mismos mapas",

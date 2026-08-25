@@ -205,6 +205,25 @@ claims:
       surface: docs/project/DATA_OPPORTUNITIES.md
       quote: "agreement, not reconstruction"
 
+  # Contracted staffing shown beside a plan invites a division nobody should
+  # make. The claim is deliberately about what the page shows, and the
+  # limitation is the arithmetic it refuses.
+  - id: contracted-capacity-is-context-not-input
+    claim: >-
+      Contracted street-outreach staffing is shown as context beside the plan,
+      quoted from the executed contract, and never enters the planner.
+    quote: "not a target and not an input"
+    surfaces:
+      - CHANGELOG.md
+    code:
+      - path: app/src/data/capacityContext.ts
+        anchor: CAPACITY_NOT_COMPARABLE
+      - path: app/src/features/planner/PlannerSection.tsx
+        anchor: capacity-context
+    tests:
+      - path: app/src/features/planner/capacityContext.test.tsx
+        anchor: does not divide contracted staffing into the plan
+
   # ---- what it will not do ------------------------------------------------
   - id: no-backend
     claim: No backend, no accounts, no login, no telemetry.

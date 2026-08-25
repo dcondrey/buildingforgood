@@ -18,6 +18,12 @@ not mean the limitations are gone. They are listed, in severity order, in
 
 ### Added
 
+- **Contracted capacity as context.** The City's executed street-outreach
+  contract requires four outreach staff a day across two shifts, seven days a
+  week. It is quoted beside the plan and it is **not a target and not an
+  input** — it states what a contract requires rather than what was fielded,
+  and it covers a different program. Nothing divides one into the other,
+  because the result would read as a coverage ratio and would not be one.
 - **A portability lint** (`stillhere_pipeline.portability`), stage 1 of
   `verify.sh`. Eleven constructs that mean different things on BSD and GNU, each
   with a known-bad line in the test file. Its first fixture is not invented: it

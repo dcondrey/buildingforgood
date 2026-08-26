@@ -462,17 +462,30 @@ periods:
 
 | | ratio |
 | --- | --- |
-| staff member A | 1.353 |
-| staff member B | 1.338 |
-| staff member C | 1.318 |
-| **median** | **1.338** |
+| staff member A | 1.183 |
+| staff member B | 1.176 |
+| staff member C | 1.199 |
+| **median** | **1.183** |
 
-**A San Diego homeless-services provider's fully loaded cost was about 1.34 times
-gross wages in FY20**, from the provider's own reimbursement filings. It is not
-an hourly rate and cannot become one — no hours exist to divide by. It is the
-other half of the calculation: an operator who knows what they pay can check
-their loaded figure against a local, sourced multiplier instead of guessing at
-one.
+**An earlier version of this table said 1.34, and it was wrong.** The worksheets
+list a Flex Credit alongside salaries — an allowance paid to the employee, and
+therefore compensation. I counted it in the total and left it out of the base.
+The arithmetic ran cleanly and the answer was too high by a sixth. Corrected, a
+San Diego homeless-services provider loaded at about **1.18 times wages** in
+FY20, not 1.34.
+
+**Independently confirmed.** Alpha Project's FY2023 Form 990, Part IX, gives
+$16,646,785 of wages and officer compensation against $3,115,186 of loading — a
+ratio of **1.187**, from a different provider, a different year, and a public
+aggregate filing rather than a payroll worksheet. Two sources that share no
+inputs landing within half a percent of each other is the strongest support
+either could have.
+
+It also explains an oddity from the payroll-tax comparison below: Alpha reports
+**zero** pension contributions and **zero** other employee benefits, putting
+everything above wages into the payroll-taxes line. That is why their
+payroll-tax ratio looks twice everyone else's — it is not a payroll-tax ratio,
+it is their whole loading.
 
 **Read it narrowly, and note which staff it describes.** Every cost object on
 these worksheets is an administrative line — `Path GF Admin`, `ESG RRH-Admin`,

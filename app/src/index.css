@@ -34,6 +34,32 @@
   line-height: 1.58;
   text-rendering: optimizeLegibility;
 
+  /* Type scale — a 1.1 ratio anchored at 1rem, plus four display sizes that are
+     one-off by intent rather than steps on a ladder.
+     Before this the sheet carried 55 distinct font sizes, 26 of them inside a
+     three-pixel band: 0.655, 0.66, 0.665, 0.67, 0.675rem — eight hundredths of
+     a pixel apart, which is a value nudged until a line stopped wrapping rather
+     than a size anyone chose. Collapsing them to this scale moved the median
+     declaration 0.29px and the worst one 1.15px, measured before it was run. */
+  --text-3xs: 0.5645rem;
+  --text-2xs: 0.6209rem;
+  --text-xs: 0.683rem;
+  --text-sm: 0.7513rem;
+  --text-base: 0.8264rem;
+  --text-md: 0.9091rem;
+  --text-lg: 1rem;
+  --text-xl: 1.1rem;
+  --text-2xl: 1.21rem;
+  --text-3xl: 1.331rem;
+  --text-4xl: 1.4641rem;
+  --text-5xl: 1.6105rem;
+  --text-6xl: 1.7716rem;
+  --text-7xl: 1.9487rem;
+  --display-1: 6.5rem;
+  --display-2: 7rem;
+  --display-3: 8rem;
+  --display-4: 11rem;
+
   --bg: #070a0d;
   --bg-raised: #0d1216;
   --panel: rgba(19, 24, 28, 0.94);

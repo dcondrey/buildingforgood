@@ -236,3 +236,44 @@ describe("text selection", () => {
     ).toEqual([]);
   });
 });
+
+describe("the type scale", () => {
+  it("is the only source of font sizes", () => {
+    // The sheet carried 55 distinct sizes, 26 of them inside a three-pixel
+    // band — 0.655, 0.66, 0.665rem, eight hundredths of a pixel apart. That is
+    // not a design decision, it is a value nudged until a line stopped
+    // wrapping. A raw size here means the ladder has been stepped off.
+    // Text drawn inside an SVG is the exception, and a real one: those sizes
+    // are user-space units that scale with the viewBox, not CSS pixels, so a
+    // rem ladder anchored to the root font size is the wrong instrument.
+    const SVG_TEXT = /\.(map-value|map-edge|chart-axis|interval-label|x-axis|chart-tooltip-)/;
+    const offenders: string[] = [];
+    for (const sheet of SHEETS) {
+      let selector = "";
+      for (const line of css(sheet).split("\n")) {
+        if (line.includes("{")) selector = line;
+        if (/^\s*--(text|display)-/.test(line)) continue;
+        if (!/font-size:\s*[0-9.]+(rem|px|em)/.test(line)) continue;
+        if (line.includes("px") && SVG_TEXT.test(selector)) continue;
+        offenders.push(`${sheet}: ${line.trim()}`);
+      }
+    }
+    expect(offenders, "use a --text-* or --display-* token").toEqual([]);
+  });
+
+  it("has steps far enough apart for the difference to be visible", () => {
+    // The failure being prevented is the one that was there: neighbouring
+    // steps so close that choosing between them is meaningless.
+    const tokens = [...css("index.css").matchAll(/--text-[\w-]+:\s*([0-9.]+)rem/g)]
+      .map((m) => Number(m[1]))
+      .sort((a, b) => a - b);
+    expect(tokens.length).toBeGreaterThan(8);
+    for (let i = 1; i < tokens.length; i += 1) {
+      const gapPx = (tokens[i] - tokens[i - 1]) * 16;
+      expect(
+        gapPx,
+        `${tokens[i - 1]}rem and ${tokens[i]}rem are indistinguishable`,
+      ).toBeGreaterThan(0.5);
+    }
+  });
+});

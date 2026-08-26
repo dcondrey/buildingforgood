@@ -629,6 +629,64 @@ notice it should find it already known rather than think they have found a bug.
 **Coverage limit.** The published series stops at 2019-04, so this check cannot
 speak to 2019-05 onward, which is most of the shipped history.
 
+## 4e. The same question asked of an aggregate source
+
+Section 4d found a loading factor inside a provider's payroll worksheets, which
+name individuals. Form 990 answers the same question from a source that is
+aggregate by construction: organisation-level compensation and payroll taxes,
+no individual anywhere in it. `scripts/nonprofit_loading.py` pulls it from
+ProPublica's Nonprofit Explorer.
+
+**Employer payroll tax runs about 8 to 9 per cent of compensation** across three
+San Diego homeless-services organisations and thirteen years — Alpha Project
+median 9.5%, Regional Task Force 8.5%, San Diego Rescue Mission 8.4%. That is
+what FICA at 7.65% plus unemployment insurance should look like, which is a
+reassuring sign the figures mean what they appear to.
+
+### It cross-checks the worksheet, and that is the useful part
+
+The payroll worksheets in section 4d showed total compensation at **1.34 times**
+gross wages — 34 points of loading. These filings put **8 to 9 of those points on
+payroll tax**, leaving roughly 25 for pension, health, life and disability
+insurance, and workers' compensation.
+
+Two independent sources, one person-level and deleted, one aggregate and public,
+agreeing on the structure of the number. Neither is an hourly rate and neither
+can become one.
+
+### A hypothesis formed and refuted inside the same analysis
+
+Looking at Alpha Project's four most recent filings — 16.0%, 17.2%, 18.7%,
+20.5% — against the Regional Task Force's 7.5% to 8.3%, the obvious reading was
+that a direct-service operator loads roughly double a coordinating body, which
+would have supported the earlier point that field staff and office staff do not
+load alike.
+
+**The full thirteen-year series refutes it.** Alpha Project sits at 8.7% to
+10.6% from 2011 through 2019 and steps up to 16–20% from 2020, where it stays.
+It is a change over time within one organisation, not a difference between kinds
+of organisation, and the earlier reading came from looking only at recent years.
+What caused the step is not determinable from the summary fields; the same
+period covers a near-doubling of the organisation's payroll and its Convention
+Center operations, and a single-year spike to 23.7% in 2016 has no explanation
+here either.
+
+### Three filings rejected, loudly
+
+San Diego Rescue Mission's 2021, 2022 and 2023 filings report **zero salaries**
+against more than twenty million dollars of expenses, producing payroll-tax
+loads of 147%, 161% and 199%. An organisation that size has staff; the field is
+missing from the extract. The script rejects them by a plausibility bound and
+prints why, because a median quietly taken over them lands near 16% and looks
+entirely reasonable.
+
+### What this does not give
+
+ProPublica's summary omits Part IX lines 8 and 9 — pension contributions and
+other employee benefits — so this is payroll tax only, never the full loading
+factor. The full return would settle it, and the IRS bulk-XML bucket that used
+to serve them no longer resolves.
+
 ## 5. Capacity context the planner could be compared against
 
 `city_pra_outreach_contracts` documents contracted street-outreach staffing —

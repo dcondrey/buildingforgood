@@ -67,6 +67,18 @@ const TEXT_SPACING = `
   p { margin-bottom: 2em !important; }
 `;
 
+/**
+ * WebKit is Safari's engine, and on a phone it is the only engine — every iOS
+ * browser is WebKit underneath. A layout checked in Chromium alone is not
+ * checked for most of the phones this will actually be opened on. It runs over
+ * a subset, in English, because engine differences are layout differences and
+ * show up at the extremes rather than at every width.
+ *
+ * This is not the same as testing Safari. It is the same engine, not the same
+ * browser, and the audit still owes a person the real thing.
+ */
+const WEBKIT_AT = new Set(["phone-small", "phone-14pro", "tablet-portrait", "desktop", "4k"]);
+
 /** Where the spacing override is applied. 320px is also 400% zoom of 1280 (1.4.10). */
 const SPACING_AT = new Set(["phone-small", "tablet-portrait", "desktop"]);
 
@@ -207,6 +219,7 @@ const INSPECT = ({ viewportWidth, floor }) => {
 
 async function main() {
   let chromium;
+  let webkit;
   try {
     // Resolved against app/, where the dependency lives; a bare specifier would
     // be looked up from scripts/ and never found.
@@ -215,6 +228,7 @@ async function main() {
     // playwright's entry is CommonJS, so depending on how the interop resolves
     // the launcher arrives either as a named export or under default.
     chromium = mod.chromium ?? mod.default?.chromium;
+    webkit = mod.webkit ?? mod.default?.webkit;
     if (!chromium) throw new Error("playwright exported no chromium launcher");
   } catch {
     console.error("VIEWPORT CHECK ABORTED. playwright is not installed.");
@@ -302,6 +316,46 @@ async function main() {
     await context.close();
   }
 
+  // The same two properties in Safari's engine.
+  let engine;
+  try {
+    engine = await webkit.launch();
+  } catch (error) {
+    await browser.close();
+    server.close();
+    console.error("VIEWPORT CHECK ABORTED. WebKit is not installed.");
+    console.error("  npx --prefix app playwright install webkit");
+    console.error(`\n  ${error.message.split("\n")[0]}`);
+    return 1;
+  }
+  console.log();
+  for (const [name, width, height, ratio] of VIEWPORTS) {
+    if (!WEBKIT_AT.has(name)) continue;
+    const context = await engine.newContext({
+      viewport: { width, height },
+      deviceScaleFactor: ratio,
+    });
+    const page = await context.newPage();
+    await page.goto(base, { waitUntil: "networkidle" });
+    await page.waitForTimeout(500);
+    const found = await page.evaluate(INSPECT, { viewportWidth: width, floor: FLOOR_PX });
+    await context.close();
+
+    const ok = found.small.length === 0 && found.wide.length === 0 && !found.scrolled;
+    const where = `${name} [webkit]`;
+    console.log(
+      `  ${ok ? "ok  " : "FAIL"} ${where.padEnd(22)} ${String(width).padStart(4)}x${String(height).padEnd(4)} ` +
+        `@${ratio}x  ${found.small.length} under ${FLOOR_PX}px, ${found.wide.length} past the right edge`,
+    );
+    for (const row of found.small) {
+      failures.push(`${where}: <${row.tag}> .${row.cls || "—"} renders at ${row.rendered}px — ${JSON.stringify(row.text)}`);
+    }
+    for (const row of found.wide) {
+      failures.push(`${where}: <${row.tag}> .${row.cls || "—"} spans ${row.left}..${row.right} past a ${width}px viewport`);
+    }
+  }
+  await engine.close();
+
   await browser.close();
   server.close();
 
@@ -319,7 +373,8 @@ async function main() {
   console.log(
     `VIEWPORT CHECK PASSED — ${VIEWPORTS.length} viewports x ${LOCALES.length} locales, ` +
       `nothing under ${FLOOR_PX}px, nothing past the right edge, ` +
-      `and nothing lost when text spacing is forced.`,
+      `and nothing lost when text spacing is forced. ` +
+      `${WEBKIT_AT.size} of them checked in WebKit as well.`,
   );
   console.log(`Deliberate hiding at font-size ${HIDDEN} is allowed and is not what this looks for.`);
   return 0;

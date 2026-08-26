@@ -26,9 +26,9 @@ jobs:
       # Stage 7 renders the built site and holds it to a text floor and to
       # reflow. It fails rather than skips when the browser is absent, because a
       # skipped gate reports the same green as a passing one.
-      - name: Install Chromium for the rendered-layout stage
+      - name: Install Chromium and WebKit for the rendered-layout stage
         run: |
           npm --prefix app ci
-          npx --prefix app --yes playwright install --with-deps chromium
+          npx --prefix app --yes playwright install --with-deps chromium webkit
       - name: Verify (format, lint, types, tests, build, rendered layout)
         run: ./scripts/verify.sh

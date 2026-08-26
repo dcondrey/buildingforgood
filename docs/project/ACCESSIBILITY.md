@@ -218,8 +218,23 @@ and is scanned by both rule sets in `refusals.test.ts`.
   states this pass restructured — map workspace, guide panel open, disclosure
   drawer open with the drop revealed — with zero violations, alongside the two
   runs already in `App.test.tsx`.
-- Still not verified here, and still owed to a person: Safari and a real screen
-  reader, and a real print render.
+- Still not verified here, and still owed to a person: **a real screen reader,
+  and Safari itself.** Everything a machine can settle about the other items has
+  now been settled; what remains needs somebody's eyes and ears.
+
+- **Safari's engine is checked; Safari is not.** Stage 7 runs five of the twelve
+  viewports in WebKit as well as Chromium. On a phone that is not a
+  nice-to-have: every iOS browser is WebKit underneath, so a layout checked only
+  in Chromium is unchecked for most of the phones this will be opened on. Both
+  properties hold there. This is the same engine, not the same browser — Safari
+  adds its own chrome, its own zoom behaviour and VoiceOver — so the audit still
+  owes a person the real thing.
+
+- **The print render was checked and needs no change.** In print media the
+  chrome is `display: none`, no near-white text survives onto white paper (0
+  nodes), `.decision-section` drops its 42rem minimum height, and each section
+  carries `page-break-before: always`. The large gap visible in a continuous
+  render is a page boundary, not wasted paper.
 
 - **Reflow (1.4.10) and text spacing (1.4.12) are no longer on that list.** They
   were, for the right reason: both need real layout and jsdom computes none. A

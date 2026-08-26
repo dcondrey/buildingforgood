@@ -64,6 +64,54 @@ const TEXT = [
   "--red",
 ];
 
+/**
+ * Selected text is text, and it was the one pair nobody had measured.
+ *
+ * The rule sets a foreground as well as a background, which is what makes it
+ * checkable at all: a `::selection` that sets only a background inherits
+ * whatever colour the underlying text had, so the same highlight can be
+ * comfortable over body copy and unreadable over a dim token. Fixing both ends
+ * means one pair to verify instead of one per text colour.
+ */
+describe("the selection highlight is legible, and visible against the page", () => {
+  const selection = /::selection\s*\{([^}]*)\}/.exec(
+    readFileSync(fileURLToPath(new URL("./index.css", import.meta.url)), "utf8"),
+  );
+
+  it("sets both ends of the pair rather than only a background", () => {
+    expect(selection, "no ::selection rule; the browser default is unknowable").not.toBeNull();
+    expect(selection?.[1]).toMatch(/background:/);
+    expect(selection?.[1], "a background alone inherits the underlying text colour").toMatch(
+      /(^|[^-])color:/,
+    );
+  });
+
+  it("clears AA for selected text, and does so with room", () => {
+    const palette = tokens();
+    const background = palette.get("--amber");
+    const foreground = /(?:^|[^-])color:\s*(#[0-9a-fA-F]{6})/.exec(selection?.[1] ?? "")?.[1];
+    expect(background, "::selection uses --amber as its background").toBeDefined();
+    expect(foreground, "::selection sets a literal hex foreground").toBeDefined();
+    // 9.63:1 as measured. The threshold is AA's 4.5, and the margin is the
+    // point: a highlight that only just clears is one palette nudge from not.
+    expect(contrastRatio(foreground as string, background as string)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("stands out from every surface it can be drawn over", () => {
+    // A highlight the same luminance as the page is invisible even when the
+    // text inside it is perfectly legible.
+    const palette = tokens();
+    const highlight = palette.get("--amber") as string;
+    for (const surface of SURFACES) {
+      const bg = palette.get(surface);
+      if (!bg) continue;
+      expect(contrastRatio(highlight, bg), `selection is invisible on ${surface}`).toBeGreaterThan(
+        3,
+      );
+    }
+  });
+});
+
 describe("the palette clears WCAG 2.1 AA on every text-on-surface pair", () => {
   const palette = tokens();
 

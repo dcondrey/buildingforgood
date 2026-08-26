@@ -241,22 +241,36 @@ that in the room.
 
 ---
 
-## 7. Accessibility findings are open, and it was never audited by a person
+## 7. Accessibility is fixed in code and unverified by a person
 
 **Severity: medium.** Real exclusion of real users, and a hard failure against
 grant conditions that require an audit.
 
-**Status: OPEN, claim CLOSED.**
+**Status: findings CLOSED, verification OPEN.**
 
-**What it is.** Automated testing reports zero violations across six screens and
-contrast was measured directly. A self-assessment against WCAG 2.1 AA raised
-eleven findings; several remain open. No third-party audit has been
-commissioned.
+**Correcting this entry.** It previously said "several remain open", which I
+carried from older brief wording without reading the audit. All eleven findings,
+A-1 through A-11, are addressed in code and answered individually in
+`docs/project/ACCESSIBILITY.md`. Fixed findings and verified accessibility are
+different things, and this entry was describing the wrong one.
+
+**What is actually open** is verification by a person: Safari, a real screen
+reader, a real print render, 400% zoom reflow, and text spacing. No third-party
+audit has been commissioned.
 
 **What changed.** The brief previously said "audited," which invites the
-conclusion that the findings were addressed. It now says self-assessed, names
-the open count, and points at `docs/project/ACCESSIBILITY.md`. The two Level A
-findings were fixed.
+conclusion that the findings were addressed. It now says self-assessed and
+points at `docs/project/ACCESSIBILITY.md`. The two Level A findings were fixed.
+
+Two of the five owed items now have static gates for their mechanical causes:
+`app/src/a11yStatic.test.ts` holds the line on fixed widths past 320px, `nowrap`
+on prose, clipped text containers and unoverridable spacing, and it asserts that
+the audit keeps saying the work is owed. It is a regression gate and not a
+verification, and the owed list is unchanged by it.
+
+The selection highlight is measured rather than assumed: `::selection` sets both
+ends of its pair, and selected text clears AA at 9.63:1 with the highlight
+visible against every surface. That pair was previously unchecked.
 
 **Honest framing:** *"Zero automated violations, and automated tools
 structurally cannot see the two hardest problems. Manual keyboard and

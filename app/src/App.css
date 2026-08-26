@@ -1287,12 +1287,12 @@ main {
 .map-edge {
   fill: var(--muted);
   font-family: var(--mono);
-  font-size: 4.5px;
+  font-size: var(--chart-text-2xs);
   pointer-events: none;
 }
 .map-value {
   fill: var(--teal-bright);
-  font-size: 6.5px;
+  font-size: var(--chart-text-xs);
   font-weight: 700;
 }
 .map-down .map-value {
@@ -1300,7 +1300,7 @@ main {
 }
 .map-edge {
   fill: var(--faint);
-  font-size: 3.5px;
+  font-size: var(--chart-text-3xs);
   letter-spacing: 0.4px;
   text-transform: uppercase;
 }
@@ -1969,10 +1969,10 @@ main {
 .interval-label {
   fill: var(--faint);
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: var(--chart-text-md);
 }
 .x-axis {
-  font-size: 8px;
+  font-size: var(--chart-text-sm);
 }
 .forecast-label,
 .interval-label {
@@ -2406,14 +2406,14 @@ main {
 .chart-tooltip-label {
   fill: var(--muted);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--chart-text-lg);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 .chart-tooltip-value {
   fill: var(--amber-bright);
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--chart-text-xl);
   font-weight: 700;
 }
 

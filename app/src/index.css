@@ -34,6 +34,17 @@
   line-height: 1.58;
   text-rendering: optimizeLegibility;
 
+  /* Text drawn inside an SVG viewBox. In rem rather than px so it answers the
+     reader's font-size preference as well as the chart's own scaling — a px
+     value inside a viewBox scales with the chart and ignores the reader.
+     The conversion is exact at a 16px root, so nothing moved when it landed. */
+  --chart-text-3xs: 0.21875rem;
+  --chart-text-2xs: 0.28125rem;
+  --chart-text-xs: 0.40625rem;
+  --chart-text-sm: 0.5rem;
+  --chart-text-md: 0.5625rem;
+  --chart-text-lg: 0.625rem;
+  --chart-text-xl: 0.75rem;
   /* Type scale — a 1.1 ratio anchored at 1rem, plus four display sizes that are
      one-off by intent rather than steps on a ladder.
      Before this the sheet carried 55 distinct font sizes, 26 of them inside a

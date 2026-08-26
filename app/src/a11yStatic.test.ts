@@ -238,27 +238,41 @@ describe("text selection", () => {
 });
 
 describe("the type scale", () => {
+  it("states no size in pixels, anywhere — inside clamp() included", () => {
+    // A px font-size ignores the reader's font-size preference. Inside an SVG
+    // viewBox it is worse than it looks: the text scales with the chart, which
+    // makes it appear responsive while answering nothing the reader set. The
+    // chart tokens are rem for that reason, and convert exactly at a 16px root
+    // so the conversion moved nothing.
+    for (const sheet of SHEETS) {
+      // The scan must see the whole declaration value. A px hidden in the middle
+      // of a fluid size — clamp(1rem, 2vw, 12px) — walked straight past a pattern
+      // anchored to the first token after the colon.
+      const inPx = [...css(sheet).matchAll(/font-size:([^;}]*)/g)]
+        .map((m) => m[1])
+        .filter((value) => /[0-9.]px/.test(value));
+      expect(inPx, `${sheet} declares a font size in pixels`).toEqual([]);
+    }
+  });
+
   it("is the only source of font sizes", () => {
     // The sheet carried 55 distinct sizes, 26 of them inside a three-pixel
     // band — 0.655, 0.66, 0.665rem, eight hundredths of a pixel apart. That is
     // not a design decision, it is a value nudged until a line stopped
     // wrapping. A raw size here means the ladder has been stepped off.
-    // Text drawn inside an SVG is the exception, and a real one: those sizes
-    // are user-space units that scale with the viewBox, not CSS pixels, so a
-    // rem ladder anchored to the root font size is the wrong instrument.
-    const SVG_TEXT = /\.(map-value|map-edge|chart-axis|interval-label|x-axis|chart-tooltip-)/;
     const offenders: string[] = [];
     for (const sheet of SHEETS) {
-      let selector = "";
       for (const line of css(sheet).split("\n")) {
-        if (line.includes("{")) selector = line;
-        if (/^\s*--(text|display)-/.test(line)) continue;
-        if (!/font-size:\s*[0-9.]+(rem|px|em)/.test(line)) continue;
-        if (line.includes("px") && SVG_TEXT.test(selector)) continue;
-        offenders.push(`${sheet}: ${line.trim()}`);
+        if (/^\s*--(text|display|chart-text)-/.test(line)) continue;
+        // A fluid size is a curve between two bounds, not a step on a ladder;
+        // forcing its endpoints onto the scale would defeat what it is for. The
+        // pixel rule above still applies to it.
+        if (/font-size:\s*clamp\(/.test(line)) continue;
+        if (/font-size:\s*[0-9.]+(rem|px|em)/.test(line))
+          offenders.push(`${sheet}: ${line.trim()}`);
       }
     }
-    expect(offenders, "use a --text-* or --display-* token").toEqual([]);
+    expect(offenders, "use a --text-*, --display-* or --chart-text-* token").toEqual([]);
   });
 
   it("has steps far enough apart for the difference to be visible", () => {

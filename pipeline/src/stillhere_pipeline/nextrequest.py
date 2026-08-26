@@ -27,7 +27,11 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
+#: San Diego *City*. The County runs a separate portal on the same platform, and
+#: RTFH is a county-wide body, so a search that only asks the City is only asking
+#: half the jurisdiction. Every function below takes `portal` for that reason.
 PORTAL = "https://sandiego.nextrequest.com"
+COUNTY_PORTAL = "https://pra.sandiegocounty.gov"
 AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
@@ -53,9 +57,9 @@ def _get(url: str, referer: str | None = None, timeout: int = 180) -> bytes:
         return bytes(response.read())
 
 
-def search(term: str, limit: int = 25) -> list[Document]:
+def search(term: str, limit: int = 25, portal: str = PORTAL) -> list[Document]:
     query = urllib.parse.urlencode({"search_term": term})
-    payload = json.loads(_get(f"{PORTAL}/client/documents?{query}"))
+    payload = json.loads(_get(f"{portal}/client/documents?{query}"))
     out: list[Document] = []
     for row in payload.get("documents", [])[:limit]:
         out.append(
@@ -68,9 +72,9 @@ def search(term: str, limit: int = 25) -> list[Document]:
     return out
 
 
-def download(doc_id: int) -> bytes:
+def download(doc_id: int, portal: str = PORTAL) -> bytes:
     """The file. The page fetch first is not optional — the download 403s without it."""
-    page = f"{PORTAL}/documents/{doc_id}"
+    page = f"{portal}/documents/{doc_id}"
     _get(page)
     return _get(f"{page}/download", referer=page)
 
@@ -148,10 +152,10 @@ def search_terms(name: str) -> list[str]:
     return ordered
 
 
-def locate(name: str, limit: int = 25) -> Document | None:
+def locate(name: str, limit: int = 25, portal: str = PORTAL) -> Document | None:
     """Find one pinned filename on the portal, trying each term until one hits."""
     for term in search_terms(name):
-        found = best_match(name, search(term, limit=limit))
+        found = best_match(name, search(term, limit=limit, portal=portal))
         if found is not None:
             return found
     return None

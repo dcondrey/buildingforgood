@@ -687,6 +687,47 @@ other employee benefits — so this is payroll tax only, never the full loading
 factor. The full return would settle it, and the IRS bulk-XML bucket that used
 to serve them no longer resolves.
 
+## 4f. The County portal
+
+`pra.sandiegocounty.gov` runs the same NextRequest platform as the City, so
+`stillhere_pipeline.nextrequest` reaches it by passing `portal=COUNTY_PORTAL`.
+Asking only the City was asking half the jurisdiction: the Regional Task Force
+is a county-wide body.
+
+**Two things to know before searching it.** The homelessness corpus is smaller
+than the City's — 52 documents for "homeless", 192 for "shelter". And the search
+is **fuzzy on short terms**: `HHAP` returns Thanksgiving posts, avocado permit
+meetings and "Chapter", because it matches "Happy", "HAP" and "Chap" by
+similarity. Acronyms are unusable on either portal; longer words behave.
+
+### What it has that the City does not
+
+`County Homelessness Funding And Program Information.xlsx` — a standard response
+document, served against at least four separate requests. Twenty-one sheets, one
+per County department, with columns for funding programme, fiscal year, **total
+amount invested into homelessness interventions**, vouchers, funding source,
+**intervention type** (which includes "Outreach and Engagement"), and populations
+served.
+
+The Office of Homeless Solutions sheet alone carries 147 rows. Its *Regional
+Outreach Services* line, by fiscal year:
+
+| fiscal year | invested |
+| --- | --- |
+| 2020-2021 | $1,756,587 |
+| 2021-2022 | $5,060,356 |
+| 2022-2023 | $7,535,188 |
+| 2023-2024 | $10,748,408 |
+| 2024-2025 | $10,549,510 |
+
+Funded from TANF, SNAP, Title XIX and local funds — a six-fold rise in three
+years, then flat.
+
+**It is still dollars and not hours**, and it is county-wide rather than
+downtown, so it does not close the rate question and does not feed the evidence
+layer. It is the best-structured homelessness dataset either portal has
+produced, and it is recorded here as a real source rather than a lead.
+
 ## 5. Capacity context the planner could be compared against
 
 `city_pra_outreach_contracts` documents contracted street-outreach staffing —

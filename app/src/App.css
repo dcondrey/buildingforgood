@@ -134,6 +134,42 @@
   gap: 0.6rem;
   justify-content: flex-end;
 }
+/* The two halves of the bar. Each keeps its own items together and the outer
+   row breaks between them, so the header is one line where it fits and two
+   deliberate ones where it does not — never a single button left on a row of
+   its own. Both still wrap internally on a phone, where stacking is right. */
+.header-status,
+.header-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+/* Below the width where the whole bar fits on one line, the actions take a full
+   row of their own. Sharing a row with the brand left them about 545px for
+   601px of buttons, so the last one wrapped alone — the orphan this grouping
+   was meant to remove. They stay right-aligned, so at the widths that were
+   already tidy nothing moves. */
+@media (max-width: 108rem) {
+  .header-actions {
+    flex: 1 0 100%;
+  }
+}
+/* Up to 1032px the control block takes a full row of its own. Beside the brand
+   it gets the viewport less 294px of brand, gap and padding, and the five
+   actions need 737px — so anything narrower than this strands the last button
+   on a row by itself. Measured, not guessed: 1024px missed by seven pixels. */
+@media (max-width: 64.5rem) {
+  /* The bar is nowrap above 800px, so a full-width basis here would overflow
+     rather than move to a second line — which it did, by 202px at 1024. */
+  .topbar {
+    flex-wrap: wrap;
+  }
+  .decision-controls {
+    flex: 1 0 100%;
+  }
+}
 
 .header-context {
   border-right: 1px solid var(--line);
@@ -3348,7 +3384,11 @@ summary {
     min-height: auto;
   }
   .decision-controls {
-    flex: 1;
+    /* A full row of its own, and no shrink — `flex: 1` let it squeeze back onto
+       the brand's line, which left the actions about 474px for 600px of buttons
+       and stranded the last one. This rule sits after the band rule above and
+       was quietly overriding it. */
+    flex: 1 0 100%;
     justify-content: flex-end;
   }
   .step-nav {

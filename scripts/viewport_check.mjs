@@ -56,6 +56,9 @@ const FLOOR_PX = 11;
  */
 const HIDDEN = 0;
 
+/** Every locale the app ships. Checked in each, because text length is not a constant. */
+const LOCALES = ["en", "es"];
+
 /** Width, height, device pixel ratio. The shapes a reader actually turns up on. */
 const VIEWPORTS = [
   ["phone-small", 320, 568, 2],
@@ -215,30 +218,42 @@ async function main() {
     const page = await context.newPage();
     await page.goto(base, { waitUntil: "networkidle" });
     await page.waitForTimeout(400);
-    const found = await page.evaluate(INSPECT, { viewportWidth: width, floor: FLOOR_PX });
-    await context.close();
 
-    const scrolls = found.scrollWidth > found.clientWidth + 1;
-    const ok = found.small.length === 0 && found.wide.length === 0 && !scrolls;
-    console.log(
-      `  ${ok ? "ok  " : "FAIL"} ${name.padEnd(17)} ${String(width).padStart(4)}x${String(height).padEnd(4)} ` +
-        `@${ratio}x  ${found.small.length} under ${FLOOR_PX}px, ${found.wide.length} past the right edge`,
-    );
-    for (const row of found.small) {
-      failures.push(
-        `${name}: <${row.tag}> .${row.cls || "—"} renders at ${row.rendered}px ` +
-          `(declared ${row.declared}) — ${JSON.stringify(row.text)}`,
+    // Both locales. Spanish runs longer than English almost everywhere, so a
+    // layout that fits on measured English widths is not yet known to fit —
+    // and the header only cleared 1024px by seven pixels, which no translation
+    // would have survived. The locale buttons carry lang, so this needs no
+    // test id.
+    for (const locale of LOCALES) {
+      if (locale !== "en") {
+        await page.click(`button[lang="${locale}"]`);
+        await page.waitForTimeout(500);
+      }
+      const found = await page.evaluate(INSPECT, { viewportWidth: width, floor: FLOOR_PX });
+      const scrolls = found.scrollWidth > found.clientWidth + 1;
+      const ok = found.small.length === 0 && found.wide.length === 0 && !scrolls;
+      const where = `${name} [${locale}]`;
+      console.log(
+        `  ${ok ? "ok  " : "FAIL"} ${where.padEnd(22)} ${String(width).padStart(4)}x${String(height).padEnd(4)} ` +
+          `@${ratio}x  ${found.small.length} under ${FLOOR_PX}px, ${found.wide.length} past the right edge`,
       );
+      for (const row of found.small) {
+        failures.push(
+          `${where}: <${row.tag}> .${row.cls || "—"} renders at ${row.rendered}px ` +
+            `(declared ${row.declared}) — ${JSON.stringify(row.text)}`,
+        );
+      }
+      for (const row of found.wide) {
+        failures.push(
+          `${where}: <${row.tag}> .${row.cls || "—"} spans ${row.left}..${row.right} ` +
+            `past a ${width}px viewport — ${JSON.stringify(row.text)}`,
+        );
+      }
+      if (scrolls) {
+        failures.push(`${where}: the page scrolls sideways (${found.scrollWidth} > ${found.clientWidth})`);
+      }
     }
-    for (const row of found.wide) {
-      failures.push(
-        `${name}: <${row.tag}> .${row.cls || "—"} spans ${row.left}..${row.right} ` +
-          `past a ${width}px viewport — ${JSON.stringify(row.text)}`,
-      );
-    }
-    if (scrolls) {
-      failures.push(`${name}: the page scrolls sideways (${found.scrollWidth} > ${found.clientWidth})`);
-    }
+    await context.close();
   }
 
   await browser.close();
@@ -256,7 +271,8 @@ async function main() {
     return 1;
   }
   console.log(
-    `VIEWPORT CHECK PASSED — ${VIEWPORTS.length} viewports, nothing under ${FLOOR_PX}px, nothing past the right edge.`,
+    `VIEWPORT CHECK PASSED — ${VIEWPORTS.length} viewports x ${LOCALES.length} locales, ` +
+      `nothing under ${FLOOR_PX}px, nothing past the right edge.`,
   );
   console.log(`Deliberate hiding at font-size ${HIDDEN} is allowed and is not what this looks for.`);
   return 0;

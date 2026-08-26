@@ -71,7 +71,12 @@ export function ForecastSection() {
               <small>{t("forecast.heldOutFolds", { folds: data.forecast.intervalPoints })}</small>
             </span>
           </div>
-          <div className="scorecard-table-wrap">
+          <div
+            aria-label={t("forecast.scorecardScroll")}
+            className="scorecard-table-wrap"
+            role="region"
+            tabIndex={0}
+          >
             <table className="scorecard-table">
               <caption className="sr-only">{t("forecast.scorecardCaption")}</caption>
               <thead>

@@ -50,7 +50,7 @@
   color: #111820;
   cursor: pointer;
   font-family: inherit;
-  font-size: 1.05rem;
+  font-size: var(--text-lg);
   font-weight: 800;
   min-height: 3rem;
   padding: 0.55rem 1.1rem;
@@ -76,7 +76,7 @@
 
 .shift-sheet-meta {
   border-bottom: 2px solid #111820;
-  font-size: 1.05rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   line-height: 1.35;
   margin: 0.35rem 0 0;
@@ -125,7 +125,7 @@
 }
 
 .shift-sheet-why {
-  font-size: 1.05rem;
+  font-size: var(--text-lg);
   line-height: 1.4;
   margin: 0.4rem 0 0;
 }
@@ -144,7 +144,7 @@
 .shift-sheet-tag {
   border: 2px solid #111820;
   border-radius: 999px;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 800;
   letter-spacing: 0.04em;
   padding: 0.2rem 0.6rem;
@@ -168,7 +168,7 @@
 
 .shift-sheet-disclosure {
   border: 3px solid #111820;
-  font-size: 1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   line-height: 1.4;
   margin: 0.4rem 0 0;
@@ -176,7 +176,7 @@
 }
 
 .shift-sheet-source {
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   line-height: 1.4;
   margin: 0.7rem 0 0;
 }

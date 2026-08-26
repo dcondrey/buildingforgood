@@ -5,7 +5,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "== [1/6] pipeline and scripts: format, lint, types, tests, shell portability =="
+echo "== [1/7] pipeline and scripts: format, lint, types, tests, shell portability =="
 if [ ! -d .venv ]; then
   python3 -m venv .venv
 fi
@@ -32,7 +32,7 @@ SKIP_SUMMARY="$(mktemp "${TMPDIR:-/tmp}/stillhere-skips.XXXXXX")"
 trap 'rm -f "$SKIP_SUMMARY"' EXIT
 .venv/bin/pytest tests -q -rs | tee "$SKIP_SUMMARY"
 
-echo "== [2/6] app: format, lint, tests, production build =="
+echo "== [2/7] app: format, lint, tests, production build =="
 if [ ! -d app/node_modules ]; then
   npm ci --prefix app
 fi
@@ -48,7 +48,7 @@ npm --prefix app run build
 # that keep 311 volume, enforcement framing, causal claims, movement claims,
 # and capacity claims out of the shipped path, plus the source-scanning guard
 # that oxlint cannot express (see app/src/refusals.test.ts).
-echo "== [3/6] app: refusal suite (README 'What it will not say'; C-01 R-02/R-03/R-09) =="
+echo "== [3/7] app: refusal suite (README 'What it will not say'; C-01 R-02/R-03/R-09) =="
 npm --prefix app exec -- vitest run src/refusals.test.ts
 
 # The adversarial harnesses in review/attacks/. These were written to falsify a
@@ -60,7 +60,7 @@ npm --prefix app exec -- vitest run src/refusals.test.ts
 # WORKED, and asserts it no longer does, naming the mechanism that stops it. A
 # failure here means an old hole has reopened, which the product suite would not
 # necessarily notice, because these attacks were built from outside it.
-echo "== [4/6] app: adversarial harnesses (review/attacks) =="
+echo "== [4/7] app: adversarial harnesses (review/attacks) =="
 ( cd app && npm exec -- vitest run --config vitest.attacks.config.ts )
 
 # The privacy scan runs LAST, after the production build exists, because it
@@ -69,7 +69,7 @@ echo "== [4/6] app: adversarial harnesses (review/attacks) =="
 # normal verify: the directory was simply absent and the check degraded to a
 # warning. --require-bundle turns that absence into a failure so the gate
 # cannot pass by never having built.
-echo "== [5/6] privacy: deployable-data boundary (issue #7) =="
+echo "== [5/7] privacy: deployable-data boundary (issue #7) =="
 .venv/bin/python -m stillhere_pipeline.privacy --root . --require-bundle
 
 # Every adopter-facing claim, tied to the code that enforces it or the
@@ -77,9 +77,17 @@ echo "== [5/6] privacy: deployable-data boundary (issue #7) =="
 # refuses a withdrawn claim that has crept back onto a surface, and reconciles
 # the skipped-test ledger against the run above, so the coverage a green suite
 # does not buy stays on screen instead of being absorbed by it.
-echo "== [6/6] claims: every adopter-facing claim is backed or disclosed =="
+echo "== [6/7] claims: every adopter-facing claim is backed or disclosed =="
 PYTHONPATH=pipeline/src .venv/bin/python -m stillhere_pipeline.claims \
   --check --quiet --pytest-summary "$SKIP_SUMMARY"
 
 echo ""
+echo "== [7/7] app: rendered layout in a real browser (text floor, reflow) =="
+# Every other stage reads source. These two properties are only decidable after
+# layout: an SVG label's rendered size is its declared size times a viewBox scale
+# nothing in a stylesheet knows, and reflow depends on how wide real strings run.
+# Five defects that reached main had passed all six stages above.
+node scripts/viewport_check.mjs
+
+echo
 echo "VERIFY PASSED"

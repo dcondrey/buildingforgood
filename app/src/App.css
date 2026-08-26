@@ -875,8 +875,18 @@ main {
   color: var(--muted);
   font-family: var(--mono);
   font-size: var(--text-xs);
+  max-width: 100%;
   padding: 0.45rem 0.7rem;
   text-transform: uppercase;
+}
+/* These two were on the nowrap rule above, declared in the reflow allowlist as
+   "a one-word chip". They are not. .selected-chip renders "Apple Vision · 200
+   DPI vs Apple Vision · 300 DPI" and .wide-warning renders "A rehearsal on past
+   data · not a live forecast" — 47 and 45 characters, 339px and 326px wide, and
+   the direct cause of a horizontal scrollbar at 320px. The two that really are
+   short keep the single line. */
+.confidence-chip,
+.review-status {
   white-space: nowrap;
 }
 .component-proof {
@@ -1208,12 +1218,24 @@ main {
   padding: 0.45rem;
   width: 100%;
 }
+/* The map's text is in viewBox units, so its legibility is set by how far the
+   160-unit box is scaled. Left free, that scale ran from 1.37 on a 320px phone
+   to 2.90 everywhere else, and "San Diego Bay" reached the eye at 4.8px.
+   Shrinking is not recoverable by choosing a larger size either: at phone scale
+   an 11px label is wider than the 55px cell it has to sit in. So the plot keeps
+   the width its labels were drawn for and the frame scrolls instead — which
+   1.4.10 allows for a diagram, and the same numbers are in the table below it.
+   min-width is on the plot rather than the SVG because the button overlay is
+   positioned against the plot and would otherwise part company with the shapes
+   it covers. */
 .area-map-plot {
+  overflow-x: auto;
   position: relative;
 }
 .area-map-svg {
   display: block;
   height: auto;
+  min-width: 29rem;
   overflow: visible;
   width: 100%;
 }
@@ -1222,6 +1244,10 @@ main {
    polygon underneath so the visible shape stays the mouse target. */
 .area-map-controls {
   inset: 0;
+  /* Matches the SVG's floor so the buttons keep covering the shapes they name
+     once the plot scrolls. Without it this layer measures the visible box while
+     the map measures the wider one, and every target drifts off its polygon. */
+  min-width: 29rem;
   position: absolute;
 }
 .area-map-control {
@@ -1368,6 +1394,20 @@ main {
   gap: 1.25rem;
   grid-template-columns: minmax(0, 1.15fr) minmax(15rem, 0.85fr);
   margin-top: 0.5rem;
+}
+/* A grid item defaults to min-width:auto, which is its content's minimum, so an
+   item holding a map wide enough to read refuses to shrink and drags the column
+   past the viewport — which is how the map's own caption ended up 464px wide on
+   a 320px screen and unreadable without scrolling sideways. */
+.map-detail-row > * {
+  min-width: 0;
+}
+/* The second track's floor is 15rem. Below roughly 46rem the two tracks cannot
+   both fit and the row overflows rather than reflowing, so it stacks first. */
+@media (max-width: 46rem) {
+  .map-detail-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .map-detail-row .area-map-frame {
   margin-top: 0.75rem;
@@ -1818,7 +1858,7 @@ main {
 }
 .robustness-title > small {
   color: var(--faint);
-  font-size: var(--text-2xs);
+  font-size: var(--text-xs);
 }
 .parking-result,
 .weather-dates {
@@ -2234,7 +2274,7 @@ main {
   font-size: var(--text-sm);
 }
 .floor-option span {
-  font-size: var(--text-2xs);
+  font-size: var(--text-xs);
 }
 .floor-option.active {
   background: var(--green-dim);
@@ -3639,7 +3679,7 @@ summary {
     font-size: var(--text-6xl);
   }
   .constraint-equation small {
-    font-size: var(--text-2xs);
+    font-size: var(--text-xs);
   }
   .plan-toolbar > div {
     align-items: stretch;

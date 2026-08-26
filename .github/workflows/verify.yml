@@ -23,5 +23,12 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
-      - name: Verify (format, lint, types, tests, build)
+      # Stage 7 renders the built site and holds it to a text floor and to
+      # reflow. It fails rather than skips when the browser is absent, because a
+      # skipped gate reports the same green as a passing one.
+      - name: Install Chromium for the rendered-layout stage
+        run: |
+          npm --prefix app ci
+          npx --prefix app --yes playwright install --with-deps chromium
+      - name: Verify (format, lint, types, tests, build, rendered layout)
         run: ./scripts/verify.sh

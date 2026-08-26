@@ -75,7 +75,11 @@ export function AreaMap({
       className="area-map-frame"
       role={interactive ? "group" : undefined}
     >
-      <div className="area-map-plot">
+      {/* The plot keeps the width its labels were drawn for and scrolls inside
+          this box rather than shrinking below legibility, so it is a scroll
+          region and needs a tab stop — a region only a mouse can scroll is A-2
+          in the audit. The caption stays outside it and reflows normally. */}
+      <div aria-label={t("map.scrollRegion")} className="area-map-plot" role="region" tabIndex={0}>
         <svg
           aria-hidden={interactive ? true : undefined}
           aria-label={interactive ? undefined : ariaLabel}

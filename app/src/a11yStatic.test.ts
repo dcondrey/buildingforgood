@@ -22,10 +22,39 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const SHEETS = ["App.css", "index.css", "print.css"] as const;
+/**
+ * Every stylesheet under src/, discovered rather than listed.
+ *
+ * This was a hardcoded three — App.css, index.css, print.css — while six
+ * existed. The four under features/ were never read by any guard here, and they
+ * held 25 off-scale sizes including a 0.6rem badge that rendered at 9.6px. The
+ * gate was green the entire time because it was not looking. A list has to be
+ * maintained to stay true; a walk cannot fall behind.
+ */
+function stylesheets(dir: URL): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir)) {
+    const child = new URL(`${entry}`, `${dir}`.endsWith("/") ? dir : `${dir}/`);
+    if (statSync(child).isDirectory()) out.push(...stylesheets(new URL(`${child}/`)));
+    else if (entry.endsWith(".css")) out.push(child.href);
+  }
+  return out.sort();
+}
 
-function css(name: string): string {
-  return readFileSync(new URL(`./${name}`, import.meta.url), "utf8");
+const SHEETS = stylesheets(new URL("./", import.meta.url));
+
+function css(nameOrHref: string): string {
+  // Accepts a discovered href or a bare sibling filename, so the named-sheet
+  // assertions below keep reading the way they always did.
+  const target = nameOrHref.startsWith("file:")
+    ? new URL(nameOrHref)
+    : new URL(`./${nameOrHref}`, import.meta.url);
+  return readFileSync(target, "utf8");
+}
+
+/** The last two path segments, for readable failure messages. */
+function label(href: string): string {
+  return href.split("/").slice(-2).join("/");
 }
 
 /** Declarations with the selector they belong to, comments stripped. */
@@ -49,8 +78,9 @@ const NOWRAP_ALLOWED: Record<string, string> = {
   ".sr-only": "the visually-hidden utility; nowrap is part of the standard pattern",
   ".plan-state": "a status chip",
   ".confidence-chip": "a one-word chip",
-  ".selected-chip": "a one-word chip",
-  ".wide-warning": "a status chip, not the warning prose it sits beside",
+  ".currency-badge":
+    "two stacked mono lines, the longer 28 characters, measured at 223px on a 320px viewport",
+  ".shift-sheet-hours": "a single figure such as 80h",
   ".review-status": "a status chip",
   ".distribution-heading > span": "a heading fragment",
   ".formula": "a short arithmetic string; breaking mid-expression is worse than not wrapping",
@@ -196,6 +226,49 @@ describe("tab order", () => {
       }
     }
   });
+
+  it("gives every scrolling class a tab stop, not just the declared regions", () => {
+    // The rule above only runs the check in one direction: it holds anything
+    // already marked role="region" to having a tab stop, and says nothing about
+    // a class that scrolls without being marked. So a new overflow-x rule
+    // created a keyboard trap-by-omission and every test stayed green — the map
+    // plot became scrollable and only a mouse could scroll it.
+    //
+    // This asks the stylesheet what scrolls and then requires the markup to
+    // agree, which is the direction that catches a new one.
+    const SCROLLS_WITHOUT_FOCUS = new Set([
+      // A pre element scrolls its own overflow and is focusable in every engine
+      // that scrolls it; it carries no class the markup could be matched on.
+      "brief-preview pre",
+    ]);
+    const scrolling = new Set<string>();
+    for (const sheet of SHEETS) {
+      for (const { selector, body } of rules(css(sheet))) {
+        if (!/overflow(-x)?:\s*(auto|scroll)/.test(body)) continue;
+        for (const part of selector.split(",")) {
+          const match = part.trim().match(/\.([a-z][\w-]*)(?![^\s>+~,]*\()\s*$/);
+          if (match && !SCROLLS_WITHOUT_FOCUS.has(match[1])) scrolling.add(match[1]);
+        }
+      }
+    }
+    expect(scrolling.size).toBeGreaterThan(0);
+
+    const markup = components().join("\n");
+    const unreachable: string[] = [];
+    for (const name of [...scrolling].sort()) {
+      // Only classes the components actually render can be held to this.
+      if (!markup.includes(name)) continue;
+      const uses = [
+        ...markup.matchAll(new RegExp(`<[a-zA-Z]+[^>]*"[^"]*\\b${name}\\b[^"]*"[^>]*>`, "g")),
+      ];
+      if (uses.length && !uses.every((use) => use[0].includes("tabIndex={0}")))
+        unreachable.push(name);
+    }
+    expect(
+      unreachable,
+      "a region that scrolls needs tabIndex={0} so a keyboard can reach it",
+    ).toEqual([]);
+  });
 });
 
 describe("text selection", () => {
@@ -251,7 +324,7 @@ describe("the type scale", () => {
       const inPx = [...css(sheet).matchAll(/font-size:([^;}]*)/g)]
         .map((m) => m[1])
         .filter((value) => /[0-9.]px/.test(value));
-      expect(inPx, `${sheet} declares a font size in pixels`).toEqual([]);
+      expect(inPx, `${label(sheet)} declares a font size in pixels`).toEqual([]);
     }
   });
 
@@ -269,7 +342,7 @@ describe("the type scale", () => {
         // pixel rule above still applies to it.
         if (/font-size:\s*clamp\(/.test(line)) continue;
         if (/font-size:\s*[0-9.]+(rem|px|em)/.test(line))
-          offenders.push(`${sheet}: ${line.trim()}`);
+          offenders.push(`${label(sheet)}: ${line.trim()}`);
       }
     }
     expect(offenders, "use a --text-*, --display-* or --chart-text-* token").toEqual([]);

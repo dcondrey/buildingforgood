@@ -12,14 +12,14 @@
 
 .share-refusal p {
   color: var(--ink-soft);
-  font-size: 0.86rem;
+  font-size: var(--text-base);
   line-height: 1.6;
   margin: 0.25rem 0 0;
 }
 
 .geography-provenance p {
   color: var(--ink-soft);
-  font-size: 0.86rem;
+  font-size: var(--text-base);
   line-height: 1.6;
   margin: 0.9rem 1rem;
 }
@@ -35,33 +35,33 @@
   color: var(--ink-soft);
   display: flex;
   font-family: var(--serif);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   gap: 0.6rem;
 }
 
 .geography-components dt span {
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 0.66rem;
+  font-size: var(--text-xs);
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
 .geography-components dd {
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: var(--text-base);
   line-height: 1.6;
   margin: 0.3rem 0 0;
 }
 
 .geography-components dd em {
   display: block;
-  font-size: 0.76rem;
+  font-size: var(--text-sm);
   margin-top: 0.4rem;
   opacity: 0.85;
 }
 
 .geography-source {
   color: var(--muted) !important;
-  font-size: 0.76rem !important;
+  font-size: var(--text-sm) !important;
 }

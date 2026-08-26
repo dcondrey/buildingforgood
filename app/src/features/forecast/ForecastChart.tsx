@@ -46,7 +46,9 @@ export function ForecastChart({
   const forecastX = x(history.length);
 
   return (
-    <div className="chart-wrap">
+    // Scrolls sideways below 46rem, so it needs a tab stop: a region only a
+    // mouse can scroll is A-2 in the audit.
+    <div aria-label={t("chart.scrollRegion")} className="chart-wrap" role="region" tabIndex={0}>
       <svg
         aria-label={t("chart.aria", {
           period: data.targetPeriod,
@@ -234,10 +236,14 @@ export function ForecastChart({
             {point.period.replace(/\s\d{4}$/, "")}
           </text>
         ))}
+        {/* Its own row, below the months. It shares the forecast column's centre
+            with December's tick, so at any legible size the two collide on a
+            single baseline — "Dec" and "Jan scenario" were overlapping. The
+            bottom margin is 54 units and the axis row uses 22 of them. */}
         <text
           className="chart-axis forecast-label"
           x={forecastX}
-          y={height - 22}
+          y={height - 5}
           textAnchor="middle"
         >
           {t("chart.scenarioLabel", { period: data.targetPeriod.replace(/\s\d{4}$/, "") })}

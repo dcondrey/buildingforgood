@@ -8,7 +8,7 @@
   display: inline-flex;
   flex-direction: column;
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   gap: 0.15rem;
   letter-spacing: 0.04em;
   line-height: 1.2;
@@ -18,7 +18,7 @@
 }
 
 .currency-badge small {
-  font-size: 0.6rem;
+  font-size: var(--text-xs);
   opacity: 0.85;
   text-transform: uppercase;
 }
@@ -55,20 +55,20 @@
 
 .currency-head h3 {
   font-family: var(--serif);
-  font-size: 1.1rem;
+  font-size: var(--text-xl);
   margin: 0.2rem 0 0;
 }
 
 .currency-panel p {
   color: var(--ink-soft);
-  font-size: 0.86rem;
+  font-size: var(--text-base);
   line-height: 1.6;
 }
 
 .currency-next,
 .currency-source {
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
 }
 
 .currency-frozen {
@@ -84,7 +84,7 @@
 
 .currency-excluded-head h4 {
   font-family: var(--serif);
-  font-size: 1rem;
+  font-size: var(--text-lg);
   margin: 0.25rem 0 0;
 }
 
@@ -101,7 +101,7 @@
 .currency-grounds {
   color: var(--ink-soft);
   display: grid;
-  font-size: 0.82rem;
+  font-size: var(--text-base);
   gap: 0.4rem;
   line-height: 1.55;
   margin: 0 0 1rem;
@@ -110,18 +110,18 @@
 
 .currency-rule {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--text-base);
 }
 
 .currency-panel table {
   border-collapse: collapse;
-  font-size: 0.8rem;
+  font-size: var(--text-base);
   width: 100%;
 }
 
 .currency-panel caption {
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
   padding: 0.6rem 1rem;
   text-align: left;
 }
@@ -136,6 +136,6 @@
 .currency-panel tbody td:last-child {
   color: var(--amber-bright);
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   text-transform: uppercase;
 }

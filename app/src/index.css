@@ -38,13 +38,13 @@
      reader's font-size preference as well as the chart's own scaling — a px
      value inside a viewBox scales with the chart and ignores the reader.
      The conversion is exact at a 16px root, so nothing moved when it landed. */
-  --chart-text-3xs: 0.21875rem;
-  --chart-text-2xs: 0.28125rem;
-  --chart-text-xs: 0.40625rem;
-  --chart-text-sm: 0.5rem;
-  --chart-text-md: 0.5625rem;
-  --chart-text-lg: 0.625rem;
-  --chart-text-xl: 0.75rem;
+  --chart-text-3xs: 0.2375rem; /* 3.8u  · map edge labels · x2.9 floor -> 11.0px */
+  --chart-text-2xs: 0.28125rem; /* 4.5u  · map area names  · x2.9 floor -> 13.0px */
+  --chart-text-xs: 0.40625rem; /* 6.5u  · map values      · x2.9 floor -> 18.8px */
+  --chart-text-sm: 0.78125rem; /* 12.5u · chart x-axis    · x0.884 floor -> 11.1px */
+  --chart-text-md: 0.78125rem; /* 12.5u · chart axis      · x0.884 floor -> 11.1px */
+  --chart-text-lg: 0.78125rem; /* 12.5u · tooltip label   · x0.884 floor -> 11.1px */
+  --chart-text-xl: 0.875rem; /* 14u   · tooltip value   · x0.884 floor -> 12.4px */
   /* Type scale — a 1.1 ratio anchored at 1rem, plus four display sizes that are
      one-off by intent rather than steps on a ladder.
      Before this the sheet carried 55 distinct font sizes, 26 of them inside a
@@ -52,9 +52,7 @@
      a pixel apart, which is a value nudged until a line stopped wrapping rather
      than a size anyone chose. Collapsing them to this scale moved the median
      declaration 0.29px and the worst one 1.15px, measured before it was run. */
-  --text-3xs: 0.5645rem;
-  --text-2xs: 0.6209rem;
-  --text-xs: 0.683rem;
+  --text-xs: 0.6875rem;
   --text-sm: 0.7513rem;
   --text-base: 0.8264rem;
   --text-md: 0.9091rem;
@@ -200,4 +198,11 @@ a {
   a {
     forced-color-adjust: auto;
   }
+}
+
+/* A file input is sized by the browser from its button and filename text, not
+   by its container, so it is the one control that can push a 320px layout wide
+   on its own. It measured 333px inside a 288px parent. */
+input[type="file"] {
+  max-width: 100%;
 }

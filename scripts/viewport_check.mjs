@@ -56,6 +56,20 @@ const FLOOR_PX = 11;
  */
 const HIDDEN = 0;
 
+/**
+ * WCAG 1.4.12. A reader is entitled to force these four values, and nothing may
+ * be lost when they do. The audit listed this as owed to a person because jsdom
+ * computes no layout; a browser settles it.
+ */
+const TEXT_SPACING = `
+  * { line-height: 1.5 !important; letter-spacing: 0.12em !important;
+      word-spacing: 0.16em !important; }
+  p { margin-bottom: 2em !important; }
+`;
+
+/** Where the spacing override is applied. 320px is also 400% zoom of 1280 (1.4.10). */
+const SPACING_AT = new Set(["phone-small", "tablet-portrait", "desktop"]);
+
 /** Every locale the app ships. Checked in each, because text length is not a constant. */
 const LOCALES = ["en", "es"];
 
@@ -170,12 +184,25 @@ const INSPECT = ({ viewportWidth, floor }) => {
     for (const row of rows) if (!seen.has(row.tag + row.cls)) seen.set(row.tag + row.cls, row);
     return [...seen.values()];
   };
-  return {
-    small: dedupe(small),
-    wide: dedupe(wide),
-    scrollWidth: document.documentElement.scrollWidth,
-    clientWidth: document.documentElement.clientWidth,
-  };
+  // Whether the reader can actually scroll sideways, which is the thing 1.4.10
+  // is about. `scrollWidth > clientWidth` is not that test: body sets
+  // `overflow-x: hidden`, so that comparison reports latent overflow inside
+  // nested scrollers as though the page had a scrollbar. It read 338 against
+  // 320 on a page nothing could scroll and no element overran — a measurement
+  // that looks authoritative and is wrong, which is the failure mode this file
+  // exists to catch. So: try to scroll, and see.
+  //
+  // Be clear about what this is worth today: while body clips, this can never
+  // fire, and the check that actually finds overflow is `wide` above — proven
+  // by removing a chip's max-width cap, which it caught at five viewports in
+  // both locales. This stays as the direct statement of the criterion, so that
+  // if body ever stops clipping the page is still held to it.
+  const before = window.scrollX;
+  window.scrollTo(viewportWidth, window.scrollY);
+  const scrolled = window.scrollX > before;
+  window.scrollTo(before, window.scrollY);
+
+  return { small: dedupe(small), wide: dedupe(wide), scrolled };
 };
 
 async function main() {
@@ -230,7 +257,7 @@ async function main() {
         await page.waitForTimeout(500);
       }
       const found = await page.evaluate(INSPECT, { viewportWidth: width, floor: FLOOR_PX });
-      const scrolls = found.scrollWidth > found.clientWidth + 1;
+      const scrolls = found.scrolled;
       const ok = found.small.length === 0 && found.wide.length === 0 && !scrolls;
       const where = `${name} [${locale}]`;
       console.log(
@@ -250,7 +277,26 @@ async function main() {
         );
       }
       if (scrolls) {
-        failures.push(`${where}: the page scrolls sideways (${found.scrollWidth} > ${found.clientWidth})`);
+        failures.push(`${where}: the reader can scroll the page sideways`);
+      }
+    }
+
+    if (SPACING_AT.has(name)) {
+      const before = await page.evaluate(() => document.body.innerText.replace(/\s+/g, " ").length);
+      await page.addStyleTag({ content: TEXT_SPACING });
+      await page.waitForTimeout(500);
+      const after = await page.evaluate(INSPECT, { viewportWidth: width, floor: FLOOR_PX });
+      const length = await page.evaluate(() => document.body.innerText.replace(/\s+/g, " ").length);
+      const spaced = after.scrolled;
+      const lost = length < before;
+      console.log(
+        `  ${!spaced && !lost && after.wide.length === 0 ? "ok  " : "FAIL"} ${(name + " [1.4.12]").padEnd(22)} ` +
+          `text spacing forced: ${before} -> ${length} characters, ${after.wide.length} past the right edge`,
+      );
+      if (lost) failures.push(`${name}: forcing text spacing lost content (${before} -> ${length} characters)`);
+      if (spaced) failures.push(`${name}: forcing text spacing makes the page scroll sideways`);
+      for (const row of after.wide) {
+        failures.push(`${name}: with text spacing forced, <${row.tag}> .${row.cls || "—"} runs past the right edge`);
       }
     }
     await context.close();
@@ -272,7 +318,8 @@ async function main() {
   }
   console.log(
     `VIEWPORT CHECK PASSED — ${VIEWPORTS.length} viewports x ${LOCALES.length} locales, ` +
-      `nothing under ${FLOOR_PX}px, nothing past the right edge.`,
+      `nothing under ${FLOOR_PX}px, nothing past the right edge, ` +
+      `and nothing lost when text spacing is forced.`,
   );
   console.log(`Deliberate hiding at font-size ${HIDDEN} is allowed and is not what this looks for.`);
   return 0;

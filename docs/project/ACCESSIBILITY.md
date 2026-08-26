@@ -219,7 +219,30 @@ and is scanned by both rule sets in `refusals.test.ts`.
   drawer open with the drop revealed — with zero violations, alongside the two
   runs already in `App.test.tsx`.
 - Still not verified here, and still owed to a person: Safari and a real screen
-  reader, a real print render, 400% zoom reflow, and text spacing.
+  reader, and a real print render.
+
+- **Reflow (1.4.10) and text spacing (1.4.12) are no longer on that list.** They
+  were, for the right reason: both need real layout and jsdom computes none. A
+  browser now runs in `verify.sh` stage 7, so both are checked rather than
+  gestured at.
+
+  Reflow is checked at twelve viewports in both locales, 320px included — which
+  is 400% zoom of a 1280px window, the width the criterion is written about.
+  Nothing renders past the right edge at any of them. It found a real failure on
+  its first run: the page did scroll sideways at 320px, because two chips were
+  declared in the reflow allowlist as "a one-word chip" and are 47 and 45
+  characters. The justification had never been checked against the rendering.
+
+  Text spacing is checked by forcing the criterion's own four values — line
+  height 1.5, letter spacing 0.12em, word spacing 0.16em, paragraph spacing 2em
+  — at 320px, 768px and 1440px, then asserting no content is lost and nothing
+  runs past the right edge. Character counts are identical before and after.
+
+  What this still does not establish: both criteria are about loss of content or
+  function, and a machine comparing character counts and bounding boxes cannot
+  see a caption that has drifted away from its figure or a control that now
+  overlaps another. It rules out the mechanical failures. A person looking at it
+  remains worth more.
 
 ---
 

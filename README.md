@@ -1,7 +1,14 @@
-# Still Here SD
+<!-- repo-header:start -->
+<img src="https://github.com/dcondrey.png?size=160" alt="Still Here SD logo" width="120" align="left">
 
-> **The estimate fell. Direct observations rose.** One headline can hide a
-> measurement-composition shift.
+<h1>Still Here SD</h1>
+
+<p><strong>Decision-support demo for downtown San Diego outreach planning: audits what the unsheltered count actually measured, backtests a forecast honestly, and turns the evidence into an editable, human-owned staff-hour plan. Offline-capable, privacy-first, no LLM in the decision path.</strong></p>
+
+<br clear="left">
+
+[![CI](https://img.shields.io/github/actions/workflow/status/dcondrey/buildingforgood/verify.yml?style=flat-square&labelColor=20232a&branch=main&label=CI)](https://github.com/dcondrey/buildingforgood/actions/workflows/verify.yml) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14402/badge)](https://www.bestpractices.dev/projects/14402) [![License](https://img.shields.io/github/license/dcondrey/buildingforgood?style=flat-square&labelColor=20232a&color=007ec6&label=license)](https://github.com/dcondrey/buildingforgood/blob/main/LICENSE) [![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Sponsor-EA4AAA?style=flat-square&labelColor=20232a)](https://github.com/sponsors/dcondrey)
+<!-- repo-header:end -->
 
 **[Open the live demo →](https://dcondrey.github.io/buildingforgood/)** ·
 works offline once loaded ·
